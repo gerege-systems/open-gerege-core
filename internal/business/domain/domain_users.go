@@ -51,8 +51,10 @@ var (
 type User struct {
 	ID                string
 	Username          string
-	FirstName         string // нэр
-	LastName          string // овог
+	FirstName         string // нэр (монгол)
+	LastName          string // овог (монгол)
+	FirstNameEn       string // нэр (англи)
+	LastNameEn        string // овог (англи)
 	Email             string
 	Password          string
 	Active            bool
@@ -67,6 +69,11 @@ type User struct {
 // тэмдэгт мөр (дуудагч username руу fallback хийнэ).
 func (u User) FullName() string {
 	return strings.TrimSpace(strings.TrimSpace(u.LastName) + " " + strings.TrimSpace(u.FirstName))
+}
+
+// FullNameEn нь англи (Латин) "Lastname Firstname"-г буцаана.
+func (u User) FullNameEn() string {
+	return strings.TrimSpace(strings.TrimSpace(u.LastNameEn) + " " + strings.TrimSpace(u.FirstNameEn))
 }
 
 // NewUser нь бүртгэлийн оролтоос шинэ User үүсгэнэ. Email нь

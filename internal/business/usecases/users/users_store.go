@@ -81,9 +81,11 @@ func (uc *usecase) Store(ctx context.Context, req StoreRequest) (resp StoreRespo
 		return StoreResponse{}, err
 	}
 
-	// NewUser нь identity/нууц үгийг л барьдаг тул овог/нэрийг энд хуулна.
+	// NewUser нь identity/нууц үгийг л барьдаг тул овог/нэрийг (мн+en) энд хуулна.
 	user.FirstName = in.FirstName
 	user.LastName = in.LastName
+	user.FirstNameEn = in.FirstNameEn
+	user.LastNameEn = in.LastNameEn
 
 	stored, repoErr := uc.repo.Store(ctx, user)
 	if repoErr != nil {

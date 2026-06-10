@@ -16,6 +16,9 @@ type UserResponse struct {
 	FirstName    string     `json:"first_name"`
 	LastName     string     `json:"last_name"`
 	FullName     string     `json:"full_name"`
+	FirstNameEn  string     `json:"first_name_en"`
+	LastNameEn   string     `json:"last_name_en"`
+	FullNameEn   string     `json:"full_name_en"`
 	Email        string     `json:"email"`
 	RoleId       int        `json:"role_id"`
 	Token        string     `json:"token,omitempty"`
@@ -42,13 +45,16 @@ func FromV1Domain(u domain.User) UserResponse {
 	return UserResponse{
 		Id:        u.ID,
 		Username:  u.Username,
-		FirstName: u.FirstName,
-		LastName:  u.LastName,
-		FullName:  u.FullName(),
-		Email:     u.Email,
-		RoleId:    u.RoleID,
-		CreatedAt: u.CreatedAt,
-		UpdatedAt: u.UpdatedAt,
+		FirstName:   u.FirstName,
+		LastName:    u.LastName,
+		FullName:    u.FullName(),
+		FirstNameEn: u.FirstNameEn,
+		LastNameEn:  u.LastNameEn,
+		FullNameEn:  u.FullNameEn(),
+		Email:       u.Email,
+		RoleId:      u.RoleID,
+		CreatedAt:   u.CreatedAt,
+		UpdatedAt:   u.UpdatedAt,
 	}
 }
 

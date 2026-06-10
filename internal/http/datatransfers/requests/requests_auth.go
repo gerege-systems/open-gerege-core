@@ -9,21 +9,25 @@ import (
 
 // RegisterRequest нь POST /auth/register-ийн body юм.
 type RegisterRequest struct {
-	LastName  string `json:"last_name" validate:"required,min=1,max=50"`  // овог
-	FirstName string `json:"first_name" validate:"required,min=1,max=50"` // нэр
-	Username  string `json:"username" validate:"required,min=3,max=25"`
-	Email     string `json:"email" validate:"required,email,max=50"`
-	Password  string `json:"password" validate:"required,min=12,max=72,strongpassword"`
+	LastName    string `json:"last_name" validate:"required,min=1,max=50"`     // овог (монгол)
+	FirstName   string `json:"first_name" validate:"required,min=1,max=50"`    // нэр (монгол)
+	LastNameEn  string `json:"last_name_en" validate:"omitempty,max=50"`       // овог (англи)
+	FirstNameEn string `json:"first_name_en" validate:"omitempty,max=50"`      // нэр (англи)
+	Username    string `json:"username" validate:"required,min=3,max=25"`
+	Email       string `json:"email" validate:"required,email,max=50"`
+	Password    string `json:"password" validate:"required,min=12,max=72,strongpassword"`
 }
 
 func (r RegisterRequest) ToV1Domain() *domain.User {
 	return &domain.User{
-		Username:  r.Username,
-		FirstName: r.FirstName,
-		LastName:  r.LastName,
-		Email:     r.Email,
-		Password:  r.Password,
-		RoleID:    2, // бүртгүүлсэн хүн бүр энгийн хэрэглэгч байна
+		Username:    r.Username,
+		FirstName:   r.FirstName,
+		LastName:    r.LastName,
+		FirstNameEn: r.FirstNameEn,
+		LastNameEn:  r.LastNameEn,
+		Email:       r.Email,
+		Password:    r.Password,
+		RoleID:      2, // бүртгүүлсэн хүн бүр энгийн хэрэглэгч байна
 	}
 }
 
