@@ -11,6 +11,8 @@ func (u *Users) ToV1Domain() domain.User {
 	return domain.User{
 		ID:                u.Id,
 		Username:          u.Username,
+		FirstName:         u.FirstName,
+		LastName:          u.LastName,
 		Email:             u.Email,
 		Password:          u.Password,
 		Active:            u.Active,
@@ -26,6 +28,8 @@ func FromUsersV1Domain(u *domain.User) Users {
 	return Users{
 		Id:                u.ID,
 		Username:          u.Username,
+		FirstName:         u.FirstName,
+		LastName:          u.LastName,
 		Email:             u.Email,
 		Password:          u.Password,
 		Active:            u.Active,

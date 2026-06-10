@@ -51,6 +51,8 @@ var (
 type User struct {
 	ID                string
 	Username          string
+	FirstName         string // нэр
+	LastName          string // овог
 	Email             string
 	Password          string
 	Active            bool
@@ -59,6 +61,12 @@ type User struct {
 	UpdatedAt         *time.Time
 	DeletedAt         *time.Time
 	PasswordChangedAt *time.Time
+}
+
+// FullName нь монгол хэлбэрээр "Овог Нэр"-г буцаана; хоёулаа хоосон бол хоосон
+// тэмдэгт мөр (дуудагч username руу fallback хийнэ).
+func (u User) FullName() string {
+	return strings.TrimSpace(strings.TrimSpace(u.LastName) + " " + strings.TrimSpace(u.FirstName))
 }
 
 // NewUser нь бүртгэлийн оролтоос шинэ User үүсгэнэ. Email нь

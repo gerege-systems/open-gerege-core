@@ -14,6 +14,9 @@ import (
 type AdminUserResponse struct {
 	Id        string     `json:"id"`
 	Username  string     `json:"username"`
+	FirstName string     `json:"first_name"`
+	LastName  string     `json:"last_name"`
+	FullName  string     `json:"full_name"`
 	Email     string     `json:"email"`
 	RoleId    int        `json:"role_id"`
 	Active    bool       `json:"active"`
@@ -23,8 +26,8 @@ type AdminUserResponse struct {
 
 func FromAdminUser(u domain.User) AdminUserResponse {
 	return AdminUserResponse{
-		Id: u.ID, Username: u.Username, Email: u.Email, RoleId: u.RoleID,
-		Active: u.Active, CreatedAt: u.CreatedAt, UpdatedAt: u.UpdatedAt,
+		Id: u.ID, Username: u.Username, FirstName: u.FirstName, LastName: u.LastName, FullName: u.FullName(),
+		Email: u.Email, RoleId: u.RoleID, Active: u.Active, CreatedAt: u.CreatedAt, UpdatedAt: u.UpdatedAt,
 	}
 }
 

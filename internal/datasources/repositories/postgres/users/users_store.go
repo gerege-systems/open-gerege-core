@@ -32,10 +32,10 @@ func (r *postgreUserRepository) Store(ctx context.Context, inDom *domain.User) (
 	var stored records.Users
 	err := r.withRLS(ctx, func(tx pgx.Tx) error {
 		rows, qErr := tx.Query(ctx, `
-			INSERT INTO users(id, username, email, password, active, role_id, created_at)
-			VALUES (uuid_generate_v4(), $1, $2, $3, false, $4, $5)
+			INSERT INTO users(id, username, first_name, last_name, email, password, active, role_id, created_at)
+			VALUES (uuid_generate_v4(), $1, $2, $3, $4, $5, false, $6, $7)
 			RETURNING `+records.UserColumns+`
-		`, userRecord.Username, userRecord.Email, userRecord.Password, userRecord.RoleId, userRecord.CreatedAt)
+		`, userRecord.Username, userRecord.FirstName, userRecord.LastName, userRecord.Email, userRecord.Password, userRecord.RoleId, userRecord.CreatedAt)
 		if qErr != nil {
 			return qErr
 		}

@@ -18,6 +18,8 @@ import (
 type Users struct {
 	Id                string     `db:"id"`
 	Username          string     `db:"username"`
+	FirstName         string     `db:"first_name"`
+	LastName          string     `db:"last_name"`
 	Email             string     `db:"email"`
 	Password          string     `db:"password"`
 	Active            bool       `db:"active"`
@@ -31,4 +33,4 @@ type Users struct {
 // UserColumns нь SELECT/RETURNING-д ашиглах баганануудын жагсаалт —
 // pgx.RowToStructByName нь нэрээр тааруулдаг тул query-уудыг тогтвортой
 // байлгахаар нэг эх сурвалжид төвлөрүүлэв.
-const UserColumns = "id, username, email, password, active, role_id, created_at, updated_at, deleted_at, password_changed_at"
+const UserColumns = "id, username, first_name, last_name, email, password, active, role_id, created_at, updated_at, deleted_at, password_changed_at"
