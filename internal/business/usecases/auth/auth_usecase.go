@@ -91,7 +91,8 @@ type (
 	}
 
 	ResetPasswordRequest struct {
-		Token       string
+		Email       string
+		Code        string
 		NewPassword string
 	}
 )

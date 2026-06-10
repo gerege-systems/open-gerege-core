@@ -13,11 +13,12 @@ import (
 	"template/internal/business/domain"
 	"template/internal/business/usecases/users"
 	"template/pkg/logger"
+	"template/pkg/verify"
 )
 
-// ResetPassword нь нэг удаагийн reset токеныг (ForgotPassword-оос) хэрэглэж,
-// хэрэглэгчийн нууц үгийг солино. Дахин тоглуулах (replay) боломжгүй болгохын
-// тулд амжилттай болоход токеныг устгадаг.
+// ResetPassword нь ForgotPassword-ийн илгээсэн OTP кодыг GeregeCloud Verify
+// /check-ээр баталгаажуулж, хэрэглэгчийн нууц үгийг солино. Амжилттай болоход
+// request_id-г устгаж дахин тоглуулахаас (replay) сэргийлнэ.
 func (uc *usecase) ResetPassword(ctx context.Context, req ResetPasswordRequest) (err error) {
 	const (
 		usecaseName = "auth"
@@ -25,116 +26,82 @@ func (uc *usecase) ResetPassword(ctx context.Context, req ResetPasswordRequest) 
 		fileName    = "auth_reset_password.go"
 	)
 	startTime := time.Now()
-	token := req.Token
+	email := domain.NormalizeEmail(req.Email)
+	code := req.Code
 	newPassword := req.NewPassword
 
 	logger.InfoWithContext(ctx, fmt.Sprintf("Upper %s", funcName), logger.Fields{
-		"usecase": usecaseName,
-		"method":  funcName,
-		"file":    fileName,
-		"request": logger.Fields{
-			"has_token":        token != "",
-			"has_new_password": newPassword != "",
-		},
+		"usecase": usecaseName, "method": funcName, "file": fileName,
+		"request": logger.Fields{"email": email, "has_code": code != "", "has_new_password": newPassword != ""},
 	})
-
 	defer func() {
-		duration := time.Since(startTime)
-		fields := logger.Fields{
-			"usecase":  usecaseName,
-			"method":   funcName,
-			"file":     fileName,
-			"duration": duration.Milliseconds(),
-		}
-		logger.InfoWithContext(ctx, fmt.Sprintf("Lower %s", funcName), fields)
+		logger.InfoWithContext(ctx, fmt.Sprintf("Lower %s", funcName), logger.Fields{
+			"usecase": usecaseName, "method": funcName, "file": fileName,
+			"duration": time.Since(startTime).Milliseconds(),
+		})
 	}()
 
 	if newPassword == "" {
-		err = apperror.BadRequest("new password is required")
-		logger.ErrorWithContext(ctx, "Reset password failed: empty new password", logger.Fields{
-			"usecase": usecaseName,
-			"method":  funcName,
-			"file":    fileName,
-			"step":    "validate_new_password",
-			"error":   err.Error(),
-		})
-		return err
+		return apperror.BadRequest("new password is required")
 	}
-	if token == "" {
-		err = apperror.BadRequest("reset token is required")
-		logger.ErrorWithContext(ctx, "Reset password failed: empty token", logger.Fields{
-			"usecase": usecaseName,
-			"method":  funcName,
-			"file":    fileName,
-			"step":    "validate_token",
-			"error":   err.Error(),
-		})
-		return err
+	if code == "" {
+		return apperror.BadRequest("reset code is required")
 	}
 
-	userID, getErr := uc.redisCache.Get(ctx, PasswordResetKey(token))
-	if getErr != nil || userID == "" {
-		err = apperror.Unauthorized("reset token is invalid or expired")
-		fields := logger.Fields{
-			"usecase": usecaseName,
-			"method":  funcName,
-			"file":    fileName,
-			"step":    "redis_get_reset_token",
-			"error":   err.Error(),
-		}
-		if getErr != nil {
-			fields["redis_error"] = getErr.Error()
-		}
-		logger.ErrorWithContext(ctx, "Reset password failed: invalid or expired token", fields)
-		return err
-	}
-
-	lookupResp, lookupErr := uc.users.GetByID(ctx, users.GetByIDRequest{ID: userID})
+	lookupResp, lookupErr := uc.users.GetByEmail(ctx, users.GetByEmailRequest{Email: email})
 	if lookupErr != nil {
-		err = lookupErr
 		logger.ErrorWithContext(ctx, "Reset password failed: user lookup error", logger.Fields{
-			"usecase": usecaseName,
-			"method":  funcName,
-			"file":    fileName,
-			"step":    "get_user_by_id",
-			"error":   lookupErr.Error(),
-			"user_id": userID,
+			"usecase": usecaseName, "method": funcName, "file": fileName,
+			"step": "get_user_by_email", "error": lookupErr.Error(), "email": email,
 		})
-		return err
+		return apperror.Unauthorized("reset code is invalid or expired")
 	}
 	user := lookupResp.User
+
+	requestID, getErr := uc.redisCache.Get(ctx, ResetRequestKey(email))
+	if getErr != nil || requestID == "" {
+		logger.ErrorWithContext(ctx, "Reset password failed: reset request expired or not found", logger.Fields{
+			"usecase": usecaseName, "method": funcName, "file": fileName,
+			"step": "redis_get_reset_request", "email": email,
+		})
+		return apperror.Unauthorized("reset code is invalid or expired")
+	}
+
+	if checkErr := uc.verifier.Check(ctx, requestID, code); checkErr != nil {
+		if errors.Is(checkErr, verify.ErrNotApproved) {
+			logger.ErrorWithContext(ctx, "Reset password failed: invalid code", logger.Fields{
+				"usecase": usecaseName, "method": funcName, "file": fileName,
+				"step": "verify_check", "email": email,
+			})
+			return apperror.Unauthorized("reset code is invalid or expired")
+		}
+		logger.ErrorWithContext(ctx, "Reset password failed: verify check error", logger.Fields{
+			"usecase": usecaseName, "method": funcName, "file": fileName,
+			"step": "verify_check", "error": checkErr.Error(), "email": email,
+		})
+		return apperror.InternalCause(fmt.Errorf("verify check: %w", checkErr))
+	}
+
 	if hashErr := user.ChangePassword(newPassword, uc.cfg.BcryptCost); hashErr != nil {
 		if errors.Is(hashErr, domain.ErrEmptyPassword) {
-			err = apperror.BadRequest(hashErr.Error())
-		} else {
-			err = apperror.InternalCause(fmt.Errorf("hash reset password: %w", hashErr))
+			return apperror.BadRequest(hashErr.Error())
 		}
 		logger.ErrorWithContext(ctx, "Reset password failed: hash error", logger.Fields{
-			"usecase": usecaseName,
-			"method":  funcName,
-			"file":    fileName,
-			"step":    "domain_change_password",
-			"error":   hashErr.Error(),
-			"user_id": userID,
+			"usecase": usecaseName, "method": funcName, "file": fileName,
+			"step": "domain_change_password", "error": hashErr.Error(), "user_id": user.ID,
 		})
-		return err
+		return apperror.InternalCause(fmt.Errorf("hash reset password: %w", hashErr))
 	}
 	if updateErr := uc.users.UpdatePassword(ctx, users.UpdatePasswordRequest{User: &user}); updateErr != nil {
-		err = updateErr
 		logger.ErrorWithContext(ctx, "Reset password failed: update error", logger.Fields{
-			"usecase": usecaseName,
-			"method":  funcName,
-			"file":    fileName,
-			"step":    "users_update_password",
-			"error":   updateErr.Error(),
-			"user_id": userID,
+			"usecase": usecaseName, "method": funcName, "file": fileName,
+			"step": "users_update_password", "error": updateErr.Error(), "user_id": user.ID,
 		})
-		return err
+		return updateErr
 	}
-	_ = uc.redisCache.Del(ctx, PasswordResetKey(token))
-	_ = uc.redisCache.Del(ctx, UserResetIndexKey(userID))
+	_ = uc.redisCache.Del(ctx, ResetRequestKey(email))
 	if user.PasswordChangedAt != nil {
-		uc.recordTokenCutoff(ctx, userID, *user.PasswordChangedAt)
+		uc.recordTokenCutoff(ctx, user.ID, *user.PasswordChangedAt)
 	}
 	return nil
 }

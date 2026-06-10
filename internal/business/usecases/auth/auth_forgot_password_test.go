@@ -26,26 +26,19 @@ func TestForgotPassword(t *testing.T) {
 		wantErrType apperror.ErrorType
 	}{
 		{
-			name:  "happy path increments rate counter, persists token, queues email",
+			name:  "happy path increments rate counter, sends OTP via verify, stores request_id",
 			email: "patrick@example.com",
 			setup: func(f *fixture) {
 				f.redis.On("Incr", mock.Anything, "forgot_attempts:patrick@example.com").Return(int64(1), nil).Once()
 				f.redis.On("Expire", mock.Anything, "forgot_attempts:patrick@example.com", mock.AnythingOfType("time.Duration")).Return(nil).Once()
 				f.users.On("GetByEmail", mock.Anything, users.GetByEmailRequest{Email: "patrick@example.com"}).Return(users.GetByEmailResponse{User: activeUser(t)}, nil).Once()
-				f.redis.On("Get", mock.Anything, "pwd_reset_user:user-1").Return("", nil).Once()
-				f.redis.On("Set", mock.Anything, mock.MatchedBy(func(k string) bool {
-					return len(k) > len("pwd_reset:") && k[:len("pwd_reset:")] == "pwd_reset:"
-				}), "user-1").Return(nil).Once()
-				f.redis.On("Expire", mock.Anything, mock.MatchedBy(func(k string) bool {
-					return len(k) > len("pwd_reset:") && k[:len("pwd_reset:")] == "pwd_reset:"
-				}), mock.AnythingOfType("time.Duration")).Return(nil).Once()
-				f.redis.On("Set", mock.Anything, "pwd_reset_user:user-1", mock.AnythingOfType("string")).Return(nil).Once()
-				f.redis.On("Expire", mock.Anything, "pwd_reset_user:user-1", mock.AnythingOfType("time.Duration")).Return(nil).Once()
-				f.mailer.On("SendPasswordReset", mock.Anything, mock.AnythingOfType("string"), "patrick@example.com").Return(nil).Once()
+				f.verifier.On("Send", mock.Anything, "patrick@example.com", "").Return("gcv_reset", nil).Once()
+				f.redis.On("Set", mock.Anything, "pwd_reset_req:patrick@example.com", "gcv_reset").Return(nil).Once()
+				f.redis.On("Expire", mock.Anything, "pwd_reset_req:patrick@example.com", mock.AnythingOfType("time.Duration")).Return(nil).Once()
 			},
 		},
 		{
-			// Тодорхойгүй email нь 200 OK буцааж, адил хэлбэрийн Redis үйлдлүүдээр дамждаг тул цаг хугацаа нь тодорхой-email-ийн замаас ялгагдашгүй байдаг.
+			// Тодорхойгүй email-д код илгээхгүй, ижил nil буцаана (enumeration таслах).
 			name:  "unknown email increments counter but is swallowed silently",
 			email: "ghost@example.com",
 			setup: func(f *fixture) {
@@ -53,15 +46,6 @@ func TestForgotPassword(t *testing.T) {
 				f.redis.On("Expire", mock.Anything, "forgot_attempts:ghost@example.com", mock.AnythingOfType("time.Duration")).Return(nil).Once()
 				f.users.On("GetByEmail", mock.Anything, users.GetByEmailRequest{Email: "ghost@example.com"}).
 					Return(users.GetByEmailResponse{}, apperror.NotFound("email not found")).Once()
-				f.redis.On("Set", mock.Anything, mock.MatchedBy(func(k string) bool {
-					return len(k) > len("pwd_reset:") && k[:len("pwd_reset:")] == "pwd_reset:"
-				}), "decoy").Return(nil).Once()
-				f.redis.On("Expire", mock.Anything, mock.MatchedBy(func(k string) bool {
-					return len(k) > len("pwd_reset:") && k[:len("pwd_reset:")] == "pwd_reset:"
-				}), mock.AnythingOfType("time.Duration")).Return(nil).Once()
-				f.redis.On("Del", mock.Anything, mock.MatchedBy(func(k string) bool {
-					return len(k) > len("pwd_reset:") && k[:len("pwd_reset:")] == "pwd_reset:"
-				})).Return(nil).Once()
 			},
 		},
 		{

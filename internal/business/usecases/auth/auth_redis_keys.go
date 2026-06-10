@@ -30,6 +30,12 @@ func UserOTPKey(email string) string {
 	return fmt.Sprintf("%s%s", prefixUserOTP, email)
 }
 
+// ResetRequestKey нь нууц үг сэргээх OTP-ийн GeregeCloud Verify request_id-г
+// email тус бүрд хадгална (ResetPassword /check-д ашиглана).
+func ResetRequestKey(email string) string {
+	return fmt.Sprintf("pwd_reset_req:%s", email)
+}
+
 // OTPAttemptsKey нь email тус бүрийн амжилтгүй VerifyOTP оролдлогуудыг тоолно.
 func OTPAttemptsKey(email string) string {
 	return fmt.Sprintf("%s%s", prefixOTPAttempts, email)

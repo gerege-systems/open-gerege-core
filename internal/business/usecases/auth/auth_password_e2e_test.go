@@ -88,10 +88,10 @@ func TestE2E_ForgotPassword_ResetUnlocksLogin(t *testing.T) {
 	register(t, fix, "forgot@example.com", "Old_Pwd_123!")
 
 	require.NoError(t, fix.Auth.ForgotPassword(ctx, auth.ForgotPasswordRequest{Email: "forgot@example.com"}))
-	resetToken := fix.Mailer.LastOTP(t, "forgot@example.com")
-	require.NotEmpty(t, resetToken)
+	resetCode := fix.Verifier.LastCode(t, "forgot@example.com")
+	require.NotEmpty(t, resetCode)
 
-	require.NoError(t, fix.Auth.ResetPassword(ctx, auth.ResetPasswordRequest{Token: resetToken, NewPassword: "Reset_Pwd_789!"}))
+	require.NoError(t, fix.Auth.ResetPassword(ctx, auth.ResetPasswordRequest{Email: "forgot@example.com", Code: resetCode, NewPassword: "Reset_Pwd_789!"}))
 
 	_, err := fix.Auth.Login(ctx, auth.LoginRequest{Email: "forgot@example.com", Password: "Old_Pwd_123!"})
 	require.Error(t, err)
@@ -115,11 +115,11 @@ func TestE2E_ResetPassword_TokenIsSingleUse(t *testing.T) {
 	register(t, fix, "su@example.com", "Old_Pwd_123!")
 
 	require.NoError(t, fix.Auth.ForgotPassword(ctx, auth.ForgotPasswordRequest{Email: "su@example.com"}))
-	resetToken := fix.Mailer.LastOTP(t, "su@example.com")
+	resetCode := fix.Verifier.LastCode(t, "su@example.com")
 
-	require.NoError(t, fix.Auth.ResetPassword(ctx, auth.ResetPasswordRequest{Token: resetToken, NewPassword: "First_Reset_123!"}))
+	require.NoError(t, fix.Auth.ResetPassword(ctx, auth.ResetPasswordRequest{Email: "su@example.com", Code: resetCode, NewPassword: "First_Reset_123!"}))
 
-	err := fix.Auth.ResetPassword(ctx, auth.ResetPasswordRequest{Token: resetToken, NewPassword: "Second_Reset_456!"})
+	err := fix.Auth.ResetPassword(ctx, auth.ResetPasswordRequest{Email: "su@example.com", Code: resetCode, NewPassword: "Second_Reset_456!"})
 	require.Error(t, err)
 	var domErr *apperror.DomainError
 	require.True(t, errors.As(err, &domErr))

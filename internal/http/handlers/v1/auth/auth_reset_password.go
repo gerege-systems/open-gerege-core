@@ -50,7 +50,8 @@ func (h Handler) ResetPassword(w http.ResponseWriter, r *http.Request) error {
 			"file":       fileName,
 			"error":      err.Error(),
 			"request": logger.Fields{
-				"has_token":        req.Token != "",
+				"email":            req.Email,
+				"has_code":         req.Code != "",
 				"has_new_password": req.NewPassword != "",
 			},
 		})
@@ -58,7 +59,8 @@ func (h Handler) ResetPassword(w http.ResponseWriter, r *http.Request) error {
 	}
 
 	if err := h.usecase.ResetPassword(ctx, authuc.ResetPasswordRequest{
-		Token:       req.Token,
+		Email:       req.Email,
+		Code:        req.Code,
 		NewPassword: req.NewPassword,
 	}); err != nil {
 		ev := auditFromRequest(r)

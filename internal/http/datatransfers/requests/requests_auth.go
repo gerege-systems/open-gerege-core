@@ -64,8 +64,11 @@ type ForgotPasswordRequest struct {
 	Email string `json:"email" validate:"required,email,max=50"`
 }
 
-// ResetPasswordRequest нь POST /auth/password/reset-ийн body юм.
+// ResetPasswordRequest нь POST /auth/password/reset-ийн body юм. Нууц үг
+// сэргээх нь GeregeCloud Verify OTP-аар явдаг тул токены оронд email + код
+// шаардана.
 type ResetPasswordRequest struct {
-	Token       string `json:"token" validate:"required"`
+	Email       string `json:"email" validate:"required,email,max=50"`
+	Code        string `json:"code" validate:"required"`
 	NewPassword string `json:"new_password" validate:"required,min=12,max=72,strongpassword"`
 }

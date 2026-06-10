@@ -144,19 +144,19 @@ func TestForgotPasswordHandler(t *testing.T) {
 func TestResetPasswordHandler(t *testing.T) {
 	t.Run("happy path returns 200", func(t *testing.T) {
 		h := newAuthHarness(t)
-		h.uc.On("ResetPassword", mock.Anything, authuc.ResetPasswordRequest{Token: "tok-1", NewPassword: "Newpwd_9999!"}).Return(nil).Once()
+		h.uc.On("ResetPassword", mock.Anything, authuc.ResetPasswordRequest{Email: "patrick@example.com", Code: "123456", NewPassword: "Newpwd_9999!"}).Return(nil).Once()
 		rec := doJSON(t, h, "POST", "/password/reset", map[string]string{
-			"token": "tok-1", "new_password": "Newpwd_9999!",
+			"email": "patrick@example.com", "code": "123456", "new_password": "Newpwd_9999!",
 		})
 		assert.Equal(t, http.StatusOK, rec.Code)
 	})
 
-	t.Run("invalid token returns 401", func(t *testing.T) {
+	t.Run("invalid code returns 401", func(t *testing.T) {
 		h := newAuthHarness(t)
-		h.uc.On("ResetPassword", mock.Anything, authuc.ResetPasswordRequest{Token: "stale", NewPassword: "Newpwd_9999!"}).
-			Return(apperror.Unauthorized("reset token is invalid or expired")).Once()
+		h.uc.On("ResetPassword", mock.Anything, authuc.ResetPasswordRequest{Email: "patrick@example.com", Code: "999999", NewPassword: "Newpwd_9999!"}).
+			Return(apperror.Unauthorized("reset code is invalid or expired")).Once()
 		rec := doJSON(t, h, "POST", "/password/reset", map[string]string{
-			"token": "stale", "new_password": "Newpwd_9999!",
+			"email": "patrick@example.com", "code": "999999", "new_password": "Newpwd_9999!",
 		})
 		assert.Equal(t, http.StatusUnauthorized, rec.Code)
 	})
