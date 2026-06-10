@@ -32,6 +32,7 @@ import (
 	"template/pkg/logger"
 	"template/pkg/mailer"
 	"template/pkg/observability"
+	"template/pkg/verify"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -136,7 +137,9 @@ func NewApp() (*App, error) {
 	usersUC := users.NewUsecase(userRepo, ristrettoCache, users.Config{
 		BcryptCost: config.AppConfig.BcryptCost,
 	})
-	authUC := auth.NewUsecase(usersUC, jwtService, asyncMailer, redisCache, auth.Config{
+	// GeregeCloud Verify API — OTP send/check.
+	verifier := verify.NewClient(config.AppConfig.VerifyAPIBase, config.AppConfig.VerifyAPIKey, config.AppConfig.VerifyChannel)
+	authUC := auth.NewUsecase(usersUC, jwtService, asyncMailer, verifier, redisCache, auth.Config{
 		OTPMaxAttempts:    config.AppConfig.OTPMaxAttempts,
 		OTPTTL:            time.Duration(config.AppConfig.REDISExpired) * time.Minute,
 		PasswordResetTTL:  30 * time.Minute,

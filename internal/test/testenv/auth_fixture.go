@@ -7,6 +7,7 @@ package testenv
 
 import (
 	"context"
+	"fmt"
 	"sync"
 	"testing"
 	"time"
@@ -17,7 +18,9 @@ import (
 	"template/internal/config"
 	"template/internal/datasources/caches"
 	userspostgres "template/internal/datasources/repositories/postgres/users"
+	"template/pkg/helpers"
 	"template/pkg/jwt"
+	"template/pkg/verify"
 )
 
 // AuthFixture нь end-to-end тестүүдэд ашиглагддаг бүрэн холбогдсон auth
@@ -30,10 +33,61 @@ import (
 // Auth, хэрэглэгчийн бичлэгүүдийг шууд унших эсвэл өөрчлөх шаардлагатай
 // аливаа тохиргоо / баталгаажуулалтын алхамд Users.
 type AuthFixture struct {
-	Auth   auth.Usecase
-	Users  users.Usecase
-	Mailer *CapturingMailer
-	JWT    jwt.JWTService
+	Auth     auth.Usecase
+	Users    users.Usecase
+	Mailer   *CapturingMailer
+	Verifier *FakeVerifier
+	JWT      jwt.JWTService
+}
+
+// FakeVerifier нь verify.Sender-г локалаар хангадаг — real gecloud API-руу
+// алхдаггүй. Send нь 6 оронтой код + request_id үүсгэж барьж авдаг тул
+// тестүүд LastCode-оор кодыг гаргаж VerifyOTP руу буцаан өгнө; Check нь
+// тэр request_id-ийн кодтой тулгаж шалгана.
+type FakeVerifier struct {
+	mu         sync.Mutex
+	byRequest  map[string]string // request_id → code
+	byReceiver map[string]string // receiver → last code
+	seq        int
+}
+
+func (v *FakeVerifier) Send(_ context.Context, to, _ string) (string, error) {
+	v.mu.Lock()
+	defer v.mu.Unlock()
+	if v.byRequest == nil {
+		v.byRequest = map[string]string{}
+		v.byReceiver = map[string]string{}
+	}
+	code, err := helpers.GenerateOTPCode(6)
+	if err != nil {
+		return "", err
+	}
+	v.seq++
+	reqID := fmt.Sprintf("gcv_fake_%d", v.seq)
+	v.byRequest[reqID] = code
+	v.byReceiver[to] = code
+	return reqID, nil
+}
+
+func (v *FakeVerifier) Check(_ context.Context, requestID, code string) error {
+	v.mu.Lock()
+	defer v.mu.Unlock()
+	if want, ok := v.byRequest[requestID]; !ok || want != code {
+		return verify.ErrNotApproved
+	}
+	return nil
+}
+
+// LastCode нь хүлээн авагчид зориулж сүүлд үүсгэсэн OTP-г буцаана.
+func (v *FakeVerifier) LastCode(t *testing.T, receiver string) string {
+	t.Helper()
+	v.mu.Lock()
+	defer v.mu.Unlock()
+	if code, ok := v.byReceiver[receiver]; ok {
+		return code
+	}
+	t.Fatalf("no OTP captured for %s", receiver)
+	return ""
 }
 
 // CapturingMailer нь OTP+хүлээн авагч хос бүрийг бүртгэдэг тул тестүүд
@@ -117,11 +171,12 @@ func NewAuthFixture(t *testing.T) *AuthFixture {
 	)
 
 	mailer := &CapturingMailer{}
+	verifier := &FakeVerifier{}
 	repo := userspostgres.NewUserRepository(db)
 	usersUC := users.NewUsecase(repo, ristretto, users.Config{
 		BcryptCost: config.AppConfig.BcryptCost,
 	})
-	authUC := auth.NewUsecase(usersUC, jwtSvc, mailer, redis, auth.Config{
+	authUC := auth.NewUsecase(usersUC, jwtSvc, mailer, verifier, redis, auth.Config{
 		OTPMaxAttempts:    5,
 		OTPTTL:            5 * time.Minute,
 		PasswordResetTTL:  30 * time.Minute,
@@ -133,9 +188,10 @@ func NewAuthFixture(t *testing.T) *AuthFixture {
 	})
 
 	return &AuthFixture{
-		Auth:   authUC,
-		Users:  usersUC,
-		Mailer: mailer,
-		JWT:    jwtSvc,
+		Auth:     authUC,
+		Users:    usersUC,
+		Mailer:   mailer,
+		Verifier: verifier,
+		JWT:      jwtSvc,
 	}
 }

@@ -38,8 +38,16 @@ type Config struct {
 	OTPMaxAttempts int    `mapstructure:"OTP_MAX_ATTEMPTS"`
 
 	// SMTP relay — хоосон бол Gmail-ийн анхдагч (smtp.gmail.com:587).
+	// Зөвхөн нууц үг мартсан (reset) имэйлд ашиглагдана; OTP нь Verify API-аар явна.
 	OTPSMTPHost string `mapstructure:"OTP_SMTP_HOST"`
 	OTPSMTPPort int    `mapstructure:"OTP_SMTP_PORT"`
+
+	// GeregeCloud Verify API (verify.gecloud.mn) — OTP send/check. VERIFY_API_KEY
+	// хоосон бол OTP илгээх үед алдаа гарна (template нь gecloud-гүйгээр boot
+	// хийгдэх боломжтой хэвээр).
+	VerifyAPIBase string `mapstructure:"VERIFY_API_BASE"`
+	VerifyAPIKey  string `mapstructure:"VERIFY_API_KEY"`
+	VerifyChannel string `mapstructure:"VERIFY_CHANNEL"`
 
 	MailerWorkers   int `mapstructure:"MAILER_WORKERS"`
 	MailerQueueSize int `mapstructure:"MAILER_QUEUE_SIZE"`
