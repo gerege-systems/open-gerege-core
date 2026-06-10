@@ -55,6 +55,12 @@ type Config struct {
 	REDISPassword string `mapstructure:"REDIS_PASS"`
 	REDISExpired  int    `mapstructure:"REDIS_EXPIRED"`
 
+	// ObservabilityToken нь production-д /metrics ба /swagger/doc.json
+	// операторын endpoint-уудыг хамгаалах bearer token. Хоосон бол эдгээр
+	// endpoint production-д 404 буцаана (бүрэн хаалттай). development-д
+	// token хамаагүй — үргэлж нээлттэй (ObservabilityGate-г үз).
+	ObservabilityToken string `mapstructure:"OBSERVABILITY_TOKEN"`
+
 	AllowedOrigins string `mapstructure:"ALLOWED_ORIGINS"`
 
 	// TrustedProxies нь итгэмжит урвуу proxy-гийн IP/CIDR жагсаалт

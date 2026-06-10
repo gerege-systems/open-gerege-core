@@ -15,8 +15,7 @@ const (
 	prefixOTPAttempts    = "otp_attempts:"
 	prefixLoginAttempts  = "login_attempts:"
 	prefixForgotAttempts = "forgot_attempts:"
-	prefixPasswordReset  = "pwd_reset:"
-	prefixUserResetIndex = "pwd_reset_user:"
+	prefixResetRequest   = "pwd_reset_req:"
 	prefixPasswordCutoff = "pwd_cutoff:"
 )
 
@@ -33,7 +32,7 @@ func UserOTPKey(email string) string {
 // ResetRequestKey нь нууц үг сэргээх OTP-ийн GeregeCloud Verify request_id-г
 // email тус бүрд хадгална (ResetPassword /check-д ашиглана).
 func ResetRequestKey(email string) string {
-	return fmt.Sprintf("pwd_reset_req:%s", email)
+	return fmt.Sprintf("%s%s", prefixResetRequest, email)
 }
 
 // OTPAttemptsKey нь email тус бүрийн амжилтгүй VerifyOTP оролдлогуудыг тоолно.
@@ -50,19 +49,6 @@ func LoginAttemptsKey(email string) string {
 // ForgotAttemptsKey нь email тус бүрд /password/forgot-ийг rate-limit хийнэ.
 func ForgotAttemptsKey(email string) string {
 	return fmt.Sprintf("%s%s", prefixForgotAttempts, email)
-}
-
-// PasswordResetKey нь нэг удаагийн reset токены user ID-г хадгална; токен өөрөө
-// дагавар (suffix) болдог.
-func PasswordResetKey(token string) string {
-	return fmt.Sprintf("%s%s", prefixPasswordReset, token)
-}
-
-// UserResetIndexKey нь user ID-аас одоо хүчинтэй байгаа токен руу чиглэсэн,
-// хэрэглэгч тус бүрийн урвуу индекс юм. Шинэ reset холбоос олгох нь өмнөх
-// амьд токеныг хүчингүй болгох зорилгоор ашиглагдана.
-func UserResetIndexKey(userID string) string {
-	return fmt.Sprintf("%s%s", prefixUserResetIndex, userID)
 }
 
 // TokenCutoffKey нь энэ хэрэглэгчид олгогдсон аливаа access токеныг хүчингүй

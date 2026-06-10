@@ -29,25 +29,30 @@ func (r *postgreUserRepository) Store(ctx context.Context, inDom *domain.User) (
 	// INSERT ... RETURNING * — ингэснээр дуудагч хадгалагдсан мөрийг нэг
 	// round-trip-д авна. id нь uuid_generate_v4() баганын өгөгдмөл утгаар
 	// (SQL migration-уудаар бэлтгэгдсэн) сервер талд үүсгэгддэг.
-	rows, err := r.pool.Query(ctx, `
-		INSERT INTO users(id, username, email, password, active, role_id, created_at)
-		VALUES (uuid_generate_v4(), $1, $2, $3, false, $4, $5)
-		RETURNING `+records.UserColumns+`
-	`, userRecord.Username, userRecord.Email, userRecord.Password, userRecord.RoleId, userRecord.CreatedAt)
-	if err == nil {
-		var stored records.Users
-		stored, err = pgx.CollectExactlyOneRow(rows, pgx.RowToStructByName[records.Users])
-		if err == nil {
-			if stored.Id == "" {
-				e := fmt.Errorf("insert succeeded but RETURNING produced no row")
-				logger.ErrorWithContext(ctx, "Insert returned no row", logger.Fields{
-					"repository": repositoryName, "method": funcName, "query": queryName,
-					"file": fileName, "error": e.Error(), "table": "users",
-				})
-				return domain.User{}, e
-			}
-			return stored.ToV1Domain(), nil
+	var stored records.Users
+	err := r.withRLS(ctx, func(tx pgx.Tx) error {
+		rows, qErr := tx.Query(ctx, `
+			INSERT INTO users(id, username, email, password, active, role_id, created_at)
+			VALUES (uuid_generate_v4(), $1, $2, $3, false, $4, $5)
+			RETURNING `+records.UserColumns+`
+		`, userRecord.Username, userRecord.Email, userRecord.Password, userRecord.RoleId, userRecord.CreatedAt)
+		if qErr != nil {
+			return qErr
 		}
+		var scanErr error
+		stored, scanErr = pgx.CollectExactlyOneRow(rows, pgx.RowToStructByName[records.Users])
+		return scanErr
+	})
+	if err == nil {
+		if stored.Id == "" {
+			e := fmt.Errorf("insert succeeded but RETURNING produced no row")
+			logger.ErrorWithContext(ctx, "Insert returned no row", logger.Fields{
+				"repository": repositoryName, "method": funcName, "query": queryName,
+				"file": fileName, "error": e.Error(), "table": "users",
+			})
+			return domain.User{}, e
+		}
+		return stored.ToV1Domain(), nil
 	}
 
 	// 23505 unique_violation-г 409 Conflict болгон буулгана.

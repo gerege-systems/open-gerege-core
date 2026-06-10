@@ -10,6 +10,8 @@ import (
 	"template/internal/business/domain"
 	"template/internal/datasources/records"
 	"template/pkg/logger"
+
+	"github.com/jackc/pgx/v5"
 )
 
 func (r *postgreUserRepository) ChangeActiveUser(ctx context.Context, inDom *domain.User) (err error) {
@@ -22,9 +24,12 @@ func (r *postgreUserRepository) ChangeActiveUser(ctx context.Context, inDom *dom
 	userRecord := records.FromUsersV1Domain(inDom)
 
 	// `deleted_at IS NULL` нь UPDATE-г амьд мөрүүдээр хязгаарлана.
-	_, err = r.pool.Exec(ctx,
-		`UPDATE users SET active = $1, updated_at = $2 WHERE id = $3 AND deleted_at IS NULL`,
-		userRecord.Active, time.Now().UTC(), userRecord.Id)
+	err = r.withRLS(ctx, func(tx pgx.Tx) error {
+		_, execErr := tx.Exec(ctx,
+			`UPDATE users SET active = $1, updated_at = $2 WHERE id = $3 AND deleted_at IS NULL`,
+			userRecord.Active, time.Now().UTC(), userRecord.Id)
+		return execErr
+	})
 	if err != nil {
 		logger.ErrorWithContext(ctx, "Failed to update user active flag", logger.Fields{
 			"repository": repositoryName, "method": funcName, "query": queryName,

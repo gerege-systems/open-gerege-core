@@ -32,11 +32,12 @@ type Usecase interface {
 	// ChangePassword нь баталгаажсан хэрэглэгчийн нууц үгийг солино.
 	// Session булаах (hijacking)-ийг таслан зогсоохын тулд одоогийн нууц үгийг шаарддаг.
 	ChangePassword(ctx context.Context, req ChangePasswordRequest) error
-	// ForgotPassword нь тунгалаг бус (opaque) токеныг email-ээр илгээж нууц үг
+	// ForgotPassword нь GeregeCloud Verify-ээр email рүү OTP код илгээж нууц үг
 	// шинэчлэх урсгалыг эхлүүлнэ. Хэрэглэгчийн тооллогыг (enumeration) таслахын
 	// тулд тодорхойгүй email-д үргэлж nil буцаана.
 	ForgotPassword(ctx context.Context, req ForgotPasswordRequest) error
-	// ResetPassword нь шинэчлэх токеныг хэрэглэж, шинэ нууц үгийг тохируулна.
+	// ResetPassword нь email рүү илгээсэн OTP кодыг Verify-ээр баталгаажуулж,
+	// шинэ нууц үгийг тохируулна.
 	ResetPassword(ctx context.Context, req ResetPasswordRequest) error
 }
 

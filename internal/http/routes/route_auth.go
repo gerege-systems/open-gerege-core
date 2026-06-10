@@ -45,6 +45,11 @@ func (rt *authRoute) Routes() {
 		// IP тус бүрт минутанд 5 хүсэлт зөвшөөрнө.
 		r.Use(rt.rateLimiter.Middleware())
 		r.Use(middlewares.BodySizeLimitMiddleware(middlewares.AuthBodyMaxBytes))
+		// RLS: нэвтрэхээс өмнөх урсгалууд (login email хайлт, register INSERT,
+		// OTP, нууц үг сэргээх) баталгаажаагүй хэрэглэгчийн мөрд хандах тул
+		// "service" identity тавина. /password/change-ийн authMiddleware дараа
+		// нь ажиллаж user identity-гээр дарж бичнэ (least-privilege).
+		r.Use(middlewares.ServiceRLSContext())
 
 		r.Post("/register", v1.Wrap(rt.handler.Register))
 		r.Post("/login", v1.Wrap(rt.handler.Login))

@@ -24,14 +24,19 @@ func (r *postgreUserRepository) GetByID(ctx context.Context, id string) (domain.
 	)
 	// Soft-delete хийгдсэн мөрүүдийг ИЛ-ээр хас (GORM-ийн автомат scope
 	// байхгүй болсон).
-	rows, err := r.pool.Query(ctx,
-		`SELECT `+records.UserColumns+` FROM users WHERE id = $1 AND deleted_at IS NULL`, id)
-	if err == nil {
-		var stored records.Users
-		stored, err = pgx.CollectExactlyOneRow(rows, pgx.RowToStructByName[records.Users])
-		if err == nil {
-			return stored.ToV1Domain(), nil
+	var stored records.Users
+	err := r.withRLS(ctx, func(tx pgx.Tx) error {
+		rows, qErr := tx.Query(ctx,
+			`SELECT `+records.UserColumns+` FROM users WHERE id = $1 AND deleted_at IS NULL`, id)
+		if qErr != nil {
+			return qErr
 		}
+		var scanErr error
+		stored, scanErr = pgx.CollectExactlyOneRow(rows, pgx.RowToStructByName[records.Users])
+		return scanErr
+	})
+	if err == nil {
+		return stored.ToV1Domain(), nil
 	}
 	if errors.Is(err, pgx.ErrNoRows) {
 		return domain.User{}, apperror.NotFound("user not found")

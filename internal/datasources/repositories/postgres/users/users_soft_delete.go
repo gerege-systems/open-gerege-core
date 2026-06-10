@@ -9,6 +9,9 @@ import (
 
 	"template/internal/apperror"
 	"template/pkg/logger"
+
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
 )
 
 func (r *postgreUserRepository) SoftDelete(ctx context.Context, id string) error {
@@ -22,9 +25,14 @@ func (r *postgreUserRepository) SoftDelete(ctx context.Context, id string) error
 	// байлгана — аль хэдийн устгагдсан мөрийг алгасч, RowsAffected == 0
 	// гарна.
 	now := time.Now().UTC()
-	tag, err := r.pool.Exec(ctx,
-		`UPDATE users SET deleted_at = $1, updated_at = $1 WHERE id = $2 AND deleted_at IS NULL`,
-		now, id)
+	var tag pgconn.CommandTag
+	err := r.withRLS(ctx, func(tx pgx.Tx) error {
+		var execErr error
+		tag, execErr = tx.Exec(ctx,
+			`UPDATE users SET deleted_at = $1, updated_at = $1 WHERE id = $2 AND deleted_at IS NULL`,
+			now, id)
+		return execErr
+	})
 	if err != nil {
 		logger.ErrorWithContext(ctx, "Failed to soft-delete user", logger.Fields{
 			"repository": repositoryName, "method": funcName, "query": queryName,

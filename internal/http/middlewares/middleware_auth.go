@@ -12,6 +12,7 @@ import (
 	"template/internal/business/usecases/auth"
 	"template/internal/constants"
 	"template/internal/datasources/caches"
+	"template/internal/datasources/rls"
 	V1Handler "template/internal/http/handlers/v1"
 	"template/pkg/jwt"
 	"template/pkg/logger"
@@ -136,6 +137,14 @@ func (m *AuthMiddleware) Handle(next http.Handler) http.Handler {
 		}
 
 		ctx := context.WithValue(r.Context(), constants.CtxAuthenticatedUserKey, user)
+		// RLS: баталгаажсан хэрэглэгчийн identity-г DB давхаргад дамжуулна.
+		// Admin бол бүх мөр; энгийн хэрэглэгч зөвхөн өөрийн мөр
+		// (Postgres Row-Level Security бодлогоор хэрэгждэг).
+		if user.IsAdmin {
+			ctx = rls.WithAdmin(ctx, user.UserID)
+		} else {
+			ctx = rls.WithUser(ctx, user.UserID)
+		}
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }

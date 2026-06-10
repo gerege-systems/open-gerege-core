@@ -109,12 +109,17 @@ func NewApp() (*App, error) {
 
 	authMiddleware := middlewares.NewAuthMiddleware(jwtService, redisCache, false)
 
-	// Дэд бүтцийн endpoint-ууд (/api бүлгээс гадуур)
+	// Дэд бүтцийн endpoint-ууд (/api бүлгээс гадуур). /health, /ready нь
+	// load balancer / orchestrator-т хэрэгтэй тул нээлттэй хэвээр; харин
+	// /metrics, /swagger нь операторын мэдрэмжтэй endpoint тул production-д
+	// ObservabilityGate-аар (bearer token + 404) хаагдана.
 	healthHandler := V1Handler.NewHealthHandler(pool, redisCache.Client())
 	r.Get("/health", healthHandler.Health)
 	r.Get("/ready", healthHandler.Ready)
-	r.Handle("/metrics", promhttp.Handler())
-	r.Get("/swagger/doc.json", func(w http.ResponseWriter, _ *http.Request) {
+	isProduction := config.AppConfig.Environment == constants.EnvironmentProduction
+	obsGate := middlewares.ObservabilityGate(isProduction, config.AppConfig.ObservabilityToken)
+	r.With(obsGate).Handle("/metrics", promhttp.Handler())
+	r.With(obsGate).Get("/swagger/doc.json", func(w http.ResponseWriter, _ *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		_, _ = w.Write([]byte(docs.SwaggerInfo.ReadDoc()))
 	})

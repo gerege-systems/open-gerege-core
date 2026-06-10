@@ -19,13 +19,15 @@ what remains for later phases. To report a vulnerability, see the repository
 | Auth | Login lockout + per-account rate limit | `usecases/auth`, `middleware.ratelimit` | §1.5 |
 | Auth | Enumeration mitigation (timing-safe, generic msgs) | `usecases/auth.login`, `forgot_password` | §1.5 |
 | Crypto | `crypto/rand` everywhere; OTP rejection-sampled (no modulo bias) | `pkg/helpers/helper.otp_code_generator.go` | §13.2 |
-| AuthZ | Role check in domain (`IsAdmin`), per-request `CurrentUser` | `domain.users.go`, `http/auth` | §2 |
+| AuthZ | Role check in domain (`IsAdmin`), per-request `CurrentUser`, `RequireAdmin` route middleware | `domain.users.go`, `http/auth`, `middleware_rbac.go` | §2 |
 | DB | Parameterized queries only (pgx) | `datasources/repositories/postgres` | §3.1 |
 | DB | `INSERT … RETURNING` single round-trip; pgconn 23505 → Conflict | `repositories/postgres/users`, `driver_pgx.go` | §3 |
+| DB | Row-Level Security on `users` (ENABLE + **FORCE**): self/admin/service policies driven by `app.user_id`/`app.user_role` GUCs set per-transaction with `SET LOCAL` | `migrations/7_enable_rls_users.up.sql`, `datasources/rls`, `repositories/postgres/users` | §2.4/§3.3 |
 | API | Mass-assignment safe (explicit request DTOs) | `http/datatransfers/requests` | API3 §5.1 |
 | API | Body size limit (global + 4 KiB on `/auth`) | `middleware.bodysizelimit`, `routes` | §5.3 |
-| Web | Security headers: CSP `default-src 'none'`, HSTS (prod), nosniff, X-Frame DENY, Referrer-Policy, Permissions-Policy | `middleware.security.go` | §4.7 |
+| Web | Security headers: CSP `default-src 'none'`, HSTS (prod), nosniff, X-Frame DENY, Referrer-Policy, Permissions-Policy, COOP/CORP/COEP | `middleware_security.go` | §4.7 |
 | Web | CORS strict origin list, never `*`+credentials | `middleware.cors.go` | §4.8 |
+| Ops | Operator endpoints (`/metrics`, `/swagger/doc.json`) gated in prod: bearer token (constant-time) + 404 on miss | `middleware_observability_gate.go`, `cmd/api/server` | §4.7/§9 |
 | Obs | Structured Zap logs w/ request-id; no secrets logged | `pkg/logger`, `handler.base_response.go` | §9.1–9.2 |
 | Obs | OpenTelemetry tracing + Prometheus metrics | `pkg/observability`, `driver_pgx.go` | §9.4 |
 | Ops | Graceful shutdown (drain HTTP, rate-limiter, pgx pool, Redis, tracer) | `cmd/api/server` | §7 |
@@ -44,6 +46,19 @@ what remains for later phases. To report a vulnerability, see the repository
 4. **Swagger spec served from generated `docs` package** — the OpenAPI JSON is
    served at `/swagger/doc.json` from the generated `docs` package on the chi
    router (no Fiber involved); a static Swagger UI can be pointed at it.
+5. **Operator-endpoint gate** — `/metrics` and `/swagger/doc.json` no longer ship
+   publicly. In production `ObservabilityGate` requires `Authorization: Bearer
+   <OBSERVABILITY_TOKEN>` (compared with `crypto/subtle.ConstantTimeCompare`) and
+   returns **404** (not 401) on any miss, hiding the endpoints from recon. Empty
+   token ⇒ fully closed. `/health` + `/ready` stay public for load balancers.
+6. **Postgres RLS + DB role separation** — `users` now has RLS **ENABLE + FORCE**
+   with self/admin/service policies. Per-request identity flows from context into
+   each query via `SET LOCAL app.user_id`/`app.user_role` inside the repository's
+   `withRLS` transaction; no identity ⇒ zero rows (fail-closed). The compose
+   `api` connects as a non-superuser `APP_DB_USER` (created by
+   `deploy/initdb/10-create-app-user.sh`) so the policies actually enforce;
+   `migrate` keeps the superuser for DDL. Proven by an integration test that
+   connects as a non-superuser role (`users_rls_test.go`).
 
 ## ASVS roadmap status (guide §14)
 
@@ -63,12 +78,27 @@ what remains for later phases. To report a vulnerability, see the repository
 - **Leaked-password check (HIBP)** — guide §1.1; not yet wired (needs outbound
   call, config-gated, fail-open). Password story already meets the OWASP baseline
   (bcrypt cost 12 + ≥12 chars + complexity).
-- **Multi-tenancy / Postgres RLS** (guide §2.4/§3.3) — N/A: this template is
-  single-tenant. Add `tenant_id` + RLS if it becomes multi-tenant.
+- **Postgres RLS** (guide §2.4/§3.3) — ✅ enabled **and FORCED** on `users` with
+  self/admin/service policies driven by the `app.user_id`/`app.user_role` session
+  GUCs (`SET LOCAL` in `repositories/postgres/users.withRLS`). Defense-in-depth on
+  top of the `deleted_at IS NULL` / WHERE clauses the repository already writes; a
+  request with no identity is fail-closed. To go **multi-tenant**, add a
+  `tenant_id` column + tenant policy to each table and carry the tenant in
+  `rls.Identity`.
 - **Secrets manager / KMS** (guide §7.3) — use a real secret store in production;
   `.env` is local-dev only and gitignored.
-- **DB role separation** (guide §3.4) — run the app as a least-privilege
-  `app_user` (DML only), not a superuser, in production.
+- **DB role separation** (guide §3.4) — ✅ **wired into the compose stack** (it is
+  required: RLS, even FORCEd, is bypassed by superusers / BYPASSRLS roles, and the
+  postgres image makes `POSTGRES_USER` a superuser). On first DB init,
+  `deploy/initdb/10-create-app-user.sh` creates a **non-superuser** role
+  `APP_DB_USER` (`NOSUPERUSER NOBYPASSRLS`) and grants it DML via default
+  privileges. The **api** connects as that role (compose sets `DB_POSTGRE_URL`
+  from `APP_DB_URL`), so RLS enforces; the **migrate** container keeps using
+  `POSTGRES_USER` (needs superuser for `CREATE EXTENSION "uuid-ossp"` + RLS DDL).
+  Sanity check from the api's connection:
+  `SELECT rolsuper, rolbypassrls FROM pg_roles WHERE rolname = current_user;` —
+  both must be `false`. If `APP_DB_URL` is left at the superuser, RLS is *not*
+  enforced (it silently becomes a no-op).
 
 ---
 

@@ -54,17 +54,22 @@ func (r *postgreUserRepository) List(ctx context.Context, filter repointerface.U
 	sql += fmt.Sprintf(` ORDER BY created_at DESC LIMIT $%d OFFSET $%d`, n, n+1)
 	args = append(args, limit, offset)
 
-	rows, err := r.pool.Query(ctx, sql, args...)
-	if err == nil {
-		var stored []records.Users
-		stored, err = pgx.CollectRows(rows, pgx.RowToStructByName[records.Users])
-		if err == nil {
-			out := make([]domain.User, 0, len(stored))
-			for i := range stored {
-				out = append(out, stored[i].ToV1Domain())
-			}
-			return out, nil
+	var stored []records.Users
+	err := r.withRLS(ctx, func(tx pgx.Tx) error {
+		rows, qErr := tx.Query(ctx, sql, args...)
+		if qErr != nil {
+			return qErr
 		}
+		var scanErr error
+		stored, scanErr = pgx.CollectRows(rows, pgx.RowToStructByName[records.Users])
+		return scanErr
+	})
+	if err == nil {
+		out := make([]domain.User, 0, len(stored))
+		for i := range stored {
+			out = append(out, stored[i].ToV1Domain())
+		}
+		return out, nil
 	}
 	logger.ErrorWithContext(ctx, "Failed to list users", logger.Fields{
 		"repository": repositoryName, "method": funcName, "query": queryName,
