@@ -14,6 +14,26 @@ import (
 
 const RequestIDHeader = "X-Request-ID"
 
+// maxRequestIDLen нь клиентийн өгсөн X-Request-ID-ийн зөвшөөрөгдөх дээд урт.
+const maxRequestIDLen = 128
+
+// validRequestID нь клиентийн өгсөн корреляцийн ID-г баталгаажуулна —
+// log-flooding / log-injection (terminal escape, parser хуурах)-аас
+// сэргийлж урт болон тэмдэгтийн багцыг хязгаарлана.
+func validRequestID(s string) bool {
+	if len(s) == 0 || len(s) > maxRequestIDLen {
+		return false
+	}
+	for _, c := range s {
+		switch {
+		case c >= 'a' && c <= 'z', c >= 'A' && c <= 'Z', c >= '0' && c <= '9', c == '-', c == '_':
+		default:
+			return false
+		}
+	}
+	return true
+}
+
 // RequestIDMiddleware нь ирж буй X-Request-ID-г хүлээж авна (эсвэл
 // байхгүй бол UUID үүсгэдэг), хариунд буцаан тусгаж, хүсэлтийн context руу
 // хоёр корреляцийн ID-г гүүрлэдэг тул logger.*WithContext нь тэдгээрийг log
@@ -31,7 +51,7 @@ func RequestIDMiddleware() func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			requestID := r.Header.Get(RequestIDHeader)
-			if requestID == "" {
+			if !validRequestID(requestID) {
 				requestID = uuid.New().String()
 			}
 

@@ -11,6 +11,9 @@ import (
 
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/redis/go-redis/v9"
+
+	"template/internal/constants"
+	"template/pkg/logger"
 )
 
 type HealthHandler struct {
@@ -42,9 +45,14 @@ func (h HealthHandler) Ready(w http.ResponseWriter, r *http.Request) {
 	checks := map[string]string{}
 	healthy := true
 
-	// өгөгдлийн санг шалга — pgx pool-ийн ping.
+	// өгөгдлийн санг шалга — pgx pool-ийн ping. Бодит алдааг зөвхөн логд
+	// бичнэ; хариунд driver/host detail гаргахгүй (мэдээлэл задлахаас сэргийлж).
 	if err := h.pool.Ping(ctx); err != nil {
-		checks["database"] = "unreachable: " + err.Error()
+		logger.ErrorWithContext(ctx, "readiness: database unreachable", logger.Fields{
+			constants.LoggerCategory: constants.LoggerCategoryDatabase,
+			"error":                  err.Error(),
+		})
+		checks["database"] = "unreachable"
 		healthy = false
 	} else {
 		checks["database"] = "ok"
@@ -53,7 +61,11 @@ func (h HealthHandler) Ready(w http.ResponseWriter, r *http.Request) {
 	// redis-г шалга
 	if h.redisClient != nil {
 		if err := h.redisClient.Ping(ctx).Err(); err != nil {
-			checks["redis"] = "unreachable: " + err.Error()
+			logger.ErrorWithContext(ctx, "readiness: redis unreachable", logger.Fields{
+				constants.LoggerCategory: constants.LoggerCategoryCache,
+				"error":                  err.Error(),
+			})
+			checks["redis"] = "unreachable"
 			healthy = false
 		} else {
 			checks["redis"] = "ok"

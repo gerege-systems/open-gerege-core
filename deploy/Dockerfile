@@ -34,6 +34,12 @@ RUN --mount=type=cache,target=/go/pkg/mod \
     --mount=type=cache,target=/root/.cache/go-build \
     go build -trimpath -ldflags="-s -w" -o /out/migrate ./cmd/migration
 
+# Жижиг health-probe binary — distroless-д shell/wget байхгүй тул HEALTHCHECK
+# энэ binary-г ажиллуулна (/health → exit 0/1).
+RUN --mount=type=cache,target=/go/pkg/mod \
+    --mount=type=cache,target=/root/.cache/go-build \
+    go build -trimpath -ldflags="-s -w" -o /out/healthcheck ./cmd/healthcheck
+
 # ---------- runtime ----------
 # Distroless static: no shell, no package manager, nonroot user baked in.
 # ~2 MB base vs ~8 MB for alpine. No apt/apk surface to patch either.
@@ -41,8 +47,9 @@ FROM gcr.io/distroless/static-debian12:nonroot
 
 WORKDIR /app
 
-COPY --from=builder /out/api      /app/api
-COPY --from=builder /out/migrate  /app/migrate
+COPY --from=builder /out/api         /app/api
+COPY --from=builder /out/migrate     /app/migrate
+COPY --from=builder /out/healthcheck /app/healthcheck
 # migrate reads SQL from "migrations" relative to its CWD (/app); the files
 # live at the module root backend/migrations/.
 COPY --from=builder /app/migrations /app/migrations
@@ -50,5 +57,9 @@ COPY --from=builder /app/migrations /app/migrations
 USER nonroot:nonroot
 
 EXPOSE 8080
+
+# Distroless-д зориулсан container-түвшний readiness probe.
+HEALTHCHECK --interval=15s --timeout=3s --start-period=20s --retries=3 \
+    CMD ["/app/healthcheck"]
 
 ENTRYPOINT ["/app/api"]

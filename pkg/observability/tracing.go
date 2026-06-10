@@ -21,7 +21,7 @@ import (
 // TracerName нь дуудагчид глобал provider-ээс tracer авахдаа ашиглах ёстой
 // import зам бөгөөд ингэснээр энэ төслөөс ялгарах span бүр ижил
 // instrumentation library шошготой болно.
-const TracerName = "template"
+const TracerName = "gerege-template"
 
 // TracingConfig нь tracer-provider байгуулалтыг удирдана. Тэг утга нь no-op
 // tracer (sampler=never, exporter байхгүй)-ийг өгдөг бөгөөд тест болон OTel

@@ -36,7 +36,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-const serviceName = "go-rest-boilerplate"
+const serviceName = "gerege-template"
 
 type App struct {
 	server          *http.Server
@@ -94,7 +94,7 @@ func NewApp() (*App, error) {
 
 	// mailer — синхрон SMTP илгээгчийг асинхрон дараалалд боож, OTP
 	// илгээх хоцролтыг HTTP хүсэлтийн замаас гаргана.
-	syncMailer := mailer.NewOTPMailer(config.AppConfig.OTPEmail, config.AppConfig.OTPPassword)
+	syncMailer := mailer.NewOTPMailer(config.AppConfig.OTPEmail, config.AppConfig.OTPPassword, config.AppConfig.OTPSMTPHost, config.AppConfig.OTPSMTPPort)
 	asyncMailer := mailer.NewAsyncOTPMailer(
 		syncMailer,
 		config.AppConfig.MailerWorkers,
@@ -109,6 +109,9 @@ func NewApp() (*App, error) {
 	r := chi.NewRouter()
 	r.Use(middlewares.TracingMiddleware(serviceName))
 	r.Use(middlewares.RequestIDMiddleware())
+	// RequestID-ийн дараа — ингэснээр panic-recovery хариунд request_id
+	// орж, доош урсгалын бүх middleware+handler-ийн panic баригдана.
+	r.Use(middlewares.RecovererMiddleware())
 	r.Use(middlewares.MetricsMiddleware())
 	r.Use(middlewares.SecurityHeadersMiddleware())
 	r.Use(middlewares.CORSMiddleware())

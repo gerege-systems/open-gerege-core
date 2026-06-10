@@ -228,7 +228,15 @@ func (j *jwtService) parse(tokenString string) (JwtCustomClaim, error) {
 			return nil, fmt.Errorf("unexpected signing method: %v", alg)
 		}
 		return []byte(j.secretKey), nil
-	})
+	},
+		// keyfunc нь non-HMAC-г татгалздаг (alg-confusion); WithValidMethods
+		// нь үүнийг declarative-аар давхар баталгаажуулна. WithIssuer нь
+		// ижил secret-тэй өөр сервисийн токеныг cross-accept хийхээс,
+		// WithExpirationRequired нь exp-гүй токеныг хүчингүй болгоно.
+		golangJWT.WithValidMethods([]string{"HS256"}),
+		golangJWT.WithIssuer(j.issuer),
+		golangJWT.WithExpirationRequired(),
+	)
 	if err != nil {
 		logger.Warn("jwt: parse failed", logger.Fields{
 			"package": "jwt",

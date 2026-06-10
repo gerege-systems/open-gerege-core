@@ -6,10 +6,8 @@ package middlewares
 import (
 	"encoding/json"
 	"math"
-	"net"
 	"net/http"
 	"strconv"
-	"strings"
 	"sync"
 	"time"
 
@@ -158,23 +156,4 @@ func retryAfterSeconds(limiter *rate.Limiter) int {
 	return int(math.Ceil(deficit / r))
 }
 
-// clientIP нь хүсэлтийн клиент IP-г тодорхойлно. Урвуу proxy-гийн ард
-// (X-Forwarded-For тогтоосон) бол жагсаалтын ЭХНИЙ утга буюу анхны клиент
-// IP-г авна; үгүй бол r.RemoteAddr-ийн host хэсгийг ашиглана. Энэ нь
-// access-log болон rate-limit middleware-уудын хооронд хуваалцсан туслах
-// функц.
-func clientIP(r *http.Request) string {
-	if xff := r.Header.Get("X-Forwarded-For"); xff != "" {
-		// X-Forwarded-For: client, proxy1, proxy2 ... — эхнийх нь анхны клиент.
-		first := strings.TrimSpace(strings.SplitN(xff, ",", 2)[0])
-		if first != "" {
-			return first
-		}
-	}
-	host, _, err := net.SplitHostPort(r.RemoteAddr)
-	if err != nil {
-		// RemoteAddr port-гүй байж болзошгүй; ийм бол түүхий утгыг буцаана.
-		return r.RemoteAddr
-	}
-	return host
-}
+// clientIP-г middleware.clientip.go-д тодорхойлсон (trusted-proxy-aware).

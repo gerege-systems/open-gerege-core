@@ -5,6 +5,8 @@ package middlewares
 
 import (
 	"net/http"
+
+	V1Handler "template/internal/http/handlers/v1"
 )
 
 // Нийтлэг body-хэмжээний дээд хязгаарууд. Route-ууд хүлээж авдаг
@@ -33,6 +35,14 @@ const (
 func BodySizeLimitMiddleware(maxBytes int64) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			// Content-Length мэдэгдсэн бөгөөд хязгаараас хэтэрсэн бол body
+			// уншихаас ӨМНӨ middleware түвшинд нэгдсэн 413 буцаана. (Урт нь
+			// мэдэгдээгүй/chunked үед MaxBytesReader handler-ийн уншилт дээр
+			// хязгаарлана.)
+			if r.ContentLength > maxBytes {
+				_ = V1Handler.NewErrorResponse(w, r, http.StatusRequestEntityTooLarge, "request entity too large")
+				return
+			}
 			if r.Body != nil {
 				r.Body = http.MaxBytesReader(w, r.Body, maxBytes)
 			}

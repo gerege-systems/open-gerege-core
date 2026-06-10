@@ -53,7 +53,7 @@ func loggerConfig() logger.Config {
 	cfg := logger.Config{
 		Level:         logger.LevelInfo,
 		EnableConsole: true,
-		AppName:       "go-rest-boilerplate",
+		AppName:       "gerege-template",
 	}
 	if config.AppConfig.Environment == constants.EnvironmentProduction {
 		cfg.ConsoleJSONFormat = true

@@ -58,12 +58,26 @@ type OTPMailer interface {
 type otpMailer struct {
 	email    string
 	password string
+	host     string
+	port     int
 }
 
-func NewOTPMailer(email, password string) OTPMailer {
+// NewOTPMailer нь SMTP relay-ийн host/port-г параметрээр авна. Хоосон host
+// эсвэл 0 port өгвөл Gmail-ийн анхдагч (smtp.gmail.com:587)-руу унана —
+// ингэснээр өөр provider руу солихдоо зөвхөн config (OTP_SMTP_HOST/PORT)
+// солино, код засахгүй.
+func NewOTPMailer(email, password, host string, port int) OTPMailer {
+	if host == "" {
+		host = "smtp.gmail.com"
+	}
+	if port == 0 {
+		port = 587
+	}
 	return &otpMailer{
 		email:    email,
 		password: password,
+		host:     host,
+		port:     port,
 	}
 }
 
@@ -79,7 +93,7 @@ func (mailer *otpMailer) SendOTP(_ context.Context, otpCode, receiver string) (e
 	msg.SetHeader("Subject", "Verification Email")
 	msg.SetBody("text/html", body)
 
-	dialer := gomail.NewDialer("smtp.gmail.com", 587, mailer.email, mailer.password)
+	dialer := gomail.NewDialer(mailer.host, mailer.port, mailer.email, mailer.password)
 	dialer.Timeout = 10 * time.Second
 
 	return dialer.DialAndSend(msg)
@@ -96,7 +110,7 @@ func (mailer *otpMailer) SendPasswordReset(_ context.Context, token, receiver st
 	msg.SetHeader("Subject", "Password Reset")
 	msg.SetBody("text/html", body)
 
-	dialer := gomail.NewDialer("smtp.gmail.com", 587, mailer.email, mailer.password)
+	dialer := gomail.NewDialer(mailer.host, mailer.port, mailer.email, mailer.password)
 	dialer.Timeout = 10 * time.Second
 	return dialer.DialAndSend(msg)
 }

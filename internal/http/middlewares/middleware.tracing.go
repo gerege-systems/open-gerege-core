@@ -32,7 +32,9 @@ func TracingMiddleware(serviceName string) func(http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			ctx, span := tracer.Start(
 				r.Context(),
-				serviceName+" "+r.Method+" "+r.URL.Path,
+				// span нэр = "<METHOD> <path>" (service.name нь tracer
+				// provider-ийн resource attribute-д тусдаа тогтоогддог).
+				r.Method+" "+r.URL.Path,
 				trace.WithSpanKind(trace.SpanKindServer),
 				trace.WithAttributes(
 					semconv.HTTPRequestMethodKey.String(r.Method),

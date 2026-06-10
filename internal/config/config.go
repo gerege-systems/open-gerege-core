@@ -37,6 +37,10 @@ type Config struct {
 	OTPPassword    string `mapstructure:"OTP_PASSWORD"`
 	OTPMaxAttempts int    `mapstructure:"OTP_MAX_ATTEMPTS"`
 
+	// SMTP relay — хоосон бол Gmail-ийн анхдагч (smtp.gmail.com:587).
+	OTPSMTPHost string `mapstructure:"OTP_SMTP_HOST"`
+	OTPSMTPPort int    `mapstructure:"OTP_SMTP_PORT"`
+
 	MailerWorkers   int `mapstructure:"MAILER_WORKERS"`
 	MailerQueueSize int `mapstructure:"MAILER_QUEUE_SIZE"`
 	MailerRetries   int `mapstructure:"MAILER_RETRIES"`
@@ -55,6 +59,28 @@ type Config struct {
 	REDISExpired  int    `mapstructure:"REDIS_EXPIRED"`
 
 	AllowedOrigins string `mapstructure:"ALLOWED_ORIGINS"`
+
+	// TrustedProxies нь итгэмжит урвуу proxy-гийн IP/CIDR жагсаалт
+	// (таслалаар тусгаарласан, жишээ "10.0.0.0/8,127.0.0.1"). Зөвхөн
+	// эдгээрээс ирсэн холболтын X-Forwarded-For-д итгэнэ — эс бөгөөс
+	// клиент IP-г RemoteAddr-аас (peer) шууд авна. Хоосон (өгөгдмөл) =
+	// XFF-д огт итгэхгүй (rate-limit/audit spoofing-ийн эсрэг fail-safe).
+	TrustedProxies string `mapstructure:"TRUSTED_PROXIES"`
+}
+
+// TrustedProxiesList нь TRUSTED_PROXIES-г таслалаар салгаж slice болгоно.
+func (c *Config) TrustedProxiesList() []string {
+	if c.TrustedProxies == "" {
+		return nil
+	}
+	parts := strings.Split(c.TrustedProxies, ",")
+	out := make([]string, 0, len(parts))
+	for _, p := range parts {
+		if trimmed := strings.TrimSpace(p); trimmed != "" {
+			out = append(out, trimmed)
+		}
+	}
+	return out
 }
 
 // AllowedOriginsList нь CORS origin-уудыг slice болгож буцаана. Зөвхөн хоосон БА орчин production биш үед ["*"] утгыг анхдагчаар авна.
