@@ -92,8 +92,9 @@ what remains for later phases. To report a vulnerability, see the repository
   postgres image makes `POSTGRES_USER` a superuser). On first DB init,
   `deploy/initdb/10-create-app-user.sh` creates a **non-superuser** role
   `APP_DB_USER` (`NOSUPERUSER NOBYPASSRLS`) and grants it DML via default
-  privileges. The **api** connects as that role (compose sets `DB_POSTGRE_URL`
-  from `APP_DB_URL`), so RLS enforces; the **migrate** container keeps using
+  privileges. The **api** connects as that role (compose overrides
+  `DB_POSTGRE_DSN` from `APP_DB_DSN` — the stack runs development mode, so the
+  driver reads the keyword DSN), so RLS enforces; the **migrate** container keeps using
   `POSTGRES_USER` (needs superuser for `CREATE EXTENSION "uuid-ossp"` + RLS DDL).
   Sanity check from the api's connection:
   `SELECT rolsuper, rolbypassrls FROM pg_roles WHERE rolname = current_user;` —
