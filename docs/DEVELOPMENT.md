@@ -7,8 +7,8 @@ v27** codebase.
 
 > **Origin.** Derived from the open-source
 > [snykk/go-rest-boilerplate](https://github.com/snykk/go-rest-boilerplate)
-> (MIT, by Najib Fikri), with the HTTP layer ported **Gin → Fiber v3** and the
-> data layer **sqlx → GORM**. See [ARCHITECTURE.md](./ARCHITECTURE.md#credits--license)
+> (MIT, by Najib Fikri), with the HTTP layer ported **Gin → chi (net/http)** and
+> the data layer **sqlx → pgx (pgxpool)**. See [ARCHITECTURE.md](./ARCHITECTURE.md#credits--license)
 > for full credits.
 
 ## Prerequisites
@@ -59,9 +59,12 @@ make test-cover         # Tests with coverage report
 ```bash
 ```
 
-Migrations are raw SQL files in `migrations/`, applied by the runner in
-`internal/datasources/migration/`, followed by an idempotent GORM
-`AutoMigrate` of the models in `internal/datasources/records/`.
+Migrations are raw SQL files in `internal/datasources/migration/` (and
+`migrations/`), applied by the migration runner. To change the schema, add a
+forward SQL migration file; the migration runner applies it idempotently
+(advisory lock + per-file transaction + `schema_migrations` tracking). There
+is no ORM AutoMigrate — the record structs in `internal/datasources/records/`
+are plain structs scanned by pgx, not schema definitions.
 
 ## Code Organization
 
@@ -90,18 +93,40 @@ reference. Example: adding a `Product` resource.
    }
    ```
 
-3. **GORM Model + Repository Impl** — `internal/datasources/records/record.products.go`
+3. **Record struct + Repository Impl** — `internal/datasources/records/record_products.go`
    and `internal/datasources/repositories/postgres/products/`
+
+   The record is a **plain Go struct** with `db:"..."` tags. `pgx.RowToStructByName`
+   maps result columns to fields by name, and soft-delete is a normal nullable
+   `*time.Time DeletedAt` (NULL → nil) — **no gorm tags, no AutoMigrate**.
    ```go
-   // record.products.go
-   type Products struct {
-       Id        string         `gorm:"column:id;primaryKey"`
-       Name      string         `gorm:"column:name"`
-       Price     int64          `gorm:"column:price"`
-       CreatedAt time.Time      `gorm:"column:created_at"`
-       DeletedAt gorm.DeletedAt `gorm:"column:deleted_at;index"`
+   // internal/datasources/records/record_products.go
+   type Product struct {
+       ID        string     `db:"id"`
+       Name      string     `db:"name"`
+       Price     int64      `db:"price"`
+       CreatedAt time.Time  `db:"created_at"`
+       DeletedAt *time.Time `db:"deleted_at"`
    }
-   func (Products) TableName() string { return "products" }
+   ```
+   The repository takes a `*pgxpool.Pool` and runs hand-written SQL —
+   `INSERT ... RETURNING`, collected with `pgx.CollectExactlyOneRow` +
+   `pgx.RowToStructByName`. A `23505` unique violation becomes `apperror.Conflict`;
+   reads add an explicit `deleted_at IS NULL` predicate.
+   ```go
+   func (r *productRepository) Create(ctx context.Context, p *records.Product) (records.Product, error) {
+       rows, _ := r.pool.Query(ctx, `INSERT INTO products (id, name, price) VALUES ($1,$2,$3)
+           RETURNING id, name, price, created_at, deleted_at`, p.ID, p.Name, p.Price)
+       out, err := pgx.CollectExactlyOneRow(rows, pgx.RowToStructByName[records.Product])
+       if err != nil {
+           var pgErr *pgconn.PgError
+           if errors.As(err, &pgErr) && pgErr.Code == "23505" {
+               return records.Product{}, apperror.Conflict("product exists")
+           }
+           return records.Product{}, err
+       }
+       return out, nil
+   }
    ```
 
 4. **Usecase Interface + Impl** — `internal/business/usecases/products/`
@@ -121,35 +146,48 @@ reference. Example: adding a `Product` resource.
    }
    ```
 
-6. **Handler** — `internal/http/handlers/v1/products/products.handler.go`
+6. **Handler** — `internal/http/handlers/v1/products/products_handler.go`
+
+   Handlers have the signature `func(w http.ResponseWriter, r *http.Request) error`
+   and are wrapped by `v1.Wrap` at route registration (it turns the returned
+   error into the JSON envelope). Decode the body with `v1.DecodeBody`, read the
+   context with `r.Context()`, and return via `v1.NewSuccessResponse` /
+   `v1.RespondWithError`.
    ```go
-   func (h Handler) Create(c fiber.Ctx) error {
+   func (h Handler) Create(w http.ResponseWriter, r *http.Request) error {
        var req requests.CreateProductRequest
-       if err := c.Bind().Body(&req); err != nil {
-           return v1.NewErrorResponse(c, http.StatusBadRequest, "invalid request body")
+       if err := v1.DecodeBody(r, &req); err != nil {
+           return v1.NewErrorResponse(w, r, http.StatusBadRequest, "invalid request body")
        }
        if err := validators.ValidatePayloads(req); err != nil {
-           return v1.RespondWithError(c, err)
+           return v1.RespondWithError(w, r, err)
        }
-       // ... call h.usecase.Create(c.Context(), ...) ...
+       data, err := h.usecase.Create(r.Context(), products.CreateRequest{Name: req.Name, Price: req.Price})
+       if err != nil {
+           return v1.RespondWithError(w, r, err)
+       }
+       return v1.NewSuccessResponse(w, r, http.StatusCreated, "created", data)
    }
    ```
 
-7. **Route** — `internal/http/routes/route.products.go` (mirror `route.users.go`)
+7. **Route** — `internal/http/routes/route_products.go` (mirror `route_users.go`)
+
+   Routes use a chi router; wrap each handler with `v1.Wrap`. Path params are
+   read with `chi.URLParam(r, "id")`.
    ```go
-   func (r *productsRoute) Routes() {
-       v1 := r.router.Group("/v1")
-       grp := v1.Group("/products")
-       grp.Use(r.authMiddleware)
-       grp.Post("/", r.handler.Create)
-       grp.Get("/:id", r.handler.GetByID)
+   func (rt *productsRoute) Routes() {
+       rt.router.Route("/v1/products", func(r chi.Router) {
+           r.Use(rt.authMiddleware)
+           r.Post("/", v1.Wrap(rt.handler.Create))
+           r.Get("/{id}", v1.Wrap(rt.handler.GetByID))
+       })
    }
    ```
 
 8. **Wire Up** — in `cmd/api/server/server.go`, construct repo → usecase →
    route alongside the existing ones:
    ```go
-   productRepo := productspostgres.NewProductRepository(conn)
+   productRepo := productspostgres.NewProductRepository(pool)
    productsUC := products.NewUsecase(productRepo)
    routes.NewProductsRoute(api, productsUC, authMiddleware).Routes()
    ```
@@ -174,16 +212,19 @@ func TestUsecase_Create(t *testing.T) {
 }
 ```
 
-#### Handler Tests (Fiber)
+#### Handler Tests (net/http)
+
+Drive the chi router (or the `v1.Wrap`-ed handler) with `net/http/httptest` —
+`httptest.NewRequest` builds the request, `httptest.NewRecorder` captures the
+response. No Fiber test app.
 
 ```go
 func TestHandler_Create(t *testing.T) {
-    app := fiber.New(fiber.Config{ErrorHandler: func(c fiber.Ctx, err error) error {
-        return v1.RespondWithError(c, err)
-    }})
-    // ... register route with a mocked usecase ...
-    resp, _ := app.Test(httptest.NewRequest(http.MethodPost, "/api/v1/products", body))
-    assert.Equal(t, http.StatusCreated, resp.StatusCode)
+    // ... build router with a mocked usecase ...
+    req := httptest.NewRequest(http.MethodPost, "/api/v1/products", strings.NewReader(body))
+    rec := httptest.NewRecorder()
+    router.ServeHTTP(rec, req)
+    require.Equal(t, http.StatusCreated, rec.Code)
 }
 ```
 
@@ -193,8 +234,8 @@ func TestHandler_Create(t *testing.T) {
 //go:build integration
 
 func TestProductRepository_Store(t *testing.T) {
-    db := testenv.SetupPostgres(t)      // testcontainers — real Postgres
-    repo := postgres.NewProductRepository(db)
+    pool := testenv.SetupPostgres(t)    // testcontainers — real Postgres (pgxpool)
+    repo := postgres.NewProductRepository(pool)
     got, err := repo.Store(context.Background(), &domain.Product{Name: "X", Price: 100})
     assert.NoError(t, err)
     assert.NotEmpty(t, got.ID)
@@ -241,12 +282,17 @@ status code, logs 5xx causes, and renders a clean envelope.
 
 ### Context Usage
 
-Always pass `context.Context` first; in handlers read it via `c.Context()`:
+Always pass `context.Context` first; in handlers read it via `r.Context()` and
+thread it through every pgx call:
 
 ```go
 func (r *postgreUserRepository) GetByID(ctx context.Context, id string) (domain.User, error) {
-    var rec records.Users
-    err := r.conn.WithContext(ctx).Where(`"id" = ?`, id).First(&rec).Error
+    rows, err := r.pool.Query(ctx,
+        `SELECT `+records.UserColumns+` FROM users WHERE id = $1 AND deleted_at IS NULL`, id)
+    if err != nil {
+        return domain.User{}, err
+    }
+    rec, err := pgx.CollectExactlyOneRow(rows, pgx.RowToStructByName[records.Users])
     // ...
 }
 ```
@@ -267,7 +313,7 @@ Handlers carry godoc annotations consumed by `swag`:
 // @Success      200 {object} v1.BaseResponse
 // @Failure      401 {object} v1.BaseResponse
 // @Router       /auth/login [post]
-func (h Handler) Login(c fiber.Ctx) error { /* ... */ }
+func (h Handler) Login(w http.ResponseWriter, r *http.Request) error { /* ... */ }
 ```
 
 ### Regenerate Docs

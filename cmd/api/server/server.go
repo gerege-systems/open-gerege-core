@@ -30,7 +30,6 @@ import (
 	"template/internal/http/routes"
 	"template/pkg/jwt"
 	"template/pkg/logger"
-	"template/pkg/mailer"
 	"template/pkg/observability"
 	"template/pkg/verify"
 
@@ -43,7 +42,6 @@ type App struct {
 	server          *http.Server
 	pool            *pgxpool.Pool
 	redisCache      caches.RedisCache
-	asyncMailer     *mailer.AsyncOTPMailer
 	tracerShutdown  observability.Shutdown
 	authRateLimiter *middlewares.RateLimiter
 }
@@ -93,17 +91,6 @@ func NewApp() (*App, error) {
 		return nil, fmt.Errorf("failed to create ristretto cache: %w", err)
 	}
 
-	// mailer — синхрон SMTP илгээгчийг асинхрон дараалалд боож, OTP
-	// илгээх хоцролтыг HTTP хүсэлтийн замаас гаргана.
-	syncMailer := mailer.NewOTPMailer(config.AppConfig.OTPEmail, config.AppConfig.OTPPassword, config.AppConfig.OTPSMTPHost, config.AppConfig.OTPSMTPPort)
-	asyncMailer := mailer.NewAsyncOTPMailer(
-		syncMailer,
-		config.AppConfig.MailerWorkers,
-		config.AppConfig.MailerQueueSize,
-		config.AppConfig.MailerRetries,
-		time.Second,
-	)
-
 	// router + глобал middleware. Дараалал чухал: эхэлд tracing — ингэснээр
 	// RequestIDMiddleware түүнийг logger context руу холбохоос өмнө span
 	// context (trace_id) тогтоогддог.
@@ -139,7 +126,7 @@ func NewApp() (*App, error) {
 	})
 	// GeregeCloud Verify API — OTP send/check.
 	verifier := verify.NewClient(config.AppConfig.VerifyAPIBase, config.AppConfig.VerifyAPIKey, config.AppConfig.VerifyChannel)
-	authUC := auth.NewUsecase(usersUC, jwtService, asyncMailer, verifier, redisCache, auth.Config{
+	authUC := auth.NewUsecase(usersUC, jwtService, verifier, redisCache, auth.Config{
 		OTPMaxAttempts:    config.AppConfig.OTPMaxAttempts,
 		OTPTTL:            time.Duration(config.AppConfig.REDISExpired) * time.Minute,
 		PasswordResetTTL:  30 * time.Minute,
@@ -170,7 +157,6 @@ func NewApp() (*App, error) {
 		server:          srv,
 		pool:            pool,
 		redisCache:      redisCache,
-		asyncMailer:     asyncMailer,
 		tracerShutdown:  shutdownTracer,
 		authRateLimiter: authRateLimiter,
 	}, nil
@@ -203,13 +189,6 @@ func (a *App) Run() (err error) {
 	// Rate limiter-ийн cleanup goroutine-ийг зогсооно.
 	if a.authRateLimiter != nil {
 		a.authRateLimiter.Stop()
-	}
-
-	// асинхрон mailer-ийн дарааллыг гүйцээнэ.
-	if a.asyncMailer != nil {
-		if mErr := a.asyncMailer.Shutdown(ctx); mErr != nil {
-			srvLog.Errorf("mailer shutdown incomplete: %v", mErr)
-		}
 	}
 
 	// өгөгдлийн сангийн pool-г хаах

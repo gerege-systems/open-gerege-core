@@ -17,7 +17,7 @@ import (
 
 // SendOTP godoc
 // @Summary      Хэрэглэгчийн email рүү OTP код илгээх
-// @Description  6 оронтой OTP үүсгэж, TTL-тэйгээр Redis-д хадгалж, async mailer-ээр и-мэйлийг дараалалд оруулна. HTTP хариу нь бодит SMTP хүргэлт дээр биш, дараалалд оруулах үед буцдаг.
+// @Description  GeregeCloud Verify API-аар OTP илгээж, буцаасан request_id-г TTL-тэйгээр Redis-д хадгална. Кодын үүсгэлт/хадгалалт/илгээлтийг Verify үйлчилгээ хариуцна.
 // @Tags         auth
 // @Accept       json
 // @Produce      json

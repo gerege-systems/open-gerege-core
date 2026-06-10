@@ -15,15 +15,15 @@ import (
 )
 
 // ResetPassword godoc
-// @Summary      Сэргээх токеныг ашиглаж шинэ нууц үг тогтоох
-// @Description  ForgotPassword-ийн олгосон токеныг баталгаажуулж, шинэ нууц үг тогтоож, цуцлалтын хязгаарыг урагшлуулна.
+// @Summary      OTP кодоор шинэ нууц үг тогтоох
+// @Description  ForgotPassword-ийн email-ээр илгээсэн OTP кодыг GeregeCloud Verify-ээр баталгаажуулж, шинэ нууц үг тогтоож, токены цуцлалтын хязгаарыг урагшлуулна.
 // @Tags         auth
 // @Accept       json
 // @Produce      json
-// @Param        request  body      requests.ResetPasswordRequest  true  "Reset token + new password"
+// @Param        request  body      requests.ResetPasswordRequest  true  "Email + OTP code + new password"
 // @Success      200  {object}  v1.BaseResponse  "Password reset"
 // @Failure      400  {object}  v1.BaseResponse  "Malformed JSON body"
-// @Failure      401  {object}  v1.BaseResponse  "Reset token invalid or expired"
+// @Failure      401  {object}  v1.BaseResponse  "Reset code invalid or expired"
 // @Failure      422  {object}  v1.BaseResponse  "Validation error"
 // @Router       /auth/password/reset [post]
 func (h Handler) ResetPassword(w http.ResponseWriter, r *http.Request) error {

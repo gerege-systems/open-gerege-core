@@ -86,7 +86,7 @@ func (uc *usecase) SendOTP(ctx context.Context, req SendOTPRequest) (err error) 
 			"step": "redis_expire_request_id", "error": expireErr.Error(), "email": email,
 		})
 	}
-	observability.ObserveMailerOp("sent")
+	observability.ObserveOTPSend("sent")
 
 	// Шинэ код илгээсэн тул оролдлогын тоологчийг тэглэнэ.
 	_ = uc.redisCache.Del(ctx, OTPAttemptsKey(email))

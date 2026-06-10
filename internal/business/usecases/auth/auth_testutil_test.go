@@ -21,7 +21,6 @@ type fixture struct {
 	usecase  auth.Usecase
 	users    *mocks.UsersUsecase
 	jwt      *mocks.JWTService
-	mailer   *mocks.OTPMailer
 	verifier *mocks.Verifier
 	redis    *mocks.RedisCache
 }
@@ -30,11 +29,10 @@ func newFixture(t *testing.T) *fixture {
 	t.Helper()
 	usersUC := mocks.NewUsersUsecase(t)
 	jwtSvc := mocks.NewJWTService(t)
-	otpMailer := mocks.NewOTPMailer(t)
 	verifier := mocks.NewVerifier(t)
 	redis := mocks.NewRedisCache(t)
 	return &fixture{
-		usecase: auth.NewUsecase(usersUC, jwtSvc, otpMailer, verifier, redis, auth.Config{
+		usecase: auth.NewUsecase(usersUC, jwtSvc, verifier, redis, auth.Config{
 			OTPMaxAttempts:    5,
 			OTPTTL:            5 * time.Minute,
 			PasswordResetTTL:  30 * time.Minute,
@@ -46,7 +44,6 @@ func newFixture(t *testing.T) *fixture {
 		}),
 		users:    usersUC,
 		jwt:      jwtSvc,
-		mailer:   otpMailer,
 		verifier: verifier,
 		redis:    redis,
 	}

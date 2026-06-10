@@ -12,8 +12,8 @@ import (
 // DefaultRequestTimeout нь нэг хүсэлтийн боловсруулалтын дээд хугацаа.
 // Удаан гацсан handler / query нь холболтыг хэт удаан эзлэхээс сэргийлэх
 // хамгаалалт (secure_system_guide §5.3, OWASP API4 Unrestricted Resource
-// Consumption). Mailer зэрэг урт ажил нь хүсэлтийн замаас гадуур async
-// ажилладаг тул энэ хязгаар тэдгээрт нөлөөлөхгүй.
+// Consumption). Гадны үйлчилгээ рүү хийх дуудлагууд (жишээ нь GeregeCloud
+// Verify) өөрийн client timeout-той тул энэ хязгаараас тусдаа хязгаарлагдана.
 const DefaultRequestTimeout = 30 * time.Second
 
 // TimeoutMiddleware нь хүсэлтийн context дээр deadline тогтооно. Уг

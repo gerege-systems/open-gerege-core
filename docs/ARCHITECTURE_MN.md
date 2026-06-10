@@ -2,19 +2,18 @@
 
 > 🌐 [English](ARCHITECTURE.md) · **Монгол**
 
-Энэ баримт нь **Gerege Backend Template v27** (модуль `templatev27`)-ийн ерөнхий
-архитектурыг тайлбарлана. Технологийн стек нь **Fiber v3 + GORM + PostgreSQL +
-Redis** бөгөөд Clean Architecture зарчмаар зохион байгуулагдсан.
+Энэ баримт нь **Gerege Backend Template v27** (модуль `template`)-ийн ерөнхий
+архитектурыг тайлбарлана. Технологийн стек нь **chi (net/http) + pgx (pgxpool) +
+PostgreSQL + Redis** бөгөөд Clean Architecture зарчмаар зохион байгуулагдсан.
 
 > **Эх сурвалж & зохиогчид.** Энэ template нь Najib Fikri-ийн нээлттэй эх төсөл
 > **[snykk/go-rest-boilerplate](https://github.com/snykk/go-rest-boilerplate)**
 > (MIT лиценз) **дээр суурилсан** — Clean Architecture давхаргалал, JWT/OTP
 > танилтын урсгал, кэш, observability, тестийн стратеги зэрэг нь тэндээс ирсэн.
-> Бид HTTP давхаргыг **Gin → Fiber v3**, өгөгдлийн давхаргыг **sqlx → GORM**
-> болгож хөрвүүлэн тохируулсан. Fiber v3-ийн идиомуудыг нээлттэй эх
-> [rachmanzz/fiber-starter](https://github.com/rachmanzz/fiber-starter)-ээс
-> лавласан. Хоёр эх төсөл хоёулаа MIT лицензтэй бөгөөд тэдгээрийн лицензийн
-> нөхцлийг хүндэтгэсэн — [Зохиогчид](#credits--license) хэсгийг үз.
+> Бид HTTP давхаргыг **Gin → chi (net/http)**, өгөгдлийн давхаргыг
+> **sqlx → pgx (pgxpool)** болгож хөрвүүлэн тохируулсан. Эх төсөл нь MIT
+> лицензтэй бөгөөд түүний лицензийн нөхцлийг хүндэтгэсэн —
+> [Зохиогчид](#credits--license) хэсгийг үз.
 
 ## Давхаргын диаграм (Layer Diagram)
 
@@ -30,7 +29,8 @@ Redis** бөгөөд Clean Architecture зарчмаар зохион байгу
 ├─────────────────────────────────────────────────────────────────┤
 │                     Repository Layer                              │
 │  internal/datasources/repositories/{interface, postgres}          │
-│  (Data access via GORM, soft-delete, caching)                     │
+│  (Data access via pgx hand-written SQL, explicit soft-delete,     │
+│   caching)                                                        │
 ├─────────────────────────────────────────────────────────────────┤
 │                       Domain Layer                                │
 │  internal/business/domain                                         │
@@ -58,14 +58,14 @@ Redis** бөгөөд Clean Architecture зарчмаар зохион байгу
 │   ├── constants/                  # Env, logger, error, endpoint constants
 │   ├── datasources/
 │   │   ├── caches/                 # Redis + Ristretto two-tier cache
-│   │   ├── drivers/                # GORM Postgres connection (driver.gorm*)
+│   │   ├── drivers/                # pgx (pgxpool) Postgres connection (driver_pgx.go)
 │   │   ├── migration/              # Migration runner (SQL + AutoMigrate)
-│   │   ├── records/                # GORM models + record↔domain mappers
+│   │   ├── records/                # pgx record structs + record↔domain mappers
 │   │   └── repositories/
 │   │       ├── interface/          # Gateway abstractions (package _interface)
-│   │       └── postgres/users/     # GORM implementation
+│   │       └── postgres/users/     # pgx implementation (hand-written SQL)
 │   └── http/
-│       ├── auth/                   # CurrentUser from Fiber Locals
+│       ├── auth/                   # CurrentUser from request context
 │       ├── datatransfers/          # Request / Response DTOs
 │       ├── handlers/v1/            # HTTP handlers
 │       ├── middlewares/            # Middleware stack
@@ -73,7 +73,7 @@ Redis** бөгөөд Clean Architecture зарчмаар зохион байгу
 ├── migrations/                     # SQL migration files
 ├── pkg/                            # Framework-agnostic utilities
 │   ├── jwt/ logger/ clock/ helpers/ validators/
-│   ├── mailer/                     # Async OTP mailer
+│   ├── verify/                     # GeregeCloud Verify (OTP) client
 │   ├── audit/                      # Auth-event audit log
 │   └── observability/              # Tracing + metrics
 └── internal/test/                  # Mocks, fixtures, testcontainers harness
@@ -87,7 +87,7 @@ Redis** бөгөөд Clean Architecture зарчмаар зохион байгу
 HTTP → Usecase → Repository → Domain
   │        │          │
   ▼        ▼          ▼
- DTO   Interface   GORM/DB
+ DTO   Interface   pgx/SQL
 ```
 
 - **HTTP давхарга** нь **Usecase** интерфейсүүдээс (`auth.Usecase`, `users.Usecase`) хамаарна
@@ -96,7 +96,7 @@ HTTP → Usecase → Repository → Domain
 - **Domain давхарга** нь зөвхөн стандарт сан + `golang.org/x/crypto/bcrypt`-ийг л import хийдэг — `internal/` эсвэл `pkg/`-ийг хэзээ ч биш
 
 Үүнийг бүтцийн хувьд баталгаажуулсан: `internal/business/**` болон
-`internal/datasources/repositories/**` нь Fiber-ийн ямар ч package-ийг import
+`internal/datasources/repositories/**` нь chi/net-http web package-ийг import
 хийдэггүй тул business код руу гар хүрэлгүйгээр delivery framework-ийг солих
 боломжтой.
 
@@ -105,10 +105,10 @@ HTTP → Usecase → Repository → Domain
 ### 1. HTTP давхарга
 
 **Composition root:** `cmd/api/server/server.go`
-- Tracing, DB (GORM), Redis/Ristretto, JWT service, mailer-ийг эхлүүлнэ
+- Tracing, DB (pgx pool), Redis/Ristretto, JWT service, GeregeCloud Verify клиентийг эхлүүлнэ
 - repository → usecase → route-ийг гараар холбоно (global singleton, DI container байхгүй)
-- Fiber app-ийг бүтээж, middleware stack-ийг суулгана
-- Graceful shutdown-ийг хариуцна (HTTP, mailer queue, DB, Redis, tracer-ийг хоослоно)
+- chi router-ийг бүтээж, middleware stack-ийг суулгана
+- Graceful shutdown-ийг хариуцна (HTTP, rate-limiter, pgx pool, Redis, tracer-ийг хоослоно)
 
 **Routes:** `internal/http/routes/`
 - Бүх API route нь `/api/v1` дор байрладаг
@@ -117,7 +117,7 @@ HTTP → Usecase → Repository → Domain
 
 **Handlers:** `internal/http/handlers/v1/`
 - Хүсэлтийн DTO-г parse + validate хийж, usecase-ийг дуудаж, хариуг формат хийнэ
-- Handler-ийн гарын үсэг нь Fiber v3: `func(c fiber.Ctx) error`
+- Handler-ийн гарын үсэг: `func(w http.ResponseWriter, r *http.Request) error` (`v1.Wrap`-ээр боож)
 
 **DTOs:** `internal/http/datatransfers/{requests,responses}/`
 - Request struct-ууд `validate:` tag-уудтай; response-ууд нийтийн payload-ыг бүрдүүлнэ
@@ -126,8 +126,8 @@ HTTP → Usecase → Repository → Domain
 
 `server.go::setupRouter` дотор дарааллаар хэрэглэгддэг global middleware:
 
-1. **Tracing** — хүсэлт тус бүрийн OTel span-ийг эхлүүлнэ (гараар бичсэн; `otelgin` нь Fiber v3 port-гүй)
-2. **Request ID** — `X-Request-ID`-г үүсгэж / Locals + logger руу дамжуулна
+1. **Tracing** — хүсэлт тус бүрийн OTel span-ийг chi middleware-ээр эхлүүлнэ
+2. **Request ID** — `X-Request-ID`-г үүсгэж / request context + logger руу дамжуулна
 3. **Metrics** — Prometheus HTTP хүсэлтийн тоолуур + latency
 4. **Security Headers** — HSTS, CSP, nosniff, frame options, referrer policy
 5. **CORS** — `ALLOWED_ORIGINS`-аас гарал үүсэл (wildcard зөвхөн dev-д)
@@ -154,7 +154,7 @@ type Usecase interface {
 }
 ```
 
-Үүрэг: бизнес дүрмийн validation, repository + кэш + JWT + mailer-ийн
+Үүрэг: бизнес дүрмийн validation, repository + кэш + JWT + GeregeCloud Verify-ийн
 зохицуулалт (orchestration), нэвтрэлтийн lockout, нууц үг солих токены cutoff.
 `auth.Usecase` нь `users.Usecase`-ээс хамаарна (auth нь хэрэглэгчийн уншилт/бичилтийг дахин ашиглана).
 
@@ -163,7 +163,7 @@ type Usecase interface {
 **Байршил:** `internal/datasources/repositories/`
 
 `interface/` package (package нэр `_interface` — `interface` нь Go-ийн түлхүүр
-үг) нь gateway абстракцуудыг агуулдаг; `postgres/users/` нь тэдгээрийг GORM-оор
+үг) нь gateway абстракцуудыг агуулдаг; `postgres/users/` нь тэдгээрийг pgx-ээр
 хэрэгжүүлдэг:
 
 ```go
@@ -179,10 +179,10 @@ type UserRepository interface {
 }
 ```
 
-Гол онцлогууд: `db.WithContext(ctx)`-ээр GORM query, `gorm.DeletedAt`-аар soft
-delete (анхдагч query-ууд устгасан мөрүүдийг автоматаар хасна), `Store` нь нэг
-round-trip-д `INSERT … RETURNING` ашиглана, давхардсан key-үүд (GORM
-`TranslateError`-оор) `apperror.Conflict` болж гарч ирнэ.
+Гол онцлогууд: query-ууд `ctx`-г шууд авна, `deleted_at IS NULL` гэсэн ил
+predicate-ээр soft delete, `Store` нь нэг round-trip-д `INSERT … RETURNING`
+ашиглана, давхардсан key-үүдийг pgconn-ийн алдааны код `23505`-аар илрүүлж
+`apperror.Conflict` болгоно. Мөрүүдийг `pgx.RowToStructByName`-ээр scan хийнэ.
 
 ### 5. Domain давхарга
 
@@ -220,7 +220,7 @@ JWT access + refresh token (`pkg/jwt`):
   токенуудыг татгалзана (`User.TokensRevokedBefore`)
 - `kind` claim guard нь refresh token-ийг access token болгон ашиглахаас сэргийлнэ
 - Auth middleware (`internal/http/middlewares/middleware.auth.go`) нь bearer
-  token-ийг баталгаажуулж, claim-уудыг Fiber Locals дотор хадгална
+  token-ийг баталгаажуулж, claim-уудыг request context дотор хадгална
 
 ### Эрх олголт (Authorization)
 
@@ -230,19 +230,20 @@ HTTP давхаргын `CurrentUser` дүрслэлийг handler дотор
 
 ## Өгөгдлийн сан (Database)
 
-- **ORM:** GORM v2 (`gorm.io/gorm`, `gorm.io/driver/postgres`)
+- **Driver:** pgx v5 (`github.com/jackc/pgx/v5` + pgxpool), гараар бичсэн SQL (ORM-гүй)
 - **Database:** PostgreSQL
 - **Migrations:** `migrations/` доторх SQL файлууд + idempotent `AutoMigrate`
-- **Tracing:** `gorm.io/plugin/opentelemetry/tracing`
+- **Tracing:** chi middleware + pgx pool instrumentation-аар (`otelpgx`) дамжуулсан OpenTelemetry
 
 ### Холболтын удирдлага (Connection Management)
 
-Pool нь env-ээс тохируулагдана (`internal/datasources/drivers/driver.gorm_setup.go`):
+Pool нь env-ээс тохируулагдана (`internal/datasources/drivers/driver_pgx.go`,
+`SetupPgxPostgres`):
 
 ```go
-sqlDB.SetMaxOpenConns(cfg.MaxOpenConns)   // DB_MAX_OPEN_CONNS (default 25)
-sqlDB.SetMaxIdleConns(cfg.MaxIdleConns)   // DB_MAX_IDLE_CONNS (default 5)
-sqlDB.SetConnMaxLifetime(cfg.MaxLifetime) // DB_CONN_MAX_LIFE_MINS (default 15)
+poolCfg.MaxConns        = cfg.MaxConns    // DB_MAX_OPEN_CONNS (default 25)
+poolCfg.MinConns        = cfg.MinConns    // DB_MAX_IDLE_CONNS (default 5)
+poolCfg.MaxConnLifetime = cfg.MaxLifetime // DB_CONN_MAX_LIFE_MINS (default 15)
 ```
 
 ## Observability
@@ -254,8 +255,8 @@ sqlDB.SetConnMaxLifetime(cfg.MaxLifetime) // DB_CONN_MAX_LIFE_MINS (default 15)
 
 ### Metrics
 - **Сан:** Prometheus, endpoint `GET /metrics`
-- HTTP хүсэлтийн тоолуур/latency, давхарга бүрийн кэш hit/miss/error, mailer-ийн
-  үр дүн (`mailer_operations_total`), DB pool статистик
+- HTTP хүсэлтийн тоолуур/latency, давхарга бүрийн кэш hit/miss/error, OTP илгээлтийн
+  үр дүн (`otp_send_total`), DB pool статистик
 
 ### Tracing
 - **Сан:** OpenTelemetry; exporter-ийг `OTEL_EXPORTER`-оор сонгоно
@@ -263,7 +264,7 @@ sqlDB.SetConnMaxLifetime(cfg.MaxLifetime) // DB_CONN_MAX_LIFE_MINS (default 15)
 
 ### Health Checks
 - `GET /health` — liveness
-- `GET /ready` — DB ping (GORM-оор) + Redis probe
+- `GET /ready` — DB ping (pgx pool-оор) + Redis probe
 
 ## Аюулгүй байдлын онцлогууд (Security Features)
 
@@ -275,7 +276,7 @@ sqlDB.SetConnMaxLifetime(cfg.MaxLifetime) // DB_CONN_MAX_LIFE_MINS (default 15)
 | Body size limit   | global + tighter 4 KiB on `/auth`    | `middlewares/middleware.bodysizelimit.go` |
 | Input validation  | `validate:` struct tags              | `internal/http/datatransfers/requests/`   |
 | Password hashing  | bcrypt (cost 10–31, default 12)      | `internal/business/domain/domain.users.go`|
-| SQL injection     | GORM (parameterized)                 | `internal/datasources/repositories/`      |
+| SQL injection     | pgx (parameterized queries)          | `internal/datasources/repositories/`      |
 | Login lockout     | brute-force attempt cap in Redis     | `internal/business/usecases/auth/`        |
 
 ## API дизайн (API Design)
@@ -363,12 +364,10 @@ Health check: `curl http://localhost:8080/health`
 
 | Project | Author | License | What we used |
 |---------|--------|---------|--------------|
-| [snykk/go-rest-boilerplate](https://github.com/snykk/go-rest-boilerplate) | Najib Fikri | MIT | Base architecture, auth/OTP/mailer/audit flows, caching, observability, tests |
-| [rachmanzz/fiber-starter](https://github.com/rachmanzz/fiber-starter) | rachmanzz | MIT | Fiber v3 idioms reference |
-| [GoFiber](https://github.com/gofiber/fiber) · [GORM](https://github.com/go-gorm/gorm) | — | MIT | Web framework · ORM |
+| [snykk/go-rest-boilerplate](https://github.com/snykk/go-rest-boilerplate) | Najib Fikri | MIT | Base architecture, auth/OTP/audit flows, caching, observability, tests |
 
-Эх boilerplate-тай харьцуулсан бидний өөрчлөлт: **Gin → Fiber v3** (HTTP
-давхарга) болон **sqlx → GORM** (өгөгдлийн давхарга); бусад бүхнийг үнэнчээр
+Эх boilerplate-тай харьцуулсан бидний өөрчлөлт: **Gin → chi (net/http)** (HTTP
+давхарга) болон **sqlx → pgx (pgxpool)** (өгөгдлийн давхарга); бусад бүхнийг үнэнчээр
 дахин бүтээсэн. MIT-ийн уламжлалт бүтээл болохын хувьд энэ template нь эх
 төслүүдийн зохиогчийн эрхийн мэдэгдлийг хадгалж, өөрөө MIT License-ийн дор
 тараагддаг (`LICENSE`-ийг үз).

@@ -20,15 +20,15 @@ what remains for later phases. To report a vulnerability, see the repository
 | Auth | Enumeration mitigation (timing-safe, generic msgs) | `usecases/auth.login`, `forgot_password` | §1.5 |
 | Crypto | `crypto/rand` everywhere; OTP rejection-sampled (no modulo bias) | `pkg/helpers/helper.otp_code_generator.go` | §13.2 |
 | AuthZ | Role check in domain (`IsAdmin`), per-request `CurrentUser` | `domain.users.go`, `http/auth` | §2 |
-| DB | Parameterized queries only (GORM) | `datasources/repositories/postgres` | §3.1 |
-| DB | `INSERT … RETURNING` single round-trip; `TranslateError` | `users.store.go`, `driver.gorm.go` | §3 |
+| DB | Parameterized queries only (pgx) | `datasources/repositories/postgres` | §3.1 |
+| DB | `INSERT … RETURNING` single round-trip; pgconn 23505 → Conflict | `repositories/postgres/users`, `driver_pgx.go` | §3 |
 | API | Mass-assignment safe (explicit request DTOs) | `http/datatransfers/requests` | API3 §5.1 |
 | API | Body size limit (global + 4 KiB on `/auth`) | `middleware.bodysizelimit`, `routes` | §5.3 |
 | Web | Security headers: CSP `default-src 'none'`, HSTS (prod), nosniff, X-Frame DENY, Referrer-Policy, Permissions-Policy | `middleware.security.go` | §4.7 |
 | Web | CORS strict origin list, never `*`+credentials | `middleware.cors.go` | §4.8 |
 | Obs | Structured Zap logs w/ request-id; no secrets logged | `pkg/logger`, `handler.base_response.go` | §9.1–9.2 |
-| Obs | OpenTelemetry tracing + Prometheus metrics | `pkg/observability`, `driver.gorm.go` | §9.4 |
-| Ops | Graceful shutdown (drain HTTP, mailer, DB, Redis, tracer) | `cmd/api/server` | §7 |
+| Obs | OpenTelemetry tracing + Prometheus metrics | `pkg/observability`, `driver_pgx.go` | §9.4 |
+| Ops | Graceful shutdown (drain HTTP, rate-limiter, pgx pool, Redis, tracer) | `cmd/api/server` | §7 |
 
 ## Hardening applied (this pass — against the guide)
 
@@ -39,11 +39,11 @@ what remains for later phases. To report a vulnerability, see the repository
    `DB_POSTGRE_URL` unless `sslmode=verify-full` (or `verify-ca`); `.env.example`
    documents it (`internal/config/config.go`, guide §3.5).
 3. **Per-request timeout** — `middleware.TimeoutMiddleware` sets a 30s context
-   deadline that propagates to GORM queries, bounding stuck handlers
+   deadline that propagates to pgx queries, bounding stuck handlers
    (`middleware.timeout.go`, guide §5.3 / API4).
-4. **Swagger served Fiber-v3-natively** — replaced the Fiber-v2-only
-   `gofiber/swagger` handler (which panicked at runtime under Fiber v3) with a
-   native `/swagger/doc.json` OpenAPI endpoint.
+4. **Swagger spec served from generated `docs` package** — the OpenAPI JSON is
+   served at `/swagger/doc.json` from the generated `docs` package on the chi
+   router (no Fiber involved); a static Swagger UI can be pointed at it.
 
 ## ASVS roadmap status (guide §14)
 
@@ -59,8 +59,7 @@ what remains for later phases. To report a vulnerability, see the repository
 ## Known gaps / follow-ups
 
 - **Interactive Swagger UI** — currently serves the raw spec at `/swagger/doc.json`
-  (load it in Swagger Editor / Postman). A Fiber-v3-compatible UI handler can be
-  added later.
+  (load it in Swagger Editor / Postman, or point a static Swagger UI at it).
 - **Leaked-password check (HIBP)** — guide §1.1; not yet wired (needs outbound
   call, config-gated, fail-open). Password story already meets the OWASP baseline
   (bcrypt cost 12 + ≥12 chars + complexity).

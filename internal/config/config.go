@@ -33,25 +33,14 @@ type Config struct {
 	JWTIssuer         string `mapstructure:"JWT_ISSUER"`
 	JWTRefreshExpired int    `mapstructure:"JWT_REFRESH_EXPIRED"` // хоног
 
-	OTPEmail       string `mapstructure:"OTP_EMAIL"`
-	OTPPassword    string `mapstructure:"OTP_PASSWORD"`
-	OTPMaxAttempts int    `mapstructure:"OTP_MAX_ATTEMPTS"`
+	OTPMaxAttempts int `mapstructure:"OTP_MAX_ATTEMPTS"`
 
-	// SMTP relay — хоосон бол Gmail-ийн анхдагч (smtp.gmail.com:587).
-	// Зөвхөн нууц үг мартсан (reset) имэйлд ашиглагдана; OTP нь Verify API-аар явна.
-	OTPSMTPHost string `mapstructure:"OTP_SMTP_HOST"`
-	OTPSMTPPort int    `mapstructure:"OTP_SMTP_PORT"`
-
-	// GeregeCloud Verify API (verify.gecloud.mn) — OTP send/check. VERIFY_API_KEY
-	// хоосон бол OTP илгээх үед алдаа гарна (template нь gecloud-гүйгээр boot
-	// хийгдэх боломжтой хэвээр).
+	// GeregeCloud Verify API (verify.gecloud.mn) — бүх email/SMS OTP-г (бүртгэл
+	// баталгаажуулах, нууц үг сэргээх) энэ үйлчилгээгээр илгээж/шалгана. SMTP
+	// огт ашиглахгүй. VERIFY_API_KEY production-д заавал шаардлагатай.
 	VerifyAPIBase string `mapstructure:"VERIFY_API_BASE"`
 	VerifyAPIKey  string `mapstructure:"VERIFY_API_KEY"`
 	VerifyChannel string `mapstructure:"VERIFY_CHANNEL"`
-
-	MailerWorkers   int `mapstructure:"MAILER_WORKERS"`
-	MailerQueueSize int `mapstructure:"MAILER_QUEUE_SIZE"`
-	MailerRetries   int `mapstructure:"MAILER_RETRIES"`
 
 	BcryptCost int `mapstructure:"BCRYPT_COST"`
 
@@ -134,7 +123,7 @@ func InitializeAppConfig() error {
 	applyDefaults()
 
 	// шалгалт
-	if AppConfig.Port == 0 || AppConfig.Environment == "" || AppConfig.JWTSecret == "" || AppConfig.JWTExpired == 0 || AppConfig.JWTIssuer == "" || AppConfig.OTPEmail == "" || AppConfig.OTPPassword == "" || AppConfig.REDISHost == "" || AppConfig.REDISPassword == "" || AppConfig.REDISExpired == 0 || AppConfig.DBPostgreDriver == "" {
+	if AppConfig.Port == 0 || AppConfig.Environment == "" || AppConfig.JWTSecret == "" || AppConfig.JWTExpired == 0 || AppConfig.JWTIssuer == "" || AppConfig.REDISHost == "" || AppConfig.REDISPassword == "" || AppConfig.REDISExpired == 0 || AppConfig.DBPostgreDriver == "" {
 		return constants.ErrEmptyVar
 	}
 
@@ -186,6 +175,11 @@ func InitializeAppConfig() error {
 		if AppConfig.AllowedOrigins == "" {
 			return fmt.Errorf("ALLOWED_ORIGINS must be set in production (comma-separated origins)")
 		}
+		// Бүх email/SMS OTP нь GeregeCloud Verify-ээр явдаг тул production-д
+		// VERIFY_API_KEY заавал шаардлагатай (эс бөгөөс OTP илгээх боломжгүй).
+		if AppConfig.VerifyAPIKey == "" {
+			return fmt.Errorf("VERIFY_API_KEY must be set in production (GeregeCloud Verify OTP)")
+		}
 	default:
 		return fmt.Errorf("ENVIRONMENT must be 'development' or 'production', got %q", AppConfig.Environment)
 	}
@@ -223,15 +217,6 @@ func applyDefaults() {
 	}
 	if AppConfig.OTPMaxAttempts == 0 {
 		AppConfig.OTPMaxAttempts = 5
-	}
-	if AppConfig.MailerWorkers == 0 {
-		AppConfig.MailerWorkers = 2
-	}
-	if AppConfig.MailerQueueSize == 0 {
-		AppConfig.MailerQueueSize = 64
-	}
-	if AppConfig.MailerRetries == 0 {
-		AppConfig.MailerRetries = 3
 	}
 	if AppConfig.BcryptCost == 0 {
 		// 12 ≈ 2026 оны үеийн CPU дээр 100–200 мс. bcrypt.DefaultCost нь

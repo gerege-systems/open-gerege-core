@@ -43,7 +43,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/templatev27_internal_http_datatransfers_requests.LoginRequest"
+                            "$ref": "#/definitions/template_internal_http_datatransfers_requests.LoginRequest"
                         }
                     }
                 ],
@@ -53,13 +53,13 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/templatev27_internal_http_handlers_v1.BaseResponse"
+                                    "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/templatev27_internal_http_datatransfers_responses.UserResponse"
+                                            "$ref": "#/definitions/template_internal_http_datatransfers_responses.UserResponse"
                                         }
                                     }
                                 }
@@ -69,25 +69,25 @@ const docTemplate = `{
                     "400": {
                         "description": "Malformed JSON body",
                         "schema": {
-                            "$ref": "#/definitions/templatev27_internal_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
                         }
                     },
                     "401": {
                         "description": "Invalid email or password",
                         "schema": {
-                            "$ref": "#/definitions/templatev27_internal_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
                         }
                     },
                     "403": {
                         "description": "Account not yet activated",
                         "schema": {
-                            "$ref": "#/definitions/templatev27_internal_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
                         }
                     },
                     "422": {
                         "description": "Validation error",
                         "schema": {
-                            "$ref": "#/definitions/templatev27_internal_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -113,7 +113,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/templatev27_internal_http_datatransfers_requests.RefreshRequest"
+                            "$ref": "#/definitions/template_internal_http_datatransfers_requests.RefreshRequest"
                         }
                     }
                 ],
@@ -121,19 +121,19 @@ const docTemplate = `{
                     "200": {
                         "description": "Logged out",
                         "schema": {
-                            "$ref": "#/definitions/templatev27_internal_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
                         }
                     },
                     "401": {
                         "description": "Refresh token invalid",
                         "schema": {
-                            "$ref": "#/definitions/templatev27_internal_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
                         }
                     },
                     "422": {
                         "description": "Validation error",
                         "schema": {
-                            "$ref": "#/definitions/templatev27_internal_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -164,7 +164,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/templatev27_internal_http_datatransfers_requests.ChangePasswordRequest"
+                            "$ref": "#/definitions/template_internal_http_datatransfers_requests.ChangePasswordRequest"
                         }
                     }
                 ],
@@ -172,25 +172,25 @@ const docTemplate = `{
                     "200": {
                         "description": "Password changed",
                         "schema": {
-                            "$ref": "#/definitions/templatev27_internal_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
                         }
                     },
                     "400": {
                         "description": "Malformed JSON body",
                         "schema": {
-                            "$ref": "#/definitions/templatev27_internal_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
                         }
                     },
                     "401": {
                         "description": "Current password incorrect",
                         "schema": {
-                            "$ref": "#/definitions/templatev27_internal_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
                         }
                     },
                     "422": {
                         "description": "Validation error",
                         "schema": {
-                            "$ref": "#/definitions/templatev27_internal_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -198,7 +198,7 @@ const docTemplate = `{
         },
         "/auth/password/forgot": {
             "post": {
-                "description": "Хаяг руу битүүмжилсэн сэргээх токеныг и-мэйлээр илгээнэ. Хэрэглэгчийг тоолохоос сэргийлэхийн тулд email бүртгэлгүй байсан ч үргэлж 200 буцаана.",
+                "description": "Хаяг руу нэг удаагийн OTP кодыг (GeregeCloud Verify) и-мэйлээр илгээнэ. Хэрэглэгчийг тоолохоос сэргийлэхийн тулд email бүртгэлгүй байсан ч үргэлж 200 буцаана.",
                 "consumes": [
                     "application/json"
                 ],
@@ -208,7 +208,7 @@ const docTemplate = `{
                 "tags": [
                     "auth"
                 ],
-                "summary": "Нууц үг сэргээх токен олгох",
+                "summary": "Нууц үг сэргээх OTP код илгээх",
                 "parameters": [
                     {
                         "description": "Email address",
@@ -216,7 +216,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/templatev27_internal_http_datatransfers_requests.ForgotPasswordRequest"
+                            "$ref": "#/definitions/template_internal_http_datatransfers_requests.ForgotPasswordRequest"
                         }
                     }
                 ],
@@ -224,19 +224,19 @@ const docTemplate = `{
                     "200": {
                         "description": "Reset email queued (or email not registered — same response either way)",
                         "schema": {
-                            "$ref": "#/definitions/templatev27_internal_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
                         }
                     },
                     "400": {
                         "description": "Malformed JSON body",
                         "schema": {
-                            "$ref": "#/definitions/templatev27_internal_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
                         }
                     },
                     "422": {
                         "description": "Validation error",
                         "schema": {
-                            "$ref": "#/definitions/templatev27_internal_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -244,7 +244,7 @@ const docTemplate = `{
         },
         "/auth/password/reset": {
             "post": {
-                "description": "ForgotPassword-ийн олгосон токеныг баталгаажуулж, шинэ нууц үг тогтоож, цуцлалтын хязгаарыг урагшлуулна.",
+                "description": "ForgotPassword-ийн email-ээр илгээсэн OTP кодыг GeregeCloud Verify-ээр баталгаажуулж, шинэ нууц үг тогтоож, токены цуцлалтын хязгаарыг урагшлуулна.",
                 "consumes": [
                     "application/json"
                 ],
@@ -254,15 +254,15 @@ const docTemplate = `{
                 "tags": [
                     "auth"
                 ],
-                "summary": "Сэргээх токеныг ашиглаж шинэ нууц үг тогтоох",
+                "summary": "OTP кодоор шинэ нууц үг тогтоох",
                 "parameters": [
                     {
-                        "description": "Reset token + new password",
+                        "description": "Email + OTP code + new password",
                         "name": "request",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/templatev27_internal_http_datatransfers_requests.ResetPasswordRequest"
+                            "$ref": "#/definitions/template_internal_http_datatransfers_requests.ResetPasswordRequest"
                         }
                     }
                 ],
@@ -270,25 +270,25 @@ const docTemplate = `{
                     "200": {
                         "description": "Password reset",
                         "schema": {
-                            "$ref": "#/definitions/templatev27_internal_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
                         }
                     },
                     "400": {
                         "description": "Malformed JSON body",
                         "schema": {
-                            "$ref": "#/definitions/templatev27_internal_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
                         }
                     },
                     "401": {
-                        "description": "Reset token invalid or expired",
+                        "description": "Reset code invalid or expired",
                         "schema": {
-                            "$ref": "#/definitions/templatev27_internal_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
                         }
                     },
                     "422": {
                         "description": "Validation error",
                         "schema": {
-                            "$ref": "#/definitions/templatev27_internal_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -314,7 +314,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/templatev27_internal_http_datatransfers_requests.RefreshRequest"
+                            "$ref": "#/definitions/template_internal_http_datatransfers_requests.RefreshRequest"
                         }
                     }
                 ],
@@ -324,13 +324,13 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/templatev27_internal_http_handlers_v1.BaseResponse"
+                                    "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/templatev27_internal_http_datatransfers_responses.UserResponse"
+                                            "$ref": "#/definitions/template_internal_http_datatransfers_responses.UserResponse"
                                         }
                                     }
                                 }
@@ -340,19 +340,19 @@ const docTemplate = `{
                     "401": {
                         "description": "Refresh token invalid, expired, or already revoked",
                         "schema": {
-                            "$ref": "#/definitions/templatev27_internal_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
                         }
                     },
                     "403": {
                         "description": "Account no longer active",
                         "schema": {
-                            "$ref": "#/definitions/templatev27_internal_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
                         }
                     },
                     "422": {
                         "description": "Validation error",
                         "schema": {
-                            "$ref": "#/definitions/templatev27_internal_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -378,7 +378,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/templatev27_internal_http_datatransfers_requests.RegisterRequest"
+                            "$ref": "#/definitions/template_internal_http_datatransfers_requests.RegisterRequest"
                         }
                     }
                 ],
@@ -388,13 +388,13 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/templatev27_internal_http_handlers_v1.BaseResponse"
+                                    "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/templatev27_internal_http_datatransfers_responses.UserResponse"
+                                            "$ref": "#/definitions/template_internal_http_datatransfers_responses.UserResponse"
                                         }
                                     }
                                 }
@@ -404,25 +404,25 @@ const docTemplate = `{
                     "400": {
                         "description": "Malformed JSON body",
                         "schema": {
-                            "$ref": "#/definitions/templatev27_internal_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
                         }
                     },
                     "409": {
                         "description": "Email or username already in use",
                         "schema": {
-                            "$ref": "#/definitions/templatev27_internal_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
                         }
                     },
                     "422": {
                         "description": "Validation error (per-field detail in data.errors)",
                         "schema": {
-                            "$ref": "#/definitions/templatev27_internal_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
                         }
                     },
                     "500": {
                         "description": "Internal error",
                         "schema": {
-                            "$ref": "#/definitions/templatev27_internal_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -430,7 +430,7 @@ const docTemplate = `{
         },
         "/auth/send-otp": {
             "post": {
-                "description": "6 оронтой OTP үүсгэж, TTL-тэйгээр Redis-д хадгалж, async mailer-ээр и-мэйлийг дараалалд оруулна. HTTP хариу нь бодит SMTP хүргэлт дээр биш, дараалалд оруулах үед буцдаг.",
+                "description": "GeregeCloud Verify API-аар OTP илгээж, буцаасан request_id-г TTL-тэйгээр Redis-д хадгална. Кодын үүсгэлт/хадгалалт/илгээлтийг Verify үйлчилгээ хариуцна.",
                 "consumes": [
                     "application/json"
                 ],
@@ -448,7 +448,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/templatev27_internal_http_datatransfers_requests.SendOTPRequest"
+                            "$ref": "#/definitions/template_internal_http_datatransfers_requests.SendOTPRequest"
                         }
                     }
                 ],
@@ -456,31 +456,31 @@ const docTemplate = `{
                     "200": {
                         "description": "OTP enqueued",
                         "schema": {
-                            "$ref": "#/definitions/templatev27_internal_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
                         }
                     },
                     "400": {
                         "description": "Account already activated",
                         "schema": {
-                            "$ref": "#/definitions/templatev27_internal_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
                         }
                     },
                     "404": {
                         "description": "Email not registered",
                         "schema": {
-                            "$ref": "#/definitions/templatev27_internal_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
                         }
                     },
                     "422": {
                         "description": "Validation error",
                         "schema": {
-                            "$ref": "#/definitions/templatev27_internal_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
                         }
                     },
                     "500": {
                         "description": "Failed to enqueue mail",
                         "schema": {
-                            "$ref": "#/definitions/templatev27_internal_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -506,7 +506,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/templatev27_internal_http_datatransfers_requests.VerifyOTPRequest"
+                            "$ref": "#/definitions/template_internal_http_datatransfers_requests.VerifyOTPRequest"
                         }
                     }
                 ],
@@ -514,31 +514,31 @@ const docTemplate = `{
                     "200": {
                         "description": "Account activated",
                         "schema": {
-                            "$ref": "#/definitions/templatev27_internal_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
                         }
                     },
                     "400": {
                         "description": "Invalid OTP code",
                         "schema": {
-                            "$ref": "#/definitions/templatev27_internal_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
                         }
                     },
                     "403": {
                         "description": "Locked out — too many invalid attempts",
                         "schema": {
-                            "$ref": "#/definitions/templatev27_internal_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
                         }
                     },
                     "404": {
                         "description": "Email not registered",
                         "schema": {
-                            "$ref": "#/definitions/templatev27_internal_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
                         }
                     },
                     "422": {
                         "description": "Validation error",
                         "schema": {
-                            "$ref": "#/definitions/templatev27_internal_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -565,13 +565,13 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/templatev27_internal_http_handlers_v1.BaseResponse"
+                                    "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/templatev27_internal_http_datatransfers_responses.UserResponse"
+                                            "$ref": "#/definitions/template_internal_http_datatransfers_responses.UserResponse"
                                         }
                                     }
                                 }
@@ -581,13 +581,13 @@ const docTemplate = `{
                     "401": {
                         "description": "Missing or invalid token",
                         "schema": {
-                            "$ref": "#/definitions/templatev27_internal_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
                         }
                     },
                     "404": {
                         "description": "User no longer exists",
                         "schema": {
-                            "$ref": "#/definitions/templatev27_internal_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -595,7 +595,7 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "templatev27_internal_http_datatransfers_requests.ChangePasswordRequest": {
+        "template_internal_http_datatransfers_requests.ChangePasswordRequest": {
             "type": "object",
             "required": [
                 "current_password",
@@ -614,7 +614,7 @@ const docTemplate = `{
                 }
             }
         },
-        "templatev27_internal_http_datatransfers_requests.ForgotPasswordRequest": {
+        "template_internal_http_datatransfers_requests.ForgotPasswordRequest": {
             "type": "object",
             "required": [
                 "email"
@@ -626,7 +626,7 @@ const docTemplate = `{
                 }
             }
         },
-        "templatev27_internal_http_datatransfers_requests.LoginRequest": {
+        "template_internal_http_datatransfers_requests.LoginRequest": {
             "type": "object",
             "required": [
                 "email",
@@ -644,7 +644,7 @@ const docTemplate = `{
                 }
             }
         },
-        "templatev27_internal_http_datatransfers_requests.RefreshRequest": {
+        "template_internal_http_datatransfers_requests.RefreshRequest": {
             "type": "object",
             "required": [
                 "refresh_token"
@@ -655,7 +655,7 @@ const docTemplate = `{
                 }
             }
         },
-        "templatev27_internal_http_datatransfers_requests.RegisterRequest": {
+        "template_internal_http_datatransfers_requests.RegisterRequest": {
             "type": "object",
             "required": [
                 "email",
@@ -679,24 +679,29 @@ const docTemplate = `{
                 }
             }
         },
-        "templatev27_internal_http_datatransfers_requests.ResetPasswordRequest": {
+        "template_internal_http_datatransfers_requests.ResetPasswordRequest": {
             "type": "object",
             "required": [
-                "new_password",
-                "token"
+                "code",
+                "email",
+                "new_password"
             ],
             "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string",
+                    "maxLength": 50
+                },
                 "new_password": {
                     "type": "string",
                     "maxLength": 72,
                     "minLength": 12
-                },
-                "token": {
-                    "type": "string"
                 }
             }
         },
-        "templatev27_internal_http_datatransfers_requests.SendOTPRequest": {
+        "template_internal_http_datatransfers_requests.SendOTPRequest": {
             "type": "object",
             "required": [
                 "email"
@@ -708,7 +713,7 @@ const docTemplate = `{
                 }
             }
         },
-        "templatev27_internal_http_datatransfers_requests.VerifyOTPRequest": {
+        "template_internal_http_datatransfers_requests.VerifyOTPRequest": {
             "type": "object",
             "required": [
                 "code",
@@ -724,7 +729,7 @@ const docTemplate = `{
                 }
             }
         },
-        "templatev27_internal_http_datatransfers_responses.UserResponse": {
+        "template_internal_http_datatransfers_responses.UserResponse": {
             "type": "object",
             "properties": {
                 "created_at": {
@@ -753,7 +758,7 @@ const docTemplate = `{
                 }
             }
         },
-        "templatev27_internal_http_handlers_v1.BaseResponse": {
+        "template_internal_http_handlers_v1.BaseResponse": {
             "type": "object",
             "properties": {
                 "data": {},
@@ -786,7 +791,7 @@ var SwaggerInfo = &swag.Spec{
 	BasePath:         "/api/v1",
 	Schemes:          []string{"http", "https"},
 	Title:            "Gerege Backend Template v27 API",
-	Description:      "Fiber v3 + GORM (PostgreSQL) + Redis дээр суурилсан Clean Architecture бүхий Go backend. Нээлттэй эхийн snykk/go-rest-boilerplate (MIT, зохиогч Najib Fikri)-ээс үүсэлтэй; Gin -> Fiber v3 болон sqlx -> GORM руу хөрвүүлсэн.",
+	Description:      "chi (net/http) + pgx (PostgreSQL) + Redis дээр суурилсан Clean Architecture бүхий Go backend. Нээлттэй эхийн snykk/go-rest-boilerplate (MIT, зохиогч Najib Fikri)-ээс үүсэлтэй; HTTP давхаргыг chi, өгөгдлийн давхаргыг pgx руу хөрвүүлсэн.",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
 	LeftDelim:        "{{",

@@ -1,6 +1,6 @@
 basePath: /api/v1
 definitions:
-  templatev27_internal_http_datatransfers_requests.ChangePasswordRequest:
+  template_internal_http_datatransfers_requests.ChangePasswordRequest:
     properties:
       current_password:
         maxLength: 72
@@ -14,7 +14,7 @@ definitions:
     - current_password
     - new_password
     type: object
-  templatev27_internal_http_datatransfers_requests.ForgotPasswordRequest:
+  template_internal_http_datatransfers_requests.ForgotPasswordRequest:
     properties:
       email:
         maxLength: 50
@@ -22,7 +22,7 @@ definitions:
     required:
     - email
     type: object
-  templatev27_internal_http_datatransfers_requests.LoginRequest:
+  template_internal_http_datatransfers_requests.LoginRequest:
     properties:
       email:
         maxLength: 50
@@ -35,14 +35,14 @@ definitions:
     - email
     - password
     type: object
-  templatev27_internal_http_datatransfers_requests.RefreshRequest:
+  template_internal_http_datatransfers_requests.RefreshRequest:
     properties:
       refresh_token:
         type: string
     required:
     - refresh_token
     type: object
-  templatev27_internal_http_datatransfers_requests.RegisterRequest:
+  template_internal_http_datatransfers_requests.RegisterRequest:
     properties:
       email:
         maxLength: 50
@@ -60,19 +60,23 @@ definitions:
     - password
     - username
     type: object
-  templatev27_internal_http_datatransfers_requests.ResetPasswordRequest:
+  template_internal_http_datatransfers_requests.ResetPasswordRequest:
     properties:
+      code:
+        type: string
+      email:
+        maxLength: 50
+        type: string
       new_password:
         maxLength: 72
         minLength: 12
         type: string
-      token:
-        type: string
     required:
+    - code
+    - email
     - new_password
-    - token
     type: object
-  templatev27_internal_http_datatransfers_requests.SendOTPRequest:
+  template_internal_http_datatransfers_requests.SendOTPRequest:
     properties:
       email:
         maxLength: 50
@@ -80,7 +84,7 @@ definitions:
     required:
     - email
     type: object
-  templatev27_internal_http_datatransfers_requests.VerifyOTPRequest:
+  template_internal_http_datatransfers_requests.VerifyOTPRequest:
     properties:
       code:
         type: string
@@ -91,7 +95,7 @@ definitions:
     - code
     - email
     type: object
-  templatev27_internal_http_datatransfers_responses.UserResponse:
+  template_internal_http_datatransfers_responses.UserResponse:
     properties:
       created_at:
         type: string
@@ -110,7 +114,7 @@ definitions:
       username:
         type: string
     type: object
-  templatev27_internal_http_handlers_v1.BaseResponse:
+  template_internal_http_handlers_v1.BaseResponse:
     properties:
       data: {}
       message:
@@ -125,9 +129,9 @@ info:
   contact:
     name: Gerege Backend Template v27
     url: https://github.com/snykk/go-rest-boilerplate
-  description: Fiber v3 + GORM (PostgreSQL) + Redis дээр суурилсан Clean Architecture
+  description: chi (net/http) + pgx (PostgreSQL) + Redis дээр суурилсан Clean Architecture
     бүхий Go backend. Нээлттэй эхийн snykk/go-rest-boilerplate (MIT, зохиогч Najib
-    Fikri)-ээс үүсэлтэй; Gin -> Fiber v3 болон sqlx -> GORM руу хөрвүүлсэн.
+    Fikri)-ээс үүсэлтэй; HTTP давхаргыг chi, өгөгдлийн давхаргыг pgx руу хөрвүүлсэн.
   license:
     name: MIT
     url: https://opensource.org/licenses/MIT
@@ -148,7 +152,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/templatev27_internal_http_datatransfers_requests.LoginRequest'
+          $ref: '#/definitions/template_internal_http_datatransfers_requests.LoginRequest'
       produces:
       - application/json
       responses:
@@ -156,27 +160,27 @@ paths:
           description: Tokens issued
           schema:
             allOf:
-            - $ref: '#/definitions/templatev27_internal_http_handlers_v1.BaseResponse'
+            - $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
             - properties:
                 data:
-                  $ref: '#/definitions/templatev27_internal_http_datatransfers_responses.UserResponse'
+                  $ref: '#/definitions/template_internal_http_datatransfers_responses.UserResponse'
               type: object
         "400":
           description: Malformed JSON body
           schema:
-            $ref: '#/definitions/templatev27_internal_http_handlers_v1.BaseResponse'
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
         "401":
           description: Invalid email or password
           schema:
-            $ref: '#/definitions/templatev27_internal_http_handlers_v1.BaseResponse'
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
         "403":
           description: Account not yet activated
           schema:
-            $ref: '#/definitions/templatev27_internal_http_handlers_v1.BaseResponse'
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
         "422":
           description: Validation error
           schema:
-            $ref: '#/definitions/templatev27_internal_http_handlers_v1.BaseResponse'
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
       summary: Баталгаажуулж токен хос олгох
       tags:
       - auth
@@ -193,22 +197,22 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/templatev27_internal_http_datatransfers_requests.RefreshRequest'
+          $ref: '#/definitions/template_internal_http_datatransfers_requests.RefreshRequest'
       produces:
       - application/json
       responses:
         "200":
           description: Logged out
           schema:
-            $ref: '#/definitions/templatev27_internal_http_handlers_v1.BaseResponse'
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
         "401":
           description: Refresh token invalid
           schema:
-            $ref: '#/definitions/templatev27_internal_http_handlers_v1.BaseResponse'
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
         "422":
           description: Validation error
           schema:
-            $ref: '#/definitions/templatev27_internal_http_handlers_v1.BaseResponse'
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
       summary: Refresh токеныг хүчингүй болгох
       tags:
       - auth
@@ -224,26 +228,26 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/templatev27_internal_http_datatransfers_requests.ChangePasswordRequest'
+          $ref: '#/definitions/template_internal_http_datatransfers_requests.ChangePasswordRequest'
       produces:
       - application/json
       responses:
         "200":
           description: Password changed
           schema:
-            $ref: '#/definitions/templatev27_internal_http_handlers_v1.BaseResponse'
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
         "400":
           description: Malformed JSON body
           schema:
-            $ref: '#/definitions/templatev27_internal_http_handlers_v1.BaseResponse'
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
         "401":
           description: Current password incorrect
           schema:
-            $ref: '#/definitions/templatev27_internal_http_handlers_v1.BaseResponse'
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
         "422":
           description: Validation error
           schema:
-            $ref: '#/definitions/templatev27_internal_http_handlers_v1.BaseResponse'
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
       security:
       - BearerAuth: []
       summary: Баталгаажуулагдсан хэрэглэгчийн нууц үгийг солих
@@ -253,15 +257,16 @@ paths:
     post:
       consumes:
       - application/json
-      description: Хаяг руу битүүмжилсэн сэргээх токеныг и-мэйлээр илгээнэ. Хэрэглэгчийг
-        тоолохоос сэргийлэхийн тулд email бүртгэлгүй байсан ч үргэлж 200 буцаана.
+      description: Хаяг руу нэг удаагийн OTP кодыг (GeregeCloud Verify) и-мэйлээр
+        илгээнэ. Хэрэглэгчийг тоолохоос сэргийлэхийн тулд email бүртгэлгүй байсан
+        ч үргэлж 200 буцаана.
       parameters:
       - description: Email address
         in: body
         name: request
         required: true
         schema:
-          $ref: '#/definitions/templatev27_internal_http_datatransfers_requests.ForgotPasswordRequest'
+          $ref: '#/definitions/template_internal_http_datatransfers_requests.ForgotPasswordRequest'
       produces:
       - application/json
       responses:
@@ -269,51 +274,51 @@ paths:
           description: Reset email queued (or email not registered — same response
             either way)
           schema:
-            $ref: '#/definitions/templatev27_internal_http_handlers_v1.BaseResponse'
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
         "400":
           description: Malformed JSON body
           schema:
-            $ref: '#/definitions/templatev27_internal_http_handlers_v1.BaseResponse'
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
         "422":
           description: Validation error
           schema:
-            $ref: '#/definitions/templatev27_internal_http_handlers_v1.BaseResponse'
-      summary: Нууц үг сэргээх токен олгох
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      summary: Нууц үг сэргээх OTP код илгээх
       tags:
       - auth
   /auth/password/reset:
     post:
       consumes:
       - application/json
-      description: ForgotPassword-ийн олгосон токеныг баталгаажуулж, шинэ нууц үг
-        тогтоож, цуцлалтын хязгаарыг урагшлуулна.
+      description: ForgotPassword-ийн email-ээр илгээсэн OTP кодыг GeregeCloud Verify-ээр
+        баталгаажуулж, шинэ нууц үг тогтоож, токены цуцлалтын хязгаарыг урагшлуулна.
       parameters:
-      - description: Reset token + new password
+      - description: Email + OTP code + new password
         in: body
         name: request
         required: true
         schema:
-          $ref: '#/definitions/templatev27_internal_http_datatransfers_requests.ResetPasswordRequest'
+          $ref: '#/definitions/template_internal_http_datatransfers_requests.ResetPasswordRequest'
       produces:
       - application/json
       responses:
         "200":
           description: Password reset
           schema:
-            $ref: '#/definitions/templatev27_internal_http_handlers_v1.BaseResponse'
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
         "400":
           description: Malformed JSON body
           schema:
-            $ref: '#/definitions/templatev27_internal_http_handlers_v1.BaseResponse'
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
         "401":
-          description: Reset token invalid or expired
+          description: Reset code invalid or expired
           schema:
-            $ref: '#/definitions/templatev27_internal_http_handlers_v1.BaseResponse'
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
         "422":
           description: Validation error
           schema:
-            $ref: '#/definitions/templatev27_internal_http_handlers_v1.BaseResponse'
-      summary: Сэргээх токеныг ашиглаж шинэ нууц үг тогтоох
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      summary: OTP кодоор шинэ нууц үг тогтоох
       tags:
       - auth
   /auth/refresh:
@@ -329,7 +334,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/templatev27_internal_http_datatransfers_requests.RefreshRequest'
+          $ref: '#/definitions/template_internal_http_datatransfers_requests.RefreshRequest'
       produces:
       - application/json
       responses:
@@ -337,23 +342,23 @@ paths:
           description: New token pair
           schema:
             allOf:
-            - $ref: '#/definitions/templatev27_internal_http_handlers_v1.BaseResponse'
+            - $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
             - properties:
                 data:
-                  $ref: '#/definitions/templatev27_internal_http_datatransfers_responses.UserResponse'
+                  $ref: '#/definitions/template_internal_http_datatransfers_responses.UserResponse'
               type: object
         "401":
           description: Refresh token invalid, expired, or already revoked
           schema:
-            $ref: '#/definitions/templatev27_internal_http_handlers_v1.BaseResponse'
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
         "403":
           description: Account no longer active
           schema:
-            $ref: '#/definitions/templatev27_internal_http_handlers_v1.BaseResponse'
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
         "422":
           description: Validation error
           schema:
-            $ref: '#/definitions/templatev27_internal_http_handlers_v1.BaseResponse'
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
       summary: Refresh токеныг сэлгэж, шинэ хос буцаах
       tags:
       - auth
@@ -370,7 +375,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/templatev27_internal_http_datatransfers_requests.RegisterRequest'
+          $ref: '#/definitions/template_internal_http_datatransfers_requests.RegisterRequest'
       produces:
       - application/json
       responses:
@@ -378,27 +383,27 @@ paths:
           description: User created
           schema:
             allOf:
-            - $ref: '#/definitions/templatev27_internal_http_handlers_v1.BaseResponse'
+            - $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
             - properties:
                 data:
-                  $ref: '#/definitions/templatev27_internal_http_datatransfers_responses.UserResponse'
+                  $ref: '#/definitions/template_internal_http_datatransfers_responses.UserResponse'
               type: object
         "400":
           description: Malformed JSON body
           schema:
-            $ref: '#/definitions/templatev27_internal_http_handlers_v1.BaseResponse'
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
         "409":
           description: Email or username already in use
           schema:
-            $ref: '#/definitions/templatev27_internal_http_handlers_v1.BaseResponse'
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
         "422":
           description: Validation error (per-field detail in data.errors)
           schema:
-            $ref: '#/definitions/templatev27_internal_http_handlers_v1.BaseResponse'
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
         "500":
           description: Internal error
           schema:
-            $ref: '#/definitions/templatev27_internal_http_handlers_v1.BaseResponse'
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
       summary: Шинэ хэрэглэгч бүртгэх
       tags:
       - auth
@@ -406,39 +411,38 @@ paths:
     post:
       consumes:
       - application/json
-      description: 6 оронтой OTP үүсгэж, TTL-тэйгээр Redis-д хадгалж, async mailer-ээр
-        и-мэйлийг дараалалд оруулна. HTTP хариу нь бодит SMTP хүргэлт дээр биш, дараалалд
-        оруулах үед буцдаг.
+      description: GeregeCloud Verify API-аар OTP илгээж, буцаасан request_id-г TTL-тэйгээр
+        Redis-д хадгална. Кодын үүсгэлт/хадгалалт/илгээлтийг Verify үйлчилгээ хариуцна.
       parameters:
       - description: Email to send OTP to
         in: body
         name: request
         required: true
         schema:
-          $ref: '#/definitions/templatev27_internal_http_datatransfers_requests.SendOTPRequest'
+          $ref: '#/definitions/template_internal_http_datatransfers_requests.SendOTPRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OTP enqueued
           schema:
-            $ref: '#/definitions/templatev27_internal_http_handlers_v1.BaseResponse'
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
         "400":
           description: Account already activated
           schema:
-            $ref: '#/definitions/templatev27_internal_http_handlers_v1.BaseResponse'
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
         "404":
           description: Email not registered
           schema:
-            $ref: '#/definitions/templatev27_internal_http_handlers_v1.BaseResponse'
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
         "422":
           description: Validation error
           schema:
-            $ref: '#/definitions/templatev27_internal_http_handlers_v1.BaseResponse'
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
         "500":
           description: Failed to enqueue mail
           schema:
-            $ref: '#/definitions/templatev27_internal_http_handlers_v1.BaseResponse'
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
       summary: Хэрэглэгчийн email рүү OTP код илгээх
       tags:
       - auth
@@ -456,30 +460,30 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/templatev27_internal_http_datatransfers_requests.VerifyOTPRequest'
+          $ref: '#/definitions/template_internal_http_datatransfers_requests.VerifyOTPRequest'
       produces:
       - application/json
       responses:
         "200":
           description: Account activated
           schema:
-            $ref: '#/definitions/templatev27_internal_http_handlers_v1.BaseResponse'
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
         "400":
           description: Invalid OTP code
           schema:
-            $ref: '#/definitions/templatev27_internal_http_handlers_v1.BaseResponse'
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
         "403":
           description: Locked out — too many invalid attempts
           schema:
-            $ref: '#/definitions/templatev27_internal_http_handlers_v1.BaseResponse'
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
         "404":
           description: Email not registered
           schema:
-            $ref: '#/definitions/templatev27_internal_http_handlers_v1.BaseResponse'
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
         "422":
           description: Validation error
           schema:
-            $ref: '#/definitions/templatev27_internal_http_handlers_v1.BaseResponse'
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
       summary: OTP кодыг шалгаж бүртгэлийг идэвхжүүлэх
       tags:
       - auth
@@ -494,19 +498,19 @@ paths:
           description: User profile
           schema:
             allOf:
-            - $ref: '#/definitions/templatev27_internal_http_handlers_v1.BaseResponse'
+            - $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
             - properties:
                 data:
-                  $ref: '#/definitions/templatev27_internal_http_datatransfers_responses.UserResponse'
+                  $ref: '#/definitions/template_internal_http_datatransfers_responses.UserResponse'
               type: object
         "401":
           description: Missing or invalid token
           schema:
-            $ref: '#/definitions/templatev27_internal_http_handlers_v1.BaseResponse'
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
         "404":
           description: User no longer exists
           schema:
-            $ref: '#/definitions/templatev27_internal_http_handlers_v1.BaseResponse'
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
       security:
       - BearerAuth: []
       summary: Одоогийн хэрэглэгчийн профайлыг буцаах

@@ -7,8 +7,8 @@ auto-generated spec is served at `GET /swagger/` (source: `docs/swagger.json`).
 
 > **Origin.** Derived from the open-source
 > [snykk/go-rest-boilerplate](https://github.com/snykk/go-rest-boilerplate)
-> (MIT, by Najib Fikri); HTTP layer ported **Gin → Fiber v3**, data layer
-> **sqlx → GORM**. See [ARCHITECTURE.md](./ARCHITECTURE.md#credits--license).
+> (MIT, by Najib Fikri); HTTP layer ported **Gin → chi (net/http)**, data layer
+> **sqlx → pgx (pgxpool)**. See [ARCHITECTURE.md](./ARCHITECTURE.md#credits--license).
 
 ## Conventions
 
@@ -52,13 +52,15 @@ Every response uses one envelope:
 
 ### Validation error (422)
 
-Field-level detail is returned under `data.errors`:
+Field-level detail is returned under `data.errors`, which is an **array** of
+`{ field, tag, message }` objects. `field` is the JSON tag name (e.g.
+`new_password`, `email`):
 
 ```json
 {
   "status": false,
   "message": "validation failed",
-  "data": { "errors": { "password": "password must be at least 12 characters" } },
+  "data": { "errors": [ { "field": "new_password", "tag": "min", "message": "must be at least 12 characters long" } ] },
   "request_id": "b1d2…"
 }
 ```
@@ -137,14 +139,15 @@ Revoke the supplied refresh token.
 Begin a password reset. Always returns 200 (does not reveal whether the email exists).
 
 **Request** `{ "email": "john@example.com" }`
-**Response `200`** — message `"if the email is registered, a reset link has been sent"`, `data: null`.
+**Response `200`** — message `"if the email is registered, a reset code has been sent"`, `data: null`.
+A 6-digit OTP is sent via GeregeCloud Verify to the email.
 
 ### POST `/auth/password/reset`
-Complete a password reset with the token from the reset flow.
+Complete a password reset with the OTP code emailed by the forgot-password flow.
 
-**Request** `{ "token": "<reset_token>", "new_password": "N3w!Str0ngPass" }`
+**Request** `{ "email": "john@example.com", "code": "123456", "new_password": "N3w!Str0ngPass" }`
 **Response `200`** — message `"password reset"`, `data: null`.
-Errors: `401/400` invalid/expired token, `422` validation.
+Errors: `401` reset code is invalid or expired, `422` validation.
 
 ### PUT `/auth/password/change` 🔒
 Change the password for the authenticated user. Requires `Authorization: Bearer`.
@@ -178,7 +181,7 @@ Errors: `401` missing/invalid token.
 | Method | Path | Description |
 |--------|------|-------------|
 | GET | `/health` | Liveness — always 200 if the process is up |
-| GET | `/ready` | Readiness — pings Postgres (GORM) + Redis |
+| GET | `/ready` | Readiness — pings Postgres (pgx pool) + Redis |
 | GET | `/metrics` | Prometheus exposition |
 | GET | `/swagger/*` | Swagger UI + spec |
 

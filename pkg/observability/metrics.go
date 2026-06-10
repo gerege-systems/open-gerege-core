@@ -23,10 +23,10 @@ var (
 		[]string{"layer", "op", "result"},
 	)
 
-	mailerOpsTotal = prometheus.NewCounterVec(
+	otpSendTotal = prometheus.NewCounterVec(
 		prometheus.CounterOpts{
-			Name: "mailer_operations_total",
-			Help: "OTP mailer outcomes: sent, failed, queue_full.",
+			Name: "otp_send_total",
+			Help: "OTP send outcomes via GeregeCloud Verify: sent, failed.",
 		},
 		[]string{"result"},
 	)
@@ -55,7 +55,7 @@ var (
 )
 
 func init() {
-	prometheus.MustRegister(cacheOpsTotal, mailerOpsTotal, dbPoolOpen, dbPoolInUse, dbPoolWait)
+	prometheus.MustRegister(cacheOpsTotal, otpSendTotal, dbPoolOpen, dbPoolInUse, dbPoolWait)
 }
 
 // DBPoolStats нь database/sql эсвэл pgxpool-аас үл хамааран pool-ийн
@@ -107,9 +107,10 @@ func ObserveCacheOp(layer, op, result string) {
 	cacheOpsTotal.WithLabelValues(layer, op, result).Inc()
 }
 
-// ObserveMailerOp нь нэг mailer-ийн үр дүнг тэмдэглэнэ.
+// ObserveOTPSend нь GeregeCloud Verify-ээр OTP илгээх нэг үйлдлийн үр дүнг
+// тэмдэглэнэ.
 //
-//	result: "sent" | "failed" | "queue_full"
-func ObserveMailerOp(result string) {
-	mailerOpsTotal.WithLabelValues(result).Inc()
+//	result: "sent" | "failed"
+func ObserveOTPSend(result string) {
+	otpSendTotal.WithLabelValues(result).Inc()
 }

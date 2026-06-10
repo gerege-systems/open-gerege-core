@@ -12,7 +12,6 @@ import (
 	"template/internal/datasources/caches"
 	"template/pkg/jwt"
 	"template/pkg/logger"
-	"template/pkg/mailer"
 	"template/pkg/verify"
 )
 
@@ -22,20 +21,19 @@ import (
 type usecase struct {
 	users      users.Usecase
 	jwtService jwt.JWTService
-	mailer     mailer.OTPMailer
 	verifier   verify.Sender
 	redisCache caches.RedisCache
 	cfg        Config
 }
 
 // NewUsecase нь auth урсгалуудыг холбодог. Identity унших/бичихэд
-// users.Usecase-ээс, OTP-д verify.Sender (GeregeCloud Verify API)-ээс, нууц үг
-// мартсан холбоост mailer-ээс, бусад auth-хэсгүүдэд jwt/redis-ээс хамаардаг.
-func NewUsecase(usersUC users.Usecase, jwtService jwt.JWTService, otpMailer mailer.OTPMailer, verifier verify.Sender, redisCache caches.RedisCache, cfg Config) Usecase {
+// users.Usecase-ээс, бүх email/SMS OTP (бүртгэл баталгаажуулах болон нууц үг
+// сэргээх)-д verify.Sender (GeregeCloud Verify API)-ээс, бусад auth-хэсгүүдэд
+// jwt/redis-ээс хамаардаг.
+func NewUsecase(usersUC users.Usecase, jwtService jwt.JWTService, verifier verify.Sender, redisCache caches.RedisCache, cfg Config) Usecase {
 	return &usecase{
 		users:      usersUC,
 		jwtService: jwtService,
-		mailer:     otpMailer,
 		verifier:   verifier,
 		redisCache: redisCache,
 		cfg:        cfg,

@@ -35,9 +35,9 @@ type Config struct {
 	// алдаатай жинхэнэ хэрэглэгч бүрмөсөн хаагдахааргүй богино.
 	LoginLockoutTTL time.Duration
 	// ForgotMaxAttempts нь нэг email ForgotLockoutTTL дотор хичнээн
-	// /password/forgot дуудлага өдөөж болохыг хязгаарлана. Mailer-ийн дарааллыг
-	// урвуулан ашиглахаас (гадагшаа email спамаар DOS хийх) болон халдагчийн
-	// өдөөсөн reset-токен эргэлтээс хамгаална.
+	// /password/forgot дуудлага өдөөж болохыг хязгаарлана. GeregeCloud Verify
+	// руу OTP илгээлтийг урвуулан ашиглахаас (гадагшаа email/SMS спамаар DOS
+	// хийх, төлбөр шатаах) болон халдагчийн өдөөсөн reset-код эргэлтээс хамгаална.
 	ForgotMaxAttempts int
 	// ForgotLockoutTTL нь /password/forgot-ийн rate-limit-ийн цонх юм.
 	ForgotLockoutTTL time.Duration

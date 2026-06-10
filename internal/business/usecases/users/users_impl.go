@@ -35,7 +35,7 @@ type usecase struct {
 }
 
 // NewUsecase нь User CRUD use case-ийг үүсгэнэ. Энэ нь auth-тай холбоотой ямар
-// нэг хамтрагчаас (JWT, Redis, mailer байхгүй) хамаардаггүй — энэ нь User vs
+// нэг хамтрагчаас (JWT, Redis, OTP verifier байхгүй) хамаардаггүй — энэ нь User vs
 // Auth хуваагдлын гол утга юм.
 func NewUsecase(repo repointerface.UserRepository, ristrettoCache caches.RistrettoCache, cfg Config) Usecase {
 	return &usecase{

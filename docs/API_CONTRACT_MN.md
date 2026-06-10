@@ -8,8 +8,8 @@
 
 > **Эх сурвалж.** Нээлттэй эх
 > [snykk/go-rest-boilerplate](https://github.com/snykk/go-rest-boilerplate)
-> (MIT, Najib Fikri)-аас гаралтай; HTTP давхаргыг **Gin → Fiber v3**,
-> өгөгдлийн давхаргыг **sqlx → GORM** болгосон.
+> (MIT, Najib Fikri)-аас гаралтай; HTTP давхаргыг **Gin → chi (net/http)**,
+> өгөгдлийн давхаргыг **sqlx → pgx (pgxpool)** болгосон.
 
 ## Дүрэм
 
@@ -37,7 +37,7 @@
 | 403 | Хориглосон (lockout) |
 | 404 | Олдсонгүй |
 | 409 | Давхцал (username/email) |
-| 422 | Validation алдаа (`data.errors` дотор талбараар) |
+| 422 | Validation алдаа (`data.errors` нь `{field, tag, message}` объектуудын массив) |
 | 429 | Хэт олон хүсэлт |
 | 500 | Дотоод алдаа |
 
@@ -55,8 +55,8 @@
 | POST | `/auth/verify-otp` | `email`, `code`(numeric) | `200` "otp verification success" |
 | POST | `/auth/refresh` | `refresh_token` | `200` "token refreshed" + шинэ token pair |
 | POST | `/auth/logout` | `refresh_token` | `200` "logout success" |
-| POST | `/auth/password/forgot` | `email` | `200` "if the email is registered…" |
-| POST | `/auth/password/reset` | `token`, `new_password`(strong) | `200` "password reset" |
+| POST | `/auth/password/forgot` | `email` | `200` "if the email is registered, a reset code has been sent" (6 оронтой OTP илгээнэ) |
+| POST | `/auth/password/reset` | `email`, `code`, `new_password`(strong) | `200` "password reset"; `401` код буруу/хүчингүй |
 | PUT 🔒 | `/auth/password/change` | `current_password`, `new_password`(strong) | `200` "password changed" |
 
 ### Жишээ: нэвтрэх

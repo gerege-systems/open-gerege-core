@@ -25,9 +25,10 @@ import (
 
 // AuthFixture нь end-to-end тестүүдэд ашиглагддаг бүрэн холбогдсон auth
 // хэсэг юм: жинхэнэ Postgres, жинхэнэ Redis, жинхэнэ Ristretto, жинхэнэ
-// JWT — зөвхөн гадагш чиглэсэн SMTP mailer л хуурамчаар хийгдсэн, учир
-// нь бид OTP кодуудыг барьж аваад VerifyOTP руу буцаан өгөх хэрэгтэй
-// бөгөөд SMTP-г CI-д ажиллуулах нь ямар ч байсан үнэ цэнэгүй.
+// JWT — зөвхөн гадагш чиглэсэн GeregeCloud Verify үйлчилгээ л хуурамчаар
+// (FakeVerifier) хийгдсэн, учир нь бид OTP кодуудыг барьж аваад
+// VerifyOTP/ResetPassword руу буцаан өгөх хэрэгтэй бөгөөд гадны API-г
+// CI-д дуудах нь үнэ цэнэгүй.
 //
 // Хоёр bounded context хоёулаа илчлэгдсэн: туршиж буй auth урсгалуудад
 // Auth, хэрэглэгчийн бичлэгүүдийг шууд унших эсвэл өөрчлөх шаардлагатай
@@ -35,7 +36,6 @@ import (
 type AuthFixture struct {
 	Auth     auth.Usecase
 	Users    users.Usecase
-	Mailer   *CapturingMailer
 	Verifier *FakeVerifier
 	JWT      jwt.JWTService
 }
@@ -90,42 +90,6 @@ func (v *FakeVerifier) LastCode(t *testing.T, receiver string) string {
 	return ""
 }
 
-// CapturingMailer нь OTP+хүлээн авагч хос бүрийг бүртгэдэг тул тестүүд
-// 6 санамсаргүй оронг таахын оронд кодыг гаргаж авч чадна.
-type CapturingMailer struct {
-	mu       sync.Mutex
-	captured []otpCapture
-}
-
-type otpCapture struct{ Code, Receiver string }
-
-// SendOTP нь mailer.OTPMailer-г хангадаг. Үргэлж амжилттай болдог.
-func (m *CapturingMailer) SendOTP(_ context.Context, code, receiver string) error {
-	m.mu.Lock()
-	defer m.mu.Unlock()
-	m.captured = append(m.captured, otpCapture{Code: code, Receiver: receiver})
-	return nil
-}
-
-func (m *CapturingMailer) SendPasswordReset(ctx context.Context, token, receiver string) error {
-	return m.SendOTP(ctx, token, receiver)
-}
-
-// LastOTP нь хүлээн авагчид зориулж хамгийн сүүлд барьж авсан OTP-г
-// буцаана, эсвэл нэг ч илгээгээгүй бол тестийг унагана.
-func (m *CapturingMailer) LastOTP(t *testing.T, receiver string) string {
-	t.Helper()
-	m.mu.Lock()
-	defer m.mu.Unlock()
-	for i := len(m.captured) - 1; i >= 0; i-- {
-		if m.captured[i].Receiver == receiver {
-			return m.captured[i].Code
-		}
-	}
-	t.Fatalf("no OTP captured for %s", receiver)
-	return ""
-}
-
 // NewAuthFixture нь хоёр bounded context-г шинэ Postgres + Redis
 // контейнеруудтай холбоно. Тохируулж болох тохиргоонууд (OTP оролдлого,
 // JWT secret-ийн урт, bcrypt cost) нь боломжийн өгөгдмөл утгуудаас
@@ -170,13 +134,12 @@ func NewAuthFixture(t *testing.T) *AuthFixture {
 		config.AppConfig.JWTRefreshExpired,
 	)
 
-	mailer := &CapturingMailer{}
 	verifier := &FakeVerifier{}
 	repo := userspostgres.NewUserRepository(db)
 	usersUC := users.NewUsecase(repo, ristretto, users.Config{
 		BcryptCost: config.AppConfig.BcryptCost,
 	})
-	authUC := auth.NewUsecase(usersUC, jwtSvc, mailer, verifier, redis, auth.Config{
+	authUC := auth.NewUsecase(usersUC, jwtSvc, verifier, redis, auth.Config{
 		OTPMaxAttempts:    5,
 		OTPTTL:            5 * time.Minute,
 		PasswordResetTTL:  30 * time.Minute,
@@ -190,7 +153,6 @@ func NewAuthFixture(t *testing.T) *AuthFixture {
 	return &AuthFixture{
 		Auth:     authUC,
 		Users:    usersUC,
-		Mailer:   mailer,
 		Verifier: verifier,
 		JWT:      jwtSvc,
 	}

@@ -3,40 +3,39 @@
 > 🌐 [English](README.md) · **Монгол**
 
 [![Go](https://img.shields.io/badge/Go-1.26-blue.svg)](https://golang.org/)
-[![Fiber](https://img.shields.io/badge/Fiber-v3-00ACD7.svg)](https://gofiber.io/)
-[![GORM](https://img.shields.io/badge/GORM-v2-CB3837.svg)](https://gorm.io/)
+[![chi](https://img.shields.io/badge/chi-v5-00ADD8.svg)](https://github.com/go-chi/chi)
+[![pgx](https://img.shields.io/badge/pgx-v5-336791.svg)](https://github.com/jackc/pgx)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
 Clean Architecture зарчмаар бүтээгдсэн, өндөр гүйцэтгэлтэй Go backend template.
-**Fiber v3** (HTTP), **GORM + PostgreSQL** (өгөгдөл), **Redis + Ristretto**
-(кэш), **JWT + OTP** (танилт) дээр суурилсан.
+**chi (net/http)** (HTTP), **pgx (pgxpool) + PostgreSQL** (өгөгдөл),
+**Redis + Ristretto** (кэш), **JWT + OTP (GeregeCloud Verify)** (танилт) дээр
+суурилсан.
 
 ## 📌 Эх сурвалж ба нээлттэй эх (Open Source)
 
 > Энэ template нь **нээлттэй эх кодын төсөл
 > [snykk/go-rest-boilerplate](https://github.com/snykk/go-rest-boilerplate)**
 > (зохиогч: Najib Fikri, **MIT лиценз**) дээр **суурилж, түүнээс санаа авч**
-> бүтээгдсэн. Clean Architecture бүтэц, JWT/OTP танилт, mailer, audit, кэш,
+> бүтээгдсэн. Clean Architecture бүтэц, JWT/OTP танилт, audit, кэш,
 > observability, тестийн стратеги зэрэг нь тэндээс уламжлагдсан.
 >
 > Бид дараах хоёр зүйлийг **хөрвүүлсэн**:
-> - HTTP давхарга: **Gin → Fiber v3**
-> - Өгөгдлийн давхарга: **sqlx → GORM**
+> - HTTP давхарга: **Gin → chi (net/http)**
+> - Өгөгдлийн давхарга: **sqlx → pgx (pgxpool, гар бичсэн SQL)**
 >
-> Fiber v3-ийн хэрэглээг нээлттэй эх
-> [rachmanzz/fiber-starter](https://github.com/rachmanzz/fiber-starter) (MIT)
-> -ээс лавласан. Бүх эх төслүүд MIT лицензтэй бөгөөд тэдгээрийн зохиогчийн эрх,
+> Эх төсөл MIT лицензтэй бөгөөд түүний зохиогчийн эрх,
 > лицензийн нөхцлийг хүндэтгэн хадгалсан (доорх [Зохиогчид](#-зохиогчид--лиценз)
 > хэсгийг үз). Энэ template өөрөө мөн **MIT лицензтэй**.
 
 ## Онцлог
 
 - **Clean Architecture** — `handler → usecase → repository → domain`, дотогшоо чиглэсэн хамаарал, back-import байхгүй
-- **Fiber v3** — өндөр гүйцэтгэлтэй вэб framework
-- **GORM** — PostgreSQL дэмжлэгтэй ORM, soft-delete-тэй (`gorm.DeletedAt`)
+- **chi (net/http)** — стандарт сангийн идиоматик router
+- **pgx (pgxpool)** — гар бичсэн SQL, ORM-гүй; `deleted_at IS NULL`-аар тодорхой soft-delete
 - **JWT танилт** — access + refresh token (rotation, `kind` claim guard)
 - **OTP бүртгэл** — имэйл OTP-оор баталгаажуулах, brute-force lockout
-- **Async Mailer** — OTP имэйлийг хүсэлтийн замаас гадуур, retry-тэй илгээх
+- **GeregeCloud Verify** — бүх имэйл/SMS OTP (бүртгэл + нууц үг сэргээх) verify.gecloud.mn-ээр; SMTP байхгүй
 - **Audit log** — танилтын үйл явдлын бүртгэл
 - **Observability** — OpenTelemetry trace + Prometheus metrics
 - **Кэш** — Redis + Ristretto хоёр түвшний
@@ -44,7 +43,7 @@ Clean Architecture зарчмаар бүтээгдсэн, өндөр гүйцэ�
 - **Swagger** — godoc annotation-аас автомат API баримтжуулалт
 - **Structured Logging** — Zap, request ID дамжуулалттай
 - **Security** — security headers, CORS, rate limiting, body size limit
-- **Graceful Shutdown** — HTTP, mailer queue, DB, Redis, tracer-ийг дарааллаар хаах
+- **Graceful Shutdown** — HTTP, DB pool, Redis, tracer-ийг дарааллаар drain хийх
 
 ## Төслийн бүтэц
 
@@ -54,28 +53,29 @@ Clean Architecture зарчмаар бүтээгдсэн, өндөр гүйцэ�
 │   ├── api/main.go              # Аппликейшн эхлэх цэг
 │   ├── api/server/server.go     # Composition root (гар DI)
 │   ├── migration/               # Migration CLI
-│   └── seed/                    # Seed CLI
+│   ├── seed/                    # Seed CLI
+│   └── healthcheck/             # Distroless health probe
 ├── internal/
 │   ├── business/
 │   │   ├── domain/              # Domain entities (хамгийн дотоод давхарга)
 │   │   └── usecases/{auth,users}/  # Business logic (interface + impl)
 │   ├── datasources/
-│   │   ├── drivers/             # GORM Postgres холболт
+│   │   ├── drivers/             # pgx (pgxpool) Postgres холболт (driver_pgx.go)
 │   │   ├── caches/              # Redis + Ristretto
 │   │   ├── migration/           # Migration runner
-│   │   ├── records/             # GORM model + mapper
+│   │   ├── records/             # pgx record struct + record↔domain mapper
 │   │   └── repositories/        # interface + postgres impl
 │   ├── http/
 │   │   ├── handlers/v1/         # HTTP handlers
 │   │   ├── middlewares/         # Middleware stack
 │   │   ├── routes/              # Route бүртгэл
 │   │   ├── datatransfers/       # Request/Response DTO
-│   │   └── auth/                # Locals-аас CurrentUser
+│   │   └── auth/                # context-аас CurrentUser
 │   └── config/ apperror/ constants/
 ├── migrations/                  # SQL migrations
 ├── docs/                        # Swagger + ARCHITECTURE.md + DEVELOPMENT.md
 └── pkg/                         # jwt, logger, clock, helpers, validators,
-                                 # mailer, audit, observability
+                                 # audit, observability, verify
 ```
 
 ## Түргэн эхлүүлэх
@@ -126,6 +126,9 @@ DB_POSTGRE_DSN=...               # dev үед DSN
 DB_POSTGRE_URL=...               # production үед URL
 REDIS_HOST=localhost:6379
 BCRYPT_COST=12                   # 10..31
+VERIFY_API_KEY=...               # GeregeCloud Verify OTP (production-д заавал)
+VERIFY_API_BASE=https://verify.gecloud.mn/v1
+VERIFY_CHANNEL=email
 OTEL_EXPORTER=                   # хоосон=унтраах | stdout | otlp
 ALLOWED_ORIGINS=                 # production-д заавал (таслалаар)
 ```
@@ -186,12 +189,11 @@ curl http://localhost:8080/health
 
 | Төсөл | Зохиогч | Лиценз | Юу ашигласан |
 |-------|---------|--------|--------------|
-| [snykk/go-rest-boilerplate](https://github.com/snykk/go-rest-boilerplate) | Najib Fikri | MIT | Үндсэн архитектур, auth/OTP/mailer/audit, кэш, observability, тест |
-| [rachmanzz/fiber-starter](https://github.com/rachmanzz/fiber-starter) | rachmanzz | MIT | Fiber v3 идиомын лавлагаа |
-| [GoFiber](https://github.com/gofiber/fiber) · [GORM](https://github.com/go-gorm/gorm) | — | MIT | Framework · ORM |
+| [snykk/go-rest-boilerplate](https://github.com/snykk/go-rest-boilerplate) | Najib Fikri | MIT | Үндсэн архитектур, auth/OTP/audit, кэш, observability, тест |
+| [chi](https://github.com/go-chi/chi) · [pgx](https://github.com/jackc/pgx) | — | MIT | Router · Postgres драйвер |
 
-**Бидний өөрчлөлт:** HTTP давхаргыг **Gin → Fiber v3**, өгөгдлийн давхаргыг
-**sqlx → GORM** болгосон; бусдыг үнэнчээр хадгалсан. MIT уламжлалын дагуу
+**Бидний өөрчлөлт:** HTTP давхаргыг **Gin → chi (net/http)**, өгөгдлийн давхаргыг
+**sqlx → pgx (pgxpool, гар бичсэн SQL)** болгосон; бусдыг үнэнчээр хадгалсан. MIT уламжлалын дагуу
 эх төслүүдийн зохиогчийн эрхийн мэдэгдлийг хадгалсан бөгөөд энэ template нь
 **MIT License**-тэй (`LICENSE` файлыг үз).
 

@@ -3,40 +3,39 @@
 > 🌐 **English** · [Монгол](README_MN.md)
 
 [![Go](https://img.shields.io/badge/Go-1.26-blue.svg)](https://golang.org/)
-[![Fiber](https://img.shields.io/badge/Fiber-v3-00ACD7.svg)](https://gofiber.io/)
-[![GORM](https://img.shields.io/badge/GORM-v2-CB3837.svg)](https://gorm.io/)
+[![chi](https://img.shields.io/badge/chi-v5-00ADD8.svg)](https://github.com/go-chi/chi)
+[![pgx](https://img.shields.io/badge/pgx-v5-336791.svg)](https://github.com/jackc/pgx)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
 A high-performance Go backend template built on Clean Architecture principles.
-Based on **Fiber v3** (HTTP), **GORM + PostgreSQL** (data), **Redis + Ristretto**
-(cache), and **JWT + OTP** (authentication).
+Based on **chi (net/http)** for HTTP, **pgx (pgxpool) + PostgreSQL** for data,
+**Redis + Ristretto** for cache, and **JWT + OTP (GeregeCloud Verify)** for
+authentication.
 
 ## 📌 Origin & Open Source
 
 > This template is **based on and inspired by the open-source project
 > [snykk/go-rest-boilerplate](https://github.com/snykk/go-rest-boilerplate)**
 > (author: Najib Fikri, **MIT License**). The Clean Architecture structure,
-> JWT/OTP authentication, mailer, audit, cache, observability, and test strategy
+> JWT/OTP authentication, audit, cache, observability, and test strategy
 > are inherited from there.
 >
 > We **ported** the following two things:
-> - HTTP layer: **Gin → Fiber v3**
-> - Data layer: **sqlx → GORM**
+> - HTTP layer: **Gin → chi (net/http)**
+> - Data layer: **sqlx → pgx (pgxpool, hand-written SQL)**
 >
-> Fiber v3 usage was cross-referenced against the open-source
-> [rachmanzz/fiber-starter](https://github.com/rachmanzz/fiber-starter) (MIT).
-> All upstream projects are MIT-licensed, and their copyright and license terms
+> The upstream project is MIT-licensed, and its copyright and license terms
 > are honored and preserved (see the [Credits](#-credits--license) section
 > below). This template itself is also **MIT-licensed**.
 
 ## Features
 
 - **Clean Architecture** — `handler → usecase → repository → domain`, inward-facing dependencies, no back-imports
-- **Fiber v3** — high-performance web framework
-- **GORM** — PostgreSQL-backed ORM with soft-delete (`gorm.DeletedAt`)
+- **chi (net/http)** — idiomatic standard-library router
+- **pgx (pgxpool)** — hand-written SQL, no ORM; explicit soft-delete via `deleted_at IS NULL`
 - **JWT authentication** — access + refresh token (rotation, `kind` claim guard)
 - **OTP registration** — email OTP verification, brute-force lockout
-- **Async Mailer** — sends OTP email off the request path, with retry
+- **GeregeCloud Verify** — all email/SMS OTP (registration + password reset) via verify.gecloud.mn; no SMTP
 - **Audit log** — logging of authentication events
 - **Observability** — OpenTelemetry trace + Prometheus metrics
 - **Cache** — two-tier Redis + Ristretto
@@ -44,7 +43,7 @@ Based on **Fiber v3** (HTTP), **GORM + PostgreSQL** (data), **Redis + Ristretto*
 - **Swagger** — automatic API documentation from godoc annotations
 - **Structured Logging** — Zap, with request ID propagation
 - **Security** — security headers, CORS, rate limiting, body size limit
-- **Graceful Shutdown** — shuts down HTTP, mailer queue, DB, Redis, tracer in order
+- **Graceful Shutdown** — drains HTTP, DB pool, Redis, tracer in order
 
 ## Project Structure
 
@@ -54,28 +53,29 @@ Based on **Fiber v3** (HTTP), **GORM + PostgreSQL** (data), **Redis + Ristretto*
 │   ├── api/main.go              # Application entry point
 │   ├── api/server/server.go     # Composition root (manual DI)
 │   ├── migration/               # Migration CLI
-│   └── seed/                    # Seed CLI
+│   ├── seed/                    # Seed CLI
+│   └── healthcheck/             # Distroless health probe
 ├── internal/
 │   ├── business/
 │   │   ├── domain/              # Domain entities (innermost layer)
 │   │   └── usecases/{auth,users}/  # Business logic (interface + impl)
 │   ├── datasources/
-│   │   ├── drivers/             # GORM Postgres connection
+│   │   ├── drivers/             # pgx (pgxpool) Postgres connection (driver_pgx.go)
 │   │   ├── caches/              # Redis + Ristretto
 │   │   ├── migration/           # Migration runner
-│   │   ├── records/             # GORM model + mapper
+│   │   ├── records/             # pgx record structs + record↔domain mappers
 │   │   └── repositories/        # interface + postgres impl
 │   ├── http/
 │   │   ├── handlers/v1/         # HTTP handlers
 │   │   ├── middlewares/         # Middleware stack
 │   │   ├── routes/              # Route registration
 │   │   ├── datatransfers/       # Request/Response DTO
-│   │   └── auth/                # CurrentUser from Locals
+│   │   └── auth/                # CurrentUser from context
 │   └── config/ apperror/ constants/
 ├── migrations/                  # SQL migrations
 ├── docs/                        # Swagger + ARCHITECTURE.md + DEVELOPMENT.md
 └── pkg/                         # jwt, logger, clock, helpers, validators,
-                                 # mailer, audit, observability
+                                 # audit, observability, verify
 ```
 
 ## Quick Start
@@ -126,6 +126,9 @@ DB_POSTGRE_DSN=...               # DSN in dev
 DB_POSTGRE_URL=...               # URL in production
 REDIS_HOST=localhost:6379
 BCRYPT_COST=12                   # 10..31
+VERIFY_API_KEY=...               # GeregeCloud Verify OTP (required in production)
+VERIFY_API_BASE=https://verify.gecloud.mn/v1
+VERIFY_CHANNEL=email
 OTEL_EXPORTER=                   # empty=off | stdout | otlp
 ALLOWED_ORIGINS=                 # required in production (comma-separated)
 ```
@@ -186,12 +189,11 @@ This template stands on open-source work:
 
 | Project | Author | License | What we used |
 |-------|---------|--------|--------------|
-| [snykk/go-rest-boilerplate](https://github.com/snykk/go-rest-boilerplate) | Najib Fikri | MIT | Base architecture, auth/OTP/mailer/audit, cache, observability, tests |
-| [rachmanzz/fiber-starter](https://github.com/rachmanzz/fiber-starter) | rachmanzz | MIT | Fiber v3 idioms reference |
-| [GoFiber](https://github.com/gofiber/fiber) · [GORM](https://github.com/go-gorm/gorm) | — | MIT | Framework · ORM |
+| [snykk/go-rest-boilerplate](https://github.com/snykk/go-rest-boilerplate) | Najib Fikri | MIT | Base architecture, auth/OTP/audit, cache, observability, tests |
+| [chi](https://github.com/go-chi/chi) · [pgx](https://github.com/jackc/pgx) | — | MIT | Router · Postgres driver |
 
-**Our changes:** ported the HTTP layer **Gin → Fiber v3** and the data layer
-**sqlx → GORM**; everything else was preserved faithfully. In keeping with the
+**Our changes:** ported the HTTP layer **Gin → chi (net/http)** and the data layer
+**sqlx → pgx (pgxpool, hand-written SQL)**; everything else was preserved faithfully. In keeping with the
 MIT tradition, the upstream projects' copyright notices are retained, and this
 template is itself **MIT-licensed** (see the `LICENSE` file).
 

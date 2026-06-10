@@ -15,8 +15,8 @@ import (
 )
 
 // ForgotPassword godoc
-// @Summary      Нууц үг сэргээх токен олгох
-// @Description  Хаяг руу битүүмжилсэн сэргээх токеныг и-мэйлээр илгээнэ. Хэрэглэгчийг тоолохоос сэргийлэхийн тулд email бүртгэлгүй байсан ч үргэлж 200 буцаана.
+// @Summary      Нууц үг сэргээх OTP код илгээх
+// @Description  Хаяг руу нэг удаагийн OTP кодыг (GeregeCloud Verify) и-мэйлээр илгээнэ. Хэрэглэгчийг тоолохоос сэргийлэхийн тулд email бүртгэлгүй байсан ч үргэлж 200 буцаана.
 // @Tags         auth
 // @Accept       json
 // @Produce      json
@@ -77,5 +77,5 @@ func (h Handler) ForgotPassword(w http.ResponseWriter, r *http.Request) error {
 	ev.Email = req.Email
 	audit.Record(ev)
 
-	return v1.NewSuccessResponse(w, r, http.StatusOK, "if the email is registered, a reset link has been sent", nil)
+	return v1.NewSuccessResponse(w, r, http.StatusOK, "if the email is registered, a reset code has been sent", nil)
 }
