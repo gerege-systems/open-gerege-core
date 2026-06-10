@@ -1,0 +1,320 @@
+# Development Guide
+
+> 🌐 [English](DEVELOPMENT.md) · **Монгол**
+
+Энэ заавар нь хөгжүүлэгчдэд **Gerege Backend Template v27** кодын бааз дээр тохиргоо
+хийж, ажиллахад туслана.
+
+> **Эх сурвалж.** Najib Fikri-ийн нээлттэй эх
+> [snykk/go-rest-boilerplate](https://github.com/snykk/go-rest-boilerplate)
+> (MIT)-аас гаралтай бөгөөд HTTP давхаргыг **Gin → Fiber v3**, өгөгдлийн
+> давхаргыг **sqlx → GORM** болгож хөрвүүлсэн. Бүрэн зохиогчдын мэдээллийг
+> [ARCHITECTURE.md](./ARCHITECTURE.md#credits--license)-аас үз.
+
+## Шаардлага (Prerequisites)
+
+- Go 1.26+
+- Docker & Docker Compose (зөвхөн integration тест / локал стек-д)
+- PostgreSQL 15+ (эсвэл Docker ашиглах)
+- Make
+
+## Түргэн эхлүүлэх (Quick Start)
+
+```bash
+# 1. Copy environment file (note: it lives under internal/config/)
+cp internal/config/.env.example internal/config/.env
+# Edit .env — JWT_SECRET must be at least 32 characters
+
+# 2. Start the stack (Postgres + Redis + API)
+
+# 3. Or run locally: apply migrations, then serve
+```
+
+Сервер `http://localhost:8080` дээр ажиллана; Swagger UI нь
+`http://localhost:8080/swagger/` дээр байна.
+
+## Хөгжүүлэлтийн командууд (Development Commands)
+
+```bash
+make build              # Build the API binary
+make tidy               # go mod tidy
+make lint               # golangci-lint
+make fmt                # gofmt all files
+make swag               # Regenerate OpenAPI spec (docs/) from godoc annotations
+make pre-push           # Mirror CI locally: lint + test + swag drift + build
+```
+
+## Тест (Testing)
+
+```bash
+make test               # Unit tests (mocks only — fast, no Docker)
+make test-integration   # Integration tests (requires Docker: Postgres + Redis)
+make test-cover         # Tests with coverage report
+```
+
+## Өгөгдлийн сан (Database)
+
+### Migration-ууд
+
+```bash
+```
+
+Migration-ууд нь `migrations/` доторх түүхий SQL файлууд бөгөөд
+`internal/datasources/migration/` доторх runner-аар хэрэгжиж, дараа нь
+`internal/datasources/records/` доторх model-уудын idempotent GORM
+`AutoMigrate`-ээр үргэлжилнэ.
+
+## Кодын зохион байгуулалт (Code Organization)
+
+### Шинэ фичер нэмэх (Adding a New Feature)
+
+Давхаргуудыг дотноос гадагшаа дагана. Лавлагаа болгож одоо байгаа `users` / `auth`
+модулиудыг ашигла. Жишээ: `Product` нөөц нэмэх.
+
+1. **Domain Entity** — `internal/business/domain/domain.products.go`
+   ```go
+   package domain
+
+   type Product struct {
+       ID        string
+       Name      string
+       Price     int64
+       CreatedAt time.Time
+   }
+   ```
+
+2. **Repository Interface** — `internal/datasources/repositories/interface/interface.go` руу нэм
+   ```go
+   type ProductRepository interface {
+       Store(ctx context.Context, in *domain.Product) (domain.Product, error)
+       GetByID(ctx context.Context, id string) (domain.Product, error)
+   }
+   ```
+
+3. **GORM Model + Repository Impl** — `internal/datasources/records/record.products.go`
+   болон `internal/datasources/repositories/postgres/products/`
+   ```go
+   // record.products.go
+   type Products struct {
+       Id        string         `gorm:"column:id;primaryKey"`
+       Name      string         `gorm:"column:name"`
+       Price     int64          `gorm:"column:price"`
+       CreatedAt time.Time      `gorm:"column:created_at"`
+       DeletedAt gorm.DeletedAt `gorm:"column:deleted_at;index"`
+   }
+   func (Products) TableName() string { return "products" }
+   ```
+
+4. **Usecase Interface + Impl** — `internal/business/usecases/products/`
+   ```go
+   // products.usecase.go
+   type Usecase interface {
+       Create(ctx context.Context, in CreateRequest) (domain.Product, error)
+       GetByID(ctx context.Context, id string) (domain.Product, error)
+   }
+   ```
+
+5. **DTOs** — `internal/http/datatransfers/{requests,responses}/`
+   ```go
+   type CreateProductRequest struct {
+       Name  string `json:"name" validate:"required,min=1,max=255"`
+       Price int64  `json:"price" validate:"required,gt=0"`
+   }
+   ```
+
+6. **Handler** — `internal/http/handlers/v1/products/products.handler.go`
+   ```go
+   func (h Handler) Create(c fiber.Ctx) error {
+       var req requests.CreateProductRequest
+       if err := c.Bind().Body(&req); err != nil {
+           return v1.NewErrorResponse(c, http.StatusBadRequest, "invalid request body")
+       }
+       if err := validators.ValidatePayloads(req); err != nil {
+           return v1.RespondWithError(c, err)
+       }
+       // ... call h.usecase.Create(c.Context(), ...) ...
+   }
+   ```
+
+7. **Route** — `internal/http/routes/route.products.go` (`route.users.go`-г дуурайлга)
+   ```go
+   func (r *productsRoute) Routes() {
+       v1 := r.router.Group("/v1")
+       grp := v1.Group("/products")
+       grp.Use(r.authMiddleware)
+       grp.Post("/", r.handler.Create)
+       grp.Get("/:id", r.handler.GetByID)
+   }
+   ```
+
+8. **Wire Up** — `cmd/api/server/server.go` дотор одоо байгаагийнх нь хажууд
+   repo → usecase → route-ийг бүтээ:
+   ```go
+   productRepo := productspostgres.NewProductRepository(conn)
+   productsUC := products.NewUsecase(productRepo)
+   routes.NewProductsRoute(api, productsUC, authMiddleware).Routes()
+   ```
+
+### Тест бичих (Writing Tests)
+
+#### Unit тестүүд (Usecase давхарга)
+
+```go
+// internal/business/usecases/products/products.create_test.go
+func TestUsecase_Create(t *testing.T) {
+    repo := mocks.NewProductRepository(t)
+    repo.On("Store", mock.Anything, mock.AnythingOfType("*domain.Product")).
+        Return(domain.Product{ID: "p1", Name: "X"}, nil)
+
+    uc := products.NewUsecase(repo)
+    got, err := uc.Create(context.Background(), products.CreateRequest{Name: "X", Price: 100})
+
+    assert.NoError(t, err)
+    assert.Equal(t, "p1", got.ID)
+    repo.AssertExpectations(t)
+}
+```
+
+#### Handler тестүүд (Fiber)
+
+```go
+func TestHandler_Create(t *testing.T) {
+    app := fiber.New(fiber.Config{ErrorHandler: func(c fiber.Ctx, err error) error {
+        return v1.RespondWithError(c, err)
+    }})
+    // ... register route with a mocked usecase ...
+    resp, _ := app.Test(httptest.NewRequest(http.MethodPost, "/api/v1/products", body))
+    assert.Equal(t, http.StatusCreated, resp.StatusCode)
+}
+```
+
+#### Integration тестүүд (Repository давхарга)
+
+```go
+//go:build integration
+
+func TestProductRepository_Store(t *testing.T) {
+    db := testenv.SetupPostgres(t)      // testcontainers — real Postgres
+    repo := postgres.NewProductRepository(db)
+    got, err := repo.Store(context.Background(), &domain.Product{Name: "X", Price: 100})
+    assert.NoError(t, err)
+    assert.NotEmpty(t, got.ID)
+}
+```
+
+### Mock үүсгэх (Generating Mocks)
+
+```bash
+# Generate a mock for one interface
+make mock interface=ProductRepository \
+          dir=internal/datasources/repositories/interface \
+          filename=mock.repository_products.go
+```
+
+## Кодын хэв маяг (Code Style)
+
+### Нэрлэх дүрэм (Naming Conventions)
+
+| Type        | Convention   | Example            |
+|-------------|--------------|--------------------|
+| Package     | lowercase    | `repository`       |
+| Interface   | CamelCase    | `UserRepository`   |
+| Struct      | CamelCase    | `Handler`          |
+| Function    | CamelCase    | `GetByID`          |
+| Variable    | camelCase    | `userCount`        |
+| Constant    | CamelCase / sentinel | `RoleAdmin`, `ErrEmptyEmail` |
+| JSON field  | snake_case   | `request_id`       |
+
+### Алдаа боловсруулалт (Error Handling)
+
+Typed domain алдаануудыг (`internal/apperror`) буцаа — хэзээ ч panic болгож,
+санах сангийн алдааг client руу алдуулж болохгүй:
+
+```go
+user, err := s.repo.GetByID(ctx, id)
+if err != nil {
+    return domain.User{}, err   // apperror.NotFound surfaces as 404
+}
+```
+
+`RespondWithError` (`handler.base_response.go` дотор) нь алдааны төрлийг статус
+кодод буулгаж, 5xx-ийн шалтгаанг log-д бичиж, цэвэр envelope-ийг render хийнэ.
+
+### Контекст ашиглах (Context Usage)
+
+`context.Context`-ийг үргэлж эхэнд нь дамжуул; handler дотор үүнийг
+`c.Context()`-ээр унш:
+
+```go
+func (r *postgreUserRepository) GetByID(ctx context.Context, id string) (domain.User, error) {
+    var rec records.Users
+    err := r.conn.WithContext(ctx).Where(`"id" = ?`, id).First(&rec).Error
+    // ...
+}
+```
+
+## API баримтжуулалт (API Documentation)
+
+### Swagger annotation-ууд
+
+Handler-ууд нь `swag`-ийн ашигладаг godoc annotation-уудыг агуулна:
+
+```go
+// @Summary      Login
+// @Description  Authenticate and issue an access + refresh token pair
+// @Tags         auth
+// @Accept       json
+// @Produce      json
+// @Param        body body requests.LoginRequest true "Credentials"
+// @Success      200 {object} v1.BaseResponse
+// @Failure      401 {object} v1.BaseResponse
+// @Router       /auth/login [post]
+func (h Handler) Login(c fiber.Ctx) error { /* ... */ }
+```
+
+### Баримтжуулалтыг дахин үүсгэх (Regenerate Docs)
+
+```bash
+make swag
+```
+
+Swagger UI: `http://localhost:8080/swagger/`. Хэрэв `docs/` нь annotation-аас
+зөрвөл CI алдаа гаргана (`make ci-swag-check`).
+
+## Алдаа засах (Troubleshooting)
+
+**Database connection failed**
+```bash
+docker-compose ps                 # is Postgres up?
+# check DB_POSTGRE_DSN in internal/config/.env
+```
+
+**Migration failed** — `migrations/` дараалал болон `schema_migrations`
+хүснэгтийг шалга; runner нь advisory lock + файл тус бүрийн transaction ашигладаг.
+
+**Tests failing**
+```bash
+go test -v ./...                  # verbose
+go test -v -run TestUsecase_Create ./internal/business/usecases/products/...
+```
+
+**Lint errors**
+```bash
+golangci-lint run --fix
+```
+
+## Аюулгүй байдлын шалгах жагсаалт (Security Checklist)
+
+Deploy хийхээс өмнө дараахыг баталгаажуул:
+
+- [ ] Бүх хамгаалагдсан endpoint auth middleware-тэй
+- [ ] Нэргүй endpoint-ууд (`/auth/*`) rate limiter + body cap-аа хадгалсан
+- [ ] `JWT_SECRET` нь ≥ 32 санамсаргүй тэмдэгт бөгөөд жишээ утга биш
+- [ ] Input validation (`validate:` tag-ууд) нь хүсэлтийн DTO бүрийг хамарсан
+- [ ] Нууц утгууд environment-ээс ирдэг, хэзээ ч commit хийгддэггүй
+- [ ] Production-д `ALLOWED_ORIGINS` тохируулагдсан (wildcard байхгүй)
+- [ ] Edge / load balancer дээр HTTPS албадан хэрэгжсэн
+
+---
+
+**Gerege Template Version 27.0** — **Gerege Systems Development Team** болон **Claude AI** хамтран бүтээв, 2026.

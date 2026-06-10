@@ -1,0 +1,41 @@
+version: "2"
+
+run:
+  timeout: 5m
+
+linters:
+  default: none
+  enable:
+    - errcheck
+    - govet
+    - staticcheck
+    - unused
+    - gosec
+    - gocritic
+    - ineffassign
+    - misspell
+  settings:
+    gosec:
+      excludes:
+        - G101
+    gocritic:
+      enabled-tags:
+        - diagnostic
+        - style
+  exclusions:
+    paths:
+      - vendor
+    rules:
+      - path: _test\.go
+        linters:
+          - gosec
+          - errcheck
+      - path: internal/mocks/
+        linters:
+          - unused
+          - errcheck
+
+formatters:
+  enable:
+    - gofmt
+    - goimports

@@ -1,0 +1,85 @@
+// Gerege Template Version 27.0
+// Gerege Systems Development Team болон Claude AI хамтран бүтээв, 2026.
+
+package users_test
+
+import (
+	"context"
+	"errors"
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+	"template/internal/apperror"
+	"template/internal/business/domain"
+	"template/internal/business/usecases/users"
+)
+
+func TestGetByID(t *testing.T) {
+	expected := sampleUser()
+
+	tests := []struct {
+		name     string
+		inputID  string
+		setup    func(f *fixture)
+		wantUser domain.User
+		// wantErr / wantErrType-ийг хослуулсан, учир нь apperror.ErrTypeInternal
+		// нь iota-гийн тэг — ганц sentinel нь тэр төрөлтэй мөргөлдөж, чимээгүйхэн
+		// тэнцэх байсан.
+		wantErr     bool
+		wantErrType apperror.ErrorType
+	}{
+		{
+			name:    "happy path passes repo result through unchanged",
+			inputID: expected.ID,
+			setup: func(f *fixture) {
+				f.repo.On("GetByID", context.Background(), expected.ID).Return(expected, nil).Once()
+			},
+			wantUser: expected,
+		},
+		{
+			name:    "repo NotFound preserves DomainError type",
+			inputID: "missing",
+			setup: func(f *fixture) {
+				f.repo.On("GetByID", context.Background(), "missing").
+					Return(domain.User{}, apperror.NotFound("user not found")).Once()
+			},
+			wantErr:     true,
+			wantErrType: apperror.ErrTypeNotFound,
+		},
+		{
+			name:    "raw repo error gets wrapped into DomainError Internal",
+			inputID: "any",
+			setup: func(f *fixture) {
+				// Энгийн Go алдаа (жишээ нь connection refused) нь HTTP
+				// давхарга статус код руу буулгаж чадахын тулд DomainError
+				// болж дэвшигдэх ёстой.
+				f.repo.On("GetByID", context.Background(), "any").
+					Return(domain.User{}, errors.New("connection refused")).Once()
+			},
+			wantErr:     true,
+			wantErrType: apperror.ErrTypeInternal,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			f := newFixture(t)
+			tt.setup(f)
+
+			out, err := f.usecase.GetByID(context.Background(), users.GetByIDRequest{ID: tt.inputID})
+
+			if !tt.wantErr {
+				require.NoError(t, err)
+				if tt.wantUser.ID != "" {
+					assert.Equal(t, tt.wantUser, out.User)
+				}
+				return
+			}
+			require.Error(t, err)
+			var domErr *apperror.DomainError
+			require.True(t, errors.As(err, &domErr))
+			assert.Equal(t, tt.wantErrType, domErr.Type)
+		})
+	}
+}
