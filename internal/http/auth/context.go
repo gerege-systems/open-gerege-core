@@ -18,6 +18,7 @@ type CurrentUser struct {
 	ID      string
 	Email   string
 	IsAdmin bool
+	RoleID  int
 	JTI     string
 }
 
@@ -43,6 +44,7 @@ func CurrentUserFromContext(r *http.Request) (CurrentUser, error) {
 		ID:      claims.UserID,
 		Email:   claims.Email,
 		IsAdmin: claims.IsAdmin,
+		RoleID:  claims.RoleID,
 		JTI:     claims.ID,
 	}, nil
 }

@@ -134,7 +134,7 @@ func (uc *usecase) Refresh(ctx context.Context, req RefreshRequest) (resp LoginR
 		return LoginResponse{}, err
 	}
 
-	pair, mintErr := uc.jwtService.GenerateTokenPair(user.ID, user.IsAdmin(), user.Email)
+	pair, mintErr := uc.jwtService.GenerateTokenPair(user.ID, user.IsAdmin(), user.RoleID, user.Email)
 	if mintErr != nil {
 		err = apperror.InternalCause(fmt.Errorf("generate token: %w", mintErr))
 		logger.ErrorWithContext(ctx, "Refresh failed: token generation error", logger.Fields{

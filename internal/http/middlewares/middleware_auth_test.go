@@ -62,7 +62,7 @@ func serve(mw func(http.Handler) http.Handler, r *http.Request) *httptest.Respon
 }
 
 func generateToken(isAdmin bool) (token string, err error) {
-	token, err = jwtService.GenerateToken("ddfcea5c-d919-4a8f-a631-4ace39337s3a", isAdmin, "najibfikri13@gmail.com")
+	token, err = jwtService.GenerateToken("ddfcea5c-d919-4a8f-a631-4ace39337s3a", isAdmin, 2, "najibfikri13@gmail.com")
 	return
 }
 

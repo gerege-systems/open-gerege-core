@@ -55,7 +55,7 @@ func TestLogin(t *testing.T) {
 				f.redis.On("Incr", mock.Anything, "login_attempts:patrick@example.com").Return(int64(1), nil).Once()
 				f.redis.On("Expire", mock.Anything, "login_attempts:patrick@example.com", mock.AnythingOfType("time.Duration")).Return(nil).Once()
 				f.users.On("GetByEmail", mock.Anything, users.GetByEmailRequest{Email: "patrick@example.com"}).Return(users.GetByEmailResponse{User: user}, nil).Once()
-				f.jwt.On("GenerateTokenPair", user.ID, false, user.Email).Return(samplePair(), nil).Once()
+				f.jwt.On("GenerateTokenPair", user.ID, false, user.RoleID, user.Email).Return(samplePair(), nil).Once()
 				f.redis.On("Set", mock.Anything, "refresh:refresh-jti", "refresh-jti").Return(nil).Once()
 				f.redis.On("Expire", mock.Anything, "refresh:refresh-jti", mock.AnythingOfType("time.Duration")).Return(nil).Once()
 				f.redis.On("Del", mock.Anything, "login_attempts:patrick@example.com").Return(nil).Once()

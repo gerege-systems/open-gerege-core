@@ -132,7 +132,7 @@ func (uc *usecase) Login(ctx context.Context, req LoginRequest) (resp LoginRespo
 		return LoginResponse{}, err
 	}
 
-	pair, mintErr := uc.jwtService.GenerateTokenPair(user.ID, user.IsAdmin(), user.Email)
+	pair, mintErr := uc.jwtService.GenerateTokenPair(user.ID, user.IsAdmin(), user.RoleID, user.Email)
 	if mintErr != nil {
 		err = apperror.InternalCause(fmt.Errorf("generate token: %w", mintErr))
 		logger.ErrorWithContext(ctx, "Login failed: token generation error", logger.Fields{

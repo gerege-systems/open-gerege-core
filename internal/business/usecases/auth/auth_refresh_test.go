@@ -49,7 +49,7 @@ func TestRefresh(t *testing.T) {
 				// (single-use); хоосон бус утга → токен амьд байсан.
 				f.redis.On("GetDel", mock.Anything, "refresh:"+oldJTI).Return(oldJTI, nil).Once()
 				f.users.On("GetByEmail", mock.Anything, users.GetByEmailRequest{Email: user.Email}).Return(users.GetByEmailResponse{User: user}, nil).Once()
-				f.jwt.On("GenerateTokenPair", user.ID, false, user.Email).Return(samplePair(), nil).Once()
+				f.jwt.On("GenerateTokenPair", user.ID, false, user.RoleID, user.Email).Return(samplePair(), nil).Once()
 				f.redis.On("Set", mock.Anything, "refresh:refresh-jti", "refresh-jti").Return(nil).Once()
 				f.redis.On("Expire", mock.Anything, "refresh:refresh-jti", mock.AnythingOfType("time.Duration")).Return(nil).Once()
 			},

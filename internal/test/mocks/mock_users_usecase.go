@@ -44,6 +44,23 @@ func (_m *UsersUsecase) Activate(ctx context.Context, req users.ActivateRequest)
 	return _m.Called(ctx, req).Error(0)
 }
 
+func (_m *UsersUsecase) List(ctx context.Context, req users.ListRequest) (users.ListResponse, error) {
+	ret := _m.Called(ctx, req)
+	return ret.Get(0).(users.ListResponse), ret.Error(1)
+}
+
+func (_m *UsersUsecase) UpdateRole(ctx context.Context, req users.UpdateRoleRequest) error {
+	return _m.Called(ctx, req).Error(0)
+}
+
+func (_m *UsersUsecase) SetActive(ctx context.Context, req users.SetActiveRequest) error {
+	return _m.Called(ctx, req).Error(0)
+}
+
+func (_m *UsersUsecase) Delete(ctx context.Context, req users.DeleteRequest) error {
+	return _m.Called(ctx, req).Error(0)
+}
+
 type mockConstructorTestingTNewUsersUsecase interface {
 	mock.TestingT
 	Cleanup(func())

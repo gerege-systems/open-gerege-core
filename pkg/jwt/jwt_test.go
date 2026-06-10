@@ -22,7 +22,7 @@ const (
 
 func TestGenerateToken(t *testing.T) {
 	jwtService := jwt.NewJWTService(testSecret, testIssuer, testExpired)
-	token, err := jwtService.GenerateToken("asf-asf-asfdasd-asdfsa", false, "john.doe@example.com")
+	token, err := jwtService.GenerateToken("asf-asf-asfdasd-asdfsa", false, 2, "john.doe@example.com")
 	assert.NoError(t, err)
 	assert.NotEmpty(t, token)
 }
@@ -31,7 +31,7 @@ func TestParseToken(t *testing.T) {
 	t.Run("With Valid Token", func(t *testing.T) {
 		jwtService := jwt.NewJWTService(testSecret, testIssuer, testExpired)
 
-		token, _ := jwtService.GenerateToken("asf-asf-asfdasd-asdfsa", false, "john.doe@example.com")
+		token, _ := jwtService.GenerateToken("asf-asf-asfdasd-asdfsa", false, 2, "john.doe@example.com")
 
 		claims, err := jwtService.ParseToken(token)
 		assert.NoError(t, err)
@@ -64,7 +64,7 @@ func TestGenerateTokenPair_RespectsInjectedClock(t *testing.T) {
 		clock.Frozen(at),
 	)
 
-	pair, err := svc.GenerateTokenPair("user-1", false, "alice@example.com")
+	pair, err := svc.GenerateTokenPair("user-1", false, 2, "alice@example.com")
 	require.NoError(t, err)
 
 	// Access токен: IssuedAt = at, ExpiresAt = at + 5h.

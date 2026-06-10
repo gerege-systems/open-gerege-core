@@ -64,4 +64,24 @@ type UserRepository interface {
 	// query-үүдтэй таарахаа болино. Мөр байхгүй эсвэл аль хэдийн устгагдсан
 	// бол apperror.NotFound-г буцаана.
 	SoftDelete(ctx context.Context, id string) error
+	// UpdateRole нь хэрэглэгчийн role_id-г солино (admin удирдлага). Мөр
+	// байхгүй/soft-delete хийгдсэн бол apperror.NotFound буцаана.
+	UpdateRole(ctx context.Context, id string, roleID int) error
+}
+
+// RBACRepository нь динамик role-ууд болон тэдгээрийн эрхийг (role↔permission)
+// хадгалах/уншихыг хариуцна. Permission каталог нь код дотор тодорхойлогддог тул
+// энд зөвхөн уншина (ListPermissions нь seed хийгдсэн каталогийг буцаана).
+type RBACRepository interface {
+	ListRoles(ctx context.Context) ([]domain.Role, error)
+	GetRole(ctx context.Context, id int) (domain.Role, error)
+	CreateRole(ctx context.Context, in *domain.Role) (domain.Role, error)
+	UpdateRole(ctx context.Context, in *domain.Role) (domain.Role, error)
+	DeleteRole(ctx context.Context, id int) error
+	// CountUsersWithRole нь тухайн role-д оноогдсон (soft-delete хийгдээгүй)
+	// хэрэглэгчдийн тоог буцаана — ашиглагдаж буй role-ийг устгуулахгүйн тулд.
+	CountUsersWithRole(ctx context.Context, roleID int) (int, error)
+	ListPermissions(ctx context.Context) ([]domain.Permission, error)
+	GetRolePermissions(ctx context.Context, roleID int) ([]string, error)
+	SetRolePermissions(ctx context.Context, roleID int, keys []string) error
 }

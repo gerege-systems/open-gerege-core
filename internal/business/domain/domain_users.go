@@ -29,8 +29,9 @@ import (
 // логик тул role ID-ууд нь transport- эсвэл persistence-тэй зэргэлдээ
 // constants багцад биш, харин domain дотор байрладаг.
 const (
-	RoleAdmin = 1
-	RoleUser  = 2
+	RoleAdmin   = 1
+	RoleUser    = 2
+	RoleManager = 3
 )
 
 // Domain алдаануудыг энгийн sentinel хэлбэрээр тодорхойлсон тул дуудагч нь

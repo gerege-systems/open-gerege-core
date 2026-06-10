@@ -12,20 +12,20 @@ type JWTService struct {
 	mock.Mock
 }
 
-// GenerateToken provides a mock function with given fields: userId, isAdmin, email
-func (_m *JWTService) GenerateToken(userId string, isAdmin bool, email string) (string, error) {
-	ret := _m.Called(userId, isAdmin, email)
+// GenerateToken provides a mock function with given fields: userId, isAdmin, roleID, email
+func (_m *JWTService) GenerateToken(userId string, isAdmin bool, roleID int, email string) (string, error) {
+	ret := _m.Called(userId, isAdmin, roleID, email)
 
 	var r0 string
-	if rf, ok := ret.Get(0).(func(string, bool, string) string); ok {
-		r0 = rf(userId, isAdmin, email)
+	if rf, ok := ret.Get(0).(func(string, bool, int, string) string); ok {
+		r0 = rf(userId, isAdmin, roleID, email)
 	} else {
 		r0 = ret.Get(0).(string)
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(string, bool, string) error); ok {
-		r1 = rf(userId, isAdmin, email)
+	if rf, ok := ret.Get(1).(func(string, bool, int, string) error); ok {
+		r1 = rf(userId, isAdmin, roleID, email)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -75,20 +75,20 @@ func (_m *JWTService) ParseRefreshToken(tokenString string) (jwt.JwtCustomClaim,
 	return r0, r1
 }
 
-// GenerateTokenPair provides a mock function with given fields: userID, isAdmin, email
-func (_m *JWTService) GenerateTokenPair(userID string, isAdmin bool, email string) (jwt.TokenPair, error) {
-	ret := _m.Called(userID, isAdmin, email)
+// GenerateTokenPair provides a mock function with given fields: userID, isAdmin, roleID, email
+func (_m *JWTService) GenerateTokenPair(userID string, isAdmin bool, roleID int, email string) (jwt.TokenPair, error) {
+	ret := _m.Called(userID, isAdmin, roleID, email)
 
 	var r0 jwt.TokenPair
-	if rf, ok := ret.Get(0).(func(string, bool, string) jwt.TokenPair); ok {
-		r0 = rf(userID, isAdmin, email)
+	if rf, ok := ret.Get(0).(func(string, bool, int, string) jwt.TokenPair); ok {
+		r0 = rf(userID, isAdmin, roleID, email)
 	} else {
 		r0 = ret.Get(0).(jwt.TokenPair)
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(string, bool, string) error); ok {
-		r1 = rf(userID, isAdmin, email)
+	if rf, ok := ret.Get(1).(func(string, bool, int, string) error); ok {
+		r1 = rf(userID, isAdmin, roleID, email)
 	} else {
 		r1 = ret.Error(1)
 	}

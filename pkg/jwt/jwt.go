@@ -31,10 +31,10 @@ const (
 type JWTService interface {
 	// GenerateToken нь нэг access токен үүсгэнэ. Дуудагчид зэрэгцээ refresh
 	// токен хэрэгтэй бол GenerateTokenPair-г илүүд үзнэ.
-	GenerateToken(userId string, isAdmin bool, email string) (t string, err error)
+	GenerateToken(userId string, isAdmin bool, roleID int, email string) (t string, err error)
 	// GenerateTokenPair нь access+refresh хосыг үүсгэнэ, хоёулаа ижил secret-ээр
 	// гарын үсэг зурагдсан боловч Kind claim-ээр ялгагдана.
-	GenerateTokenPair(userID string, isAdmin bool, email string) (TokenPair, error)
+	GenerateTokenPair(userID string, isAdmin bool, roleID int, email string) (TokenPair, error)
 	// ParseToken нь access токены гарын үсэг, хүчинтэй хугацаа болон HMAC аргыг
 	// шалгана. Refresh токенуудыг ErrWrongTokenKind-ээр татгалзана.
 	ParseToken(tokenString string) (claims JwtCustomClaim, err error)
@@ -57,6 +57,7 @@ type TokenPair struct {
 type JwtCustomClaim struct {
 	UserID  string
 	IsAdmin bool
+	RoleID  int
 	Email   string
 	Kind    string
 	golangJWT.RegisteredClaims
@@ -107,13 +108,13 @@ func WithClock(svc JWTService, c clock.Clock) JWTService {
 	return svc
 }
 
-func (j *jwtService) GenerateToken(userID string, isAdmin bool, email string) (string, error) {
-	tok, _, _, err := j.signAccess(userID, isAdmin, email)
+func (j *jwtService) GenerateToken(userID string, isAdmin bool, roleID int, email string) (string, error) {
+	tok, _, _, err := j.signAccess(userID, isAdmin, roleID, email)
 	return tok, err
 }
 
-func (j *jwtService) GenerateTokenPair(userID string, isAdmin bool, email string) (TokenPair, error) {
-	access, accessExp, accessJTI, err := j.signAccess(userID, isAdmin, email)
+func (j *jwtService) GenerateTokenPair(userID string, isAdmin bool, roleID int, email string) (TokenPair, error) {
+	access, accessExp, accessJTI, err := j.signAccess(userID, isAdmin, roleID, email)
 	if err != nil {
 		return TokenPair{}, err
 	}
@@ -131,13 +132,14 @@ func (j *jwtService) GenerateTokenPair(userID string, isAdmin bool, email string
 	}, nil
 }
 
-func (j *jwtService) signAccess(userID string, isAdmin bool, email string) (token string, expiresAt time.Time, jti string, err error) {
+func (j *jwtService) signAccess(userID string, isAdmin bool, roleID int, email string) (token string, expiresAt time.Time, jti string, err error) {
 	now := j.clock.Now()
 	expiresAt = now.Add(time.Hour * time.Duration(j.expired))
 	jti = uuid.NewString()
 	claims := &JwtCustomClaim{
 		UserID:  userID,
 		IsAdmin: isAdmin,
+		RoleID:  roleID,
 		Email:   email,
 		Kind:    KindAccess,
 		RegisteredClaims: golangJWT.RegisteredClaims{

@@ -19,11 +19,13 @@ import (
 
 	docs "template/docs" // swagger тодорхойлолт, swaggo-оор init үед бүртгэгддэг
 	"template/internal/business/usecases/auth"
+	"template/internal/business/usecases/rbac"
 	"template/internal/business/usecases/users"
 	"template/internal/config"
 	"template/internal/constants"
 	"template/internal/datasources/caches"
 	"template/internal/datasources/drivers"
+	rbacpostgres "template/internal/datasources/repositories/postgres/rbac"
 	userspostgres "template/internal/datasources/repositories/postgres/users"
 	V1Handler "template/internal/http/handlers/v1"
 	"template/internal/http/middlewares"
@@ -142,6 +144,10 @@ func NewApp() (*App, error) {
 		ForgotLockoutTTL:  15 * time.Minute,
 	})
 
+	// RBAC — динамик role/permission удирдлага + enforcement.
+	rbacRepo := rbacpostgres.NewRBACRepository(pool)
+	rbacUC := rbac.NewUsecase(rbacRepo)
+
 	// Нэргүй /auth гадаргуун дээр IP тус бүрт минутанд 5 хүсэлт зөвшөөрнө.
 	authRateLimiter := middlewares.NewRateLimiter(rate.Limit(5.0/60.0), 5)
 
@@ -150,6 +156,8 @@ func NewApp() (*App, error) {
 		api.Get("/", routes.RootHandler)
 		routes.NewAuthRoute(api, authUC, authMiddleware, authRateLimiter).Routes()
 		routes.NewUsersRoute(api, usersUC, authMiddleware).Routes()
+		routes.NewRBACRoute(api, rbacUC, authMiddleware).Routes()
+		routes.NewAdminRoute(api, usersUC, rbacUC, authMiddleware).Routes()
 	})
 
 	srv := &http.Server{

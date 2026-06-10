@@ -28,6 +28,15 @@ type Usecase interface {
 	// UpdatePassword нь хэрэглэгчийн нууц үгийг (дуудагч аль хэдийн
 	// domain.User.ChangePassword-аар hash хийсэн) сольж, password_changed_at-ийг тэмдэглэнэ.
 	UpdatePassword(ctx context.Context, req UpdatePasswordRequest) error
+
+	// List нь admin удирдлагад зориулж хэрэглэгчдийг хуудаслан буцаана.
+	List(ctx context.Context, req ListRequest) (ListResponse, error)
+	// UpdateRole нь хэрэглэгчийн role-г солино (admin удирдлага).
+	UpdateRole(ctx context.Context, req UpdateRoleRequest) error
+	// SetActive нь хэрэглэгчийг идэвхжүүлэх/идэвхгүй болгоно (admin удирдлага).
+	SetActive(ctx context.Context, req SetActiveRequest) error
+	// Delete нь хэрэглэгчийг зөөлөн устгана (admin удирдлага).
+	Delete(ctx context.Context, req DeleteRequest) error
 }
 
 // Usecase-ийн хилд зориулсан Request / Response төрлүүд. Struct-д талбар нэмэх
@@ -62,5 +71,30 @@ type (
 
 	UpdatePasswordRequest struct {
 		User *domain.User
+	}
+
+	ListRequest struct {
+		RoleID         int
+		ActiveOnly     bool
+		IncludeDeleted bool
+		Offset         int
+		Limit          int
+	}
+	ListResponse struct {
+		Users []domain.User
+	}
+
+	UpdateRoleRequest struct {
+		UserID string
+		RoleID int
+	}
+
+	SetActiveRequest struct {
+		UserID string
+		Active bool
+	}
+
+	DeleteRequest struct {
+		UserID string
 	}
 )
