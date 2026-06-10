@@ -6,6 +6,7 @@ package validators
 import (
 	"errors"
 	"fmt"
+	"reflect"
 	"strings"
 	"sync"
 
@@ -63,6 +64,16 @@ func getValidator() *validator.Validate {
 	sharedValidateOnce.Do(func() {
 		sharedValidate = validator.New()
 		_ = sharedValidate.RegisterValidation("strongpassword", StrongPassword)
+		// Талбарын нэрийг json tag-аар буцаана (жишээ: NewPassword →
+		// "new_password") — ингэснээр клиент талбар тус бүрийн алдааг DTO-ийн
+		// json түлхүүрээр шууд тааруулна.
+		sharedValidate.RegisterTagNameFunc(func(fld reflect.StructField) string {
+			name := strings.SplitN(fld.Tag.Get("json"), ",", 2)[0]
+			if name == "-" || name == "" {
+				return strings.ToLower(fld.Name)
+			}
+			return name
+		})
 	})
 	return sharedValidate
 }
@@ -79,7 +90,7 @@ func ValidatePayloads(payload interface{}) error {
 		out := &ValidationErrors{Errors: make([]FieldError, 0, len(ve))}
 		for _, e := range ve {
 			out.Errors = append(out.Errors, FieldError{
-				Field:   strings.ToLower(e.Field()),
+				Field:   e.Field(), // json tag (RegisterTagNameFunc-ээр)
 				Tag:     e.Tag(),
 				Message: messageFor(e),
 			})
