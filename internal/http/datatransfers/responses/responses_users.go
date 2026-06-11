@@ -43,8 +43,8 @@ func (u *UserResponse) ToV1Domain() domain.User {
 // /login болон /refresh замуудад FromLoginResult-г ашигла.
 func FromV1Domain(u domain.User) UserResponse {
 	return UserResponse{
-		Id:        u.ID,
-		Username:  u.Username,
+		Id:          u.ID,
+		Username:    u.Username,
 		FirstName:   u.FirstName,
 		LastName:    u.LastName,
 		FullName:    u.FullName(),

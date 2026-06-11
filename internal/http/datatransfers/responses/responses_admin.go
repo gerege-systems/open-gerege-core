@@ -12,8 +12,8 @@ import (
 // AdminUserResponse нь admin хэрэглэгч-удирдлагын жагсаалтын мөр. UserResponse-
 // оос ялгаатай нь active статусыг агуулна (token талбаргүй).
 type AdminUserResponse struct {
-	Id        string     `json:"id"`
-	Username  string     `json:"username"`
+	Id         string     `json:"id"`
+	Username   string     `json:"username"`
 	FirstName  string     `json:"first_name"`
 	LastName   string     `json:"last_name"`
 	FullName   string     `json:"full_name"`
