@@ -39,10 +39,12 @@ func (rt *aiRoute) Routes() {
 	rt.router.Route("/v1/ai", func(r chi.Router) {
 		r.Use(rt.authMiddleware)
 		r.Use(rt.rateLimiter.Middleware())
-		// Чат payload (message 4000 + history 20×4000 тэмдэгт) нь 256 KiB-д
-		// амархан багтана — глобал 1 MiB-ээс чангавтар хязгаар.
-		r.Use(middlewares.BodySizeLimitMiddleware(256 << 10))
+		// Audio (base64 ~700 KB) + текст payload нь глобал 1 MiB хязгаарт
+		// багтана — энд тусдаа чангалалт хэрэггүй (глобал давхарга барина).
 
 		r.Post("/chat", v1.Wrap(rt.handler.Chat))
+		r.Post("/stt", v1.Wrap(rt.handler.Transcribe))
+		r.Post("/tts", v1.Wrap(rt.handler.Speak))
+		r.Post("/translate", v1.Wrap(rt.handler.Translate))
 	})
 }

@@ -27,6 +27,8 @@ const fallbackReply = "Уучлаарай, AI үйлчилгээ түр ачаа
 const (
 	defaultMaxSteps = 4
 	maxHistoryTurns = 20
+	// defaultVoice нь Gemini TTS-ийн prebuilt дуу хоолой.
+	defaultVoice = "Kore"
 )
 
 // Config нь pipeline-ийн тохируулга.
@@ -35,20 +37,29 @@ type Config struct {
 	// удаа дараалан tool дуудвал хамгийн сүүлийн текстээр (эсвэл fallback)
 	// тасална. 0 бол өгөгдмөл (4).
 	MaxSteps int
+	// Voice нь TTS-ийн өгөгдмөл prebuilt дуу хоолой. Хоосон бол "Kore".
+	Voice string
 }
 
 type usecase struct {
 	client gemini.Generator
-	tools  map[string]ToolDef
-	decls  []gemini.FunctionDeclaration
-	cfg    Config
+	// ttsClient нь TTS-чадвартай model руу заасан тусдаа client — chat
+	// model audio гаргадаггүй тул хоёр өөр model хэрэглэнэ.
+	ttsClient gemini.Generator
+	tools     map[string]ToolDef
+	decls     []gemini.FunctionDeclaration
+	cfg       Config
 }
 
 // NewUsecase нь AI pipeline usecase үүсгэнэ. tools нь model-д зарлагдах ба
-// backend дээр гүйцэтгэгдэх функцууд (DefaultTools()-оос эхэлж болно).
-func NewUsecase(client gemini.Generator, tools []ToolDef, cfg Config) Usecase {
+// backend дээр гүйцэтгэгдэх функцууд (DefaultTools()-оос эхэлж болно);
+// ttsClient нь Speak/Translate-ийн дуут гаралтад хэрэглэгдэнэ.
+func NewUsecase(client, ttsClient gemini.Generator, tools []ToolDef, cfg Config) Usecase {
 	if cfg.MaxSteps <= 0 {
 		cfg.MaxSteps = defaultMaxSteps
+	}
+	if cfg.Voice == "" {
+		cfg.Voice = defaultVoice
 	}
 	byName := make(map[string]ToolDef, len(tools))
 	decls := make([]gemini.FunctionDeclaration, 0, len(tools))
@@ -56,7 +67,7 @@ func NewUsecase(client gemini.Generator, tools []ToolDef, cfg Config) Usecase {
 		byName[t.Declaration.Name] = t
 		decls = append(decls, t.Declaration)
 	}
-	return &usecase{client: client, tools: byName, decls: decls, cfg: cfg}
+	return &usecase{client: client, ttsClient: ttsClient, tools: byName, decls: decls, cfg: cfg}
 }
 
 func (uc *usecase) Run(ctx context.Context, req RunRequest) (RunResult, error) {
@@ -144,8 +155,9 @@ func (uc *usecase) executeTool(ctx context.Context, call gemini.FunctionCall) ma
 	return result
 }
 
-// buildContents нь history + шинэ prompt-оос Gemini contents угсарна.
-// History-г сүүлийн maxHistoryTurns ээлжээр тайрна (token хэмнэлт).
+// buildContents нь history + шинэ prompt (текст ба/эсвэл audio)-оос Gemini
+// contents угсарна. History-г сүүлийн maxHistoryTurns ээлжээр тайрна
+// (token хэмнэлт).
 func buildContents(req RunRequest) []gemini.Content {
 	history := req.History
 	if len(history) > maxHistoryTurns {
@@ -159,6 +171,16 @@ func buildContents(req RunRequest) []gemini.Content {
 		}
 		contents = append(contents, gemini.Content{Role: role, Parts: []gemini.Part{{Text: t.Text}}})
 	}
-	contents = append(contents, gemini.Content{Role: "user", Parts: []gemini.Part{{Text: req.Prompt}}})
+
+	var parts []gemini.Part
+	if req.Prompt != "" {
+		parts = append(parts, gemini.Part{Text: req.Prompt})
+	}
+	if req.Audio != nil {
+		parts = append(parts, gemini.Part{
+			InlineData: &gemini.Blob{MimeType: req.Audio.Mime, Data: req.Audio.Data},
+		})
+	}
+	contents = append(contents, gemini.Content{Role: "user", Parts: parts})
 	return contents
 }

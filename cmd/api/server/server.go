@@ -151,9 +151,13 @@ func NewApp() (*App, error) {
 	rbacRepo := rbacpostgres.NewRBACRepository(pool)
 	rbacUC := rbac.NewUsecase(rbacRepo)
 
-	// AI pipeline — Gemini REST client + function-calling tools.
+	// AI pipeline — Gemini REST client + function-calling tools. TTS нь
+	// audio гаргадаг тусдаа model тул өөр client-ээр явна.
 	geminiClient := gemini.NewClient(config.AppConfig.GeminiAPIBase, config.AppConfig.GeminiAPIKey, config.AppConfig.GeminiModel)
-	aiUC := ai.NewUsecase(geminiClient, ai.DefaultTools(), ai.Config{})
+	geminiTTSClient := gemini.NewClient(config.AppConfig.GeminiAPIBase, config.AppConfig.GeminiAPIKey, config.AppConfig.GeminiTTSModel)
+	aiUC := ai.NewUsecase(geminiClient, geminiTTSClient, ai.DefaultTools(), ai.Config{
+		Voice: config.AppConfig.GeminiVoice,
+	})
 
 	// Нэргүй /auth гадаргуун дээр IP тус бүрт минутанд 5 хүсэлт зөвшөөрнө.
 	authRateLimiter := middlewares.NewRateLimiter(rate.Limit(5.0/60.0), 5)

@@ -42,11 +42,20 @@ const (
 // --- Gemini REST wire төрлүүд (зөвхөн ашигладаг талбарууд) ---
 
 // Part нь Content доторх нэг хэсэг — текст, function дуудлага (model-ээс),
-// эсвэл function-ий үр дүн (backend-ээс буцааж өгдөг) гэсэн гурвын нэг.
+// function-ий үр дүн (backend-ээс буцааж өгдөг), эсвэл inline media (audio
+// оролт / TTS гаралт) гэсэн төрлүүдийн нэг.
 type Part struct {
 	Text             string            `json:"text,omitempty"`
 	FunctionCall     *FunctionCall     `json:"functionCall,omitempty"`
 	FunctionResponse *FunctionResponse `json:"functionResponse,omitempty"`
+	InlineData       *Blob             `json:"inlineData,omitempty"`
+}
+
+// Blob нь inline media — Data нь base64 кодлогдсон байт, MimeType нь
+// "audio/webm" гэх мэт төрөл. Audio ойлголтод оролт, TTS-д гаралт болж явна.
+type Blob struct {
+	MimeType string `json:"mimeType"`
+	Data     string `json:"data"`
 }
 
 // FunctionCall нь model-ийн "энэ функцийг эдгээр аргументаар дууд" гэсэн шийдвэр.
@@ -82,10 +91,26 @@ type Tool struct {
 	FunctionDeclarations []FunctionDeclaration `json:"functionDeclarations"`
 }
 
-// GenerationConfig нь generation-ий сонголттой тохиргоо.
+// GenerationConfig нь generation-ий сонголттой тохиргоо. ResponseModalities
+// + SpeechConfig нь TTS model-уудад ("AUDIO" modality) хэрэглэгдэнэ.
 type GenerationConfig struct {
-	Temperature     *float64 `json:"temperature,omitempty"`
-	MaxOutputTokens int      `json:"maxOutputTokens,omitempty"`
+	Temperature        *float64      `json:"temperature,omitempty"`
+	MaxOutputTokens    int           `json:"maxOutputTokens,omitempty"`
+	ResponseModalities []string      `json:"responseModalities,omitempty"`
+	SpeechConfig       *SpeechConfig `json:"speechConfig,omitempty"`
+}
+
+// SpeechConfig нь TTS дуу хоолойн сонголт.
+type SpeechConfig struct {
+	VoiceConfig *VoiceConfig `json:"voiceConfig,omitempty"`
+}
+
+type VoiceConfig struct {
+	PrebuiltVoiceConfig *PrebuiltVoiceConfig `json:"prebuiltVoiceConfig,omitempty"`
+}
+
+type PrebuiltVoiceConfig struct {
+	VoiceName string `json:"voiceName"`
 }
 
 // Request нь generateContent хүсэлтийн body.
@@ -132,6 +157,20 @@ func (r Response) FunctionCalls() []FunctionCall {
 		}
 	}
 	return calls
+}
+
+// InlineAudio нь эхний candidate-ийн эхний audio inlineData-г буцаана (TTS
+// гаралт) — байхгүй бол nil.
+func (r Response) InlineAudio() *Blob {
+	if len(r.Candidates) == 0 {
+		return nil
+	}
+	for _, p := range r.Candidates[0].Content.Parts {
+		if p.InlineData != nil && strings.HasPrefix(p.InlineData.MimeType, "audio/") {
+			return p.InlineData
+		}
+	}
+	return nil
 }
 
 // ModelContent нь эхний candidate-ийн Content-ийг буцаана — function calling

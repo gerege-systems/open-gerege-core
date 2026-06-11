@@ -30,3 +30,30 @@ func FromAIRunResult(res ai.RunResult) AIChatResponse {
 	}
 	return AIChatResponse{Reply: res.Reply, Steps: steps, Degraded: res.Degraded}
 }
+
+// AIAudioOut нь base64 кодлогдсон дуут гаралт (ихэвчлэн audio/wav).
+type AIAudioOut struct {
+	Mime string `json:"mime"`
+	Data string `json:"data"`
+}
+
+// AISTTResponse нь POST /ai/stt-ийн data хэсэг.
+type AISTTResponse struct {
+	Text string `json:"text"`
+}
+
+// AITranslateResponse нь POST /ai/translate-ийн data хэсэг.
+type AITranslateResponse struct {
+	SourceText string      `json:"source_text"`
+	Translated string      `json:"translated"`
+	Audio      *AIAudioOut `json:"audio,omitempty"`
+}
+
+// FromAITranslateResult нь usecase-ийн орчуулгын үр дүнг HTTP DTO руу буулгана.
+func FromAITranslateResult(res ai.TranslateResult) AITranslateResponse {
+	out := AITranslateResponse{SourceText: res.SourceText, Translated: res.Translated}
+	if res.Audio != nil {
+		out.Audio = &AIAudioOut{Mime: res.Audio.Mime, Data: res.Audio.Data}
+	}
+	return out
+}

@@ -30,7 +30,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Хэрэглэгчийн мессежийг Gemini AI pipeline-аар боловсруулж Монгол хариулт буцаана. AI шаардлагатай үед backend tool-уудыг (function calling) ашигладаг; гүйцэтгэсэн алхмууд steps талбарт ил гарна. AI үйлчилгээ түр унавал degraded=true + fallback мессеж буцаана (5xx биш).",
+                "description": "Хэрэглэгчийн мессежийг (текст эсвэл audio — дуут мессежийг AI шууд ойлгоно) Gemini AI pipeline-аар боловсруулж Монгол хариулт буцаана. AI шаардлагатай үед backend tool-уудыг (function calling) ашигладаг; гүйцэтгэсэн алхмууд steps талбарт ил гарна. AI үйлчилгээ түр унавал degraded=true + fallback мессеж буцаана (5xx биш).",
                 "consumes": [
                     "application/json"
                 ],
@@ -40,10 +40,10 @@ const docTemplate = `{
                 "tags": [
                     "ai"
                 ],
-                "summary": "AI туслахтай чатлах",
+                "summary": "AI туслахтай чатлах (текст/дуут мессеж)",
                 "parameters": [
                     {
-                        "description": "Chat message + optional history",
+                        "description": "Chat message (text and/or audio) + optional history",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -65,6 +65,231 @@ const docTemplate = `{
                                     "properties": {
                                         "data": {
                                             "$ref": "#/definitions/template_internal_http_datatransfers_responses.AIChatResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Malformed JSON body / missing message and audio",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Missing/invalid token",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    },
+                    "429": {
+                        "description": "Rate limit exceeded",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/ai/stt": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Base64 кодлогдсон audio (webm/ogg/wav/mp3 г.м.)-г Gemini-ээр текст болгоно. Яриа илрээгүй бол хоосон text буцаана.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ai"
+                ],
+                "summary": "Яриаг текст болгох (STT)",
+                "parameters": [
+                    {
+                        "description": "Audio (base64)",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_datatransfers_requests.AISTTRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Transcript",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/template_internal_http_datatransfers_responses.AISTTResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Malformed JSON body",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Missing/invalid token",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    },
+                    "429": {
+                        "description": "Rate limit exceeded",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/ai/translate": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Текст эсвэл audio-г зорилтот хэл рүү орчуулна. Audio өгвөл эхлээд STT хийгээд орчуулдаг; speak=true бол орчуулгын дуут (TTS) хувилбарыг хамт буцаана. Live орчуулга = богино audio chunk-уудыг энэ endpoint руу дараалан илгээх урсгал. Чимээгүй chunk-д хоосон үр дүн буцаана.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ai"
+                ],
+                "summary": "Шууд (live) орчуулга",
+                "parameters": [
+                    {
+                        "description": "Text or audio + target_lang",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_datatransfers_requests.AITranslateRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Translation",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/template_internal_http_datatransfers_responses.AITranslateResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Malformed JSON body / missing text and audio",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Missing/invalid token",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    },
+                    "429": {
+                        "description": "Rate limit exceeded",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/ai/tts": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Текстийг Gemini TTS model-ээр дуут (audio/wav, base64) болгоно. voice нь сонголттой prebuilt дуу хоолой (өгөгдмөл: Kore).",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ai"
+                ],
+                "summary": "Текстийг яриа болгох (TTS)",
+                "parameters": [
+                    {
+                        "description": "Text + optional voice",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_datatransfers_requests.AITTSRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "WAV audio (base64)",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/template_internal_http_datatransfers_responses.AIAudioOut"
                                         }
                                     }
                                 }
@@ -670,12 +895,39 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "template_internal_http_datatransfers_requests.AIChatRequest": {
+        "template_internal_http_datatransfers_requests.AIAudio": {
             "type": "object",
             "required": [
-                "message"
+                "data",
+                "mime"
             ],
             "properties": {
+                "data": {
+                    "type": "string",
+                    "maxLength": 716800
+                },
+                "mime": {
+                    "type": "string",
+                    "enum": [
+                        "audio/webm",
+                        "audio/ogg",
+                        "audio/wav",
+                        "audio/mpeg",
+                        "audio/mp3",
+                        "audio/mp4",
+                        "audio/m4a",
+                        "audio/aac",
+                        "audio/flac"
+                    ]
+                }
+            }
+        },
+        "template_internal_http_datatransfers_requests.AIChatRequest": {
+            "type": "object",
+            "properties": {
+                "audio": {
+                    "$ref": "#/definitions/template_internal_http_datatransfers_requests.AIAudio"
+                },
                 "history": {
                     "type": "array",
                     "maxItems": 20,
@@ -702,6 +954,56 @@ const docTemplate = `{
                         "user",
                         "model"
                     ]
+                },
+                "text": {
+                    "type": "string",
+                    "maxLength": 4000
+                }
+            }
+        },
+        "template_internal_http_datatransfers_requests.AISTTRequest": {
+            "type": "object",
+            "required": [
+                "audio"
+            ],
+            "properties": {
+                "audio": {
+                    "$ref": "#/definitions/template_internal_http_datatransfers_requests.AIAudio"
+                }
+            }
+        },
+        "template_internal_http_datatransfers_requests.AITTSRequest": {
+            "type": "object",
+            "required": [
+                "text"
+            ],
+            "properties": {
+                "text": {
+                    "type": "string",
+                    "maxLength": 2000
+                },
+                "voice": {
+                    "type": "string",
+                    "maxLength": 40
+                }
+            }
+        },
+        "template_internal_http_datatransfers_requests.AITranslateRequest": {
+            "type": "object",
+            "required": [
+                "target_lang"
+            ],
+            "properties": {
+                "audio": {
+                    "$ref": "#/definitions/template_internal_http_datatransfers_requests.AIAudio"
+                },
+                "speak": {
+                    "type": "boolean"
+                },
+                "target_lang": {
+                    "type": "string",
+                    "maxLength": 20,
+                    "minLength": 2
                 },
                 "text": {
                     "type": "string",
@@ -867,6 +1169,17 @@ const docTemplate = `{
                 }
             }
         },
+        "template_internal_http_datatransfers_responses.AIAudioOut": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "string"
+                },
+                "mime": {
+                    "type": "string"
+                }
+            }
+        },
         "template_internal_http_datatransfers_responses.AIChatResponse": {
             "type": "object",
             "properties": {
@@ -896,6 +1209,28 @@ const docTemplate = `{
                     "additionalProperties": {}
                 },
                 "tool": {
+                    "type": "string"
+                }
+            }
+        },
+        "template_internal_http_datatransfers_responses.AISTTResponse": {
+            "type": "object",
+            "properties": {
+                "text": {
+                    "type": "string"
+                }
+            }
+        },
+        "template_internal_http_datatransfers_responses.AITranslateResponse": {
+            "type": "object",
+            "properties": {
+                "audio": {
+                    "$ref": "#/definitions/template_internal_http_datatransfers_responses.AIAudioOut"
+                },
+                "source_text": {
+                    "type": "string"
+                },
+                "translated": {
                     "type": "string"
                 }
             }

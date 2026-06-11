@@ -132,7 +132,9 @@ VERIFY_CHANNEL=email
 OTEL_EXPORTER=                   # хоосон=унтраах | stdout | otlp
 ALLOWED_ORIGINS=                 # production-д заавал (таслалаар)
 GEMINI_API_KEY=                  # AI pipeline (/api/v1/ai/*); хоосон = AI идэвхгүй
-GEMINI_MODEL=gemini-2.5-flash    # сонголттой override
+GEMINI_MODEL=gemini-2.5-flash    # сонголттой override (чат / STT / орчуулга)
+GEMINI_TTS_MODEL=gemini-2.5-flash-preview-tts  # сонголттой override (TTS)
+GEMINI_VOICE=Kore                # сонголттой prebuilt TTS дуу хоолой
 GEMINI_API_BASE=                 # сонголттой override (өгөгдмөл: Google generativelanguage v1beta)
 ```
 
@@ -157,7 +159,10 @@ GEMINI_API_BASE=                 # сонголттой override (өгөгдмө
 |--------|------|---------|
 | PUT | `/api/v1/auth/password/change` | Нууц үг солих |
 | GET | `/api/v1/users/me` | Хэрэглэгчийн профайл |
-| POST | `/api/v1/ai/chat` | AI чат (Gemini pipeline, function calling) |
+| POST | `/api/v1/ai/chat` | AI чат (Gemini pipeline, function calling, текст/дуут мессеж) |
+| POST | `/api/v1/ai/stt` | Яриа→текст (audio base64 → transcript) |
+| POST | `/api/v1/ai/tts` | Текст→яриа (текст → WAV base64) |
+| POST | `/api/v1/ai/translate` | Шууд орчуулга (текст/audio → зорилтот хэл, сонголтоор TTS) |
 
 ### Ops
 `GET /health` (liveness) · `GET /ready` (DB+Redis) · `GET /metrics` · `GET /swagger/*`

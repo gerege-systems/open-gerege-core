@@ -132,7 +132,9 @@ VERIFY_CHANNEL=email
 OTEL_EXPORTER=                   # empty=off | stdout | otlp
 ALLOWED_ORIGINS=                 # required in production (comma-separated)
 GEMINI_API_KEY=                  # AI pipeline (/api/v1/ai/*); empty = AI disabled
-GEMINI_MODEL=gemini-2.5-flash    # optional override
+GEMINI_MODEL=gemini-2.5-flash    # optional override (chat / STT / translate)
+GEMINI_TTS_MODEL=gemini-2.5-flash-preview-tts  # optional override (TTS)
+GEMINI_VOICE=Kore                # optional prebuilt TTS voice
 GEMINI_API_BASE=                 # optional override (default: Google generativelanguage v1beta)
 ```
 
@@ -157,7 +159,10 @@ All under `/api/v1` (ops endpoints at root):
 |--------|------|---------|
 | PUT | `/api/v1/auth/password/change` | Change password |
 | GET | `/api/v1/users/me` | User profile |
-| POST | `/api/v1/ai/chat` | AI chat (Gemini pipeline, function calling) |
+| POST | `/api/v1/ai/chat` | AI chat (Gemini pipeline, function calling, text/voice messages) |
+| POST | `/api/v1/ai/stt` | Speech-to-text (audio base64 → transcript) |
+| POST | `/api/v1/ai/tts` | Text-to-speech (text → WAV base64) |
+| POST | `/api/v1/ai/translate` | Live translation (text/audio → target language, optional TTS) |
 
 ### Ops
 `GET /health` (liveness) · `GET /ready` (DB+Redis) · `GET /metrics` · `GET /swagger/*`

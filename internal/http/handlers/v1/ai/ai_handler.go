@@ -25,15 +25,15 @@ func NewHandler(usecase aiuc.Usecase) Handler {
 }
 
 // Chat godoc
-// @Summary      AI туслахтай чатлах
-// @Description  Хэрэглэгчийн мессежийг Gemini AI pipeline-аар боловсруулж Монгол хариулт буцаана. AI шаардлагатай үед backend tool-уудыг (function calling) ашигладаг; гүйцэтгэсэн алхмууд steps талбарт ил гарна. AI үйлчилгээ түр унавал degraded=true + fallback мессеж буцаана (5xx биш).
+// @Summary      AI туслахтай чатлах (текст/дуут мессеж)
+// @Description  Хэрэглэгчийн мессежийг (текст эсвэл audio — дуут мессежийг AI шууд ойлгоно) Gemini AI pipeline-аар боловсруулж Монгол хариулт буцаана. AI шаардлагатай үед backend tool-уудыг (function calling) ашигладаг; гүйцэтгэсэн алхмууд steps талбарт ил гарна. AI үйлчилгээ түр унавал degraded=true + fallback мессеж буцаана (5xx биш).
 // @Tags         ai
 // @Accept       json
 // @Produce      json
 // @Security     BearerAuth
-// @Param        request  body      requests.AIChatRequest  true  "Chat message + optional history"
+// @Param        request  body      requests.AIChatRequest  true  "Chat message (text and/or audio) + optional history"
 // @Success      200      {object}  v1.BaseResponse{data=responses.AIChatResponse}  "AI reply"
-// @Failure      400      {object}  v1.BaseResponse  "Malformed JSON body"
+// @Failure      400      {object}  v1.BaseResponse  "Malformed JSON body / missing message and audio"
 // @Failure      401      {object}  v1.BaseResponse  "Missing/invalid token"
 // @Failure      422      {object}  v1.BaseResponse  "Validation error"
 // @Failure      429      {object}  v1.BaseResponse  "Rate limit exceeded"
@@ -59,6 +59,9 @@ func (h Handler) Chat(w http.ResponseWriter, r *http.Request) error {
 	if err := validators.ValidatePayloads(req); err != nil {
 		return v1.RespondWithError(w, r, err)
 	}
+	if req.Message == "" && req.Audio == nil {
+		return v1.NewErrorResponse(w, r, http.StatusBadRequest, "message or audio is required")
+	}
 
 	history := make([]aiuc.Turn, 0, len(req.History))
 	for _, t := range req.History {
@@ -67,6 +70,7 @@ func (h Handler) Chat(w http.ResponseWriter, r *http.Request) error {
 
 	result, err := h.usecase.Run(ctx, aiuc.RunRequest{
 		Prompt:  req.Message,
+		Audio:   toAudio(req.Audio),
 		History: history,
 	})
 	if err != nil {

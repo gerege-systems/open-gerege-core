@@ -137,7 +137,7 @@ func TestRun(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			cfg := Config{MaxSteps: 2}
-			uc := NewUsecase(tt.gen, tt.tools, cfg)
+			uc := NewUsecase(tt.gen, tt.gen, tt.tools, cfg)
 
 			res, err := uc.Run(context.Background(), tt.req)
 			if tt.wantErr {
@@ -157,7 +157,7 @@ func TestRun(t *testing.T) {
 
 func TestRunSendsSystemInstructionAndHistory(t *testing.T) {
 	gen := &fakeGenerator{responses: []gemini.Response{textResponse("за")}}
-	uc := NewUsecase(gen, DefaultTools(), Config{})
+	uc := NewUsecase(gen, gen, DefaultTools(), Config{})
 
 	_, err := uc.Run(context.Background(), RunRequest{
 		Prompt: "одоо хэдэн цаг болж байна?",
@@ -184,7 +184,7 @@ func TestRunSendsSystemInstructionAndHistory(t *testing.T) {
 
 func TestRunTruncatesLongHistory(t *testing.T) {
 	gen := &fakeGenerator{responses: []gemini.Response{textResponse("за")}}
-	uc := NewUsecase(gen, nil, Config{})
+	uc := NewUsecase(gen, gen, nil, Config{})
 
 	history := make([]Turn, 30)
 	for i := range history {

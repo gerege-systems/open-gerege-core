@@ -46,10 +46,13 @@ type Config struct {
 
 	// Gemini AI pipeline (/api/v1/ai/*) — REST-ээр шууд дуудна (SDK-гүй).
 	// GEMINI_API_KEY хоосон бол AI endpoint 500 буцаана (template нь
-	// AI-гүйгээр boot хийгдэх боломжтой хэвээр). Model/base нь сонголттой.
-	GeminiAPIKey  string `mapstructure:"GEMINI_API_KEY"`
-	GeminiModel   string `mapstructure:"GEMINI_MODEL"`
-	GeminiAPIBase string `mapstructure:"GEMINI_API_BASE"`
+	// AI-гүйгээр boot хийгдэх боломжтой хэвээр). Model/base/voice сонголттой;
+	// TTS (text-to-speech) нь тусдаа TTS-чадвартай model хэрэглэдэг.
+	GeminiAPIKey   string `mapstructure:"GEMINI_API_KEY"`
+	GeminiModel    string `mapstructure:"GEMINI_MODEL"`
+	GeminiTTSModel string `mapstructure:"GEMINI_TTS_MODEL"`
+	GeminiVoice    string `mapstructure:"GEMINI_VOICE"`
+	GeminiAPIBase  string `mapstructure:"GEMINI_API_BASE"`
 
 	// OTel — OTelExporter хоосон бол tracing идэвхгүй болдог (noop
 	// provider). Dev орчинд span-уудыг хэвлэхийн тулд "stdout" гэж тохируул,
@@ -240,6 +243,9 @@ func applyDefaults() {
 	}
 	if AppConfig.JWTRefreshExpired == 0 {
 		AppConfig.JWTRefreshExpired = 7
+	}
+	if AppConfig.GeminiTTSModel == "" {
+		AppConfig.GeminiTTSModel = "gemini-2.5-flash-preview-tts"
 	}
 	// OTel-ийн sample ratio нь зөвхөн exporter тохируулагдсан БА оператор
 	// ratio-г тодорхой зааж өгөөгүй үед 1.0 утгыг анхдагчаар авна. Exporter
