@@ -15,8 +15,8 @@ auto-generated spec is served at `GET /swagger/` (source: `docs/swagger.json`).
 - **Base URL:** `http://localhost:8080/api/v1`
 - **Content-Type:** `application/json`
 - **Auth:** protected endpoints require `Authorization: Bearer <access_token>`
-- **Rate limit:** `/auth/*` is capped at ~5 requests/minute per IP (429 on excess)
-- **Body cap:** `/auth/*` bodies are limited to 4 KiB
+- **Rate limit:** `/auth/*` is capped at ~5 requests/minute per IP; `/ai/*` at ~20/minute (429 on excess)
+- **Body cap:** `/auth/*` bodies are limited to 4 KiB; everything else to 1 MiB
 
 ### Response envelope
 
@@ -76,10 +76,13 @@ Register a new account (regular user role).
 
 **Request**
 ```json
-{ "username": "johndoe", "email": "john@example.com", "password": "Str0ng!Passw0rd" }
+{ "last_name": "Бат", "first_name": "Дорж", "last_name_en": "Bat", "first_name_en": "Dorj",
+  "username": "johndoe", "email": "john@example.com", "password": "Str0ng!Passw0rd" }
 ```
 | Field | Rules |
 |-------|-------|
+| `last_name` / `first_name` | required, 1–50 chars (Mongolian) |
+| `last_name_en` / `first_name_en` | optional, ≤ 50 (Latin) |
 | `username` | required, 3–25 chars |
 | `email` | required, valid email, ≤ 50 |
 | `password` | required, 12–72, strongpassword |
@@ -130,9 +133,11 @@ last password change are rejected.
 Errors: `401` invalid/expired/revoked refresh token.
 
 ### POST `/auth/logout`
-Revoke the supplied refresh token.
+Revoke the supplied refresh token. If `access_token` is also supplied, its
+jti lands on a Redis deny-list for the token's remaining lifetime, so the
+access token stops working immediately as well.
 
-**Request** `{ "refresh_token": "<refresh_jwt>" }`
+**Request** `{ "refresh_token": "<refresh_jwt>", "access_token": "<access_jwt>" }` (`access_token` optional)
 **Response `200`** — message `"logout success"`, `data: null`.
 
 ### POST `/auth/password/forgot`
@@ -173,6 +178,71 @@ Return the authenticated user's profile. Requires `Authorization: Bearer`.
   "created_at": "…", "updated_at": null } }, "request_id": "…" }
 ```
 Errors: `401` missing/invalid token.
+
+---
+
+## AI (Gemini pipeline) 🔒
+
+All `/ai/*` endpoints require a bearer token and share a dedicated rate
+limit (~20 req/min per IP). They are no-ops returning 500 until
+`GEMINI_API_KEY` is configured. The assistant runs on a layered system
+prompt — hardcoded guardrails + an admin-configurable **scope** (the
+assistant refuses anything outside it) + optional **instructions** — and
+grounds platform answers in the `ai_knowledge` table via its
+`search_knowledge` tool.
+
+### POST `/ai/chat` 🔒
+Chat with the assistant. Send text, voice (base64 audio the model
+understands directly), or both. The conversation is stateless — pass prior
+turns in `history`.
+
+**Request**
+```json
+{ "message": "what time is it?",
+  "audio": { "mime": "audio/webm", "data": "<base64>" },
+  "history": [ { "role": "user", "text": "…" }, { "role": "model", "text": "…" } ] }
+```
+| Field | Rules |
+|-------|-------|
+| `message` | optional (required if no `audio`), ≤ 4000 chars |
+| `audio` | optional; `mime` ∈ webm/ogg/wav/mpeg/mp3/mp4/m4a/aac/flac, `data` base64 ≤ ~700 KB |
+| `history` | optional, ≤ 20 turns |
+
+**Response `200`**
+```json
+{ "status": true, "message": "ai reply generated", "data": {
+  "reply": "Одоо 12:30 цаг болж байна.",
+  "steps": [ { "tool": "get_server_time", "args": {}, "result": { } } ],
+  "degraded": false }, "request_id": "…" }
+```
+`steps` lists the function calls the model executed (pipeline trace). When
+Gemini is temporarily unavailable the endpoint still returns `200` with a
+Mongolian fallback `reply` and `degraded: true`.
+
+### POST `/ai/stt` 🔒
+Speech-to-text. **Request** `{ "audio": { "mime": "audio/webm", "data": "<base64>" } }`
+**Response `200`** — `data: { "text": "…" }` (empty when no speech detected).
+
+### POST `/ai/tts` 🔒
+Text-to-speech. **Request** `{ "text": "Сайн байна уу", "voice": "Kore" }` (`voice` optional)
+**Response `200`** — `data: { "mime": "audio/wav", "data": "<base64 WAV>" }` — playable directly in a browser.
+
+### POST `/ai/translate` 🔒
+Live translation. Provide `text` **or** `audio` (audio goes through an
+internal STT step first); `speak: true` additionally returns a spoken (TTS)
+version of the translation. Silent audio chunks return empty fields — the
+live-translation UI streams short recorded segments here.
+
+**Request** `{ "audio": { … }, "target_lang": "en", "speak": false }`
+(`target_lang`: required, e.g. `mn|en|ru|zh|ja|ko|de`)
+**Response `200`** — `data: { "source_text": "Сайн уу", "translated": "Hello", "audio": { … } }`.
+
+### GET `/admin/ai/prompts` · PUT `/admin/ai/prompts/{key}` 🔒
+Admin (requires the `settings.manage` permission): list / update the
+configurable prompt layers. `key` ∈ `scope | instructions`; body
+`{ "content": "…" }` (≤ 4000 chars, empty allowed). Changes take effect
+immediately (server-side prompt cache is invalidated). The base guardrail
+layer is hardcoded and not exposed here.
 
 ---
 

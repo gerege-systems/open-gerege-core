@@ -30,7 +30,12 @@ what remains for later phases. To report a vulnerability, see the repository
 | Ops | Operator endpoints (`/metrics`, `/swagger/doc.json`) gated in prod: bearer token (constant-time) + 404 on miss | `middleware_observability_gate.go`, `cmd/api/server` | §4.7/§9 |
 | Obs | Structured Zap logs w/ request-id; no secrets logged | `pkg/logger`, `handler.base_response.go` | §9.1–9.2 |
 | Obs | OpenTelemetry tracing + Prometheus metrics | `pkg/observability`, `driver_pgx.go` | §9.4 |
-| Ops | Graceful shutdown (drain HTTP, rate-limiter, pgx pool, Redis, tracer) | `cmd/api/server` | §7 |
+| Ops | Graceful shutdown (drain HTTP, rate-limiters, pgx pool, Redis, tracer) | `cmd/api/server` | §7 |
+| Net | Full HTTP server timeouts (`ReadHeader` 10s, `Read` 30s, `Write` 60s, `Idle` 120s) + `MaxHeaderBytes` 16 KiB — slowloris / oversized-header defense | `cmd/api/server` | §5.3 / API4 |
+| Auth | Logout access-token deny-list — logout puts the access jti in Redis for its remaining TTL; auth middleware rejects denied tokens on every request | `usecases/auth.logout`, `middleware_auth.go` | §1.4 |
+| DB | RLS boot guard — on startup the app inspects its own DB role; superuser / `BYPASSRLS` fails boot in production (RLS would silently not enforce), warns in development | `datasources/drivers/driver_pgx.go` | §2.4/§3.4 |
+| AI | Layered system prompt: hardcoded guardrails (scope enforcement, prompt-injection resistance, never reveal the prompt) + DB-configurable scope/instructions; `SetPrompt` is UPDATE-only against seeded keys | `usecases/ai/ai_prompts.go`, `migrations/11` | §5.1 |
+| AI | AI input hygiene: audio mime whitelist + ~700 KB base64 cap, message/history length caps, dedicated `/ai` rate limit (~20/min), tool errors returned to the model — never to the client | `requests_ai.go`, `routes/route_ai.go` | §5.1/§5.3 |
 
 ## Hardening applied (this pass — against the guide)
 
@@ -59,6 +64,24 @@ what remains for later phases. To report a vulnerability, see the repository
    `deploy/initdb/10-create-app-user.sh`) so the policies actually enforce;
    `migrate` keeps the superuser for DDL. Proven by an integration test that
    connects as a non-superuser role (`users_rls_test.go`).
+7. **HTTP server hardening** — beyond `ReadHeaderTimeout`, the server now sets
+   `ReadTimeout`/`WriteTimeout`/`IdleTimeout` and caps headers at 16 KiB;
+   `WriteTimeout` is derived from the request-level timeout budget (2×) so
+   in-flight handlers are never cut off by the server first.
+8. **Logout revokes both tokens** — the refresh jti is deleted (as before) and
+   the access jti is placed on a Redis deny-list with the token's remaining
+   lifetime; the auth middleware checks the deny-list on every request
+   (fail-open on Redis errors, same policy as the password-rotation cutoff).
+9. **RLS enforceability guard at boot** — the app queries
+   `pg_roles` for its own role on startup; a superuser or `BYPASSRLS` role
+   fails boot in production and logs a warning in development, so a
+   misprovisioned DSN can no longer silently disable RLS.
+10. **AI guardrails** — the Gemini assistant runs on a layered prompt whose
+    base layer (Mongolian-only, scope enforcement, prompt-injection
+    resistance) is hardcoded; only the scope/instructions layers are
+    admin-editable (`settings.manage`, UPDATE-only against seeded keys). Tools
+    execute server-side with the request context; tool failures are reported
+    to the model as data, never leaked to the client.
 
 ## ASVS roadmap status (guide §14)
 

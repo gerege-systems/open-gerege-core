@@ -23,7 +23,7 @@ Template v27** (module `template`). The stack is **chi (net/http) + pgx
 │  internal/http/{routes, datatransfers, middlewares, auth}         │
 ├─────────────────────────────────────────────────────────────────┤
 │                       Usecase Layer                               │
-│  internal/business/usecases/{auth,users}                          │
+│  internal/business/usecases/{auth,users,rbac,ai}                  │
 │  (Business logic, validation, orchestration)                      │
 ├─────────────────────────────────────────────────────────────────┤
 │                     Repository Layer                              │
@@ -52,7 +52,9 @@ Template v27** (module `template`). The stack is **chi (net/http) + pgx
 │   ├── apperror/                   # Typed domain errors (→ HTTP status)
 │   ├── business/
 │   │   ├── domain/                 # Enterprise entities (innermost circle)
-│   │   └── usecases/{auth,users}/  # Business logic — interface + impl
+│   │   └── usecases/{auth,users,rbac,ai}/  # Business logic — interface + impl
+│   │       └── ai/                 # Gemini pipeline: function-calling chat,
+│   │                               #   STT/TTS/translate, layered prompts, tools
 │   ├── config/                     # Viper-backed config + .env.example
 │   ├── constants/                  # Env, logger, error, endpoint constants
 │   ├── datasources/
@@ -62,7 +64,7 @@ Template v27** (module `template`). The stack is **chi (net/http) + pgx
 │   │   ├── records/                # pgx record structs + record↔domain mappers
 │   │   └── repositories/
 │   │       ├── interface/          # Gateway abstractions (package _interface)
-│   │       └── postgres/users/     # pgx implementation (hand-written SQL)
+│   │       └── postgres/{users,rbac,ai}/ # pgx implementations (hand-written SQL)
 │   └── http/
 │       ├── auth/                   # CurrentUser from request context
 │       ├── datatransfers/          # Request / Response DTOs
@@ -73,6 +75,8 @@ Template v27** (module `template`). The stack is **chi (net/http) + pgx
 ├── pkg/                            # Framework-agnostic utilities
 │   ├── jwt/ logger/ clock/ helpers/ validators/
 │   ├── verify/                     # GeregeCloud Verify (OTP) client
+│   ├── gemini/                     # SDK-free Gemini REST client (function calling,
+│   │                               #   audio in/out, retry+backoff, PCM→WAV)
 │   ├── audit/                      # Auth-event audit log
 │   └── observability/              # Tracing + metrics
 └── internal/test/                  # Mocks, fixtures, testcontainers harness
@@ -294,6 +298,12 @@ All under base path `/api/v1` (plus infra routes at root):
 | POST   | `/api/v1/auth/password/reset` | —    | Complete password reset  |
 | PUT    | `/api/v1/auth/password/change`| JWT  | Change password          |
 | GET    | `/api/v1/users/me`            | JWT  | Current user profile     |
+| POST   | `/api/v1/ai/chat`             | JWT  | AI chat (text/voice, function calling) |
+| POST   | `/api/v1/ai/stt`              | JWT  | Speech-to-text           |
+| POST   | `/api/v1/ai/tts`              | JWT  | Text-to-speech (WAV)     |
+| POST   | `/api/v1/ai/translate`        | JWT  | Live translation (text/audio) |
+| GET/PUT| `/api/v1/admin/ai/prompts`    | JWT+perm | AI prompt layers (settings.manage) |
+| GET    | `/api/v1/rbac/*` `/api/v1/admin/users*` | JWT+perm | RBAC + user administration |
 | GET    | `/health` `/ready` `/metrics` | —    | Ops endpoints            |
 | GET    | `/swagger/*`                  | —    | Swagger UI               |
 

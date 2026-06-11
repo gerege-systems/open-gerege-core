@@ -297,6 +297,29 @@ func (r *postgreUserRepository) GetByID(ctx context.Context, id string) (domain.
 }
 ```
 
+## Extending the AI assistant
+
+The Gemini pipeline (`internal/business/usecases/ai`) is built to be extended
+per project:
+
+- **Add a tool** — implement an `ai.ToolDef` (a Gemini function declaration +
+  a Go `Execute` func) and append it to the tool list in
+  `cmd/api/server/server.go`. The model decides when to call it; the backend
+  executes it with the request context (so RLS applies to any DB access).
+  `KnowledgeSearchTool` (searches `ai_knowledge`) and `get_server_time` are
+  the shipped examples.
+- **Change what the assistant helps with** — edit the `scope` prompt layer at
+  runtime (Admin → Settings, or `PUT /admin/ai/prompts/scope`). The base
+  guardrail layer (language, scope enforcement, prompt-injection resistance)
+  is hardcoded in `ai_prompts.go` and should stay that way.
+- **Grow the knowledge base** — insert rows into `ai_knowledge`
+  (title/content/tags). The ILIKE search in
+  `repositories/postgres/ai` is a single query — swap it for tsvector or
+  pgvector when the corpus grows.
+- **Models** — chat/STT/translate use `GEMINI_MODEL`; TTS uses
+  `GEMINI_TTS_MODEL` (a separate, audio-capable model). Both are env-only
+  config.
+
 ## API Documentation
 
 ### Swagger Annotations

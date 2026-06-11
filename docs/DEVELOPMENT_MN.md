@@ -298,6 +298,26 @@ func (r *postgreUserRepository) GetByID(ctx context.Context, id string) (domain.
 }
 ```
 
+## AI туслахыг өргөтгөх
+
+Gemini pipeline (`internal/business/usecases/ai`) нь проект бүрд өргөтгөгдөхөөр
+зохиогдсон:
+
+- **Tool нэмэх** — `ai.ToolDef` (Gemini function declaration + Go `Execute`
+  функц) бичээд `cmd/api/server/server.go`-ийн tool жагсаалтад нэмнэ. Model
+  хэзээ дуудахаа өөрөө шийднэ; backend хүсэлтийн context-оор гүйцэтгэдэг тул
+  DB хандалтад RLS үйлчилнэ. Жишээ: `KnowledgeSearchTool` (`ai_knowledge`-ээс
+  хайдаг), `get_server_time`.
+- **Туслахын чиглэлийг өөрчлөх** — `scope` давхаргыг ажиллаж байх үед нь
+  засна (Админ → Тохиргоо, эсвэл `PUT /admin/ai/prompts/scope`). Suurь
+  хамгаалалтын давхарга (хэл, хүрээний сахилт, prompt-injection эсэргүүцэл)
+  `ai_prompts.go`-д хатуу бичигдсэн — тэр хэвээрээ байх ёстой.
+- **Мэдлэгийн санг өргөтгөх** — `ai_knowledge`-д мөр нэмнэ
+  (title/content/tags). `repositories/postgres/ai`-ийн ILIKE хайлт нэг query —
+  сан томрох үед tsvector эсвэл pgvector-оор солино.
+- **Model-ууд** — чат/STT/орчуулга `GEMINI_MODEL`, TTS `GEMINI_TTS_MODEL`
+  (audio гаргадаг тусдаа model) хэрэглэнэ; хоёулаа зөвхөн env тохиргоо.
+
 ## API баримтжуулалт (API Documentation)
 
 ### Swagger annotation-ууд

@@ -36,13 +36,14 @@ Clean Architecture зарчмаар бүтээгдсэн, өндөр гүйцэ�
 - **JWT танилт** — access + refresh token (rotation, `kind` claim guard)
 - **OTP бүртгэл** — имэйл OTP-оор баталгаажуулах, brute-force lockout
 - **GeregeCloud Verify** — бүх имэйл/SMS OTP (бүртгэл + нууц үг сэргээх) verify.gecloud.mn-ээр; SMTP байхгүй
+- **AI pipeline (Gemini)** — SDK-гүй REST client + function calling: текст/дуут чат, STT, TTS, шууд орчуулга; давхаргат prompt (кодод хатуу suurь дүрэм + DB-ээс тохируулдаг хүрээ) ба DB-д суурилсан `search_knowledge` tool
 - **Audit log** — танилтын үйл явдлын бүртгэл
 - **Observability** — OpenTelemetry trace + Prometheus metrics
 - **Кэш** — Redis + Ristretto хоёр түвшний
 - **Integration Testing** — testcontainers-go (жинхэнэ Postgres + Redis)
 - **Swagger** — godoc annotation-аас автомат API баримтжуулалт
 - **Structured Logging** — Zap, request ID дамжуулалттай
-- **Security** — security headers, CORS, rate limiting, body size limit
+- **Security** — security headers, CORS, rate limiting, body size limit, серверийн бүрэн timeout-ууд, Postgres RLS + boot-үеийн мөрдөлтийн guard, logout-ийн access deny-list
 - **Graceful Shutdown** — HTTP, DB pool, Redis, tracer-ийг дарааллаар drain хийх
 
 ## Төслийн бүтэц
@@ -58,7 +59,7 @@ Clean Architecture зарчмаар бүтээгдсэн, өндөр гүйцэ�
 ├── internal/
 │   ├── business/
 │   │   ├── domain/              # Domain entities (хамгийн дотоод давхарга)
-│   │   └── usecases/{auth,users}/  # Business logic (interface + impl)
+│   │   └── usecases/{auth,users,rbac,ai}/  # Business logic (interface + impl)
 │   ├── datasources/
 │   │   ├── drivers/             # pgx (pgxpool) Postgres холболт (driver_pgx.go)
 │   │   ├── caches/              # Redis + Ristretto
@@ -75,7 +76,7 @@ Clean Architecture зарчмаар бүтээгдсэн, өндөр гүйцэ�
 ├── migrations/                  # SQL migrations
 ├── docs/                        # Swagger + ARCHITECTURE.md + DEVELOPMENT.md
 └── pkg/                         # jwt, logger, clock, helpers, validators,
-                                 # audit, observability, verify
+                                 # audit, observability, verify, gemini
 ```
 
 ## Түргэн эхлүүлэх
@@ -174,6 +175,7 @@ AI туслах давхаргат system prompt-оор ажиллана: **suur
 | POST | `/api/v1/ai/stt` | Яриа→текст (audio base64 → transcript) |
 | POST | `/api/v1/ai/tts` | Текст→яриа (текст → WAV base64) |
 | POST | `/api/v1/ai/translate` | Шууд орчуулга (текст/audio → зорилтот хэл, сонголтоор TTS) |
+| GET/PUT | `/api/v1/admin/ai/prompts` | AI prompt давхарга — хүрээ/заавар (settings.manage) |
 
 ### Ops
 `GET /health` (liveness) · `GET /ready` (DB+Redis) · `GET /metrics` · `GET /swagger/*`

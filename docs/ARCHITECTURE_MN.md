@@ -24,7 +24,7 @@ PostgreSQL + Redis** бөгөөд Clean Architecture зарчмаар зохио
 │  internal/http/{routes, datatransfers, middlewares, auth}         │
 ├─────────────────────────────────────────────────────────────────┤
 │                       Usecase Layer                               │
-│  internal/business/usecases/{auth,users}                          │
+│  internal/business/usecases/{auth,users,rbac,ai}                  │
 │  (Business logic, validation, orchestration)                      │
 ├─────────────────────────────────────────────────────────────────┤
 │                     Repository Layer                              │
@@ -53,7 +53,9 @@ PostgreSQL + Redis** бөгөөд Clean Architecture зарчмаар зохио
 │   ├── apperror/                   # Typed domain errors (→ HTTP status)
 │   ├── business/
 │   │   ├── domain/                 # Enterprise entities (innermost circle)
-│   │   └── usecases/{auth,users}/  # Business logic — interface + impl
+│   │   └── usecases/{auth,users,rbac,ai}/  # Business logic — interface + impl
+│   │       └── ai/                 # Gemini pipeline: function-calling чат,
+│   │                               #   STT/TTS/орчуулга, давхаргат prompt, tools
 │   ├── config/                     # Viper-backed config + .env.example
 │   ├── constants/                  # Env, logger, error, endpoint constants
 │   ├── datasources/
@@ -63,7 +65,7 @@ PostgreSQL + Redis** бөгөөд Clean Architecture зарчмаар зохио
 │   │   ├── records/                # pgx record structs + record↔domain mappers
 │   │   └── repositories/
 │   │       ├── interface/          # Gateway abstractions (package _interface)
-│   │       └── postgres/users/     # pgx implementation (hand-written SQL)
+│   │       └── postgres/{users,rbac,ai}/ # pgx implementations (hand-written SQL)
 │   └── http/
 │       ├── auth/                   # CurrentUser from request context
 │       ├── datatransfers/          # Request / Response DTOs
@@ -74,6 +76,8 @@ PostgreSQL + Redis** бөгөөд Clean Architecture зарчмаар зохио
 ├── pkg/                            # Framework-agnostic utilities
 │   ├── jwt/ logger/ clock/ helpers/ validators/
 │   ├── verify/                     # GeregeCloud Verify (OTP) client
+│   ├── gemini/                     # SDK-гүй Gemini REST client (function calling,
+│   │                               #   audio оролт/гаралт, retry+backoff, PCM→WAV)
 │   ├── audit/                      # Auth-event audit log
 │   └── observability/              # Tracing + metrics
 └── internal/test/                  # Mocks, fixtures, testcontainers harness
@@ -297,6 +301,12 @@ poolCfg.MaxConnLifetime = cfg.MaxLifetime // DB_CONN_MAX_LIFE_MINS (default 15)
 | POST   | `/api/v1/auth/password/reset` | —    | Complete password reset  |
 | PUT    | `/api/v1/auth/password/change`| JWT  | Change password          |
 | GET    | `/api/v1/users/me`            | JWT  | Current user profile     |
+| POST   | `/api/v1/ai/chat`             | JWT  | AI чат (текст/дуут, function calling) |
+| POST   | `/api/v1/ai/stt`              | JWT  | Яриа→текст               |
+| POST   | `/api/v1/ai/tts`              | JWT  | Текст→яриа (WAV)         |
+| POST   | `/api/v1/ai/translate`        | JWT  | Шууд орчуулга (текст/audio) |
+| GET/PUT| `/api/v1/admin/ai/prompts`    | JWT+эрх | AI prompt давхарга (settings.manage) |
+| GET    | `/api/v1/rbac/*` `/api/v1/admin/users*` | JWT+эрх | RBAC + хэрэглэгчийн удирдлага |
 | GET    | `/health` `/ready` `/metrics` | —    | Ops endpoints            |
 | GET    | `/swagger/*`                  | —    | Swagger UI               |
 

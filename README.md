@@ -36,13 +36,14 @@ authentication.
 - **JWT authentication** — access + refresh token (rotation, `kind` claim guard)
 - **OTP registration** — email OTP verification, brute-force lockout
 - **GeregeCloud Verify** — all email/SMS OTP (registration + password reset) via verify.gecloud.mn; no SMTP
+- **AI pipeline (Gemini)** — SDK-free REST client + function calling: text/voice chat, STT, TTS, live translation; layered prompts (hardcoded guardrails + DB-configurable scope) and a DB-backed `search_knowledge` tool
 - **Audit log** — logging of authentication events
 - **Observability** — OpenTelemetry trace + Prometheus metrics
 - **Cache** — two-tier Redis + Ristretto
 - **Integration Testing** — testcontainers-go (real Postgres + Redis)
 - **Swagger** — automatic API documentation from godoc annotations
 - **Structured Logging** — Zap, with request ID propagation
-- **Security** — security headers, CORS, rate limiting, body size limit
+- **Security** — security headers, CORS, rate limiting, body size limit, full server timeouts, Postgres RLS + boot-time enforceability guard, logout access-token deny-list
 - **Graceful Shutdown** — drains HTTP, DB pool, Redis, tracer in order
 
 ## Project Structure
@@ -58,7 +59,7 @@ authentication.
 ├── internal/
 │   ├── business/
 │   │   ├── domain/              # Domain entities (innermost layer)
-│   │   └── usecases/{auth,users}/  # Business logic (interface + impl)
+│   │   └── usecases/{auth,users,rbac,ai}/  # Business logic (interface + impl)
 │   ├── datasources/
 │   │   ├── drivers/             # pgx (pgxpool) Postgres connection (driver_pgx.go)
 │   │   ├── caches/              # Redis + Ristretto
@@ -75,7 +76,7 @@ authentication.
 ├── migrations/                  # SQL migrations
 ├── docs/                        # Swagger + ARCHITECTURE.md + DEVELOPMENT.md
 └── pkg/                         # jwt, logger, clock, helpers, validators,
-                                 # audit, observability, verify
+                                 # audit, observability, verify, gemini
 ```
 
 ## Quick Start
@@ -175,6 +176,7 @@ All under `/api/v1` (ops endpoints at root):
 | POST | `/api/v1/ai/stt` | Speech-to-text (audio base64 → transcript) |
 | POST | `/api/v1/ai/tts` | Text-to-speech (text → WAV base64) |
 | POST | `/api/v1/ai/translate` | Live translation (text/audio → target language, optional TTS) |
+| GET/PUT | `/api/v1/admin/ai/prompts` | AI prompt layers — scope/instructions (settings.manage) |
 
 ### Ops
 `GET /health` (liveness) · `GET /ready` (DB+Redis) · `GET /metrics` · `GET /swagger/*`
