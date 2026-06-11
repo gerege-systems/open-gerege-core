@@ -13,6 +13,7 @@ const (
 	LoggerCategoryCORS      = "cors"
 	LoggerCategorySeeder    = "seeder"
 	LoggerCategoryCache     = "cache"
+	LoggerCategoryAI        = "ai"
 
 	LoggerFile = "file"
 )

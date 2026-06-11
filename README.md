@@ -131,6 +131,9 @@ VERIFY_API_BASE=https://verify.gecloud.mn/v1
 VERIFY_CHANNEL=email
 OTEL_EXPORTER=                   # empty=off | stdout | otlp
 ALLOWED_ORIGINS=                 # required in production (comma-separated)
+GEMINI_API_KEY=                  # AI pipeline (/api/v1/ai/*); empty = AI disabled
+GEMINI_MODEL=gemini-2.5-flash    # optional override
+GEMINI_API_BASE=                 # optional override (default: Google generativelanguage v1beta)
 ```
 
 ## API Endpoints
@@ -154,6 +157,7 @@ All under `/api/v1` (ops endpoints at root):
 |--------|------|---------|
 | PUT | `/api/v1/auth/password/change` | Change password |
 | GET | `/api/v1/users/me` | User profile |
+| POST | `/api/v1/ai/chat` | AI chat (Gemini pipeline, function calling) |
 
 ### Ops
 `GET /health` (liveness) · `GET /ready` (DB+Redis) · `GET /metrics` · `GET /swagger/*`

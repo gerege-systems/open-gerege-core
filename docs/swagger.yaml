@@ -1,5 +1,32 @@
 basePath: /api/v1
 definitions:
+  template_internal_http_datatransfers_requests.AIChatRequest:
+    properties:
+      history:
+        items:
+          $ref: '#/definitions/template_internal_http_datatransfers_requests.AIChatTurn'
+        maxItems: 20
+        type: array
+      message:
+        maxLength: 4000
+        type: string
+    required:
+    - message
+    type: object
+  template_internal_http_datatransfers_requests.AIChatTurn:
+    properties:
+      role:
+        enum:
+        - user
+        - model
+        type: string
+      text:
+        maxLength: 4000
+        type: string
+    required:
+    - role
+    - text
+    type: object
   template_internal_http_datatransfers_requests.ChangePasswordRequest:
     properties:
       current_password:
@@ -47,6 +74,24 @@ definitions:
       email:
         maxLength: 50
         type: string
+      first_name:
+        description: нэр (монгол)
+        maxLength: 50
+        minLength: 1
+        type: string
+      first_name_en:
+        description: нэр (англи)
+        maxLength: 50
+        type: string
+      last_name:
+        description: овог (монгол)
+        maxLength: 50
+        minLength: 1
+        type: string
+      last_name_en:
+        description: овог (англи)
+        maxLength: 50
+        type: string
       password:
         maxLength: 72
         minLength: 12
@@ -57,6 +102,8 @@ definitions:
         type: string
     required:
     - email
+    - first_name
+    - last_name
     - password
     - username
     type: object
@@ -95,13 +142,47 @@ definitions:
     - code
     - email
     type: object
+  template_internal_http_datatransfers_responses.AIChatResponse:
+    properties:
+      degraded:
+        type: boolean
+      reply:
+        type: string
+      steps:
+        items:
+          $ref: '#/definitions/template_internal_http_datatransfers_responses.AIChatStep'
+        type: array
+    type: object
+  template_internal_http_datatransfers_responses.AIChatStep:
+    properties:
+      args:
+        additionalProperties: {}
+        type: object
+      result:
+        additionalProperties: {}
+        type: object
+      tool:
+        type: string
+    type: object
   template_internal_http_datatransfers_responses.UserResponse:
     properties:
       created_at:
         type: string
       email:
         type: string
+      first_name:
+        type: string
+      first_name_en:
+        type: string
+      full_name:
+        type: string
+      full_name_en:
+        type: string
       id:
+        type: string
+      last_name:
+        type: string
+      last_name_en:
         type: string
       refresh_token:
         type: string
@@ -139,6 +220,54 @@ info:
   title: Gerege Backend Template v27 API
   version: "1.0"
 paths:
+  /ai/chat:
+    post:
+      consumes:
+      - application/json
+      description: Хэрэглэгчийн мессежийг Gemini AI pipeline-аар боловсруулж Монгол
+        хариулт буцаана. AI шаардлагатай үед backend tool-уудыг (function calling)
+        ашигладаг; гүйцэтгэсэн алхмууд steps талбарт ил гарна. AI үйлчилгээ түр унавал
+        degraded=true + fallback мессеж буцаана (5xx биш).
+      parameters:
+      - description: Chat message + optional history
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/template_internal_http_datatransfers_requests.AIChatRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: AI reply
+          schema:
+            allOf:
+            - $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/template_internal_http_datatransfers_responses.AIChatResponse'
+              type: object
+        "400":
+          description: Malformed JSON body
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+        "401":
+          description: Missing/invalid token
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+        "422":
+          description: Validation error
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+        "429":
+          description: Rate limit exceeded
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      security:
+      - BearerAuth: []
+      summary: AI туслахтай чатлах
+      tags:
+      - ai
   /auth/login:
     post:
       consumes:

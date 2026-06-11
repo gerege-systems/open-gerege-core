@@ -131,6 +131,9 @@ VERIFY_API_BASE=https://verify.gecloud.mn/v1
 VERIFY_CHANNEL=email
 OTEL_EXPORTER=                   # хоосон=унтраах | stdout | otlp
 ALLOWED_ORIGINS=                 # production-д заавал (таслалаар)
+GEMINI_API_KEY=                  # AI pipeline (/api/v1/ai/*); хоосон = AI идэвхгүй
+GEMINI_MODEL=gemini-2.5-flash    # сонголттой override
+GEMINI_API_BASE=                 # сонголттой override (өгөгдмөл: Google generativelanguage v1beta)
 ```
 
 ## API Endpoints
@@ -154,6 +157,7 @@ ALLOWED_ORIGINS=                 # production-д заавал (таслалаа�
 |--------|------|---------|
 | PUT | `/api/v1/auth/password/change` | Нууц үг солих |
 | GET | `/api/v1/users/me` | Хэрэглэгчийн профайл |
+| POST | `/api/v1/ai/chat` | AI чат (Gemini pipeline, function calling) |
 
 ### Ops
 `GET /health` (liveness) · `GET /ready` (DB+Redis) · `GET /metrics` · `GET /swagger/*`

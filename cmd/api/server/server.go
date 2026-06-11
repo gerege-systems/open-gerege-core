@@ -18,6 +18,7 @@ import (
 	"golang.org/x/time/rate"
 
 	docs "template/docs" // swagger тодорхойлолт, swaggo-оор init үед бүртгэгддэг
+	"template/internal/business/usecases/ai"
 	"template/internal/business/usecases/auth"
 	"template/internal/business/usecases/rbac"
 	"template/internal/business/usecases/users"
@@ -30,6 +31,7 @@ import (
 	V1Handler "template/internal/http/handlers/v1"
 	"template/internal/http/middlewares"
 	"template/internal/http/routes"
+	"template/pkg/gemini"
 	"template/pkg/jwt"
 	"template/pkg/logger"
 	"template/pkg/observability"
@@ -46,6 +48,7 @@ type App struct {
 	redisCache      caches.RedisCache
 	tracerShutdown  observability.Shutdown
 	authRateLimiter *middlewares.RateLimiter
+	aiRateLimiter   *middlewares.RateLimiter
 }
 
 func NewApp() (*App, error) {
@@ -148,8 +151,14 @@ func NewApp() (*App, error) {
 	rbacRepo := rbacpostgres.NewRBACRepository(pool)
 	rbacUC := rbac.NewUsecase(rbacRepo)
 
+	// AI pipeline — Gemini REST client + function-calling tools.
+	geminiClient := gemini.NewClient(config.AppConfig.GeminiAPIBase, config.AppConfig.GeminiAPIKey, config.AppConfig.GeminiModel)
+	aiUC := ai.NewUsecase(geminiClient, ai.DefaultTools(), ai.Config{})
+
 	// Нэргүй /auth гадаргуун дээр IP тус бүрт минутанд 5 хүсэлт зөвшөөрнө.
 	authRateLimiter := middlewares.NewRateLimiter(rate.Limit(5.0/60.0), 5)
+	// Gemini дуудлага үнэтэй — /ai-д IP тус бүрт минутанд 10 хүсэлт, burst 3.
+	aiRateLimiter := middlewares.NewRateLimiter(rate.Limit(10.0/60.0), 3)
 
 	// API Route-ууд
 	r.Route("/api", func(api chi.Router) {
@@ -158,6 +167,7 @@ func NewApp() (*App, error) {
 		routes.NewUsersRoute(api, usersUC, authMiddleware).Routes()
 		routes.NewRBACRoute(api, rbacUC, authMiddleware).Routes()
 		routes.NewAdminRoute(api, usersUC, rbacUC, authMiddleware).Routes()
+		routes.NewAIRoute(api, aiUC, authMiddleware, aiRateLimiter).Routes()
 	})
 
 	srv := &http.Server{
@@ -172,6 +182,7 @@ func NewApp() (*App, error) {
 		redisCache:      redisCache,
 		tracerShutdown:  shutdownTracer,
 		authRateLimiter: authRateLimiter,
+		aiRateLimiter:   aiRateLimiter,
 	}, nil
 }
 
@@ -199,9 +210,12 @@ func (a *App) Run() (err error) {
 		return fmt.Errorf("error when shutdown server: %v", shutdownErr)
 	}
 
-	// Rate limiter-ийн cleanup goroutine-ийг зогсооно.
+	// Rate limiter-уудын cleanup goroutine-уудыг зогсооно.
 	if a.authRateLimiter != nil {
 		a.authRateLimiter.Stop()
+	}
+	if a.aiRateLimiter != nil {
+		a.aiRateLimiter.Stop()
 	}
 
 	// өгөгдлийн сангийн pool-г хаах

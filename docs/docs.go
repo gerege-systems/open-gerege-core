@@ -23,6 +23,81 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/ai/chat": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Хэрэглэгчийн мессежийг Gemini AI pipeline-аар боловсруулж Монгол хариулт буцаана. AI шаардлагатай үед backend tool-уудыг (function calling) ашигладаг; гүйцэтгэсэн алхмууд steps талбарт ил гарна. AI үйлчилгээ түр унавал degraded=true + fallback мессеж буцаана (5xx биш).",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ai"
+                ],
+                "summary": "AI туслахтай чатлах",
+                "parameters": [
+                    {
+                        "description": "Chat message + optional history",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_datatransfers_requests.AIChatRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "AI reply",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/template_internal_http_datatransfers_responses.AIChatResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Malformed JSON body",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Missing/invalid token",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    },
+                    "429": {
+                        "description": "Rate limit exceeded",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/auth/login": {
             "post": {
                 "description": "Access токен (богино TTL) болон refresh токен (урт TTL) буцаана. Хэрэглэгчийг тоолохоос сэргийлэхийн тулд буруу нууц үг болон тодорхойгүй email ижил хугацаа зарцуулна.",
@@ -595,6 +670,45 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "template_internal_http_datatransfers_requests.AIChatRequest": {
+            "type": "object",
+            "required": [
+                "message"
+            ],
+            "properties": {
+                "history": {
+                    "type": "array",
+                    "maxItems": 20,
+                    "items": {
+                        "$ref": "#/definitions/template_internal_http_datatransfers_requests.AIChatTurn"
+                    }
+                },
+                "message": {
+                    "type": "string",
+                    "maxLength": 4000
+                }
+            }
+        },
+        "template_internal_http_datatransfers_requests.AIChatTurn": {
+            "type": "object",
+            "required": [
+                "role",
+                "text"
+            ],
+            "properties": {
+                "role": {
+                    "type": "string",
+                    "enum": [
+                        "user",
+                        "model"
+                    ]
+                },
+                "text": {
+                    "type": "string",
+                    "maxLength": 4000
+                }
+            }
+        },
         "template_internal_http_datatransfers_requests.ChangePasswordRequest": {
             "type": "object",
             "required": [
@@ -659,11 +773,35 @@ const docTemplate = `{
             "type": "object",
             "required": [
                 "email",
+                "first_name",
+                "last_name",
                 "password",
                 "username"
             ],
             "properties": {
                 "email": {
+                    "type": "string",
+                    "maxLength": 50
+                },
+                "first_name": {
+                    "description": "нэр (монгол)",
+                    "type": "string",
+                    "maxLength": 50,
+                    "minLength": 1
+                },
+                "first_name_en": {
+                    "description": "нэр (англи)",
+                    "type": "string",
+                    "maxLength": 50
+                },
+                "last_name": {
+                    "description": "овог (монгол)",
+                    "type": "string",
+                    "maxLength": 50,
+                    "minLength": 1
+                },
+                "last_name_en": {
+                    "description": "овог (англи)",
                     "type": "string",
                     "maxLength": 50
                 },
@@ -729,6 +867,39 @@ const docTemplate = `{
                 }
             }
         },
+        "template_internal_http_datatransfers_responses.AIChatResponse": {
+            "type": "object",
+            "properties": {
+                "degraded": {
+                    "type": "boolean"
+                },
+                "reply": {
+                    "type": "string"
+                },
+                "steps": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/template_internal_http_datatransfers_responses.AIChatStep"
+                    }
+                }
+            }
+        },
+        "template_internal_http_datatransfers_responses.AIChatStep": {
+            "type": "object",
+            "properties": {
+                "args": {
+                    "type": "object",
+                    "additionalProperties": {}
+                },
+                "result": {
+                    "type": "object",
+                    "additionalProperties": {}
+                },
+                "tool": {
+                    "type": "string"
+                }
+            }
+        },
         "template_internal_http_datatransfers_responses.UserResponse": {
             "type": "object",
             "properties": {
@@ -738,7 +909,25 @@ const docTemplate = `{
                 "email": {
                     "type": "string"
                 },
+                "first_name": {
+                    "type": "string"
+                },
+                "first_name_en": {
+                    "type": "string"
+                },
+                "full_name": {
+                    "type": "string"
+                },
+                "full_name_en": {
+                    "type": "string"
+                },
                 "id": {
+                    "type": "string"
+                },
+                "last_name": {
+                    "type": "string"
+                },
+                "last_name_en": {
                     "type": "string"
                 },
                 "refresh_token": {

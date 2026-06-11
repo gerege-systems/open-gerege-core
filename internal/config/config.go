@@ -44,6 +44,13 @@ type Config struct {
 
 	BcryptCost int `mapstructure:"BCRYPT_COST"`
 
+	// Gemini AI pipeline (/api/v1/ai/*) — REST-ээр шууд дуудна (SDK-гүй).
+	// GEMINI_API_KEY хоосон бол AI endpoint 500 буцаана (template нь
+	// AI-гүйгээр boot хийгдэх боломжтой хэвээр). Model/base нь сонголттой.
+	GeminiAPIKey  string `mapstructure:"GEMINI_API_KEY"`
+	GeminiModel   string `mapstructure:"GEMINI_MODEL"`
+	GeminiAPIBase string `mapstructure:"GEMINI_API_BASE"`
+
 	// OTel — OTelExporter хоосон бол tracing идэвхгүй болдог (noop
 	// provider). Dev орчинд span-уудыг хэвлэхийн тулд "stdout" гэж тохируул,
 	// эсвэл production-д OTEL_EXPORTER_OTLP_ENDPOINT-ийг collector / Jaeger /
