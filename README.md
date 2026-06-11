@@ -192,6 +192,7 @@ On error, `status:false`. Validation error → `422`, with each field under `dat
 See for details:
 - **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)** — layer structure, dependency flow, security
 - **[docs/DEVELOPMENT.md](docs/DEVELOPMENT.md)** — 8 steps to add a new feature, testing, code style, troubleshooting
+- **[docs/AI_PIPELINE.md](docs/AI_PIPELINE.md)** — AI assistant internals: flows, prompt layers, tools, voice, how to extend
 
 ```bash
 make test               # Unit tests

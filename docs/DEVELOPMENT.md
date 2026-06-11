@@ -299,6 +299,8 @@ func (r *postgreUserRepository) GetByID(ctx context.Context, id string) (domain.
 
 ## Extending the AI assistant
 
+> Deep dive: [AI_PIPELINE.md](AI_PIPELINE.md) — flows, prompt layers, voice, troubleshooting.
+
 The Gemini pipeline (`internal/business/usecases/ai`) is built to be extended
 per project:
 

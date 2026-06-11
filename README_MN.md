@@ -191,6 +191,7 @@ AI туслах давхаргат system prompt-оор ажиллана: **suur
 Дэлгэрэнгүйг үз:
 - **[docs/ARCHITECTURE_MN.md](docs/ARCHITECTURE_MN.md)** — давхаргын бүтэц, dependency flow, security
 - **[docs/DEVELOPMENT_MN.md](docs/DEVELOPMENT_MN.md)** — шинэ фичер нэмэх 8 алхам, тест, code style, troubleshooting
+- **[docs/AI_PIPELINE_MN.md](docs/AI_PIPELINE_MN.md)** — AI туслахын дотоод бүтэц: урсгал, prompt давхарга, tools, voice, өргөтгөх заавар
 
 ```bash
 make test               # Unit тест

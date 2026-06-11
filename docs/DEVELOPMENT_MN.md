@@ -300,6 +300,8 @@ func (r *postgreUserRepository) GetByID(ctx context.Context, id string) (domain.
 
 ## AI туслахыг өргөтгөх
 
+> Гүн тайлбар: [AI_PIPELINE_MN.md](AI_PIPELINE_MN.md) — урсгал, prompt давхарга, voice, troubleshooting.
+
 Gemini pipeline (`internal/business/usecases/ai`) нь проект бүрд өргөтгөгдөхөөр
 зохиогдсон:
 
