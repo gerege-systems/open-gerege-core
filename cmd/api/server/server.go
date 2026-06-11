@@ -170,10 +170,21 @@ func NewApp() (*App, error) {
 		routes.NewAIRoute(api, aiUC, authMiddleware, aiRateLimiter).Routes()
 	})
 
+	// Серверийн түвшний timeout-ууд (slowloris / удаан client-ийн эсрэг):
+	//   - ReadTimeout нь header+body уншилтыг бүхэлд нь хязгаарлана;
+	//   - WriteTimeout нь handler + хариу бичилтийг хамардаг тул request-
+	//     түвшний timeout (TimeoutMiddleware, 30s)-аас урт байх ёстой;
+	//   - IdleTimeout нь сул keep-alive холболтыг чөлөөлнө;
+	//   - MaxHeaderBytes нь body-н хязгаараас гадуурх том header-ийн
+	//     дайралтыг хаана (JWT+cookie 16 KiB-д амархан багтана).
 	srv := &http.Server{
 		Addr:              fmt.Sprintf(":%d", config.AppConfig.Port),
 		Handler:           r,
 		ReadHeaderTimeout: 10 * time.Second,
+		ReadTimeout:       30 * time.Second,
+		WriteTimeout:      2 * middlewares.DefaultRequestTimeout,
+		IdleTimeout:       120 * time.Second,
+		MaxHeaderBytes:    16 << 10,
 	}
 
 	return &App{
