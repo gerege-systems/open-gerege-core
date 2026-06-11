@@ -15,12 +15,12 @@ import (
 )
 
 // Logout godoc
-// @Summary      Refresh токеныг хүчингүй болгох
-// @Description  /auth/refresh татгалзахын тулд refresh-токены jti-г Redis-ээс устгана. Access токенууд байгалийн хугацаа дуустлаа хүчинтэй хэвээр үлдэнэ — клиентүүд тэдгээрийг logout хийх үед устгах ёстой.
+// @Summary      Токенуудыг хүчингүй болгох
+// @Description  /auth/refresh татгалзахын тулд refresh-токены jti-г Redis-ээс устгана. access_token өгөгдсөн бол түүний jti-г deny-list-д нэмж access токеныг ч мөн шууд хүчингүй болгоно (өгөөгүй бол байгалийн хугацаа дуустлаа хүчинтэй үлдэнэ).
 // @Tags         auth
 // @Accept       json
 // @Produce      json
-// @Param        request  body      requests.RefreshRequest  true  "Refresh token to revoke"
+// @Param        request  body      requests.LogoutRequest  true  "Refresh token to revoke + optional access token to deny"
 // @Success      200      {object}  v1.BaseResponse  "Logged out"
 // @Failure      401      {object}  v1.BaseResponse  "Refresh token invalid"
 // @Failure      422      {object}  v1.BaseResponse  "Validation error"
@@ -32,7 +32,7 @@ func (h Handler) Logout(w http.ResponseWriter, r *http.Request) error {
 		fileName       = "auth_logout.go"
 	)
 	ctx := r.Context()
-	var req requests.RefreshRequest
+	var req requests.LogoutRequest
 	if err := v1.DecodeBody(r, &req); err != nil {
 		logger.WarnWithContext(ctx, "Logout: invalid request body", logger.Fields{
 			"controller": controllerName,
@@ -55,7 +55,7 @@ func (h Handler) Logout(w http.ResponseWriter, r *http.Request) error {
 		return v1.RespondWithError(w, r, err)
 	}
 
-	if err := h.usecase.Logout(ctx, authuc.LogoutRequest{RefreshToken: req.RefreshToken}); err != nil {
+	if err := h.usecase.Logout(ctx, authuc.LogoutRequest{RefreshToken: req.RefreshToken, AccessToken: req.AccessToken}); err != nil {
 		logger.ErrorWithContext(ctx, "Logout failed in controller", logger.Fields{
 			"controller": controllerName,
 			"method":     funcName,

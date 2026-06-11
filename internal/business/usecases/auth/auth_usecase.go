@@ -79,6 +79,9 @@ type (
 
 	LogoutRequest struct {
 		RefreshToken string
+		// AccessToken нь сонголттой — өгвөл jti-г нь deny-list-д нэмж
+		// access токеныг хугацаа дуусахаас өмнө шууд хүчингүй болгоно.
+		AccessToken string
 	}
 
 	ChangePasswordRequest struct {

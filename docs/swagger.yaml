@@ -117,6 +117,15 @@ definitions:
     - email
     - password
     type: object
+  template_internal_http_datatransfers_requests.LogoutRequest:
+    properties:
+      access_token:
+        type: string
+      refresh_token:
+        type: string
+    required:
+    - refresh_token
+    type: object
   template_internal_http_datatransfers_requests.RefreshRequest:
     properties:
       refresh_token:
@@ -535,15 +544,15 @@ paths:
       consumes:
       - application/json
       description: /auth/refresh татгалзахын тулд refresh-токены jti-г Redis-ээс устгана.
-        Access токенууд байгалийн хугацаа дуустлаа хүчинтэй хэвээр үлдэнэ — клиентүүд
-        тэдгээрийг logout хийх үед устгах ёстой.
+        access_token өгөгдсөн бол түүний jti-г deny-list-д нэмж access токеныг ч мөн
+        шууд хүчингүй болгоно (өгөөгүй бол байгалийн хугацаа дуустлаа хүчинтэй үлдэнэ).
       parameters:
-      - description: Refresh token to revoke
+      - description: Refresh token to revoke + optional access token to deny
         in: body
         name: request
         required: true
         schema:
-          $ref: '#/definitions/template_internal_http_datatransfers_requests.RefreshRequest'
+          $ref: '#/definitions/template_internal_http_datatransfers_requests.LogoutRequest'
       produces:
       - application/json
       responses:
@@ -559,7 +568,7 @@ paths:
           description: Validation error
           schema:
             $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
-      summary: Refresh токеныг хүчингүй болгох
+      summary: Токенуудыг хүчингүй болгох
       tags:
       - auth
   /auth/password/change:

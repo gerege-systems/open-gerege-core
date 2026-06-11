@@ -70,7 +70,43 @@ func (cfg *PgxConfig) InitializePgxPool(ctx context.Context) (*pgxpool.Pool, err
 		return nil, fmt.Errorf("error pinging database: %w", err)
 	}
 
+	if err := guardRLSEnforceable(ctx, pool); err != nil {
+		pool.Close()
+		return nil, err
+	}
+
 	return pool, nil
+}
+
+// guardRLSEnforceable нь api-ийн DB role нь Row-Level Security-г бодитоор
+// мөрддөг эсэхийг boot үед шалгана: superuser болон BYPASSRLS эрхтэй role
+// RLS бодлогуудыг ЧИМЭЭГҮЙ алгасдаг тул production-д ийм холболтыг
+// зөвшөөрвөл users хүснэгтийн тусгаарлалт огт ажиллахгүй. Production-д
+// fail-closed (boot унагана); development-д анхааруулга логдоод үргэлжилнэ
+// (migrate/тест superuser хэрэглэж болно).
+func guardRLSEnforceable(ctx context.Context, pool *pgxpool.Pool) error {
+	var role string
+	var super, bypass bool
+	err := pool.QueryRow(ctx,
+		`SELECT rolname, rolsuper, rolbypassrls FROM pg_roles WHERE rolname = current_user`,
+	).Scan(&role, &super, &bypass)
+	if err != nil {
+		// pg_roles унших эрхгүй гэх мэт ховор тохиолдолд шалгалтыг алгасна —
+		// энэ guard нь нэмэлт хамгаалалт, холболтыг таслах шалтгаан биш.
+		logger.Warn(fmt.Sprintf("RLS guard: could not inspect current role (skipping): %v", err),
+			logger.Fields{constants.LoggerCategory: constants.LoggerCategoryDatabase})
+		return nil
+	}
+	if !super && !bypass {
+		return nil
+	}
+
+	msg := fmt.Sprintf("DB role %q has superuser=%t bypassrls=%t — Row-Level Security is NOT enforced for this connection; use a least-privilege app role (see deploy/initdb)", role, super, bypass)
+	if config.AppConfig.Environment == constants.EnvironmentProduction {
+		return fmt.Errorf("rls guard: %s", msg)
+	}
+	logger.Warn("RLS guard: "+msg, logger.Fields{constants.LoggerCategory: constants.LoggerCategoryDatabase})
+	return nil
 }
 
 // SetupPgxPostgres нь config.AppConfig-оос DB_POSTGRE_* түлхүүрүүдийг

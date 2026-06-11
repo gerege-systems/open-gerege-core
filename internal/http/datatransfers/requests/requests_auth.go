@@ -55,10 +55,16 @@ func (r *LoginRequest) ToV1Domain() *domain.User {
 	}
 }
 
-// RefreshRequest нь POST /auth/refresh болон POST /auth/logout-ийн body
-// юм — хоёулаа refresh токен ашиглана.
+// RefreshRequest нь POST /auth/refresh-ийн body юм.
 type RefreshRequest struct {
 	RefreshToken string `json:"refresh_token" validate:"required"`
+}
+
+// LogoutRequest нь POST /auth/logout-ийн body юм. access_token нь сонголттой —
+// өгвөл түүний jti deny-list-д орж access токен шууд хүчингүй болно.
+type LogoutRequest struct {
+	RefreshToken string `json:"refresh_token" validate:"required"`
+	AccessToken  string `json:"access_token" validate:"omitempty"`
 }
 
 // ChangePasswordRequest нь PUT /auth/password/change-ийн body юм.

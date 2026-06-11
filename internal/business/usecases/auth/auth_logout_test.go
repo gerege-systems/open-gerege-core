@@ -7,6 +7,7 @@ import (
 	"context"
 	"errors"
 	"testing"
+	"time"
 
 	golangJWT "github.com/golang-jwt/jwt/v5"
 	"github.com/stretchr/testify/assert"
@@ -19,9 +20,10 @@ import (
 
 func TestLogout(t *testing.T) {
 	tests := []struct {
-		name  string
-		token string
-		setup func(f *fixture)
+		name        string
+		token       string
+		accessToken string
+		setup       func(f *fixture)
 		// wantErr / wantErrType-ийг хослуулсан, учир нь apperror.ErrTypeInternal
 		// нь iota-гийн тэг — ганц sentinel нь тэр төрөлтэй мөргөлдөж, чимээгүйхэн
 		// тэнцэх байсан.
@@ -49,6 +51,44 @@ func TestLogout(t *testing.T) {
 			wantErr:     true,
 			wantErrType: apperror.ErrTypeUnauthorized,
 		},
+		{
+			name:        "valid access token lands on the deny-list with remaining TTL",
+			token:       "good-tok",
+			accessToken: "acc-tok",
+			setup: func(f *fixture) {
+				refreshClaims := jwt.JwtCustomClaim{
+					Kind:             jwt.KindRefresh,
+					RegisteredClaims: golangJWT.RegisteredClaims{ID: "jti-to-delete"},
+				}
+				f.jwt.On("ParseRefreshToken", "good-tok").Return(refreshClaims, nil).Once()
+				f.redis.On("Del", mock.Anything, "refresh:jti-to-delete").Return(nil).Once()
+
+				accessClaims := jwt.JwtCustomClaim{
+					Kind: jwt.KindAccess,
+					RegisteredClaims: golangJWT.RegisteredClaims{
+						ID:        "acc-jti",
+						ExpiresAt: golangJWT.NewNumericDate(time.Now().Add(time.Hour)),
+					},
+				}
+				f.jwt.On("ParseToken", "acc-tok").Return(accessClaims, nil).Once()
+				f.redis.On("Set", mock.Anything, "access_deny:acc-jti", "1").Return(nil).Once()
+				f.redis.On("Expire", mock.Anything, "access_deny:acc-jti", mock.Anything).Return(nil).Once()
+			},
+		},
+		{
+			name:        "unparseable access token does not fail logout",
+			token:       "good-tok",
+			accessToken: "garbage",
+			setup: func(f *fixture) {
+				refreshClaims := jwt.JwtCustomClaim{
+					Kind:             jwt.KindRefresh,
+					RegisteredClaims: golangJWT.RegisteredClaims{ID: "jti-to-delete"},
+				}
+				f.jwt.On("ParseRefreshToken", "good-tok").Return(refreshClaims, nil).Once()
+				f.redis.On("Del", mock.Anything, "refresh:jti-to-delete").Return(nil).Once()
+				f.jwt.On("ParseToken", "garbage").Return(jwt.JwtCustomClaim{}, errors.New("bad sig")).Once()
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -56,7 +96,7 @@ func TestLogout(t *testing.T) {
 			f := newFixture(t)
 			tt.setup(f)
 
-			err := f.usecase.Logout(context.Background(), auth.LogoutRequest{RefreshToken: tt.token})
+			err := f.usecase.Logout(context.Background(), auth.LogoutRequest{RefreshToken: tt.token, AccessToken: tt.accessToken})
 
 			if !tt.wantErr {
 				require.NoError(t, err)

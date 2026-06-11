@@ -13,10 +13,10 @@ import (
 )
 
 // Logout нь refresh токены jti-г Redis-ээс устгаснаар токеныг хүчингүй болгоно.
-// Access токенууд жам ёсны дуусах хугацаа хүртэл хүчинтэй хэвээр үлддэг —
-// клиентүүд logout хийхдээ тэдгээрийг хаях ёстой. (Бүрэн access токены хар
-// жагсаалт нь хүсэлт тутамд Redis-руу нэг алхам нэмэх тул энэ boilerplate-ийн
-// хүрээнээс зориудаар гадуур орхисон.)
+// AccessToken өгөгдсөн бол түүний jti-г токены үлдсэн амьдрах хугацаагаар
+// deny-list-д нэмдэг тул access токен ч мөн шууд хүчингүй болно (auth
+// middleware хүсэлт бүрд шалгадаг). Access deny нь best-effort — задлагдахгүй
+// токен logout-ийг унагадаггүй (refresh revoke нь гол ажиллагаа).
 func (uc *usecase) Logout(ctx context.Context, req LogoutRequest) (err error) {
 	const (
 		usecaseName = "auth"
@@ -70,5 +70,38 @@ func (uc *usecase) Logout(ctx context.Context, req LogoutRequest) (err error) {
 		})
 		return err
 	}
+
+	uc.denyAccessToken(ctx, req.AccessToken)
 	return nil
+}
+
+// denyAccessToken нь access токены jti-г үлдсэн амьдрах хугацаагаар нь
+// deny-list-д нэмнэ. Best-effort: токен хоосон / задлагдахгүй / аль хэдийн
+// дууссан бол чимээгүй алгасна (logout-ийн үр дүнд нөлөөлөхгүй).
+func (uc *usecase) denyAccessToken(ctx context.Context, accessToken string) {
+	if accessToken == "" {
+		return
+	}
+	claims, parseErr := uc.jwtService.ParseToken(accessToken)
+	if parseErr != nil || claims.ID == "" || claims.ExpiresAt == nil {
+		return
+	}
+	ttl := time.Until(claims.ExpiresAt.Time)
+	if ttl <= 0 {
+		return
+	}
+	key := AccessDenyKey(claims.ID)
+	if setErr := uc.redisCache.Set(ctx, key, "1"); setErr != nil {
+		logger.ErrorWithContext(ctx, "Logout: failed to deny access token (non-fatal)", logger.Fields{
+			"step":  "redis_set_access_deny",
+			"error": setErr.Error(),
+		})
+		return
+	}
+	if expErr := uc.redisCache.Expire(ctx, key, ttl); expErr != nil {
+		logger.ErrorWithContext(ctx, "Logout: failed to set deny TTL (non-fatal)", logger.Fields{
+			"step":  "redis_expire_access_deny",
+			"error": expErr.Error(),
+		})
+	}
 }

@@ -17,6 +17,7 @@ const (
 	prefixForgotAttempts = "forgot_attempts:"
 	prefixResetRequest   = "pwd_reset_req:"
 	prefixPasswordCutoff = "pwd_cutoff:"
+	prefixAccessDeny     = "access_deny:"
 )
 
 // RefreshKey нь refresh токены jti бичлэгүүдийг хүрээлдэг; байхгүй ⇒ хүчингүй болсон.
@@ -57,4 +58,10 @@ func ForgotAttemptsKey(email string) string {
 // үүнийг бичдэг.
 func TokenCutoffKey(userID string) string {
 	return fmt.Sprintf("%s%s", prefixPasswordCutoff, userID)
+}
+
+// AccessDenyKey нь logout хийсэн access токены jti-г токены үлдсэн амьдрах
+// хугацаагаар хадгална; байгаа ⇒ хүчингүй (auth middleware хүсэлт бүрд шалгана).
+func AccessDenyKey(jti string) string {
+	return fmt.Sprintf("%s%s", prefixAccessDeny, jti)
 }

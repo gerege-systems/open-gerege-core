@@ -95,6 +95,24 @@ func (m *AuthMiddleware) Handle(next http.Handler) http.Handler {
 			return
 		}
 
+		// Logout хийсэн access токеныг (deny-list) татгалз. Logout нь jti-г
+		// токены үлдсэн амьдрах хугацаагаар Redis-д бичдэг; байхгүй (miss)
+		// нь logout хийгдээгүй гэсэн үг. Cutoff шалгалттай ижил — Redis
+		// алдаа нээлттэй бүтэлгүйтнэ (fail-open).
+		if m.redisCache != nil && user.ID != "" {
+			if denied, getErr := m.redisCache.Get(logCtx, auth.AccessDenyKey(user.ID)); getErr == nil && denied != "" {
+				logger.WarnWithContext(logCtx, "Auth: access token denied by logout", logger.Fields{
+					"middleware": middlewareName,
+					"file":       fileName,
+					"step":       "check_access_deny",
+					"path":       path,
+					"user_id":    user.UserID,
+				})
+				_ = V1Handler.NewAbortResponse(w, r, "token has been revoked")
+				return
+			}
+		}
+
 		// Хэрэглэгчийн хамгийн сүүлийн нууц үг солихоос (rotation) өмнө
 		// олгогдсон access токенуудыг татгалз. Хязгаарыг ChangePassword
 		// Redis руу нийтэлдэг; байхгүй (Redis miss) нь сүүлийн үед солилт

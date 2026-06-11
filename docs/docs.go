@@ -395,7 +395,7 @@ const docTemplate = `{
         },
         "/auth/logout": {
             "post": {
-                "description": "/auth/refresh татгалзахын тулд refresh-токены jti-г Redis-ээс устгана. Access токенууд байгалийн хугацаа дуустлаа хүчинтэй хэвээр үлдэнэ — клиентүүд тэдгээрийг logout хийх үед устгах ёстой.",
+                "description": "/auth/refresh татгалзахын тулд refresh-токены jti-г Redis-ээс устгана. access_token өгөгдсөн бол түүний jti-г deny-list-д нэмж access токеныг ч мөн шууд хүчингүй болгоно (өгөөгүй бол байгалийн хугацаа дуустлаа хүчинтэй үлдэнэ).",
                 "consumes": [
                     "application/json"
                 ],
@@ -405,15 +405,15 @@ const docTemplate = `{
                 "tags": [
                     "auth"
                 ],
-                "summary": "Refresh токеныг хүчингүй болгох",
+                "summary": "Токенуудыг хүчингүй болгох",
                 "parameters": [
                     {
-                        "description": "Refresh token to revoke",
+                        "description": "Refresh token to revoke + optional access token to deny",
                         "name": "request",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/template_internal_http_datatransfers_requests.RefreshRequest"
+                            "$ref": "#/definitions/template_internal_http_datatransfers_requests.LogoutRequest"
                         }
                     }
                 ],
@@ -1057,6 +1057,20 @@ const docTemplate = `{
                     "type": "string",
                     "maxLength": 72,
                     "minLength": 1
+                }
+            }
+        },
+        "template_internal_http_datatransfers_requests.LogoutRequest": {
+            "type": "object",
+            "required": [
+                "refresh_token"
+            ],
+            "properties": {
+                "access_token": {
+                    "type": "string"
+                },
+                "refresh_token": {
+                    "type": "string"
                 }
             }
         },
