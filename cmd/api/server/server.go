@@ -161,8 +161,10 @@ func NewApp() (*App, error) {
 
 	// Нэргүй /auth гадаргуун дээр IP тус бүрт минутанд 5 хүсэлт зөвшөөрнө.
 	authRateLimiter := middlewares.NewRateLimiter(rate.Limit(5.0/60.0), 5)
-	// Gemini дуудлага үнэтэй — /ai-д IP тус бүрт минутанд 10 хүсэлт, burst 3.
-	aiRateLimiter := middlewares.NewRateLimiter(rate.Limit(10.0/60.0), 3)
+	// Gemini дуудлага үнэтэй — /ai-д IP тус бүрт минутанд 20 хүсэлт, burst 5.
+	// Live орчуулга ~6-8 секунд тутамд chunk илгээдэг (~8-10/мин) тул үүнд
+	// багтахуйц, гэхдээ abuse-ээс хамгаалсан түвшин.
+	aiRateLimiter := middlewares.NewRateLimiter(rate.Limit(20.0/60.0), 5)
 
 	// API Route-ууд
 	r.Route("/api", func(api chi.Router) {
