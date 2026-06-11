@@ -10,15 +10,10 @@ import (
 
 	"template/internal/apperror"
 	"template/internal/constants"
+	repointerface "template/internal/datasources/repositories/interface"
 	"template/pkg/gemini"
 	"template/pkg/logger"
 )
-
-// systemInstruction нь pipeline-ийн тогтмол дүрэм — бүх хариулт Монгол хэлээр.
-const systemInstruction = "Чи Gerege платформын туслах AI. БҮХ хариултаа зөвхөн Монгол хэлээр өг. " +
-	"Товч, тодорхой, эелдэг хариул. Мэдээлэл хэрэгтэй үед өгөгдсөн функцуудыг ашигла; " +
-	"функцийн үр дүнг хэрэглэгчид ойлгомжтой Монгол өгүүлбэрээр тайлбарла. " +
-	"Мэдэхгүй зүйл дээр таамаглахгүйгээр мэдэхгүй гэдгээ хэл."
 
 // fallbackReply нь Gemini бүх оролдлогын дараа ч амжилтгүй үед хэрэглэгчид
 // очих Монгол мессеж — хүсэлтийг 5xx болгож унагахын оронд degraded хариу өгнө.
@@ -39,6 +34,9 @@ type Config struct {
 	MaxSteps int
 	// Voice нь TTS-ийн өгөгдмөл prebuilt дуу хоолой. Хоосон бол "Kore".
 	Voice string
+	// ScopePrompt нь хамрах хүрээний env fallback (AI_SCOPE_PROMPT) —
+	// DB-ийн 'scope' давхарга хоосон/уншигдахгүй үед хэрэглэгдэнэ.
+	ScopePrompt string
 }
 
 type usecase struct {
@@ -46,15 +44,20 @@ type usecase struct {
 	// ttsClient нь TTS-чадвартай model руу заасан тусдаа client — chat
 	// model audio гаргадаггүй тул хоёр өөр model хэрэглэнэ.
 	ttsClient gemini.Generator
-	tools     map[string]ToolDef
-	decls     []gemini.FunctionDeclaration
-	cfg       Config
+	// repo нь тохируулдаг prompt давхаргууд + мэдлэгийн сангийн gateway.
+	// nil байж болно (тест) — тэр үед env/default prompt-ууд хэрэглэгдэнэ.
+	repo        repointerface.AIRepository
+	tools       map[string]ToolDef
+	decls       []gemini.FunctionDeclaration
+	cfg         Config
+	promptCache promptCache
 }
 
 // NewUsecase нь AI pipeline usecase үүсгэнэ. tools нь model-д зарлагдах ба
 // backend дээр гүйцэтгэгдэх функцууд (DefaultTools()-оос эхэлж болно);
-// ttsClient нь Speak/Translate-ийн дуут гаралтад хэрэглэгдэнэ.
-func NewUsecase(client, ttsClient gemini.Generator, tools []ToolDef, cfg Config) Usecase {
+// ttsClient нь Speak/Translate-ийн дуут гаралтад, repo нь prompt давхарга +
+// мэдлэгийн санд хэрэглэгдэнэ.
+func NewUsecase(client, ttsClient gemini.Generator, repo repointerface.AIRepository, tools []ToolDef, cfg Config) Usecase {
 	if cfg.MaxSteps <= 0 {
 		cfg.MaxSteps = defaultMaxSteps
 	}
@@ -67,7 +70,7 @@ func NewUsecase(client, ttsClient gemini.Generator, tools []ToolDef, cfg Config)
 		byName[t.Declaration.Name] = t
 		decls = append(decls, t.Declaration)
 	}
-	return &usecase{client: client, ttsClient: ttsClient, tools: byName, decls: decls, cfg: cfg}
+	return &usecase{client: client, ttsClient: ttsClient, repo: repo, tools: byName, decls: decls, cfg: cfg}
 }
 
 func (uc *usecase) Run(ctx context.Context, req RunRequest) (RunResult, error) {
@@ -75,7 +78,7 @@ func (uc *usecase) Run(ctx context.Context, req RunRequest) (RunResult, error) {
 
 	var geminiReq gemini.Request
 	geminiReq.SystemInstruction = &gemini.Content{
-		Parts: []gemini.Part{{Text: systemInstruction}},
+		Parts: []gemini.Part{{Text: uc.systemInstruction(ctx)}},
 	}
 	geminiReq.Contents = contents
 	if len(uc.decls) > 0 {

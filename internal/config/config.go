@@ -53,6 +53,9 @@ type Config struct {
 	GeminiTTSModel string `mapstructure:"GEMINI_TTS_MODEL"`
 	GeminiVoice    string `mapstructure:"GEMINI_VOICE"`
 	GeminiAPIBase  string `mapstructure:"GEMINI_API_BASE"`
+	// AIScopePrompt нь AI туслахын хамрах хүрээний env fallback — DB-ийн
+	// 'scope' prompt давхарга хоосон/уншигдахгүй үед хэрэглэгдэнэ.
+	AIScopePrompt string `mapstructure:"AI_SCOPE_PROMPT"`
 
 	// OTel — OTelExporter хоосон бол tracing идэвхгүй болдог (noop
 	// provider). Dev орчинд span-уудыг хэвлэхийн тулд "stdout" гэж тохируул,

@@ -27,7 +27,7 @@ var testAudio = Audio{Mime: "audio/webm", Data: base64.StdEncoding.EncodeToStrin
 
 func TestTranscribe(t *testing.T) {
 	gen := &fakeGenerator{responses: []gemini.Response{textResponse("Сайн байна уу")}}
-	uc := NewUsecase(gen, gen, nil, Config{})
+	uc := NewUsecase(gen, gen, nil, nil, Config{})
 
 	res, err := uc.Transcribe(context.Background(), TranscribeRequest{Audio: testAudio})
 	require.NoError(t, err)
@@ -47,7 +47,7 @@ func TestTranscribe(t *testing.T) {
 
 func TestTranscribeError(t *testing.T) {
 	gen := &fakeGenerator{errs: []error{errors.New("boom")}}
-	uc := NewUsecase(gen, gen, nil, Config{})
+	uc := NewUsecase(gen, gen, nil, nil, Config{})
 
 	_, err := uc.Transcribe(context.Background(), TranscribeRequest{Audio: testAudio})
 	require.Error(t, err)
@@ -56,7 +56,7 @@ func TestTranscribeError(t *testing.T) {
 func TestSpeakWrapsPCMAsWAV(t *testing.T) {
 	pcm := []byte{0x01, 0x02, 0x03, 0x04}
 	tts := &fakeGenerator{responses: []gemini.Response{audioResponse("audio/L16;codec=pcm;rate=24000", pcm)}}
-	uc := NewUsecase(&fakeGenerator{}, tts, nil, Config{})
+	uc := NewUsecase(&fakeGenerator{}, tts, nil, nil, Config{})
 
 	res, err := uc.Speak(context.Background(), SpeakRequest{Text: "Сайн уу"})
 	require.NoError(t, err)
@@ -76,7 +76,7 @@ func TestSpeakWrapsPCMAsWAV(t *testing.T) {
 
 func TestSpeakNoAudioInResponse(t *testing.T) {
 	tts := &fakeGenerator{responses: []gemini.Response{textResponse("за")}}
-	uc := NewUsecase(&fakeGenerator{}, tts, nil, Config{})
+	uc := NewUsecase(&fakeGenerator{}, tts, nil, nil, Config{})
 
 	_, err := uc.Speak(context.Background(), SpeakRequest{Text: "x"})
 	require.Error(t, err)
@@ -84,7 +84,7 @@ func TestSpeakNoAudioInResponse(t *testing.T) {
 
 func TestTranslateText(t *testing.T) {
 	gen := &fakeGenerator{responses: []gemini.Response{textResponse("Hello")}}
-	uc := NewUsecase(gen, gen, nil, Config{})
+	uc := NewUsecase(gen, gen, nil, nil, Config{})
 
 	res, err := uc.Translate(context.Background(), TranslateRequest{Text: "Сайн уу", TargetLang: "en"})
 	require.NoError(t, err)
@@ -103,7 +103,7 @@ func TestTranslateAudioPipeline(t *testing.T) {
 		textResponse("Сайн байна уу"),
 		textResponse("Hello"),
 	}}
-	uc := NewUsecase(gen, gen, nil, Config{})
+	uc := NewUsecase(gen, gen, nil, nil, Config{})
 
 	res, err := uc.Translate(context.Background(), TranslateRequest{Audio: &testAudio, TargetLang: "en"})
 	require.NoError(t, err)
@@ -114,7 +114,7 @@ func TestTranslateAudioPipeline(t *testing.T) {
 
 func TestTranslateSilentAudioReturnsEmpty(t *testing.T) {
 	gen := &fakeGenerator{responses: []gemini.Response{textResponse("")}}
-	uc := NewUsecase(gen, gen, nil, Config{})
+	uc := NewUsecase(gen, gen, nil, nil, Config{})
 
 	res, err := uc.Translate(context.Background(), TranslateRequest{Audio: &testAudio, TargetLang: "en"})
 	require.NoError(t, err)
@@ -125,7 +125,7 @@ func TestTranslateSilentAudioReturnsEmpty(t *testing.T) {
 func TestTranslateWithSpeak(t *testing.T) {
 	gen := &fakeGenerator{responses: []gemini.Response{textResponse("Hello")}}
 	tts := &fakeGenerator{responses: []gemini.Response{audioResponse("audio/L16;rate=24000", []byte{9, 9})}}
-	uc := NewUsecase(gen, tts, nil, Config{})
+	uc := NewUsecase(gen, tts, nil, nil, Config{})
 
 	res, err := uc.Translate(context.Background(), TranslateRequest{Text: "Сайн уу", TargetLang: "en", Speak: true})
 	require.NoError(t, err)
@@ -136,7 +136,7 @@ func TestTranslateWithSpeak(t *testing.T) {
 func TestTranslateSpeakFailureStillReturnsText(t *testing.T) {
 	gen := &fakeGenerator{responses: []gemini.Response{textResponse("Hello")}}
 	tts := &fakeGenerator{errs: []error{errors.New("tts down")}}
-	uc := NewUsecase(gen, tts, nil, Config{})
+	uc := NewUsecase(gen, tts, nil, nil, Config{})
 
 	res, err := uc.Translate(context.Background(), TranslateRequest{Text: "Сайн уу", TargetLang: "en", Speak: true})
 	require.NoError(t, err)
@@ -146,7 +146,7 @@ func TestTranslateSpeakFailureStillReturnsText(t *testing.T) {
 
 func TestRunWithAudioMessage(t *testing.T) {
 	gen := &fakeGenerator{responses: []gemini.Response{textResponse("Дуут мессежийг сонслоо")}}
-	uc := NewUsecase(gen, gen, nil, Config{})
+	uc := NewUsecase(gen, gen, nil, nil, Config{})
 
 	res, err := uc.Run(context.Background(), RunRequest{Audio: &testAudio})
 	require.NoError(t, err)

@@ -26,6 +26,7 @@ import (
 	"template/internal/constants"
 	"template/internal/datasources/caches"
 	"template/internal/datasources/drivers"
+	aipostgres "template/internal/datasources/repositories/postgres/ai"
 	rbacpostgres "template/internal/datasources/repositories/postgres/rbac"
 	userspostgres "template/internal/datasources/repositories/postgres/users"
 	V1Handler "template/internal/http/handlers/v1"
@@ -152,11 +153,15 @@ func NewApp() (*App, error) {
 	rbacUC := rbac.NewUsecase(rbacRepo)
 
 	// AI pipeline — Gemini REST client + function-calling tools. TTS нь
-	// audio гаргадаг тусдаа model тул өөр client-ээр явна.
+	// audio гаргадаг тусдаа model тул өөр client-ээр явна. Repo нь DB-ээс
+	// тохируулдаг prompt давхаргууд + search_knowledge tool-ийн мэдлэгийн сан.
 	geminiClient := gemini.NewClient(config.AppConfig.GeminiAPIBase, config.AppConfig.GeminiAPIKey, config.AppConfig.GeminiModel)
 	geminiTTSClient := gemini.NewClient(config.AppConfig.GeminiAPIBase, config.AppConfig.GeminiAPIKey, config.AppConfig.GeminiTTSModel)
-	aiUC := ai.NewUsecase(geminiClient, geminiTTSClient, ai.DefaultTools(), ai.Config{
-		Voice: config.AppConfig.GeminiVoice,
+	aiRepo := aipostgres.NewAIRepository(pool)
+	aiTools := append(ai.DefaultTools(), ai.KnowledgeSearchTool(aiRepo))
+	aiUC := ai.NewUsecase(geminiClient, geminiTTSClient, aiRepo, aiTools, ai.Config{
+		Voice:       config.AppConfig.GeminiVoice,
+		ScopePrompt: config.AppConfig.AIScopePrompt,
 	})
 
 	// Нэргүй /auth гадаргуун дээр IP тус бүрт минутанд 5 хүсэлт зөвшөөрнө.
@@ -172,7 +177,7 @@ func NewApp() (*App, error) {
 		routes.NewAuthRoute(api, authUC, authMiddleware, authRateLimiter).Routes()
 		routes.NewUsersRoute(api, usersUC, authMiddleware).Routes()
 		routes.NewRBACRoute(api, rbacUC, authMiddleware).Routes()
-		routes.NewAdminRoute(api, usersUC, rbacUC, authMiddleware).Routes()
+		routes.NewAdminRoute(api, usersUC, rbacUC, aiUC, authMiddleware).Routes()
 		routes.NewAIRoute(api, aiUC, authMiddleware, aiRateLimiter).Routes()
 	})
 

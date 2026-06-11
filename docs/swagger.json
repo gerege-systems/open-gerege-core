@@ -21,6 +21,128 @@
     "host": "localhost:8080",
     "basePath": "/api/v1",
     "paths": {
+        "/admin/ai/prompts": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Тохируулдаг prompt давхаргуудыг (scope — хамрах хүрээ, instructions — нэмэлт заавар) буцаана. Suurь (base) дүрэм кодод хатуу бичигдсэн тул энд харагдахгүй, өөрчлөгдөхгүй.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin"
+                ],
+                "summary": "AI prompt давхаргуудыг жагсаах",
+                "responses": {
+                    "200": {
+                        "description": "Prompt layers",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/template_internal_http_datatransfers_responses.AIPromptResponse"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "401": {
+                        "description": "Missing/invalid token",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Missing settings.manage permission",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/ai/prompts/{key}": {
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Нэг давхаргын (scope | instructions) агуулгыг солино. Өөрчлөлт нэн даруй үйлчилнэ (prompt кэш хүчингүй болдог). AI зөвхөн scope-д заасан хүрээнд ажиллана.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin"
+                ],
+                "summary": "AI prompt давхаргыг шинэчлэх",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Prompt key (scope | instructions)",
+                        "name": "key",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "New content",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_datatransfers_requests.AIPromptUpdateRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Updated",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Unknown key / malformed body",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Missing/invalid token",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Missing settings.manage permission",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/ai/chat": {
             "post": {
                 "security": [
@@ -959,6 +1081,15 @@
                 }
             }
         },
+        "template_internal_http_datatransfers_requests.AIPromptUpdateRequest": {
+            "type": "object",
+            "properties": {
+                "content": {
+                    "type": "string",
+                    "maxLength": 4000
+                }
+            }
+        },
         "template_internal_http_datatransfers_requests.AISTTRequest": {
             "type": "object",
             "required": [
@@ -1221,6 +1352,20 @@
                     "additionalProperties": {}
                 },
                 "tool": {
+                    "type": "string"
+                }
+            }
+        },
+        "template_internal_http_datatransfers_responses.AIPromptResponse": {
+            "type": "object",
+            "properties": {
+                "content": {
+                    "type": "string"
+                },
+                "key": {
+                    "type": "string"
+                },
+                "updated_at": {
                     "type": "string"
                 }
             }

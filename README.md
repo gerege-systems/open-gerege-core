@@ -136,7 +136,19 @@ GEMINI_MODEL=gemini-2.5-flash    # optional override (chat / STT / translate)
 GEMINI_TTS_MODEL=gemini-2.5-flash-preview-tts  # optional override (TTS)
 GEMINI_VOICE=Kore                # optional prebuilt TTS voice
 GEMINI_API_BASE=                 # optional override (default: Google generativelanguage v1beta)
+AI_SCOPE_PROMPT=                 # AI scope fallback when the DB 'scope' prompt layer is empty
 ```
+
+### AI prompt layers
+
+The AI assistant runs on a layered system prompt: **base guardrails**
+(hardcoded — Mongolian-only, scope enforcement, prompt-injection resistance)
++ **scope** (what the assistant helps with) + **instructions** (optional
+tone/rules). Scope and instructions live in the `ai_prompts` table and are
+editable at runtime via `GET/PUT /api/v1/admin/ai/prompts` (requires
+`settings.manage`; UI under Admin → Settings). The assistant refuses
+anything outside the configured scope, and answers platform questions by
+searching the `ai_knowledge` table through its `search_knowledge` tool.
 
 ## API Endpoints
 

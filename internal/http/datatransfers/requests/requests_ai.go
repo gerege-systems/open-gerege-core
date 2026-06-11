@@ -38,6 +38,13 @@ type AITTSRequest struct {
 	Voice string `json:"voice" validate:"omitempty,alphanum,max=40"`
 }
 
+// AIPromptUpdateRequest нь PUT /admin/ai/prompts/{key}-ийн body. Хоосон
+// content зөвшөөрөгдөнө (давхаргыг цэвэрлэх) — scope хоосон бол env/default
+// fallback хэрэглэгдэнэ.
+type AIPromptUpdateRequest struct {
+	Content string `json:"content" validate:"max=4000"`
+}
+
 // AITranslateRequest нь POST /ai/translate-ийн body. Text эсвэл Audio-гийн
 // ядаж нэг нь шаардлагатай (handler шалгана); Speak үнэн бол орчуулгын
 // дуут (TTS) хувилбар хамт ирнэ. Live орчуулга = frontend жижиг audio

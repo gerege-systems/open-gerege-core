@@ -85,3 +85,19 @@ type RBACRepository interface {
 	GetRolePermissions(ctx context.Context, roleID int) ([]string, error)
 	SetRolePermissions(ctx context.Context, roleID int, keys []string) error
 }
+
+// AIRepository нь AI туслахын тохируулдаг prompt давхаргууд болон мэдлэгийн
+// санг (knowledge base) хадгалах/уншихыг хариуцна. Suurь (base) дүрэм кодод
+// хатуу бичигдсэн тул эндээс зөвхөн scope/instructions давхарга уншигдана.
+type AIRepository interface {
+	// ListPrompts нь тохируулдаг бүх prompt давхаргыг буцаана.
+	ListPrompts(ctx context.Context) ([]domain.AIPrompt, error)
+	// SetPrompt нь нэг давхаргын агуулгыг солино. Танигдаагүй key дээр
+	// apperror.NotFound буцаана (зөвшөөрөгдсөн key-үүд migration-д seed
+	// хийгддэг — INSERT хийдэггүй).
+	SetPrompt(ctx context.Context, key, content string) error
+	// SearchKnowledge нь мэдлэгийн сангаас query-д тохирох бичлэгүүдийг
+	// буцаана (title/content ILIKE + tag тэнцэл). AI-ийн search_knowledge
+	// tool үүгээр ажилладаг.
+	SearchKnowledge(ctx context.Context, query string, limit int) ([]domain.AIKnowledge, error)
+}

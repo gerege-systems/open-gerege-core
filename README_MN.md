@@ -136,7 +136,18 @@ GEMINI_MODEL=gemini-2.5-flash    # сонголттой override (чат / STT /
 GEMINI_TTS_MODEL=gemini-2.5-flash-preview-tts  # сонголттой override (TTS)
 GEMINI_VOICE=Kore                # сонголттой prebuilt TTS дуу хоолой
 GEMINI_API_BASE=                 # сонголттой override (өгөгдмөл: Google generativelanguage v1beta)
+AI_SCOPE_PROMPT=                 # DB-ийн 'scope' давхарга хоосон үеийн хамрах хүрээний fallback
 ```
+
+### AI prompt давхаргууд
+
+AI туслах давхаргат system prompt-оор ажиллана: **suurь дүрэм** (кодод
+хатуу — зөвхөн Монголоор, хүрээний сахилт, prompt-injection эсэргүүцэл)
++ **хамрах хүрээ** (юугаар туслахыг заана) + **нэмэлт заавар** (сонголттой).
+Хүрээ/зааврыг `ai_prompts` хүснэгтэд хадгалж, `GET/PUT /api/v1/admin/ai/prompts`
+(`settings.manage` эрх; UI: Админ → Тохиргоо)-оор ажиллаж байх үед нь
+өөрчилнө. Туслах хүрээнээс гадуурх асуултад татгалзаж, платформын асуултад
+`search_knowledge` tool-оор `ai_knowledge` хүснэгтээс хайж тулгуурлан хариулна.
 
 ## API Endpoints
 

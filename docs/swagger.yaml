@@ -48,6 +48,12 @@ definitions:
     - role
     - text
     type: object
+  template_internal_http_datatransfers_requests.AIPromptUpdateRequest:
+    properties:
+      content:
+        maxLength: 4000
+        type: string
+    type: object
   template_internal_http_datatransfers_requests.AISTTRequest:
     properties:
       audio:
@@ -235,6 +241,15 @@ definitions:
       tool:
         type: string
     type: object
+  template_internal_http_datatransfers_responses.AIPromptResponse:
+    properties:
+      content:
+        type: string
+      key:
+        type: string
+      updated_at:
+        type: string
+    type: object
   template_internal_http_datatransfers_responses.AISTTResponse:
     properties:
       text:
@@ -305,6 +320,85 @@ info:
   title: Gerege Backend Template v27 API
   version: "1.0"
 paths:
+  /admin/ai/prompts:
+    get:
+      description: Тохируулдаг prompt давхаргуудыг (scope — хамрах хүрээ, instructions
+        — нэмэлт заавар) буцаана. Suurь (base) дүрэм кодод хатуу бичигдсэн тул энд
+        харагдахгүй, өөрчлөгдөхгүй.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Prompt layers
+          schema:
+            allOf:
+            - $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/template_internal_http_datatransfers_responses.AIPromptResponse'
+                  type: array
+              type: object
+        "401":
+          description: Missing/invalid token
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+        "403":
+          description: Missing settings.manage permission
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      security:
+      - BearerAuth: []
+      summary: AI prompt давхаргуудыг жагсаах
+      tags:
+      - admin
+  /admin/ai/prompts/{key}:
+    put:
+      consumes:
+      - application/json
+      description: Нэг давхаргын (scope | instructions) агуулгыг солино. Өөрчлөлт
+        нэн даруй үйлчилнэ (prompt кэш хүчингүй болдог). AI зөвхөн scope-д заасан
+        хүрээнд ажиллана.
+      parameters:
+      - description: Prompt key (scope | instructions)
+        in: path
+        name: key
+        required: true
+        type: string
+      - description: New content
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/template_internal_http_datatransfers_requests.AIPromptUpdateRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Updated
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+        "400":
+          description: Unknown key / malformed body
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+        "401":
+          description: Missing/invalid token
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+        "403":
+          description: Missing settings.manage permission
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+        "422":
+          description: Validation error
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      security:
+      - BearerAuth: []
+      summary: AI prompt давхаргыг шинэчлэх
+      tags:
+      - admin
   /ai/chat:
     post:
       consumes:

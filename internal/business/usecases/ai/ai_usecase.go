@@ -18,6 +18,8 @@ package ai
 
 import (
 	"context"
+
+	"template/internal/business/domain"
 )
 
 type Usecase interface {
@@ -25,6 +27,11 @@ type Usecase interface {
 	// хариултыг буцаана. Gemini-ийн түр зуурын алдааг fallback мессежээр
 	// (Degraded=true) намжаана; зөвхөн тохиргооны алдааг error болгоно.
 	Run(ctx context.Context, req RunRequest) (RunResult, error)
+
+	// ListPrompts нь тохируулдаг prompt давхаргуудыг буцаана (админ UI).
+	ListPrompts(ctx context.Context) ([]domain.AIPrompt, error)
+	// SetPrompt нь нэг давхаргын агуулгыг сольж, кэшийг хүчингүй болгоно.
+	SetPrompt(ctx context.Context, key, content string) error
 
 	// Transcribe нь audio-г текст болгоно (STT).
 	Transcribe(ctx context.Context, req TranscribeRequest) (TranscribeResult, error)
