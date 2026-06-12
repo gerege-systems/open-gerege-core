@@ -192,11 +192,23 @@ func (uc *usecase) EIDPoll(ctx context.Context, req EIDPollRequest) (resp EIDPol
 		return EIDPollResponse{State: sess.State}, nil
 	}
 
-	if sess.Identity == nil || sess.Identity.NationalID == "" {
+	// Subject нь хэрэглэгчийн давтагдашгүй түлхүүр. Public RP (энэ template)-д IdP
+	// нь national_id-г илчлэхгүй, зөвхөн civil_id өгдөг тул civil_id-г түлхүүр
+	// болгоно; эрх бүхий RP-ийн ховор тохиолдолд national_id руу fallback хийнэ.
+	// Хоёулаа хоосон үед л identity дутуу гэж үзэж татгалзана. РД/civil_id-г лог-д
+	// бичихгүй — зөвхөн identity байгаа эсэхийг (boolean) тэмдэглэнэ.
+	var subject string
+	if sess.Identity != nil {
+		subject = sess.Identity.CivilID
+		if subject == "" {
+			subject = sess.Identity.NationalID
+		}
+	}
+	if subject == "" {
 		err = apperror.InternalCause(fmt.Errorf("eid complete without identity"))
 		logger.ErrorWithContext(ctx, "EIDPoll failed: complete without identity", logger.Fields{
 			"usecase": usecaseName, "method": funcName, "file": fileName,
-			"step": "check_identity",
+			"step": "check_identity", "has_identity": sess.Identity != nil,
 		})
 		return EIDPollResponse{}, err
 	}
@@ -204,9 +216,10 @@ func (uc *usecase) EIDPoll(ctx context.Context, req EIDPollRequest) (resp EIDPol
 	// АНХААР: IdP нь TLS-ээр хамгаалагдсан, эрх бүхий эх сурвалж тул COMPLETE
 	// хариунд итгэнэ. Ирээдүйн сонголттой сайжруулалт: sess.signature-ийг
 	// sess.certificate-ийн эсрэг шалгах (одоогоор хатуу татгалздаггүй).
+	// Түлхүүр болгож subject (civil_id, эс бөгөөс national_id)-г дамжуулна.
 	id := sess.Identity
 	newUser, buildErr := domain.NewEIDUser(
-		id.NationalID, id.GivenName, id.Surname, id.GivenNameEn, id.SurnameEn, id.CivilID, id.KYCLevel,
+		subject, id.GivenName, id.Surname, id.GivenNameEn, id.SurnameEn, id.NationalID, id.KYCLevel,
 	)
 	if buildErr != nil {
 		err = apperror.InternalCause(fmt.Errorf("build eid user: %w", buildErr))

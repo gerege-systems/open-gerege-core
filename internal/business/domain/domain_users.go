@@ -122,26 +122,33 @@ func NewUser(username, email, plainPassword string, roleID, bcryptCost int) (*Us
 	}, nil
 }
 
-// ErrEmptyNationalID нь eID identity-д регистрийн дугаар (national_id) дутуу
-// үед буцна — eID хэрэглэгчийн давтагдашгүй түлхүүр тул заавал шаардлагатай.
-var ErrEmptyNationalID = errors.New("national_id cannot be empty")
+// ErrEmptyCivilID нь eID identity-д иргэний бүртгэлийн дугаар (civil_id) дутуу
+// үед буцна — public RP-д IdP нь national_id-г илчилдэггүй тул civil_id нь eID
+// хэрэглэгчийн давтагдашгүй түлхүүр болдог. Иймээс заавал шаардлагатай.
+var ErrEmptyCivilID = errors.New("civil_id cannot be empty")
 
 // NewEIDUser нь eID-ээр баталгаажсан identity-аас идэвхтэй (Active=true),
 // нууц үггүй (Password="") хэрэглэгч үүсгэнэ. eID хэрэглэгчид email байхгүй
-// (Email="") тул enumeration-аас ангид; давтагдашгүй байдлыг national_id-ээр
-// хангана. Username нь "eid_"+national_id (жижиг үсэг) хэлбэрийн нийлэг утга.
+// (Email="") тул enumeration-аас ангид; давтагдашгүй байдлыг civil_id-ээр
+// хангана. Username нь "eid_"+civil_id (жижиг үсэг) хэлбэрийн нийлэг утга.
+//
+// АНХААР: IdP нь зөвхөн эрх бүхий auth.gerege.mn RP-д national_id (reg_no)-г
+// илчилдэг; public RP (энэ template) зөвхөн civil_id хүлээн авдаг. Тиймээс
+// түлхүүр нь civil_id. national_id хоосон бол DB-д NULL болж хадгалагдана
+// (хоосон string биш) — эс бөгөөс lower(national_id) WHERE national_id IS NOT
+// NULL partial unique index олон eID хэрэглэгчийн хооронд мөргөлдөнө.
 //
 // IdP нь identity-г аль хэдийн баталгаажуулсан тул энд нууц үг hash хийдэггүй
 // — VerifyPassword нь хоосон Password дээр үргэлж false буцаана (bcrypt нь
 // хоосон hash-тай таарахгүй), иймээс passwordless хэрэглэгч нууц үгээр
 // хэзээ ч нэвтэрч чадахгүй.
-func NewEIDUser(nationalID, givenName, surname, givenNameEn, surnameEn, civilID, kycLevel string) (*User, error) {
-	nationalID = strings.TrimSpace(nationalID)
-	if nationalID == "" {
-		return nil, ErrEmptyNationalID
+func NewEIDUser(civilID, givenName, surname, givenNameEn, surnameEn, nationalID, kycLevel string) (*User, error) {
+	civilID = strings.ToLower(strings.TrimSpace(civilID))
+	if civilID == "" {
+		return nil, ErrEmptyCivilID
 	}
 	return &User{
-		Username:    "eid_" + strings.ToLower(nationalID),
+		Username:    "eid_" + civilID,
 		FirstName:   strings.TrimSpace(givenName),
 		LastName:    strings.TrimSpace(surname),
 		FirstNameEn: strings.TrimSpace(givenNameEn),
@@ -150,10 +157,12 @@ func NewEIDUser(nationalID, givenName, surname, givenNameEn, surnameEn, civilID,
 		Password:    "",
 		Active:      true,
 		RoleID:      RoleUser,
-		NationalID:  nationalID,
-		CivilID:     strings.TrimSpace(civilID),
-		KYCLevel:    strings.TrimSpace(kycLevel),
-		CreatedAt:   time.Now().UTC(),
+		// national_id хоосон бол хоосон string үлдээнэ — records.ptrOrNil нь
+		// үүнийг SQL NULL болгон хадгалах тул partial unique index мөргөлдөхгүй.
+		NationalID: strings.ToLower(strings.TrimSpace(nationalID)),
+		CivilID:    civilID,
+		KYCLevel:   strings.TrimSpace(kycLevel),
+		CreatedAt:  time.Now().UTC(),
 	}, nil
 }
 

@@ -36,29 +36,39 @@ func NewAuthRoute(router chi.Router, authUC auth.Usecase, authMiddleware func(ht
 	}
 }
 
-// Routes нь /v1/auth бүлэг болон түүний endpoint-уудыг суулгана.
+// Routes нь /v1/auth бүлэг болон түүний endpoint-уудыг суулгана. Бүлгийг хоёр
+// дэд бүлэгт хуваана: rate limiter-тэй (нэвтрэлт эхлүүлэх / session lifecycle)
+// ба rate limiter-гүй (poll). Хоёулаа body хязгаар + ServiceRLSContext авна.
 func (rt *authRoute) Routes() {
 	rt.router.Route("/v1/auth", func(r chi.Router) {
 		// Auth payload-ууд жижиг JSON хэсгүүд — 4 KiB-д хязгаарлах нь
-		// нэрээ нууцалсан урсгал хүлээн авдаг цорын ганц route-уудын
-		// эсрэг хэт том payload-ийн дайралтыг хаадаг. Rate limiter нь
-		// IP тус бүрт минутанд 5 хүсэлт зөвшөөрнө.
-		r.Use(rt.rateLimiter.Middleware())
+		// хэт том payload-ийн дайралтыг хаадаг. RLS: нэвтрэхээс өмнөх
+		// урсгалууд (eID upsert SELECT/INSERT, refresh дэх identity хайлт)
+		// баталгаажаагүй хэрэглэгчийн мөрд хандах тул "service" identity
+		// тавина. Энэ хоёр middleware бүлгийн БҮХ endpoint-д үйлчилнэ.
 		r.Use(middlewares.BodySizeLimitMiddleware(middlewares.AuthBodyMaxBytes))
-		// RLS: нэвтрэхээс өмнөх урсгалууд (eID upsert SELECT/INSERT, refresh
-		// дэх email/identity хайлт) баталгаажаагүй хэрэглэгчийн мөрд хандах тул
-		// "service" identity тавина.
 		r.Use(middlewares.ServiceRLSContext())
 
-		// eID нэвтрэлт — цорын ганц нэвтрэх арга. /eid/start QR/deep-link
-		// эхлүүлж, /eid/poll session-ийг long-poll-оор хүлээж токен олгоно.
-		r.Post("/eid/start", v1.Wrap(rt.handler.EIDStart))
-		// /eid/start-id — иргэний РД-аар нэвтрэлт эхлүүлж, бүртгэлтэй
-		// төхөөрөмж рүү push хийлгэнэ (gerege.mn-ийн "РД оруулах → push").
-		r.Post("/eid/start-id", v1.Wrap(rt.handler.EIDStartByNationalID))
+		// Rate limiter-тэй дэд бүлэг — IP тус бүрт минутанд ~5 хүсэлт. Нэвтрэлт
+		// эхлүүлэх (start/start-id) ба session lifecycle (refresh/logout) нь
+		// ховор дуудагддаг тул чанга хязгаар тохирно.
+		r.Group(func(rl chi.Router) {
+			rl.Use(rt.rateLimiter.Middleware())
+			// eID нэвтрэлт эхлүүлэх. /eid/start QR/deep-link эхлүүлнэ.
+			rl.Post("/eid/start", v1.Wrap(rt.handler.EIDStart))
+			// /eid/start-id — иргэний РД-аар нэвтрэлт эхлүүлж, бүртгэлтэй
+			// төхөөрөмж рүү push хийлгэнэ (gerege.mn-ийн "РД оруулах → push").
+			rl.Post("/eid/start-id", v1.Wrap(rt.handler.EIDStartByNationalID))
+			// Session-ийн амьдралын мөчлөг — нэвтрэх аргаас үл хамаарна.
+			rl.Post("/refresh", v1.Wrap(rt.handler.Refresh))
+			rl.Post("/logout", v1.Wrap(rt.handler.Logout))
+		})
+
+		// Rate limiter-ГҮЙ дэд бүлэг — /eid/poll. Frontend нь session-ийг
+		// ~2.5с тутамд long-poll-оор асуудаг тул минут тутам 5 хүсэлтийн чанга
+		// хязгаарт орвол байнга 429 болж, амжилттай COMPLETE хариу хэзээ ч
+		// гарахгүй болно. Иймээс poll-ийг тэр хязгаараас чөлөөлнө (body хязгаар
+		// + ServiceRLSContext бүлгийн түвшинд хэвээр үйлчилнэ).
 		r.Post("/eid/poll", v1.Wrap(rt.handler.EIDPoll))
-		// Session-ийн амьдралын мөчлөг — нэвтрэх аргаас үл хамаарна.
-		r.Post("/refresh", v1.Wrap(rt.handler.Refresh))
-		r.Post("/logout", v1.Wrap(rt.handler.Logout))
 	})
 }

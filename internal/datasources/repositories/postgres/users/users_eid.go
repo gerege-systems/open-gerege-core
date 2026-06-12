@@ -50,10 +50,14 @@ func (r *postgreUserRepository) GetByNationalID(ctx context.Context, nationalID 
 	return domain.User{}, qerr
 }
 
-// UpsertFromEID нь eID identity-аар хэрэглэгчийг үүсгэх/шинэчлэх. national_id
-// дээрх partial unique index (idx_users_national_id_active)-д тулгуурлан
-// ON CONFLICT хийнэ: давхцвал нэр (мн+en) ба kyc_level-ийг шинэчилж,
-// идэвхжүүлж, updated_at-г тэмдэглэнэ; эс бөгөөс шинэ идэвхтэй мөр оруулна.
+// UpsertFromEID нь eID identity-аар хэрэглэгчийг үүсгэх/шинэчлэх. civil_id
+// дээрх partial unique index (idx_users_civil_id_active, migration 13)-д
+// тулгуурлан ON CONFLICT хийнэ: давхцвал нэр (мн+en), national_id ба
+// kyc_level-ийг шинэчилж, идэвхжүүлж, updated_at-г тэмдэглэнэ; эс бөгөөс шинэ
+// идэвхтэй мөр оруулна. Public RP-д IdP national_id-г илчлэхгүй тул түлхүүр нь
+// civil_id (national_id хоосон байж болзошгүй). civil_id-г жижиг үсгээр,
+// national_id хоосон бол NULL-ээр (records.ptrOrNil) хадгална — эс бөгөөс
+// lower(national_id) partial unique index олон eID хэрэглэгчид мөргөлдөнө.
 // eID хэрэглэгч нууц үг/email-гүй тул эдгээрийг NULL-ээр (nil pointer) хадгална.
 func (r *postgreUserRepository) UpsertFromEID(ctx context.Context, inDom *domain.User) (domain.User, error) {
 	const (
@@ -69,13 +73,13 @@ func (r *postgreUserRepository) UpsertFromEID(ctx context.Context, inDom *domain
 		rows, qErr := tx.Query(ctx, `
 			INSERT INTO users(id, username, first_name, last_name, first_name_en, last_name_en, email, password, active, role_id, national_id, civil_id, kyc_level, created_at)
 			VALUES (uuid_generate_v4(), $1, $2, $3, $4, $5, NULL, NULL, true, $6, $7, $8, $9, $10)
-			ON CONFLICT (lower(national_id)) WHERE national_id IS NOT NULL
+			ON CONFLICT (lower(civil_id)) WHERE civil_id IS NOT NULL
 			DO UPDATE SET
 				first_name    = EXCLUDED.first_name,
 				last_name     = EXCLUDED.last_name,
 				first_name_en = EXCLUDED.first_name_en,
 				last_name_en  = EXCLUDED.last_name_en,
-				civil_id      = EXCLUDED.civil_id,
+				national_id   = EXCLUDED.national_id,
 				kyc_level     = EXCLUDED.kyc_level,
 				active        = true,
 				updated_at    = now()
