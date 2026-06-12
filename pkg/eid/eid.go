@@ -83,6 +83,11 @@ type SessionResult struct {
 type Client interface {
 	// QRInitiate нь QR/deep-link нэвтрэлтийг эхлүүлж session мэдээллийг буцаана.
 	QRInitiate(ctx context.Context, displayText, callbackURL, nonce string) (*StartResult, error)
+	// Initiate нь иргэний РД (national_id)-аар нэвтрэлтийг эхлүүлнэ — IdP нь тухайн
+	// РД-тэй холбоотой бүртгэлтэй төхөөрөмж рүү баталгаажуулах prompt push хийдэг.
+	// callback_url дамжуулдаггүй; хариу нь qr/initiate-тай ижил §3.2 хэлбэртэй
+	// (device_link_url нь энэ урсгалд хоосон/орхигдож болно).
+	Initiate(ctx context.Context, nationalID, displayText, nonce string) (*StartResult, error)
 	// Session нь session-ийн төлвийг long-poll-оор асууна (timeoutMs хүртэл).
 	// COMPLETE үед Identity-тэй; EXPIRED/REFUSED үед холбогдох sentinel алдаа
 	// буцаах нь дуудагчид хялбар байж болох ч энд төлвийг буцааж, дуудагчид
@@ -123,11 +128,31 @@ func (c *client) QRInitiate(ctx context.Context, displayText, callbackURL, nonce
 	if err != nil {
 		return nil, err
 	}
+	return parseStartResult(raw, status)
+}
+
+func (c *client) Initiate(ctx context.Context, nationalID, displayText, nonce string) (*StartResult, error) {
+	// РД push урсгал: callback_url дамжуулахгүй. IdP нь тухайн РД-тэй холбоотой
+	// төхөөрөмж рүү баталгаажуулах prompt push хийнэ.
+	body := map[string]string{
+		"national_id":  nationalID,
+		"display_text": displayText,
+		"nonce":        nonce,
+	}
+	raw, status, err := c.post(ctx, "/auth/initiate", body)
+	if err != nil {
+		return nil, err
+	}
+	return parseStartResult(raw, status)
+}
+
+// parseStartResult нь initiate (qr эсвэл РД)-ийн §3.2 хариуг задлан StartResult
+// болгоно. session_secret / auth_code_hashable зэрэг нууцыг зориуд тэмдэглэхгүй,
+// log-д гаргахгүй — зөвхөн клиентэд хэрэгтэй талбаруудыг задлан авна.
+func parseStartResult(raw []byte, status int) (*StartResult, error) {
 	if status >= 300 {
 		return nil, fmt.Errorf("eid initiate: status %d: %s", status, snippet(raw))
 	}
-	// session_secret / auth_code_hashable зэрэг нууцыг зориуд тэмдэглэхгүй,
-	// log-д гаргахгүй — зөвхөн клиентэд хэрэгтэй талбаруудыг задлан авна.
 	var out struct {
 		SessionID        string `json:"session_id"`
 		VerificationCode string `json:"verification_code"`

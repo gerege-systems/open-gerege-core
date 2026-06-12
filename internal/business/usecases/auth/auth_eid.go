@@ -56,7 +56,13 @@ func (uc *usecase) EIDStart(ctx context.Context) (resp EIDStartResponse, err err
 		return EIDStartResponse{}, err
 	}
 
-	start, initErr := uc.eid.QRInitiate(ctx, uc.cfg.EIDDisplayText, uc.cfg.EIDCallbackURL, nonce)
+	// Smart-ID v3 Web2App CROSS-DEVICE: callbackUrl-г ХООСОН дамжуулна. Desktop
+	// дээрх browser нь QR-аа гар утсаар уншуулаад, иргэн eID app-д баталгаажуулсны
+	// дараа device_link_url дотор callbackUrl байхгүй тул утасны browser callback
+	// руу redirect хийхгүй — эх browser зүгээр /eid/poll-оор төлвийг хүлээж нэвтэрнэ.
+	// EID_CALLBACK_URL config нь зөвхөн ирээдүйн same-device (tap-through) урсгалд
+	// зориулагдсан тул энд ашиглахгүй.
+	start, initErr := uc.eid.QRInitiate(ctx, uc.cfg.EIDDisplayText, "", nonce)
 	if initErr != nil {
 		err = apperror.InternalCause(fmt.Errorf("eid initiate: %w", initErr))
 		logger.ErrorWithContext(ctx, "EIDStart failed: initiate error", logger.Fields{
@@ -69,6 +75,69 @@ func (uc *usecase) EIDStart(ctx context.Context) (resp EIDStartResponse, err err
 	resp = EIDStartResponse{
 		SessionID:        start.SessionID,
 		DeviceLinkURL:    start.DeviceLinkURL,
+		VerificationCode: start.VerificationCode,
+		ExpiresAt:        start.ExpiresAt,
+	}
+	return resp, nil
+}
+
+// EIDStartByNationalID нь иргэний РД (national_id)-аар нэвтрэлтийг IdP дээр
+// эхлүүлнэ (gerege.mn-ийн "РД оруулах → утас руу push" урсгал). IdP нь тухайн
+// РД-тэй холбоотой бүртгэлтэй төхөөрөмж(үүд) рүү баталгаажуулах prompt шууд push
+// хийдэг тул device_link / QR шаардлагагүй — зөвхөн session_id, verification_code,
+// expires_at буцна. Дуусгахдаа QR урсгалтай ижил EIDPoll-ийг ашиглана.
+func (uc *usecase) EIDStartByNationalID(ctx context.Context, nationalID string) (resp EIDStartResponse, err error) {
+	const (
+		usecaseName = "auth"
+		funcName    = "EIDStartByNationalID"
+		fileName    = "auth_eid.go"
+	)
+	startTime := time.Now()
+
+	// РД-г лог-д бичихгүй (хувийн мэдээлэл) — зөвхөн утга байгаа эсэхийг тэмдэглэнэ.
+	logger.InfoWithContext(ctx, fmt.Sprintf("Upper %s", funcName), logger.Fields{
+		"usecase": usecaseName, "method": funcName, "file": fileName,
+		"request": logger.Fields{"has_national_id": nationalID != ""},
+	})
+	defer func() {
+		fields := logger.Fields{
+			"usecase": usecaseName, "method": funcName, "file": fileName,
+			"duration": time.Since(startTime).Milliseconds(),
+		}
+		if err == nil {
+			fields["response"] = logger.Fields{"session_id": resp.SessionID}
+		}
+		logger.InfoWithContext(ctx, fmt.Sprintf("Lower %s", funcName), fields)
+	}()
+
+	if nationalID == "" {
+		err = apperror.BadRequest("national_id is required")
+		return EIDStartResponse{}, err
+	}
+
+	nonce, nonceErr := randomNonce()
+	if nonceErr != nil {
+		err = apperror.InternalCause(fmt.Errorf("generate nonce: %w", nonceErr))
+		logger.ErrorWithContext(ctx, "EIDStartByNationalID failed: nonce generation error", logger.Fields{
+			"usecase": usecaseName, "method": funcName, "file": fileName,
+			"step": "random_nonce", "error": nonceErr.Error(),
+		})
+		return EIDStartResponse{}, err
+	}
+
+	start, initErr := uc.eid.Initiate(ctx, nationalID, uc.cfg.EIDDisplayText, nonce)
+	if initErr != nil {
+		err = apperror.InternalCause(fmt.Errorf("eid initiate: %w", initErr))
+		logger.ErrorWithContext(ctx, "EIDStartByNationalID failed: initiate error", logger.Fields{
+			"usecase": usecaseName, "method": funcName, "file": fileName,
+			"step": "eid_initiate", "error": initErr.Error(),
+		})
+		return EIDStartResponse{}, err
+	}
+
+	// Push урсгалд device_link шаардлагагүй тул орхино.
+	resp = EIDStartResponse{
+		SessionID:        start.SessionID,
 		VerificationCode: start.VerificationCode,
 		ExpiresAt:        start.ExpiresAt,
 	}

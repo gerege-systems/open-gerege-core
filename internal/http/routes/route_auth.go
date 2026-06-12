@@ -53,6 +53,9 @@ func (rt *authRoute) Routes() {
 		// eID нэвтрэлт — цорын ганц нэвтрэх арга. /eid/start QR/deep-link
 		// эхлүүлж, /eid/poll session-ийг long-poll-оор хүлээж токен олгоно.
 		r.Post("/eid/start", v1.Wrap(rt.handler.EIDStart))
+		// /eid/start-id — иргэний РД-аар нэвтрэлт эхлүүлж, бүртгэлтэй
+		// төхөөрөмж рүү push хийлгэнэ (gerege.mn-ийн "РД оруулах → push").
+		r.Post("/eid/start-id", v1.Wrap(rt.handler.EIDStartByNationalID))
 		r.Post("/eid/poll", v1.Wrap(rt.handler.EIDPoll))
 		// Session-ийн амьдралын мөчлөг — нэвтрэх аргаас үл хамаарна.
 		r.Post("/refresh", v1.Wrap(rt.handler.Refresh))

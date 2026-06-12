@@ -46,6 +46,59 @@ func (h Handler) EIDStart(w http.ResponseWriter, r *http.Request) error {
 	return v1.NewSuccessResponse(w, r, http.StatusOK, "eid session started", responses.FromEIDStartResponse(result))
 }
 
+// EIDStartByNationalID godoc
+// @Summary      eID нэвтрэлт эхлүүлэх (РД-аар push)
+// @Description  Иргэний РД (national_id)-аар нэвтрэлтийг эхлүүлж, тухайн РД-тэй холбоотой бүртгэлтэй төхөөрөмж рүү баталгаажуулах prompt push хийлгэнэ. QR/device_link шаардлагагүй тул зөвхөн session_id, verification_code, expires_at буцна. Дараа нь /auth/eid/poll руу session_id-г дамжуулж төлвийг асууна.
+// @Tags         auth
+// @Accept       json
+// @Produce      json
+// @Param        request  body      requests.EIDStartByNationalIDRequest  true  "Иргэний РД"
+// @Success      200      {object}  v1.BaseResponse{data=responses.EIDStartResponse}  "eID session started"
+// @Failure      400      {object}  v1.BaseResponse  "Malformed JSON body or missing national_id"
+// @Failure      422      {object}  v1.BaseResponse  "Validation error"
+// @Failure      500      {object}  v1.BaseResponse  "Failed to reach eID provider"
+// @Router       /auth/eid/start-id [post]
+func (h Handler) EIDStartByNationalID(w http.ResponseWriter, r *http.Request) error {
+	const (
+		controllerName = "auth"
+		funcName       = "EIDStartByNationalID"
+		fileName       = "auth_eid.go"
+	)
+	ctx := r.Context()
+	var req requests.EIDStartByNationalIDRequest
+	if err := v1.DecodeBody(r, &req); err != nil {
+		logger.WarnWithContext(ctx, "EIDStartByNationalID: invalid request body", logger.Fields{
+			"controller": controllerName,
+			"method":     funcName,
+			"file":       fileName,
+			"error":      err.Error(),
+		})
+		return v1.NewErrorResponse(w, r, http.StatusBadRequest, "invalid request body")
+	}
+	if err := validators.ValidatePayloads(req); err != nil {
+		logger.WarnWithContext(ctx, "EIDStartByNationalID: validation error", logger.Fields{
+			"controller": controllerName,
+			"method":     funcName,
+			"file":       fileName,
+			"error":      err.Error(),
+		})
+		return v1.RespondWithError(w, r, err)
+	}
+
+	result, err := h.usecase.EIDStartByNationalID(ctx, req.NationalID)
+	if err != nil {
+		logger.ErrorWithContext(ctx, "EIDStartByNationalID failed in controller", logger.Fields{
+			"controller": controllerName,
+			"method":     funcName,
+			"file":       fileName,
+			"error":      err.Error(),
+		})
+		return v1.RespondWithError(w, r, err)
+	}
+
+	return v1.NewSuccessResponse(w, r, http.StatusOK, "eid session started", responses.FromEIDStartResponse(result))
+}
+
 // EIDPoll godoc
 // @Summary      eID session-ийн төлвийг асуух (long-poll)
 // @Description  session_id-ийн төлвийг IdP-ээс long-poll-оор (≤25с) асууна. state нь RUNNING/COMPLETE/EXPIRED/REFUSED. COMPLETE үед identity-аар хэрэглэгчийг бүртгэж/шинэчилж, access+refresh токен хосыг /login-той ижил хэлбэрээр буцаана.

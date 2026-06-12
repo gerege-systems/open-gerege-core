@@ -109,6 +109,13 @@ definitions:
     required:
     - session_id
     type: object
+  template_internal_http_datatransfers_requests.EIDStartByNationalIDRequest:
+    properties:
+      national_id:
+        type: string
+    required:
+    - national_id
+    type: object
   template_internal_http_datatransfers_requests.ForgotPasswordRequest:
     properties:
       email:
@@ -705,6 +712,48 @@ paths:
           schema:
             $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
       summary: eID нэвтрэлт эхлүүлэх (QR / deep-link)
+      tags:
+      - auth
+  /auth/eid/start-id:
+    post:
+      consumes:
+      - application/json
+      description: Иргэний РД (national_id)-аар нэвтрэлтийг эхлүүлж, тухайн РД-тэй
+        холбоотой бүртгэлтэй төхөөрөмж рүү баталгаажуулах prompt push хийлгэнэ. QR/device_link
+        шаардлагагүй тул зөвхөн session_id, verification_code, expires_at буцна. Дараа
+        нь /auth/eid/poll руу session_id-г дамжуулж төлвийг асууна.
+      parameters:
+      - description: Иргэний РД
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/template_internal_http_datatransfers_requests.EIDStartByNationalIDRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: eID session started
+          schema:
+            allOf:
+            - $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/template_internal_http_datatransfers_responses.EIDStartResponse'
+              type: object
+        "400":
+          description: Malformed JSON body or missing national_id
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+        "422":
+          description: Validation error
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+        "500":
+          description: Failed to reach eID provider
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      summary: eID нэвтрэлт эхлүүлэх (РД-аар push)
       tags:
       - auth
   /auth/login:

@@ -550,6 +550,70 @@ const docTemplate = `{
                 }
             }
         },
+        "/auth/eid/start-id": {
+            "post": {
+                "description": "Иргэний РД (national_id)-аар нэвтрэлтийг эхлүүлж, тухайн РД-тэй холбоотой бүртгэлтэй төхөөрөмж рүү баталгаажуулах prompt push хийлгэнэ. QR/device_link шаардлагагүй тул зөвхөн session_id, verification_code, expires_at буцна. Дараа нь /auth/eid/poll руу session_id-г дамжуулж төлвийг асууна.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "eID нэвтрэлт эхлүүлэх (РД-аар push)",
+                "parameters": [
+                    {
+                        "description": "Иргэний РД",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_datatransfers_requests.EIDStartByNationalIDRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "eID session started",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/template_internal_http_datatransfers_responses.EIDStartResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Malformed JSON body or missing national_id",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to reach eID provider",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/auth/login": {
             "post": {
                 "description": "Access токен (богино TTL) болон refresh токен (урт TTL) буцаана. Хэрэглэгчийг тоолохоос сэргийлэхийн тулд буруу нууц үг болон тодорхойгүй email ижил хугацаа зарцуулна.",
@@ -1273,6 +1337,17 @@ const docTemplate = `{
             ],
             "properties": {
                 "session_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "template_internal_http_datatransfers_requests.EIDStartByNationalIDRequest": {
+            "type": "object",
+            "required": [
+                "national_id"
+            ],
+            "properties": {
+                "national_id": {
                     "type": "string"
                 }
             }

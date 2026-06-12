@@ -63,6 +63,11 @@ func (_m *AuthUsecase) EIDStart(ctx context.Context) (auth.EIDStartResponse, err
 	return ret.Get(0).(auth.EIDStartResponse), ret.Error(1)
 }
 
+func (_m *AuthUsecase) EIDStartByNationalID(ctx context.Context, nationalID string) (auth.EIDStartResponse, error) {
+	ret := _m.Called(ctx, nationalID)
+	return ret.Get(0).(auth.EIDStartResponse), ret.Error(1)
+}
+
 func (_m *AuthUsecase) EIDPoll(ctx context.Context, req auth.EIDPollRequest) (auth.EIDPollResponse, error) {
 	ret := _m.Called(ctx, req)
 	return ret.Get(0).(auth.EIDPollResponse), ret.Error(1)

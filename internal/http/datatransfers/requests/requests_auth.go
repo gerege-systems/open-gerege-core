@@ -84,6 +84,12 @@ type EIDPollRequest struct {
 	SessionID string `json:"session_id" validate:"required"`
 }
 
+// EIDStartByNationalIDRequest нь POST /auth/eid/start-id-ийн body юм — иргэний
+// РД-аар нэвтрэлт эхлүүлж, бүртгэлтэй төхөөрөмж рүү push хийлгэнэ.
+type EIDStartByNationalIDRequest struct {
+	NationalID string `json:"national_id" validate:"required"`
+}
+
 // ResetPasswordRequest нь POST /auth/password/reset-ийн body юм. Нууц үг
 // сэргээх нь GeregeCloud Verify OTP-аар явдаг тул токены оронд email + код
 // шаардана.

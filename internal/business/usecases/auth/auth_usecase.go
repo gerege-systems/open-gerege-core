@@ -44,6 +44,11 @@ type Usecase interface {
 	// харуулах session мэдээллийг (session_id, device_link_url, verification_code,
 	// expires_at) буцаана.
 	EIDStart(ctx context.Context) (EIDStartResponse, error)
+	// EIDStartByNationalID нь иргэний РД (national_id)-аар нэвтрэлтийг IdP дээр
+	// эхлүүлж, тухайн РД-тэй холбоотой төхөөрөмж рүү баталгаажуулах prompt push
+	// хийлгэнэ. device_link шаардлагагүй тул зөвхөн session_id, verification_code,
+	// expires_at буцна; дуусгахдаа QR урсгалтай ижил EIDPoll ашиглана.
+	EIDStartByNationalID(ctx context.Context, nationalID string) (EIDStartResponse, error)
 	// EIDPoll нь session-ийн төлвийг long-poll-оор асууна. COMPLETE болоход
 	// IdP-ийн identity-аар хэрэглэгчийг upsert хийж, access+refresh токен хос
 	// олгож буцаана; бусад (RUNNING/EXPIRED/REFUSED) үед зөвхөн State буцаана.
