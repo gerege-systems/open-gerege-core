@@ -35,6 +35,10 @@ var (
 	ErrSessionExpired = errors.New("eid: session expired")
 	// ErrSessionRefused нь хэрэглэгч нэвтрэлтийг татгалзсан (terminal) үед буцна.
 	ErrSessionRefused = errors.New("eid: session refused")
+	// ErrInitiateRejected нь IdP initiate-г 4xx-ээр буцаасан (жишээ нь РД
+	// олдсонгүй / буруу формат / scope) үед буцна — дуудагч үүнийг цэвэр
+	// 4xx хэрэглэгчийн алдаа болгож буулгана (5xx дотоод алдаанаас ялгаатай).
+	ErrInitiateRejected = errors.New("eid: initiate rejected")
 )
 
 // Terminal төлвүүдийн нэрс. Эдгээрээс бусад аливаа state (жишээ нь RUNNING,
@@ -150,6 +154,11 @@ func (c *client) Initiate(ctx context.Context, nationalID, displayText, nonce st
 // болгоно. session_secret / auth_code_hashable зэрэг нууцыг зориуд тэмдэглэхгүй,
 // log-д гаргахгүй — зөвхөн клиентэд хэрэгтэй талбаруудыг задлан авна.
 func parseStartResult(raw []byte, status int) (*StartResult, error) {
+	if status >= 400 && status < 500 {
+		// 4xx = хэрэглэгч/оролтын алдаа (РД олдсонгүй, scope, формат) —
+		// ErrInitiateRejected-ээр буцааж дуудагчид 4xx болгох боломж өгнө.
+		return nil, fmt.Errorf("%w: status %d: %s", ErrInitiateRejected, status, snippet(raw))
+	}
 	if status >= 300 {
 		return nil, fmt.Errorf("eid initiate: status %d: %s", status, snippet(raw))
 	}

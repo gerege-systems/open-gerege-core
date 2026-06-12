@@ -7,6 +7,7 @@ import (
 	"context"
 	"crypto/rand"
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"time"
 
@@ -64,7 +65,7 @@ func (uc *usecase) EIDStart(ctx context.Context) (resp EIDStartResponse, err err
 	// зориулагдсан тул энд ашиглахгүй.
 	start, initErr := uc.eid.QRInitiate(ctx, uc.cfg.EIDDisplayText, "", nonce)
 	if initErr != nil {
-		err = apperror.InternalCause(fmt.Errorf("eid initiate: %w", initErr))
+		err = mapInitiateErr(initErr, "eID session эхлүүлэх боломжгүй байна")
 		logger.ErrorWithContext(ctx, "EIDStart failed: initiate error", logger.Fields{
 			"usecase": usecaseName, "method": funcName, "file": fileName,
 			"step": "eid_qr_initiate", "error": initErr.Error(),
@@ -127,7 +128,7 @@ func (uc *usecase) EIDStartByNationalID(ctx context.Context, nationalID string) 
 
 	start, initErr := uc.eid.Initiate(ctx, nationalID, uc.cfg.EIDDisplayText, nonce)
 	if initErr != nil {
-		err = apperror.InternalCause(fmt.Errorf("eid initiate: %w", initErr))
+		err = mapInitiateErr(initErr, "Регистрийн дугаар олдсонгүй эсвэл буруу байна")
 		logger.ErrorWithContext(ctx, "EIDStartByNationalID failed: initiate error", logger.Fields{
 			"usecase": usecaseName, "method": funcName, "file": fileName,
 			"step": "eid_initiate", "error": initErr.Error(),
@@ -253,6 +254,16 @@ func (uc *usecase) EIDPoll(ctx context.Context, req EIDPollRequest) (resp EIDPol
 		RefreshToken: pair.RefreshToken,
 	}
 	return resp, nil
+}
+
+// mapInitiateErr нь eID initiate-ийн алдааг HTTP статус руу буулгана: IdP-ийн
+// 4xx (РД олдсонгүй / scope / формат) бол цэвэр BadRequest (clientMsg),
+// бусад (сүлжээ / 5xx) бол дотоод 5xx алдаа.
+func mapInitiateErr(initErr error, clientMsg string) error {
+	if errors.Is(initErr, eid.ErrInitiateRejected) {
+		return apperror.BadRequest(clientMsg)
+	}
+	return apperror.InternalCause(fmt.Errorf("eid initiate: %w", initErr))
 }
 
 // randomNonce нь IdP-ийн replay-аас хамгаалах 32 hex тэмдэгтийн (16 байт)

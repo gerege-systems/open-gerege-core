@@ -113,6 +113,17 @@ func (f *FakeEID) QRInitiate(_ context.Context, _, _, _ string) (*eid.StartResul
 	return &eid.StartResult{SessionID: "fake-session"}, nil
 }
 
+// Initiate нь РД-ээр (push) flow-ийн fake — QRInitiate-тэй ижил хариу өгнө.
+func (f *FakeEID) Initiate(_ context.Context, _, _, _ string) (*eid.StartResult, error) {
+	if f.InitiateErr != nil {
+		return nil, f.InitiateErr
+	}
+	if f.StartResult != nil {
+		return f.StartResult, nil
+	}
+	return &eid.StartResult{SessionID: "fake-session"}, nil
+}
+
 func (f *FakeEID) Session(_ context.Context, _ string, _ int) (*eid.SessionResult, error) {
 	if f.SessionErr != nil {
 		return nil, f.SessionErr
