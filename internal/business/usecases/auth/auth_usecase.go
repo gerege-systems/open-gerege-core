@@ -39,6 +39,15 @@ type Usecase interface {
 	// ResetPassword нь email рүү илгээсэн OTP кодыг Verify-ээр баталгаажуулж,
 	// шинэ нууц үгийг тохируулна.
 	ResetPassword(ctx context.Context, req ResetPasswordRequest) error
+
+	// EIDStart нь eID (QR/deep-link) нэвтрэлтийг IdP дээр эхлүүлж, клиент
+	// харуулах session мэдээллийг (session_id, device_link_url, verification_code,
+	// expires_at) буцаана.
+	EIDStart(ctx context.Context) (EIDStartResponse, error)
+	// EIDPoll нь session-ийн төлвийг long-poll-оор асууна. COMPLETE болоход
+	// IdP-ийн identity-аар хэрэглэгчийг upsert хийж, access+refresh токен хос
+	// олгож буцаана; бусад (RUNNING/EXPIRED/REFUSED) үед зөвхөн State буцаана.
+	EIDPoll(ctx context.Context, req EIDPollRequest) (EIDPollResponse, error)
 }
 
 // Usecase-ийн хилд зориулсан Request / Response төрлүүд. Struct-д талбар нэмэх
@@ -98,5 +107,28 @@ type (
 		Email       string
 		Code        string
 		NewPassword string
+	}
+
+	// EIDStartResponse нь /eid/start-ийн үр дүн — клиент үүгээр QR/deep-link
+	// харуулж, /eid/poll руу SessionID-г дамжуулна.
+	EIDStartResponse struct {
+		SessionID        string
+		DeviceLinkURL    string
+		VerificationCode string
+		ExpiresAt        string
+	}
+
+	EIDPollRequest struct {
+		SessionID string
+	}
+
+	// EIDPollResponse нь /eid/poll-ийн үр дүн. State нь IdP-ийн session төлөв
+	// (RUNNING / COMPLETE / EXPIRED / REFUSED). COMPLETE үед User + токенууд
+	// дүүрэн байна (Login-той ижил хэлбэрээр клиентэд буудаг).
+	EIDPollResponse struct {
+		State        string
+		User         domain.User
+		AccessToken  string
+		RefreshToken string
 	}
 )

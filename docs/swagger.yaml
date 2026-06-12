@@ -102,6 +102,13 @@ definitions:
     - current_password
     - new_password
     type: object
+  template_internal_http_datatransfers_requests.EIDPollRequest:
+    properties:
+      session_id:
+        type: string
+    required:
+    - session_id
+    type: object
   template_internal_http_datatransfers_requests.ForgotPasswordRequest:
     properties:
       email:
@@ -262,6 +269,50 @@ definitions:
       source_text:
         type: string
       translated:
+        type: string
+    type: object
+  template_internal_http_datatransfers_responses.EIDPollResponse:
+    properties:
+      created_at:
+        type: string
+      email:
+        type: string
+      first_name:
+        type: string
+      first_name_en:
+        type: string
+      full_name:
+        type: string
+      full_name_en:
+        type: string
+      id:
+        type: string
+      last_name:
+        type: string
+      last_name_en:
+        type: string
+      refresh_token:
+        type: string
+      role_id:
+        type: integer
+      state:
+        type: string
+      token:
+        type: string
+      updated_at:
+        type: string
+      username:
+        type: string
+    type: object
+  template_internal_http_datatransfers_responses.EIDStartResponse:
+    properties:
+      device_link_url:
+        type: string
+      expires_at:
+        type: string
+      session_id:
+        type: string
+      verification_code:
         type: string
     type: object
   template_internal_http_datatransfers_responses.UserResponse:
@@ -588,6 +639,74 @@ paths:
       summary: Текстийг яриа болгох (TTS)
       tags:
       - ai
+  /auth/eid/poll:
+    post:
+      consumes:
+      - application/json
+      description: session_id-ийн төлвийг IdP-ээс long-poll-оор (≤25с) асууна. state
+        нь RUNNING/COMPLETE/EXPIRED/REFUSED. COMPLETE үед identity-аар хэрэглэгчийг
+        бүртгэж/шинэчилж, access+refresh токен хосыг /login-той ижил хэлбэрээр буцаана.
+      parameters:
+      - description: eID session id
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/template_internal_http_datatransfers_requests.EIDPollRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Session state (with tokens if COMPLETE)
+          schema:
+            allOf:
+            - $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/template_internal_http_datatransfers_responses.EIDPollResponse'
+              type: object
+        "400":
+          description: Malformed JSON body or missing session_id
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+        "422":
+          description: Validation error
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+        "500":
+          description: Failed to reach eID provider
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      summary: eID session-ийн төлвийг асуух (long-poll)
+      tags:
+      - auth
+  /auth/eid/start:
+    post:
+      consumes:
+      - application/json
+      description: Гадаад eID identity provider дээр QR/deep-link нэвтрэлтийг эхлүүлж,
+        клиент харуулах session мэдээллийг (session_id, device_link_url, verification_code,
+        expires_at) буцаана. Дараа нь /auth/eid/poll руу session_id-г дамжуулж төлвийг
+        асууна.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: eID session started
+          schema:
+            allOf:
+            - $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/template_internal_http_datatransfers_responses.EIDStartResponse'
+              type: object
+        "500":
+          description: Failed to reach eID provider
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      summary: eID нэвтрэлт эхлүүлэх (QR / deep-link)
+      tags:
+      - auth
   /auth/login:
     post:
       consumes:

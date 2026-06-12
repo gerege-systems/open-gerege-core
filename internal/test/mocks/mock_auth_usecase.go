@@ -58,6 +58,16 @@ func (_m *AuthUsecase) ResetPassword(ctx context.Context, req auth.ResetPassword
 	return _m.Called(ctx, req).Error(0)
 }
 
+func (_m *AuthUsecase) EIDStart(ctx context.Context) (auth.EIDStartResponse, error) {
+	ret := _m.Called(ctx)
+	return ret.Get(0).(auth.EIDStartResponse), ret.Error(1)
+}
+
+func (_m *AuthUsecase) EIDPoll(ctx context.Context, req auth.EIDPollRequest) (auth.EIDPollResponse, error) {
+	ret := _m.Called(ctx, req)
+	return ret.Get(0).(auth.EIDPollResponse), ret.Error(1)
+}
+
 type mockConstructorTestingTNewAuthUsecase interface {
 	mock.TestingT
 	Cleanup(func())

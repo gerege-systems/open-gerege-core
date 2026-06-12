@@ -32,6 +32,7 @@ import (
 	V1Handler "template/internal/http/handlers/v1"
 	"template/internal/http/middlewares"
 	"template/internal/http/routes"
+	"template/pkg/eid"
 	"template/pkg/gemini"
 	"template/pkg/jwt"
 	"template/pkg/logger"
@@ -135,9 +136,12 @@ func NewApp() (*App, error) {
 	usersUC := users.NewUsecase(userRepo, ristrettoCache, users.Config{
 		BcryptCost: config.AppConfig.BcryptCost,
 	})
-	// GeregeCloud Verify API — OTP send/check.
+	// GeregeCloud Verify API — OTP send/check. (Нууц үг/OTP route-ууд eID-ийн
+	// төлөө хасагдсан ч usecase нь verifier-ийг шаардсан хэвээр; цэвэр угсралт.)
 	verifier := verify.NewClient(config.AppConfig.VerifyAPIBase, config.AppConfig.VerifyAPIKey, config.AppConfig.VerifyChannel)
-	authUC := auth.NewUsecase(usersUC, jwtService, verifier, redisCache, auth.Config{
+	// eID identity provider (RP) — "Login with eID"-ийн цорын ганц нэвтрэх арга.
+	eidClient := eid.NewClient(config.AppConfig.EIDBaseURL, config.AppConfig.EIDRPClient)
+	authUC := auth.NewUsecase(usersUC, jwtService, verifier, eidClient, redisCache, auth.Config{
 		OTPMaxAttempts:    config.AppConfig.OTPMaxAttempts,
 		OTPTTL:            time.Duration(config.AppConfig.REDISExpired) * time.Minute,
 		PasswordResetTTL:  30 * time.Minute,
@@ -146,6 +150,8 @@ func NewApp() (*App, error) {
 		LoginLockoutTTL:   15 * time.Minute,
 		ForgotMaxAttempts: 3,
 		ForgotLockoutTTL:  15 * time.Minute,
+		EIDCallbackURL:    config.AppConfig.EIDCallbackURL,
+		EIDDisplayText:    config.AppConfig.EIDDisplayText,
 	})
 
 	// RBAC — динамик role/permission удирдлага + enforcement.

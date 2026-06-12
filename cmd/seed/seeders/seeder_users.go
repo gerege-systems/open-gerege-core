@@ -20,18 +20,22 @@ func init() {
 		logger.Panic(err.Error(), logger.Fields{constants.LoggerCategory: constants.LoggerCategorySeeder})
 	}
 
+	// Email/Password нь records.Users-д *string (eID хэрэглэгчид NULL байж
+	// болох тул) — seed утгуудыг pointer болгож дамжуулна.
+	patrickEmail := "patrick@gmail.com"
+	johnEmail := "johndoe@gmail.com"
 	UserData = []records.Users{
 		{
 			Username: "patrick star 7",
-			Email:    "patrick@gmail.com",
-			Password: pass,
+			Email:    &patrickEmail,
+			Password: &pass,
 			Active:   true,
 			RoleId:   1,
 		},
 		{
 			Username: "john doe",
-			Email:    "johndoe@gmail.com",
-			Password: pass,
+			Email:    &johnEmail,
+			Password: &pass,
 			Active:   false,
 			RoleId:   2,
 		},

@@ -22,6 +22,7 @@ type fixture struct {
 	users    *mocks.UsersUsecase
 	jwt      *mocks.JWTService
 	verifier *mocks.Verifier
+	eid      *mocks.EIDClient
 	redis    *mocks.RedisCache
 }
 
@@ -30,9 +31,10 @@ func newFixture(t *testing.T) *fixture {
 	usersUC := mocks.NewUsersUsecase(t)
 	jwtSvc := mocks.NewJWTService(t)
 	verifier := mocks.NewVerifier(t)
+	eidClient := mocks.NewEIDClient(t)
 	redis := mocks.NewRedisCache(t)
 	return &fixture{
-		usecase: auth.NewUsecase(usersUC, jwtSvc, verifier, redis, auth.Config{
+		usecase: auth.NewUsecase(usersUC, jwtSvc, verifier, eidClient, redis, auth.Config{
 			OTPMaxAttempts:    5,
 			OTPTTL:            5 * time.Minute,
 			PasswordResetTTL:  30 * time.Minute,
@@ -41,10 +43,13 @@ func newFixture(t *testing.T) *fixture {
 			LoginLockoutTTL:   15 * time.Minute,
 			ForgotMaxAttempts: 3,
 			ForgotLockoutTTL:  15 * time.Minute,
+			EIDCallbackURL:    "https://template.gerege.mn/login/verify",
+			EIDDisplayText:    "template.gerege.mn",
 		}),
 		users:    usersUC,
 		jwt:      jwtSvc,
 		verifier: verifier,
+		eid:      eidClient,
 		redis:    redis,
 	}
 }

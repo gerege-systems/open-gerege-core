@@ -445,6 +445,111 @@ const docTemplate = `{
                 }
             }
         },
+        "/auth/eid/poll": {
+            "post": {
+                "description": "session_id-ийн төлвийг IdP-ээс long-poll-оор (≤25с) асууна. state нь RUNNING/COMPLETE/EXPIRED/REFUSED. COMPLETE үед identity-аар хэрэглэгчийг бүртгэж/шинэчилж, access+refresh токен хосыг /login-той ижил хэлбэрээр буцаана.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "eID session-ийн төлвийг асуух (long-poll)",
+                "parameters": [
+                    {
+                        "description": "eID session id",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_datatransfers_requests.EIDPollRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Session state (with tokens if COMPLETE)",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/template_internal_http_datatransfers_responses.EIDPollResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Malformed JSON body or missing session_id",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to reach eID provider",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/eid/start": {
+            "post": {
+                "description": "Гадаад eID identity provider дээр QR/deep-link нэвтрэлтийг эхлүүлж, клиент харуулах session мэдээллийг (session_id, device_link_url, verification_code, expires_at) буцаана. Дараа нь /auth/eid/poll руу session_id-г дамжуулж төлвийг асууна.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "eID нэвтрэлт эхлүүлэх (QR / deep-link)",
+                "responses": {
+                    "200": {
+                        "description": "eID session started",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/template_internal_http_datatransfers_responses.EIDStartResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to reach eID provider",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/auth/login": {
             "post": {
                 "description": "Access токен (богино TTL) болон refresh токен (урт TTL) буцаана. Хэрэглэгчийг тоолохоос сэргийлэхийн тулд буруу нууц үг болон тодорхойгүй email ижил хугацаа зарцуулна.",
@@ -1161,6 +1266,17 @@ const docTemplate = `{
                 }
             }
         },
+        "template_internal_http_datatransfers_requests.EIDPollRequest": {
+            "type": "object",
+            "required": [
+                "session_id"
+            ],
+            "properties": {
+                "session_id": {
+                    "type": "string"
+                }
+            }
+        },
         "template_internal_http_datatransfers_requests.ForgotPasswordRequest": {
             "type": "object",
             "required": [
@@ -1390,6 +1506,73 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "translated": {
+                    "type": "string"
+                }
+            }
+        },
+        "template_internal_http_datatransfers_responses.EIDPollResponse": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "first_name": {
+                    "type": "string"
+                },
+                "first_name_en": {
+                    "type": "string"
+                },
+                "full_name": {
+                    "type": "string"
+                },
+                "full_name_en": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "last_name": {
+                    "type": "string"
+                },
+                "last_name_en": {
+                    "type": "string"
+                },
+                "refresh_token": {
+                    "type": "string"
+                },
+                "role_id": {
+                    "type": "integer"
+                },
+                "state": {
+                    "type": "string"
+                },
+                "token": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "template_internal_http_datatransfers_responses.EIDStartResponse": {
+            "type": "object",
+            "properties": {
+                "device_link_url": {
+                    "type": "string"
+                },
+                "expires_at": {
+                    "type": "string"
+                },
+                "session_id": {
+                    "type": "string"
+                },
+                "verification_code": {
                     "type": "string"
                 }
             }

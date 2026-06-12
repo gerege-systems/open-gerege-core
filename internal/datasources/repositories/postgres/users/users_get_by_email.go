@@ -22,7 +22,6 @@ func (r *postgreUserRepository) GetByEmail(ctx context.Context, inDom *domain.Us
 		queryName      = "selectUserByEmail"
 		fileName       = "users_get_by_email.go"
 	)
-	userRecord := records.FromUsersV1Domain(inDom)
 
 	// Soft-delete хийгдсэн мөрүүдийг ИЛ-ээр хас — "устгагдсан" хэрэглэгчид
 	// audit/сэргээх зорилгоор хадгалагдах боловч нэвтрэх/OTP урсгалуудыг
@@ -30,7 +29,7 @@ func (r *postgreUserRepository) GetByEmail(ctx context.Context, inDom *domain.Us
 	var stored records.Users
 	qerr := r.withRLS(ctx, func(tx pgx.Tx) error {
 		rows, qErr := tx.Query(ctx,
-			`SELECT `+records.UserColumns+` FROM users WHERE email = $1 AND deleted_at IS NULL`, userRecord.Email)
+			`SELECT `+records.UserColumns+` FROM users WHERE email = $1 AND deleted_at IS NULL`, inDom.Email)
 		if qErr != nil {
 			return qErr
 		}
@@ -51,7 +50,7 @@ func (r *postgreUserRepository) GetByEmail(ctx context.Context, inDom *domain.Us
 		"file":       fileName,
 		"error":      qerr.Error(),
 		"table":      "users",
-		"email":      userRecord.Email,
+		"email":      inDom.Email,
 	})
 	return domain.User{}, qerr
 }

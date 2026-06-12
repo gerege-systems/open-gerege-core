@@ -13,10 +13,10 @@ import (
 	"template/internal/http/middlewares"
 )
 
-// authRoute нь /auth/* бүлгийг холбоно — register / login / OTP /
-// refresh / logout / forgot / reset. Нэрээ нууцалсан endpoint-ууд нь
-// rate limiter болон чанга body хязгаар авдаг; /password/change нь
-// нэмэлтээр JWT шаарддаг.
+// authRoute нь /auth/* бүлгийг холбоно. "Login with eID" нь цорын ганц
+// нэвтрэх арга тул нууц үг/OTP/бүртгэлийн route-ууд хасагдсан; зөвхөн
+// eID нэвтрэлт (/eid/start, /eid/poll) болон session-ийн амьдралын мөчлөг
+// (/refresh, /logout) үлдсэн. Бүгд rate limiter + чанга body хязгаар авдаг.
 type authRoute struct {
 	handler        authhandler.Handler
 	router         chi.Router
@@ -45,22 +45,17 @@ func (rt *authRoute) Routes() {
 		// IP тус бүрт минутанд 5 хүсэлт зөвшөөрнө.
 		r.Use(rt.rateLimiter.Middleware())
 		r.Use(middlewares.BodySizeLimitMiddleware(middlewares.AuthBodyMaxBytes))
-		// RLS: нэвтрэхээс өмнөх урсгалууд (login email хайлт, register INSERT,
-		// OTP, нууц үг сэргээх) баталгаажаагүй хэрэглэгчийн мөрд хандах тул
-		// "service" identity тавина. /password/change-ийн authMiddleware дараа
-		// нь ажиллаж user identity-гээр дарж бичнэ (least-privilege).
+		// RLS: нэвтрэхээс өмнөх урсгалууд (eID upsert SELECT/INSERT, refresh
+		// дэх email/identity хайлт) баталгаажаагүй хэрэглэгчийн мөрд хандах тул
+		// "service" identity тавина.
 		r.Use(middlewares.ServiceRLSContext())
 
-		r.Post("/register", v1.Wrap(rt.handler.Register))
-		r.Post("/login", v1.Wrap(rt.handler.Login))
-		r.Post("/send-otp", v1.Wrap(rt.handler.SendOTP))
-		r.Post("/verify-otp", v1.Wrap(rt.handler.VerifyOTP))
+		// eID нэвтрэлт — цорын ганц нэвтрэх арга. /eid/start QR/deep-link
+		// эхлүүлж, /eid/poll session-ийг long-poll-оор хүлээж токен олгоно.
+		r.Post("/eid/start", v1.Wrap(rt.handler.EIDStart))
+		r.Post("/eid/poll", v1.Wrap(rt.handler.EIDPoll))
+		// Session-ийн амьдралын мөчлөг — нэвтрэх аргаас үл хамаарна.
 		r.Post("/refresh", v1.Wrap(rt.handler.Refresh))
 		r.Post("/logout", v1.Wrap(rt.handler.Logout))
-		r.Post("/password/forgot", v1.Wrap(rt.handler.ForgotPassword))
-		r.Post("/password/reset", v1.Wrap(rt.handler.ResetPassword))
-		// /password/change нь JWT шаарддаг — бусадтай ижил rate limiter /
-		// body хязгаарын дээр auth middleware авдаг.
-		r.With(rt.authMiddleware).Put("/password/change", v1.Wrap(rt.handler.ChangePassword))
 	})
 }

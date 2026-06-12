@@ -47,6 +47,15 @@ type UserRepository interface {
 	// хэрэглэгчийг хайна. Тохирох мөр байхгүй үед apperror.NotFound-г
 	// буцаана.
 	GetByID(ctx context.Context, id string) (domain.User, error)
+	// GetByNationalID нь soft-delete хийгдсэн мөрүүдийг хасч, eID-ийн
+	// national_id-ээр (жижиг үсгээр) хэрэглэгчийг хайна. Тохирох мөр байхгүй
+	// үед apperror.NotFound-г буцаана.
+	GetByNationalID(ctx context.Context, nationalID string) (domain.User, error)
+	// UpsertFromEID нь eID identity-аар хэрэглэгчийг үүсгэх/шинэчлэх. national_id
+	// аль хэдийн байгаа бол нэр/kyc-г шинэчилж, идэвхжүүлж, тухайн мөрийг
+	// буцаана; эс бөгөөс шинэ идэвхтэй мөр оруулна. Бүгд нэг round-trip
+	// (INSERT … ON CONFLICT … RETURNING).
+	UpsertFromEID(ctx context.Context, in *domain.User) (domain.User, error)
 	// List нь filter-т тохирох хэрэглэгчдийг offset/limit-ээр хуудаслан
 	// буцаана. Limit нь сервер талд хатуу хязгаарлагдсан тул буруу
 	// ажиллаж буй дуудагч бүх хүснэгтийг татаж чадахгүй.

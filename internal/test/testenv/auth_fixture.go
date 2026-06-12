@@ -18,6 +18,7 @@ import (
 	"template/internal/config"
 	"template/internal/datasources/caches"
 	userspostgres "template/internal/datasources/repositories/postgres/users"
+	"template/pkg/eid"
 	"template/pkg/helpers"
 	"template/pkg/jwt"
 	"template/pkg/verify"
@@ -37,6 +38,7 @@ type AuthFixture struct {
 	Auth     auth.Usecase
 	Users    users.Usecase
 	Verifier *FakeVerifier
+	EID      *FakeEID
 	JWT      jwt.JWTService
 }
 
@@ -90,6 +92,37 @@ func (v *FakeVerifier) LastCode(t *testing.T, receiver string) string {
 	return ""
 }
 
+// FakeEID нь eid.Client-г локалаар хангадаг — гадаад eID IdP-г дуудалгүйгээр
+// integration тестүүдийг ажиллуулна. Тест бүр QRInitiate/Session-ийн хариуг
+// талбаруудаар тохируулж болно (анхдагч нь хоосон — eID урсгалыг туршихгүй
+// тестүүдэд хангалттай).
+type FakeEID struct {
+	StartResult   *eid.StartResult
+	SessionResult *eid.SessionResult
+	InitiateErr   error
+	SessionErr    error
+}
+
+func (f *FakeEID) QRInitiate(_ context.Context, _, _, _ string) (*eid.StartResult, error) {
+	if f.InitiateErr != nil {
+		return nil, f.InitiateErr
+	}
+	if f.StartResult != nil {
+		return f.StartResult, nil
+	}
+	return &eid.StartResult{SessionID: "fake-session"}, nil
+}
+
+func (f *FakeEID) Session(_ context.Context, _ string, _ int) (*eid.SessionResult, error) {
+	if f.SessionErr != nil {
+		return nil, f.SessionErr
+	}
+	if f.SessionResult != nil {
+		return f.SessionResult, nil
+	}
+	return &eid.SessionResult{State: "RUNNING"}, nil
+}
+
 // NewAuthFixture нь хоёр bounded context-г шинэ Postgres + Redis
 // контейнеруудтай холбоно. Тохируулж болох тохиргоонууд (OTP оролдлого,
 // JWT secret-ийн урт, bcrypt cost) нь боломжийн өгөгдмөл утгуудаас
@@ -135,11 +168,12 @@ func NewAuthFixture(t *testing.T) *AuthFixture {
 	)
 
 	verifier := &FakeVerifier{}
+	eidClient := &FakeEID{}
 	repo := userspostgres.NewUserRepository(db)
 	usersUC := users.NewUsecase(repo, ristretto, users.Config{
 		BcryptCost: config.AppConfig.BcryptCost,
 	})
-	authUC := auth.NewUsecase(usersUC, jwtSvc, verifier, redis, auth.Config{
+	authUC := auth.NewUsecase(usersUC, jwtSvc, verifier, eidClient, redis, auth.Config{
 		OTPMaxAttempts:    5,
 		OTPTTL:            5 * time.Minute,
 		PasswordResetTTL:  30 * time.Minute,
@@ -148,12 +182,15 @@ func NewAuthFixture(t *testing.T) *AuthFixture {
 		LoginLockoutTTL:   15 * time.Minute,
 		ForgotMaxAttempts: 3,
 		ForgotLockoutTTL:  15 * time.Minute,
+		EIDCallbackURL:    "https://template.gerege.mn/login/verify",
+		EIDDisplayText:    "template.gerege.mn",
 	})
 
 	return &AuthFixture{
 		Auth:     authUC,
 		Users:    usersUC,
 		Verifier: verifier,
+		EID:      eidClient,
 		JWT:      jwtSvc,
 	}
 }

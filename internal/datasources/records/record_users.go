@@ -16,16 +16,23 @@ import (
 // repository давхарга нь DeletedAt-г шүүхдээ query бүрт `deleted_at IS
 // NULL`-г ИЛ-ээр нэмэх ёстой.
 type Users struct {
-	Id                string     `db:"id"`
-	Username          string     `db:"username"`
-	FirstName         string     `db:"first_name"`
-	LastName          string     `db:"last_name"`
-	FirstNameEn       string     `db:"first_name_en"`
-	LastNameEn        string     `db:"last_name_en"`
-	Email             string     `db:"email"`
-	Password          string     `db:"password"`
-	Active            bool       `db:"active"`
-	RoleId            int        `db:"role_id"`
+	Id          string `db:"id"`
+	Username    string `db:"username"`
+	FirstName   string `db:"first_name"`
+	LastName    string `db:"last_name"`
+	FirstNameEn string `db:"first_name_en"`
+	LastNameEn  string `db:"last_name_en"`
+	// Email/Password нь eID хэрэглэгчдэд NULL байж болох тул (migration 12-д
+	// NOT NULL-ийг хассан) *string — NULL нь nil pointer болж буудаг.
+	Email    *string `db:"email"`
+	Password *string `db:"password"`
+	Active   bool    `db:"active"`
+	RoleId   int     `db:"role_id"`
+	// eID identity баганууд (migration 12) — нууц үгээр бүртгүүлсэн
+	// хэрэглэгчдэд NULL тул *string.
+	NationalID        *string    `db:"national_id"`
+	CivilID           *string    `db:"civil_id"`
+	KYCLevel          *string    `db:"kyc_level"`
 	CreatedAt         time.Time  `db:"created_at"`
 	UpdatedAt         *time.Time `db:"updated_at"`
 	DeletedAt         *time.Time `db:"deleted_at"`
@@ -35,4 +42,4 @@ type Users struct {
 // UserColumns нь SELECT/RETURNING-д ашиглах баганануудын жагсаалт —
 // pgx.RowToStructByName нь нэрээр тааруулдаг тул query-уудыг тогтвортой
 // байлгахаар нэг эх сурвалжид төвлөрүүлэв.
-const UserColumns = "id, username, first_name, last_name, first_name_en, last_name_en, email, password, active, role_id, created_at, updated_at, deleted_at, password_changed_at"
+const UserColumns = "id, username, first_name, last_name, first_name_en, last_name_en, email, password, active, role_id, national_id, civil_id, kyc_level, created_at, updated_at, deleted_at, password_changed_at"

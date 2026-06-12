@@ -7,6 +7,24 @@ import (
 	"template/internal/business/domain"
 )
 
+// derefStr нь nullable (*string) баганыг domain-ийн string руу буулгана —
+// NULL нь хоосон string болно.
+func derefStr(s *string) string {
+	if s == nil {
+		return ""
+	}
+	return *s
+}
+
+// ptrOrNil нь хоосон string-ийг NULL (nil pointer), бусдыг pointer болгоно —
+// eID хэрэглэгчийн хоосон email/password-ийг DB-д NULL болгож хадгалахад.
+func ptrOrNil(s string) *string {
+	if s == "" {
+		return nil
+	}
+	return &s
+}
+
 func (u *Users) ToV1Domain() domain.User {
 	return domain.User{
 		ID:                u.Id,
@@ -15,10 +33,13 @@ func (u *Users) ToV1Domain() domain.User {
 		LastName:          u.LastName,
 		FirstNameEn:       u.FirstNameEn,
 		LastNameEn:        u.LastNameEn,
-		Email:             u.Email,
-		Password:          u.Password,
+		Email:             derefStr(u.Email),
+		Password:          derefStr(u.Password),
 		Active:            u.Active,
 		RoleID:            u.RoleId,
+		NationalID:        derefStr(u.NationalID),
+		CivilID:           derefStr(u.CivilID),
+		KYCLevel:          derefStr(u.KYCLevel),
 		CreatedAt:         u.CreatedAt,
 		UpdatedAt:         u.UpdatedAt,
 		DeletedAt:         u.DeletedAt,
@@ -34,10 +55,13 @@ func FromUsersV1Domain(u *domain.User) Users {
 		LastName:          u.LastName,
 		FirstNameEn:       u.FirstNameEn,
 		LastNameEn:        u.LastNameEn,
-		Email:             u.Email,
-		Password:          u.Password,
+		Email:             ptrOrNil(u.Email),
+		Password:          ptrOrNil(u.Password),
 		Active:            u.Active,
 		RoleId:            u.RoleID,
+		NationalID:        ptrOrNil(u.NationalID),
+		CivilID:           ptrOrNil(u.CivilID),
+		KYCLevel:          ptrOrNil(u.KYCLevel),
 		CreatedAt:         u.CreatedAt,
 		UpdatedAt:         u.UpdatedAt,
 		DeletedAt:         u.DeletedAt,

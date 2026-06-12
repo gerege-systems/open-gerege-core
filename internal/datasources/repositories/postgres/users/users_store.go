@@ -60,7 +60,7 @@ func (r *postgreUserRepository) Store(ctx context.Context, inDom *domain.User) (
 	if errors.As(err, &pgErr) && pgErr.Code == pgUniqueViolation {
 		logger.ErrorWithContext(ctx, "Failed to insert user: unique violation", logger.Fields{
 			"repository": repositoryName, "method": funcName, "query": queryName,
-			"file": fileName, "error": err.Error(), "table": "users", "email": userRecord.Email,
+			"file": fileName, "error": err.Error(), "table": "users", "email": inDom.Email,
 		})
 		return domain.User{}, apperror.Conflict("username or email already exists")
 	}

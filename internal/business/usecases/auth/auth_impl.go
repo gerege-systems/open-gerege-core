@@ -10,6 +10,7 @@ import (
 
 	"template/internal/business/usecases/users"
 	"template/internal/datasources/caches"
+	"template/pkg/eid"
 	"template/pkg/jwt"
 	"template/pkg/logger"
 	"template/pkg/verify"
@@ -22,6 +23,7 @@ type usecase struct {
 	users      users.Usecase
 	jwtService jwt.JWTService
 	verifier   verify.Sender
+	eid        eid.Client
 	redisCache caches.RedisCache
 	cfg        Config
 }
@@ -30,11 +32,12 @@ type usecase struct {
 // users.Usecase-ээс, бүх email/SMS OTP (бүртгэл баталгаажуулах болон нууц үг
 // сэргээх)-д verify.Sender (GeregeCloud Verify API)-ээс, бусад auth-хэсгүүдэд
 // jwt/redis-ээс хамаардаг.
-func NewUsecase(usersUC users.Usecase, jwtService jwt.JWTService, verifier verify.Sender, redisCache caches.RedisCache, cfg Config) Usecase {
+func NewUsecase(usersUC users.Usecase, jwtService jwt.JWTService, verifier verify.Sender, eidClient eid.Client, redisCache caches.RedisCache, cfg Config) Usecase {
 	return &usecase{
 		users:      usersUC,
 		jwtService: jwtService,
 		verifier:   verifier,
+		eid:        eidClient,
 		redisCache: redisCache,
 		cfg:        cfg,
 	}

@@ -23,6 +23,11 @@ type Usecase interface {
 	GetByEmail(ctx context.Context, req GetByEmailRequest) (GetByEmailResponse, error)
 	// GetByID нь өгөгдсөн primary key-тэй хэрэглэгчийг буцаана; кэшийг алгасна.
 	GetByID(ctx context.Context, req GetByIDRequest) (GetByIDResponse, error)
+	// GetByNationalID нь eID-ийн national_id-ээр хэрэглэгчийг буцаана; кэшийг алгасна.
+	GetByNationalID(ctx context.Context, req GetByNationalIDRequest) (GetByNationalIDResponse, error)
+	// UpsertFromEID нь eID identity-аас хэрэглэгчийг үүсгэх/шинэчилж, тухайн
+	// мөрийг буцаана (national_id дээр давхцвал нэр/kyc шинэчилнэ).
+	UpsertFromEID(ctx context.Context, req UpsertFromEIDRequest) (UpsertFromEIDResponse, error)
 	// Activate нь хэрэглэгчийн active флагийг хувиргана (OTP-баталгаажуулах урсгалаас дуудагдана).
 	Activate(ctx context.Context, req ActivateRequest) error
 	// UpdatePassword нь хэрэглэгчийн нууц үгийг (дуудагч аль хэдийн
@@ -62,6 +67,20 @@ type (
 		ID string
 	}
 	GetByIDResponse struct {
+		User domain.User
+	}
+
+	GetByNationalIDRequest struct {
+		NationalID string
+	}
+	GetByNationalIDResponse struct {
+		User domain.User
+	}
+
+	UpsertFromEIDRequest struct {
+		User *domain.User
+	}
+	UpsertFromEIDResponse struct {
 		User domain.User
 	}
 

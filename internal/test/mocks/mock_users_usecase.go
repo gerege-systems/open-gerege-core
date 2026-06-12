@@ -40,6 +40,16 @@ func (_m *UsersUsecase) UpdatePassword(ctx context.Context, req users.UpdatePass
 	return _m.Called(ctx, req).Error(0)
 }
 
+func (_m *UsersUsecase) GetByNationalID(ctx context.Context, req users.GetByNationalIDRequest) (users.GetByNationalIDResponse, error) {
+	ret := _m.Called(ctx, req)
+	return ret.Get(0).(users.GetByNationalIDResponse), ret.Error(1)
+}
+
+func (_m *UsersUsecase) UpsertFromEID(ctx context.Context, req users.UpsertFromEIDRequest) (users.UpsertFromEIDResponse, error) {
+	ret := _m.Called(ctx, req)
+	return ret.Get(0).(users.UpsertFromEIDResponse), ret.Error(1)
+}
+
 func (_m *UsersUsecase) Activate(ctx context.Context, req users.ActivateRequest) error {
 	return _m.Called(ctx, req).Error(0)
 }

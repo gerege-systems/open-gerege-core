@@ -49,16 +49,21 @@ var (
 // үүсгэлтийн дараа үргэлж bcrypt hash-ийг агуулна — энгийн текст (plaintext)
 // нь зөвхөн NewUser дотор түр зуур оршино.
 type User struct {
-	ID                string
-	Username          string
-	FirstName         string // нэр (монгол)
-	LastName          string // овог (монгол)
-	FirstNameEn       string // нэр (англи)
-	LastNameEn        string // овог (англи)
-	Email             string
-	Password          string
-	Active            bool
-	RoleID            int
+	ID          string
+	Username    string
+	FirstName   string // нэр (монгол)
+	LastName    string // овог (монгол)
+	FirstNameEn string // нэр (англи)
+	LastNameEn  string // овог (англи)
+	Email       string
+	Password    string
+	Active      bool
+	RoleID      int
+	// eID identity-ийн талбарууд. Зөвхөн eID-ээр нэвтэрсэн хэрэглэгчид
+	// бөглөгдөнө; нууц үгээр бүртгүүлсэн хэрэглэгчдэд хоосон.
+	NationalID        string // регистрийн дугаар (улсын танигч)
+	CivilID           string // иргэний бүртгэлийн дугаар
+	KYCLevel          string // IdP-ийн баталгаажуулалтын түвшин
 	CreatedAt         time.Time
 	UpdatedAt         *time.Time
 	DeletedAt         *time.Time
@@ -114,6 +119,41 @@ func NewUser(username, email, plainPassword string, roleID, bcryptCost int) (*Us
 		Password:  string(hash),
 		RoleID:    roleID,
 		CreatedAt: time.Now().UTC(),
+	}, nil
+}
+
+// ErrEmptyNationalID нь eID identity-д регистрийн дугаар (national_id) дутуу
+// үед буцна — eID хэрэглэгчийн давтагдашгүй түлхүүр тул заавал шаардлагатай.
+var ErrEmptyNationalID = errors.New("national_id cannot be empty")
+
+// NewEIDUser нь eID-ээр баталгаажсан identity-аас идэвхтэй (Active=true),
+// нууц үггүй (Password="") хэрэглэгч үүсгэнэ. eID хэрэглэгчид email байхгүй
+// (Email="") тул enumeration-аас ангид; давтагдашгүй байдлыг national_id-ээр
+// хангана. Username нь "eid_"+national_id (жижиг үсэг) хэлбэрийн нийлэг утга.
+//
+// IdP нь identity-г аль хэдийн баталгаажуулсан тул энд нууц үг hash хийдэггүй
+// — VerifyPassword нь хоосон Password дээр үргэлж false буцаана (bcrypt нь
+// хоосон hash-тай таарахгүй), иймээс passwordless хэрэглэгч нууц үгээр
+// хэзээ ч нэвтэрч чадахгүй.
+func NewEIDUser(nationalID, givenName, surname, givenNameEn, surnameEn, civilID, kycLevel string) (*User, error) {
+	nationalID = strings.TrimSpace(nationalID)
+	if nationalID == "" {
+		return nil, ErrEmptyNationalID
+	}
+	return &User{
+		Username:    "eid_" + strings.ToLower(nationalID),
+		FirstName:   strings.TrimSpace(givenName),
+		LastName:    strings.TrimSpace(surname),
+		FirstNameEn: strings.TrimSpace(givenNameEn),
+		LastNameEn:  strings.TrimSpace(surnameEn),
+		Email:       "",
+		Password:    "",
+		Active:      true,
+		RoleID:      RoleUser,
+		NationalID:  nationalID,
+		CivilID:     strings.TrimSpace(civilID),
+		KYCLevel:    strings.TrimSpace(kycLevel),
+		CreatedAt:   time.Now().UTC(),
 	}, nil
 }
 

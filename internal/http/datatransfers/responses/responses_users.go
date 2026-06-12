@@ -68,6 +68,46 @@ func FromLoginResponse(r auth.LoginResponse) UserResponse {
 	return resp
 }
 
+// EIDStartResponse нь POST /auth/eid/start-ийн хариу — клиент QR/deep-link
+// харуулж, /eid/poll руу session_id-г дамжуулна.
+type EIDStartResponse struct {
+	SessionID        string `json:"session_id"`
+	DeviceLinkURL    string `json:"device_link_url"`
+	VerificationCode string `json:"verification_code"`
+	ExpiresAt        string `json:"expires_at"`
+}
+
+// FromEIDStartResponse нь usecase-ийн EIDStartResponse-ийг DTO рүү буулгана.
+func FromEIDStartResponse(r auth.EIDStartResponse) EIDStartResponse {
+	return EIDStartResponse{
+		SessionID:        r.SessionID,
+		DeviceLinkURL:    r.DeviceLinkURL,
+		VerificationCode: r.VerificationCode,
+		ExpiresAt:        r.ExpiresAt,
+	}
+}
+
+// EIDPollResponse нь POST /auth/eid/poll-ийн хариу. state нь IdP-ийн session
+// төлөв (RUNNING / COMPLETE / EXPIRED / REFUSED). COMPLETE үед UserResponse-ийн
+// бүх талбар (token / refresh_token-ийг оруулаад) /login-той ИЖИЛ хэлбэрээр
+// бөглөгдөнө — frontend BFF-ийн data.token / data.refresh_token уншилт өөрчлөгдөхгүй.
+type EIDPollResponse struct {
+	State string `json:"state"`
+	UserResponse
+}
+
+// FromEIDPollResponse нь usecase-ийн EIDPollResponse-ийг DTO рүү буулгана.
+// COMPLETE биш үед зөвхөн state бөглөнө (хэрэглэгчийн талбарууд хоосон).
+func FromEIDPollResponse(r auth.EIDPollResponse) EIDPollResponse {
+	out := EIDPollResponse{State: r.State}
+	if r.State == "COMPLETE" {
+		out.UserResponse = FromV1Domain(r.User)
+		out.UserResponse.Token = r.AccessToken
+		out.UserResponse.RefreshToken = r.RefreshToken
+	}
+	return out
+}
+
 func ToResponseList(domains []domain.User) []UserResponse {
 	var result []UserResponse
 

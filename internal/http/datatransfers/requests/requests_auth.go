@@ -78,6 +78,12 @@ type ForgotPasswordRequest struct {
 	Email string `json:"email" validate:"required,email,max=50"`
 }
 
+// EIDPollRequest нь POST /auth/eid/poll-ийн body юм — /eid/start-аас авсан
+// session_id-г IdP-д long-poll-оор асуухад дамжуулна.
+type EIDPollRequest struct {
+	SessionID string `json:"session_id" validate:"required"`
+}
+
 // ResetPasswordRequest нь POST /auth/password/reset-ийн body юм. Нууц үг
 // сэргээх нь GeregeCloud Verify OTP-аар явдаг тул токены оронд email + код
 // шаардана.

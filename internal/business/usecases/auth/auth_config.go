@@ -41,4 +41,11 @@ type Config struct {
 	ForgotMaxAttempts int
 	// ForgotLockoutTTL нь /password/forgot-ийн rate-limit-ийн цонх юм.
 	ForgotLockoutTTL time.Duration
+
+	// EIDCallbackURL нь eID нэвтрэлт амжилттай болсны дараа IdP буцаах URL.
+	// Энэ нь IdP-ийн allowlist-д бүртгэгдсэн байх ёстой (composition root нь
+	// config-оос дамжуулна).
+	EIDCallbackURL string
+	// EIDDisplayText нь IdP/гар утсан дээр харагдах RP-ийн нэр/тайлбар.
+	EIDDisplayText string
 }

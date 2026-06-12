@@ -42,6 +42,16 @@ type Config struct {
 	VerifyAPIKey  string `mapstructure:"VERIFY_API_KEY"`
 	VerifyChannel string `mapstructure:"VERIFY_CHANNEL"`
 
+	// eID identity provider (RP contract) — энэ template нь Relying Party.
+	// "Login with eID" нь цорын ганц нэвтрэх арга тул эдгээр нь сонголттой
+	// биш ч boot-ийг эвдэхгүйн тулд бүгд зохистой default-той (production-д
+	// шинэ required-var шалгалт нэмэхгүй — IdP-ийн нийтийн endpoint өгөгдмөл).
+	// EIDCallbackURL нь IdP-ийн allowlist-д бүртгэгдсэн URL байх ёстой.
+	EIDBaseURL     string `mapstructure:"EID_BASE_URL"`
+	EIDRPClient    string `mapstructure:"EID_RP_CLIENT"`
+	EIDCallbackURL string `mapstructure:"EID_CALLBACK_URL"`
+	EIDDisplayText string `mapstructure:"EID_DISPLAY_TEXT"`
+
 	BcryptCost int `mapstructure:"BCRYPT_COST"`
 
 	// Gemini AI pipeline (/api/v1/ai/*) — REST-ээр шууд дуудна (SDK-гүй).
@@ -249,6 +259,21 @@ func applyDefaults() {
 	}
 	if AppConfig.GeminiTTSModel == "" {
 		AppConfig.GeminiTTSModel = "gemini-2.5-flash-preview-tts"
+	}
+	// eID RP-ийн өгөгдмөл утгууд. IdP-ийн нийтийн endpoint болон бүртгэгдсэн
+	// callback URL тул орчин болгонд найдвартай ажиллана; тохиргоогоор дарж
+	// бичиж болно.
+	if AppConfig.EIDBaseURL == "" {
+		AppConfig.EIDBaseURL = "https://api.eidgerege.mn/rp/v1"
+	}
+	if AppConfig.EIDRPClient == "" {
+		AppConfig.EIDRPClient = "MN/COM/6235972/template-web"
+	}
+	if AppConfig.EIDCallbackURL == "" {
+		AppConfig.EIDCallbackURL = "https://template.gerege.mn/login/verify"
+	}
+	if AppConfig.EIDDisplayText == "" {
+		AppConfig.EIDDisplayText = "template.gerege.mn"
 	}
 	// OTel-ийн sample ratio нь зөвхөн exporter тохируулагдсан БА оператор
 	// ratio-г тодорхой зааж өгөөгүй үед 1.0 утгыг анхдагчаар авна. Exporter
