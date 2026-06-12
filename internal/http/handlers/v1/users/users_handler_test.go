@@ -46,8 +46,8 @@ func TestGetUserDataHandler(t *testing.T) {
 
 	t.Run("happy path returns user data", func(t *testing.T) {
 		uc, r := build(t)
-		uc.On("GetByEmail", mock.Anything, usersuc.GetByEmailRequest{Email: "patrick@example.com"}).
-			Return(usersuc.GetByEmailResponse{User: domain.User{ID: "user-1", Email: "patrick@example.com", Username: "patrick"}}, nil).Once()
+		uc.On("GetByID", mock.Anything, usersuc.GetByIDRequest{ID: "user-1"}).
+			Return(usersuc.GetByIDResponse{User: domain.User{ID: "user-1", Email: "patrick@example.com", Username: "patrick"}}, nil).Once()
 
 		req := httptest.NewRequest("GET", "/me", http.NoBody)
 		rec := httptest.NewRecorder()
@@ -59,8 +59,8 @@ func TestGetUserDataHandler(t *testing.T) {
 
 	t.Run("usecase NotFound surfaces as 404", func(t *testing.T) {
 		uc, r := build(t)
-		uc.On("GetByEmail", mock.Anything, usersuc.GetByEmailRequest{Email: "patrick@example.com"}).
-			Return(usersuc.GetByEmailResponse{}, apperror.NotFound("user not found")).Once()
+		uc.On("GetByID", mock.Anything, usersuc.GetByIDRequest{ID: "user-1"}).
+			Return(usersuc.GetByIDResponse{}, apperror.NotFound("user not found")).Once()
 
 		req := httptest.NewRequest("GET", "/me", http.NoBody)
 		rec := httptest.NewRecorder()

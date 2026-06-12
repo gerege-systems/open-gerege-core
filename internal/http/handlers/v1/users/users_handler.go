@@ -56,14 +56,17 @@ func (h Handler) GetUserData(w http.ResponseWriter, r *http.Request) error {
 		return v1.NewErrorResponse(w, r, http.StatusUnauthorized, err.Error())
 	}
 
-	resp, err := h.usecase.GetByEmail(ctx, users.GetByEmailRequest{Email: user.Email})
+	// Хэрэглэгчийг тогтвортой primary key (JWT-ийн UserID)-аар хайна — email-ээр
+	// биш. eID-ээр нэвтэрсэн хэрэглэгчид email-гүй (national_id/civil_id түлхүүртэй)
+	// тул email-ээр хайвал "user not found" болж /me хуудас цагаан гацна.
+	resp, err := h.usecase.GetByID(ctx, users.GetByIDRequest{ID: user.ID})
 	if err != nil {
 		logger.ErrorWithContext(ctx, "GetUserData failed in controller", logger.Fields{
 			"controller": controllerName,
 			"method":     funcName,
 			"file":       fileName,
 			"error":      err.Error(),
-			"email":      user.Email,
+			"user_id":    user.ID,
 		})
 		return v1.RespondWithError(w, r, err)
 	}
