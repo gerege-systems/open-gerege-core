@@ -7,13 +7,16 @@
 package org
 
 import (
+	"context"
 	"net/http"
 
+	audituc "template/internal/business/usecases/audit"
 	orguc "template/internal/business/usecases/org"
 	httpauth "template/internal/http/auth"
 	"template/internal/http/datatransfers/requests"
 	"template/internal/http/datatransfers/responses"
 	v1 "template/internal/http/handlers/v1"
+	"template/pkg/logger"
 	"template/pkg/validators"
 
 	"github.com/go-chi/chi/v5"
@@ -21,12 +24,35 @@ import (
 
 // Handler нь org-домэйн endpoint-уудыг үйлчилнэ. Зөвхөн org.Usecase руу
 // дууддаг — хэзээ ч repository эсвэл DB руу шууд дууддаггүй.
+//
+// auditUC нь persisted hash-chained audit log (org үүсгэх, гишүүн нэмэх/хасах
+// үед best-effort бичлэг). nil байж болно — тэр үед audit бичлэг алгасагдана.
 type Handler struct {
 	usecase orguc.Usecase
+	auditUC audituc.Usecase
 }
 
 func NewHandler(usecase orguc.Usecase) Handler {
 	return Handler{usecase: usecase}
+}
+
+// NewHandlerWithAudit нь audit use case-ийг тарьж handler үүсгэнэ.
+func NewHandlerWithAudit(usecase orguc.Usecase, auditUC audituc.Usecase) Handler {
+	return Handler{usecase: usecase, auditUC: auditUC}
+}
+
+// recordAudit нь org үйл явдлыг persisted audit log руу best-effort бичнэ —
+// амжилтгүй болсон ч HTTP урсгалыг эвдэхгүй (зөвхөн log).
+func (h Handler) recordAudit(ctx context.Context, action, target string, metadata map[string]any) {
+	if h.auditUC == nil {
+		return
+	}
+	if err := h.auditUC.RecordEvent(ctx, action, "org", target, metadata); err != nil {
+		logger.ErrorWithContext(ctx, "org: persisted audit write failed (non-fatal)", logger.Fields{
+			"action": action,
+			"error":  err.Error(),
+		})
+	}
 }
 
 // CreateOrganization godoc
@@ -60,6 +86,9 @@ func (h Handler) CreateOrganization(w http.ResponseWriter, r *http.Request) erro
 	if err != nil {
 		return v1.RespondWithError(w, r, err)
 	}
+	h.recordAudit(r.Context(), "org.create", resp.Organization.ID, map[string]any{
+		"reg_no": resp.Organization.RegNo,
+	})
 	return v1.NewSuccessResponse(w, r, http.StatusCreated, "organization created successfully", responses.FromOrg(resp.Organization))
 }
 
@@ -192,6 +221,10 @@ func (h Handler) AddMember(w http.ResponseWriter, r *http.Request) error {
 	if err != nil {
 		return v1.RespondWithError(w, r, err)
 	}
+	h.recordAudit(r.Context(), "org.member.add", chi.URLParam(r, "id"), map[string]any{
+		"member_user_id": resp.Membership.UserID,
+		"role":           resp.Membership.Role,
+	})
 	return v1.NewSuccessResponse(w, r, http.StatusCreated, "member added successfully", responses.FromOrgMember(resp.Membership))
 }
 
@@ -255,5 +288,8 @@ func (h Handler) RemoveMember(w http.ResponseWriter, r *http.Request) error {
 	}); err != nil {
 		return v1.RespondWithError(w, r, err)
 	}
+	h.recordAudit(r.Context(), "org.member.remove", chi.URLParam(r, "id"), map[string]any{
+		"member_user_id": chi.URLParam(r, "userID"),
+	})
 	return v1.NewSuccessResponse(w, r, http.StatusOK, "member removed successfully", nil)
 }

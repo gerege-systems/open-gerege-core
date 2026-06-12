@@ -153,6 +153,27 @@ definitions:
     required:
     - email
     type: object
+  template_internal_http_datatransfers_requests.IngestSecurityEventRequest:
+    properties:
+      detail:
+        additionalProperties: {}
+        type: object
+      kind:
+        maxLength: 80
+        type: string
+      severity:
+        enum:
+        - low
+        - medium
+        - high
+        - critical
+        type: string
+      source:
+        maxLength: 80
+        type: string
+    required:
+    - kind
+    type: object
   template_internal_http_datatransfers_requests.LoginRequest:
     properties:
       email:
@@ -318,6 +339,37 @@ definitions:
       translated:
         type: string
     type: object
+  template_internal_http_datatransfers_responses.AuditLogResponse:
+    properties:
+      action:
+        type: string
+      actor_user_id:
+        type: string
+      category:
+        type: string
+      chain_hash:
+        type: string
+      id:
+        type: integer
+      metadata:
+        additionalProperties: {}
+        type: object
+      occurred_at:
+        type: string
+      prev_hash:
+        type: string
+      request_id:
+        type: string
+      target:
+        type: string
+    type: object
+  template_internal_http_datatransfers_responses.AuditVerifyResponse:
+    properties:
+      broken_id:
+        type: integer
+      ok:
+        type: boolean
+    type: object
   template_internal_http_datatransfers_responses.EIDPollResponse:
     properties:
       created_at:
@@ -388,6 +440,28 @@ definitions:
       reg_no:
         type: string
       updated_at:
+        type: string
+    type: object
+  template_internal_http_datatransfers_responses.SecurityEventResponse:
+    properties:
+      detail:
+        additionalProperties: {}
+        type: object
+      id:
+        type: integer
+      ip:
+        type: string
+      kind:
+        type: string
+      received_at:
+        type: string
+      severity:
+        type: string
+      source:
+        type: string
+      user_agent:
+        type: string
+      user_id:
         type: string
     type: object
   template_internal_http_datatransfers_responses.UserResponse:
@@ -1201,6 +1275,84 @@ paths:
       summary: Одоогийн хэрэглэгчийн профайлыг буцаах
       tags:
       - users
+  /v1/audit:
+    get:
+      description: Hash-chained, append-only audit log-ийг хуудаслан буцаана. action
+        / actor query параметрээр шүүж болно. Зөвхөн admin.
+      parameters:
+      - description: action-аар шүүх
+        in: query
+        name: action
+        type: string
+      - description: actor_user_id-аар шүүх (uuid)
+        in: query
+        name: actor
+        type: string
+      - description: хуудасны хэмжээ (default 50, max 200)
+        in: query
+        name: limit
+        type: integer
+      - description: эхлэх байрлал (default 0)
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Audit entries
+          schema:
+            allOf:
+            - $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/template_internal_http_datatransfers_responses.AuditLogResponse'
+                  type: array
+              type: object
+        "401":
+          description: Missing or invalid token
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+        "403":
+          description: Not an admin
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      security:
+      - BearerAuth: []
+      summary: Audit log жагсаах (admin)
+      tags:
+      - audit
+  /v1/audit/verify:
+    get:
+      description: Audit log-ийн hash гинжийг genesis-ээс эхлэн дахин тооцоолж бүрэн
+        бүтэн эсэхийг шалгана. ok=false бол broken_id нь эвдэрсэн эхний мөрийн id.
+        Зөвхөн admin.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Chain integrity status
+          schema:
+            allOf:
+            - $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/template_internal_http_datatransfers_responses.AuditVerifyResponse'
+              type: object
+        "401":
+          description: Missing or invalid token
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+        "403":
+          description: Not an admin
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      security:
+      - BearerAuth: []
+      summary: Audit гинж шалгах (admin)
+      tags:
+      - audit
   /v1/org:
     get:
       description: Нэвтэрсэн хэрэглэгч гишүүн болсон бүх байгууллагыг буцаана.
@@ -1517,6 +1669,78 @@ paths:
       summary: Бүртгэлийн дугаараар хайх
       tags:
       - organizations
+  /v1/security/events:
+    get:
+      description: RASP-style security event-үүдийг хуудаслан буцаана. Зөвхөн admin.
+      parameters:
+      - description: хуудасны хэмжээ (default 50, max 200)
+        in: query
+        name: limit
+        type: integer
+      - description: эхлэх байрлал (default 0)
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Security events
+          schema:
+            allOf:
+            - $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/template_internal_http_datatransfers_responses.SecurityEventResponse'
+                  type: array
+              type: object
+        "401":
+          description: Missing or invalid token
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+        "403":
+          description: Not an admin
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      security:
+      - BearerAuth: []
+      summary: Security event жагсаах (admin)
+      tags:
+      - security
+    post:
+      consumes:
+      - application/json
+      description: Нэвтэрсэн хэрэглэгч RASP-style security event илгээнэ (jailbreak,
+        integrity, anomaly г.м.). Клиентийн IP + user-agent-г сервер тэмдэглэнэ. Хэрэглэгч
+        зөвхөн өөрийнхөө тухай event илгээнэ.
+      parameters:
+      - description: Security event
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/template_internal_http_datatransfers_requests.IngestSecurityEventRequest'
+      produces:
+      - application/json
+      responses:
+        "202":
+          description: Event recorded
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+        "400":
+          description: Invalid request body
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+        "401":
+          description: Missing or invalid token
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      security:
+      - BearerAuth: []
+      summary: Security event илгээх
+      tags:
+      - security
 schemes:
 - http
 - https

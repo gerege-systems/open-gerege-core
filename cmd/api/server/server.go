@@ -19,17 +19,21 @@ import (
 
 	docs "template/docs" // swagger тодорхойлолт, swaggo-оор init үед бүртгэгддэг
 	"template/internal/business/usecases/ai"
+	"template/internal/business/usecases/audit"
 	"template/internal/business/usecases/auth"
 	"template/internal/business/usecases/org"
 	"template/internal/business/usecases/rbac"
+	"template/internal/business/usecases/security"
 	"template/internal/business/usecases/users"
 	"template/internal/config"
 	"template/internal/constants"
 	"template/internal/datasources/caches"
 	"template/internal/datasources/drivers"
 	aipostgres "template/internal/datasources/repositories/postgres/ai"
+	auditpostgres "template/internal/datasources/repositories/postgres/audit"
 	orgpostgres "template/internal/datasources/repositories/postgres/org"
 	rbacpostgres "template/internal/datasources/repositories/postgres/rbac"
+	securitypostgres "template/internal/datasources/repositories/postgres/security"
 	userspostgres "template/internal/datasources/repositories/postgres/users"
 	V1Handler "template/internal/http/handlers/v1"
 	"template/internal/http/middlewares"
@@ -164,6 +168,16 @@ func NewApp() (*App, error) {
 	orgRepo := orgpostgres.NewOrgRepository(pool)
 	orgUC := org.NewUsecase(orgRepo)
 
+	// Audit — persisted hash-chained, append-only audit log (admin-only унших API).
+	// audit_log нь admin-only тул repository нь хүсэлтийн RLS-аас үл хамааран
+	// транзакц дотроо service/admin GUC тогтоодог.
+	auditRepo := auditpostgres.NewAuditRepository(pool)
+	auditUC := audit.NewUsecase(auditRepo)
+
+	// Security events — RASP-style ingest (нэвтэрсэн хэрэглэгч бичнэ, admin унших).
+	securityRepo := securitypostgres.NewSecurityEventRepository(pool)
+	securityUC := security.NewUsecase(securityRepo)
+
 	// AI pipeline — Gemini REST client + function-calling tools. TTS нь
 	// audio гаргадаг тусдаа model тул өөр client-ээр явна. Repo нь DB-ээс
 	// тохируулдаг prompt давхаргууд + search_knowledge tool-ийн мэдлэгийн сан.
@@ -186,12 +200,14 @@ func NewApp() (*App, error) {
 	// API Route-ууд
 	r.Route("/api", func(api chi.Router) {
 		api.Get("/", routes.RootHandler)
-		routes.NewAuthRoute(api, authUC, authMiddleware, authRateLimiter).Routes()
+		routes.NewAuthRoute(api, authUC, auditUC, authMiddleware, authRateLimiter).Routes()
 		routes.NewUsersRoute(api, usersUC, authMiddleware).Routes()
-		routes.NewRBACRoute(api, rbacUC, authMiddleware).Routes()
-		routes.NewOrgRoute(api, orgUC, authMiddleware).Routes()
+		routes.NewRBACRoute(api, rbacUC, auditUC, authMiddleware).Routes()
+		routes.NewOrgRoute(api, orgUC, auditUC, authMiddleware).Routes()
 		routes.NewAdminRoute(api, usersUC, rbacUC, aiUC, authMiddleware).Routes()
 		routes.NewAIRoute(api, aiUC, authMiddleware, aiRateLimiter).Routes()
+		routes.NewAuditRoute(api, auditUC, authMiddleware).Routes()
+		routes.NewSecurityRoute(api, securityUC, authMiddleware).Routes()
 	})
 
 	// Серверийн түвшний timeout-ууд (slowloris / удаан client-ийн эсрэг):

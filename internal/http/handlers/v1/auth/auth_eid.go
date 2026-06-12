@@ -7,6 +7,7 @@ import (
 	"net/http"
 
 	authuc "template/internal/business/usecases/auth"
+	"template/internal/datasources/rls"
 	"template/internal/http/datatransfers/requests"
 	"template/internal/http/datatransfers/responses"
 	v1 "template/internal/http/handlers/v1"
@@ -156,6 +157,25 @@ func (h Handler) EIDPoll(w http.ResponseWriter, r *http.Request) error {
 		ev.Success = true
 		ev.UserID = result.User.ID
 		audit.Record(ev)
+
+		// Persisted hash-chained audit log руу best-effort бичнэ — амжилтгүй
+		// болсон ч нэвтрэлтийн урсгалыг ХЭЗЭЭ Ч эвдэхгүй (зөвхөн log). actor нь
+		// шинээр нэвтэрсэн хэрэглэгч тул ctx-д тухайн user identity-г суулгаж,
+		// RecordEvent actor-г уншина.
+		if h.auditUC != nil {
+			actorCtx := rls.WithUser(ctx, result.User.ID)
+			if auditErr := h.auditUC.RecordEvent(actorCtx, "auth.eid.login", "auth", result.User.ID, map[string]any{
+				"method": "eid",
+			}); auditErr != nil {
+				logger.ErrorWithContext(ctx, "EIDPoll: persisted audit write failed (non-fatal)", logger.Fields{
+					"controller": controllerName,
+					"method":     funcName,
+					"file":       fileName,
+					"step":       "audit_record",
+					"error":      auditErr.Error(),
+				})
+			}
+		}
 	}
 
 	return v1.NewSuccessResponse(w, r, http.StatusOK, "eid session state", responses.FromEIDPollResponse(result))

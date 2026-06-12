@@ -6,25 +6,50 @@
 package rbac
 
 import (
+	"context"
 	"net/http"
 	"strconv"
 
+	audituc "template/internal/business/usecases/audit"
 	rbacuc "template/internal/business/usecases/rbac"
 	httpauth "template/internal/http/auth"
 	"template/internal/http/datatransfers/requests"
 	"template/internal/http/datatransfers/responses"
 	v1 "template/internal/http/handlers/v1"
+	"template/pkg/logger"
 	"template/pkg/validators"
 
 	"github.com/go-chi/chi/v5"
 )
 
+// Handler нь RBAC endpoint-уудыг үйлчилнэ. auditUC нь role-ийн өөрчлөлтийг
+// persisted audit log руу best-effort бичих use case (nil байж болно).
 type Handler struct {
 	usecase rbacuc.Usecase
+	auditUC audituc.Usecase
 }
 
 func NewHandler(usecase rbacuc.Usecase) Handler {
 	return Handler{usecase: usecase}
+}
+
+// NewHandlerWithAudit нь audit use case-ийг тарьж handler үүсгэнэ.
+func NewHandlerWithAudit(usecase rbacuc.Usecase, auditUC audituc.Usecase) Handler {
+	return Handler{usecase: usecase, auditUC: auditUC}
+}
+
+// recordAudit нь RBAC үйл явдлыг persisted audit log руу best-effort бичнэ —
+// амжилтгүй болсон ч HTTP урсгалыг эвдэхгүй (зөвхөн log).
+func (h Handler) recordAudit(ctx context.Context, action, target string, metadata map[string]any) {
+	if h.auditUC == nil {
+		return
+	}
+	if err := h.auditUC.RecordEvent(ctx, action, "rbac", target, metadata); err != nil {
+		logger.ErrorWithContext(ctx, "rbac: persisted audit write failed (non-fatal)", logger.Fields{
+			"action": action,
+			"error":  err.Error(),
+		})
+	}
 }
 
 // MyPermissions нь нэвтэрсэн хэрэглэгчийн эрхийн түлхүүрүүдийг буцаана (frontend
@@ -131,6 +156,9 @@ func (h Handler) SetRolePermissions(w http.ResponseWriter, r *http.Request) erro
 	if err := h.usecase.SetRolePermissions(r.Context(), id, req.Permissions); err != nil {
 		return v1.RespondWithError(w, r, err)
 	}
+	h.recordAudit(r.Context(), "rbac.role.permissions.set", strconv.Itoa(id), map[string]any{
+		"permission_count": len(req.Permissions),
+	})
 	return v1.NewSuccessResponse(w, r, http.StatusOK, "role permissions updated successfully", nil)
 }
 

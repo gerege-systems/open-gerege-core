@@ -9,6 +9,7 @@ import (
 	"github.com/go-chi/chi/v5"
 
 	"template/internal/business/domain"
+	audituc "template/internal/business/usecases/audit"
 	rbacuc "template/internal/business/usecases/rbac"
 	v1 "template/internal/http/handlers/v1"
 	rbachandler "template/internal/http/handlers/v1/rbac"
@@ -24,9 +25,9 @@ type rbacRoute struct {
 	authMiddleware func(http.Handler) http.Handler
 }
 
-func NewRBACRoute(router chi.Router, rbacUC rbacuc.Usecase, authMiddleware func(http.Handler) http.Handler) *rbacRoute {
+func NewRBACRoute(router chi.Router, rbacUC rbacuc.Usecase, auditUC audituc.Usecase, authMiddleware func(http.Handler) http.Handler) *rbacRoute {
 	return &rbacRoute{
-		handler:        rbachandler.NewHandler(rbacUC),
+		handler:        rbachandler.NewHandlerWithAudit(rbacUC, auditUC),
 		usecase:        rbacUC,
 		router:         router,
 		authMiddleware: authMiddleware,

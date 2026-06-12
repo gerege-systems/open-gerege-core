@@ -1182,6 +1182,133 @@
                 }
             }
         },
+        "/v1/audit": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Hash-chained, append-only audit log-ийг хуудаслан буцаана. action / actor query параметрээр шүүж болно. Зөвхөн admin.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "audit"
+                ],
+                "summary": "Audit log жагсаах (admin)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "action-аар шүүх",
+                        "name": "action",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "actor_user_id-аар шүүх (uuid)",
+                        "name": "actor",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "хуудасны хэмжээ (default 50, max 200)",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "эхлэх байрлал (default 0)",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Audit entries",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/template_internal_http_datatransfers_responses.AuditLogResponse"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "401": {
+                        "description": "Missing or invalid token",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Not an admin",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/audit/verify": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Audit log-ийн hash гинжийг genesis-ээс эхлэн дахин тооцоолж бүрэн бүтэн эсэхийг шалгана. ok=false бол broken_id нь эвдэрсэн эхний мөрийн id. Зөвхөн admin.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "audit"
+                ],
+                "summary": "Audit гинж шалгах (admin)",
+                "responses": {
+                    "200": {
+                        "description": "Chain integrity status",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/template_internal_http_datatransfers_responses.AuditVerifyResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "401": {
+                        "description": "Missing or invalid token",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Not an admin",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/v1/org": {
             "get": {
                 "security": [
@@ -1691,6 +1818,121 @@
                     }
                 }
             }
+        },
+        "/v1/security/events": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "RASP-style security event-үүдийг хуудаслан буцаана. Зөвхөн admin.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "security"
+                ],
+                "summary": "Security event жагсаах (admin)",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "хуудасны хэмжээ (default 50, max 200)",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "эхлэх байрлал (default 0)",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Security events",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/template_internal_http_datatransfers_responses.SecurityEventResponse"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "401": {
+                        "description": "Missing or invalid token",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Not an admin",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Нэвтэрсэн хэрэглэгч RASP-style security event илгээнэ (jailbreak, integrity, anomaly г.м.). Клиентийн IP + user-agent-г сервер тэмдэглэнэ. Хэрэглэгч зөвхөн өөрийнхөө тухай event илгээнэ.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "security"
+                ],
+                "summary": "Security event илгээх",
+                "parameters": [
+                    {
+                        "description": "Security event",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_datatransfers_requests.IngestSecurityEventRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "202": {
+                        "description": "Event recorded",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request body",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Missing or invalid token",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -1910,6 +2152,35 @@
                 "email": {
                     "type": "string",
                     "maxLength": 50
+                }
+            }
+        },
+        "template_internal_http_datatransfers_requests.IngestSecurityEventRequest": {
+            "type": "object",
+            "required": [
+                "kind"
+            ],
+            "properties": {
+                "detail": {
+                    "type": "object",
+                    "additionalProperties": {}
+                },
+                "kind": {
+                    "type": "string",
+                    "maxLength": 80
+                },
+                "severity": {
+                    "type": "string",
+                    "enum": [
+                        "low",
+                        "medium",
+                        "high",
+                        "critical"
+                    ]
+                },
+                "source": {
+                    "type": "string",
+                    "maxLength": 80
                 }
             }
         },
@@ -2150,6 +2421,53 @@
                 }
             }
         },
+        "template_internal_http_datatransfers_responses.AuditLogResponse": {
+            "type": "object",
+            "properties": {
+                "action": {
+                    "type": "string"
+                },
+                "actor_user_id": {
+                    "type": "string"
+                },
+                "category": {
+                    "type": "string"
+                },
+                "chain_hash": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "metadata": {
+                    "type": "object",
+                    "additionalProperties": {}
+                },
+                "occurred_at": {
+                    "type": "string"
+                },
+                "prev_hash": {
+                    "type": "string"
+                },
+                "request_id": {
+                    "type": "string"
+                },
+                "target": {
+                    "type": "string"
+                }
+            }
+        },
+        "template_internal_http_datatransfers_responses.AuditVerifyResponse": {
+            "type": "object",
+            "properties": {
+                "broken_id": {
+                    "type": "integer"
+                },
+                "ok": {
+                    "type": "boolean"
+                }
+            }
+        },
         "template_internal_http_datatransfers_responses.EIDPollResponse": {
             "type": "object",
             "properties": {
@@ -2256,6 +2574,39 @@
                     "type": "string"
                 },
                 "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "template_internal_http_datatransfers_responses.SecurityEventResponse": {
+            "type": "object",
+            "properties": {
+                "detail": {
+                    "type": "object",
+                    "additionalProperties": {}
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "ip": {
+                    "type": "string"
+                },
+                "kind": {
+                    "type": "string"
+                },
+                "received_at": {
+                    "type": "string"
+                },
+                "severity": {
+                    "type": "string"
+                },
+                "source": {
+                    "type": "string"
+                },
+                "user_agent": {
+                    "type": "string"
+                },
+                "user_id": {
                     "type": "string"
                 }
             }

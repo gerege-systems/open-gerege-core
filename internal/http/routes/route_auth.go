@@ -7,6 +7,7 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
+	"template/internal/business/usecases/audit"
 	"template/internal/business/usecases/auth"
 	v1 "template/internal/http/handlers/v1"
 	authhandler "template/internal/http/handlers/v1/auth"
@@ -27,9 +28,9 @@ type authRoute struct {
 // NewAuthRoute нь route модулийг бүтээдэг. Rate limiter-г дуудагч
 // эзэмшдэг тул түүний cleanup goroutine-г graceful shutdown үед Stop()
 // хийж болно; auth middleware нь users route-той хуваалцагддаг.
-func NewAuthRoute(router chi.Router, authUC auth.Usecase, authMiddleware func(http.Handler) http.Handler, rateLimiter *middlewares.RateLimiter) *authRoute {
+func NewAuthRoute(router chi.Router, authUC auth.Usecase, auditUC audit.Usecase, authMiddleware func(http.Handler) http.Handler, rateLimiter *middlewares.RateLimiter) *authRoute {
 	return &authRoute{
-		handler:        authhandler.NewHandler(authUC),
+		handler:        authhandler.NewHandlerWithAudit(authUC, auditUC),
 		router:         router,
 		rateLimiter:    rateLimiter,
 		authMiddleware: authMiddleware,

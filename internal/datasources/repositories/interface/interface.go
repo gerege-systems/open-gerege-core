@@ -17,8 +17,11 @@ package _interface
 
 import (
 	"context"
+	"time"
 
 	"template/internal/business/domain"
+
+	"template/pkg/audit"
 )
 
 // UserListFilter нь UserRepository.List() үр дүнг нарийсгана. Талбар
@@ -142,4 +145,68 @@ type AIRepository interface {
 	// буцаана (title/content ILIKE + tag тэнцэл). AI-ийн search_knowledge
 	// tool үүгээр ажилладаг.
 	SearchKnowledge(ctx context.Context, query string, limit int) ([]domain.AIKnowledge, error)
+}
+
+// AuditLogRow нь hash-chained audit_log хүснэгтийн нэг мөрийн уншсан хэлбэр —
+// admin жагсаалт болон гинж шалгахад (VerifyChain) ашиглагдана.
+type AuditLogRow struct {
+	ID          int64
+	OccurredAt  time.Time
+	ActorUserID string
+	Action      string
+	Category    string
+	Target      string
+	RequestID   string
+	Metadata    map[string]any
+	PrevHash    string
+	ChainHash   string
+}
+
+// AuditListFilter нь admin жагсаалтыг нарийсгана. Хоосон утга нь "шүүлтгүй".
+type AuditListFilter struct {
+	Action      string // тухайн action-аар тэнцэл шүүлт
+	ActorUserID string // тухайн actor-оор тэнцэл шүүлт
+}
+
+// AuditRepository нь hash-chained, append-only audit_log хүснэгтийн gateway юм.
+// Append нь шинэ мөрийн chain_hash-г тооцоолж, гинжийг зөв холбохын тулд
+// бичилтийг цувралжуулна (serialize). audit_log нь admin-only тул бичилт/уншилт
+// нь repository доторх "service"/"admin" GUC дор явна — хүсэлтийн (user) RLS
+// identity-аас үл хамаарна.
+type AuditRepository interface {
+	// Append нь нэг үйл явдлыг гинжийн төгсгөлд нэмж, бичигдсэн мөрийн
+	// chain_hash-г буцаана. Хамгийн сүүлийн мөрийг түгжээтэй уншиж prev_hash
+	// болгоно (хоосон гинжид genesis = "").
+	Append(ctx context.Context, e audit.ChainEntry) (string, error)
+	// List нь audit мөрүүдийг id буурахаар (хамгийн сүүлийнх эхэндээ)
+	// хуудаслан буцаана. Admin GUC дор ажиллана.
+	List(ctx context.Context, filter AuditListFilter, limit, offset int) ([]AuditLogRow, error)
+	// VerifyChain нь гинжийг genesis-ээс эхлэн дахин тооцоолж шалгана. Гинж
+	// бүрэн бол ok=true, эвдэрсэн бол ok=false + эвдэрсэн ЭХНИЙ мөрийн id-г
+	// (brokenID) буцаана.
+	VerifyChain(ctx context.Context) (ok bool, brokenID int64, err error)
+}
+
+// SecurityEventRecord нь security_events хүснэгтэд бичигдэх (Ingest) болон
+// уншигдах (List) нэг мөр юм.
+type SecurityEventRecord struct {
+	ID         int64
+	ReceivedAt time.Time
+	UserID     string // хоосон бол NULL (тодорхойгүй / нэвтрээгүй)
+	Kind       string
+	Severity   string
+	Source     string
+	UserAgent  string
+	IP         string
+	Detail     map[string]any
+}
+
+// SecurityEventRepository нь RASP-style security_events хүснэгтийн gateway юм.
+// Ingest нь нэвтэрсэн хэрэглэгчийн (user) RLS identity дор ажилладаг тул RLS
+// бодлого user_id = app.user_id-г баталгаажуулна; List нь admin GUC дор ажиллана.
+type SecurityEventRepository interface {
+	// Ingest нь нэг security event бичнэ.
+	Ingest(ctx context.Context, e SecurityEventRecord) error
+	// List нь event-үүдийг received_at буурахаар хуудаслан буцаана (admin).
+	List(ctx context.Context, limit, offset int) ([]SecurityEventRecord, error)
 }

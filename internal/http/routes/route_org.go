@@ -8,6 +8,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 
+	audituc "template/internal/business/usecases/audit"
 	orguc "template/internal/business/usecases/org"
 	v1 "template/internal/http/handlers/v1"
 	orghandler "template/internal/http/handlers/v1/org"
@@ -24,9 +25,9 @@ type orgRoute struct {
 
 // NewOrgRoute нь route модулийг бүтээдэг. Auth middleware-г дамжуулдаг тул ижил
 // JWT баталгаажуулдаг middleware нь хамгаалагдсан route бүлэг бүрд хуваалцагдана.
-func NewOrgRoute(router chi.Router, orgUC orguc.Usecase, authMiddleware func(http.Handler) http.Handler) *orgRoute {
+func NewOrgRoute(router chi.Router, orgUC orguc.Usecase, auditUC audituc.Usecase, authMiddleware func(http.Handler) http.Handler) *orgRoute {
 	return &orgRoute{
-		handler:        orghandler.NewHandler(orgUC),
+		handler:        orghandler.NewHandlerWithAudit(orgUC, auditUC),
 		router:         router,
 		authMiddleware: authMiddleware,
 	}
