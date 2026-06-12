@@ -95,6 +95,39 @@ type RBACRepository interface {
 	SetRolePermissions(ctx context.Context, roleID int, keys []string) error
 }
 
+// OrgRepository нь байгууллага болон гишүүнчлэлийг (organization_memberships)
+// хадгалах/уншихыг хариуцна. Бичих үйлдлүүд (CreateOrg, AddMember, ...) нь
+// тухайн дуудагч бизнесийн эрх (owner/admin) шалгалтыг usecase давхаргад аль
+// хэдийн давсан гэж үздэг; repository нь RLS-ийн "service" GUC дор бичдэг тул
+// шинээр үүсгэгдсэн org/membership мөрүүд (хэрэглэгч хараахан гишүүн болоогүй
+// үед ч) бичигдэж чадна. Уншилтууд нь дуудагчийн user/admin identity-аар
+// (RLS-ийн гишүүнчлэлд суурилсан харагдах байдал) явна.
+type OrgRepository interface {
+	// CreateOrg нь байгууллага оруулж, үүсгэгчийг owner гишүүн болгож, нэг
+	// транзакцид хадгалаад хадгалагдсан мөрийг буцаана. reg_no давхцвал
+	// (case-insensitive) apperror.Conflict болж гарна.
+	CreateOrg(ctx context.Context, in *domain.Organization) (domain.Organization, error)
+	// GetOrgByID нь soft-delete хийгдсэн мөрүүдийг хасч, primary key-ээр
+	// байгууллагыг хайна. Олдоогүй үед apperror.NotFound.
+	GetOrgByID(ctx context.Context, id string) (domain.Organization, error)
+	// GetOrgByRegNo нь reg_no-оор (case-insensitive) байгууллагыг хайна.
+	// Олдоогүй үед apperror.NotFound.
+	GetOrgByRegNo(ctx context.Context, regNo string) (domain.Organization, error)
+	// ListOrgsForUser нь тухайн хэрэглэгч гишүүн болсон бүх байгууллагыг буцаана.
+	ListOrgsForUser(ctx context.Context, userID string) ([]domain.Organization, error)
+	// GetMembership нь (orgID, userID) хосын гишүүнчлэлийг буцаана. Олдоогүй
+	// үед apperror.NotFound — энэ нь usecase-д эрх шалгахад ашиглагдана.
+	GetMembership(ctx context.Context, orgID, userID string) (domain.OrganizationMembership, error)
+	// ListMembers нь тухайн байгууллагын бүх гишүүнийг буцаана.
+	ListMembers(ctx context.Context, orgID string) ([]domain.OrganizationMembership, error)
+	// AddMember нь гишүүн нэмнэ. Аль хэдийн гишүүн бол apperror.Conflict.
+	AddMember(ctx context.Context, in *domain.OrganizationMembership) (domain.OrganizationMembership, error)
+	// UpdateMemberRole нь гишүүний дүрийг солино. Гишүүн биш бол apperror.NotFound.
+	UpdateMemberRole(ctx context.Context, orgID, userID, role string) error
+	// RemoveMember нь гишүүнийг хасна. Гишүүн биш бол apperror.NotFound.
+	RemoveMember(ctx context.Context, orgID, userID string) error
+}
+
 // AIRepository нь AI туслахын тохируулдаг prompt давхаргууд болон мэдлэгийн
 // санг (knowledge base) хадгалах/уншихыг хариуцна. Suurь (base) дүрэм кодод
 // хатуу бичигдсэн тул эндээс зөвхөн scope/instructions давхарга уншигдана.

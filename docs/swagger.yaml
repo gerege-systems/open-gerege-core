@@ -88,6 +88,19 @@ definitions:
     required:
     - target_lang
     type: object
+  template_internal_http_datatransfers_requests.AddMemberRequest:
+    properties:
+      role:
+        enum:
+        - owner
+        - admin
+        - member
+        type: string
+      user_id:
+        type: string
+    required:
+    - user_id
+    type: object
   template_internal_http_datatransfers_requests.ChangePasswordRequest:
     properties:
       current_password:
@@ -101,6 +114,22 @@ definitions:
     required:
     - current_password
     - new_password
+    type: object
+  template_internal_http_datatransfers_requests.CreateOrgRequest:
+    properties:
+      name:
+        maxLength: 200
+        minLength: 2
+        type: string
+      name_latin:
+        maxLength: 200
+        type: string
+      reg_no:
+        maxLength: 40
+        type: string
+    required:
+    - name
+    - reg_no
     type: object
   template_internal_http_datatransfers_requests.EIDPollRequest:
     properties:
@@ -215,6 +244,17 @@ definitions:
     required:
     - email
     type: object
+  template_internal_http_datatransfers_requests.UpdateMemberRoleRequest:
+    properties:
+      role:
+        enum:
+        - owner
+        - admin
+        - member
+        type: string
+    required:
+    - role
+    type: object
   template_internal_http_datatransfers_requests.VerifyOTPRequest:
     properties:
       code:
@@ -320,6 +360,34 @@ definitions:
       session_id:
         type: string
       verification_code:
+        type: string
+    type: object
+  template_internal_http_datatransfers_responses.OrgMemberResponse:
+    properties:
+      created_at:
+        type: string
+      org_id:
+        type: string
+      role:
+        type: string
+      user_id:
+        type: string
+    type: object
+  template_internal_http_datatransfers_responses.OrgResponse:
+    properties:
+      created_at:
+        type: string
+      created_by:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      name_latin:
+        type: string
+      reg_no:
+        type: string
+      updated_at:
         type: string
     type: object
   template_internal_http_datatransfers_responses.UserResponse:
@@ -1133,6 +1201,322 @@ paths:
       summary: Одоогийн хэрэглэгчийн профайлыг буцаах
       tags:
       - users
+  /v1/org:
+    get:
+      description: Нэвтэрсэн хэрэглэгч гишүүн болсон бүх байгууллагыг буцаана.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Organizations
+          schema:
+            allOf:
+            - $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/template_internal_http_datatransfers_responses.OrgResponse'
+                  type: array
+              type: object
+        "401":
+          description: Missing or invalid token
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      security:
+      - BearerAuth: []
+      summary: Өөрийн байгууллагуудыг жагсаах
+      tags:
+      - organizations
+    post:
+      consumes:
+      - application/json
+      description: Нэвтэрсэн хэрэглэгч шинэ байгууллага бүртгэнэ; үүсгэгч автоматаар
+        owner гишүүн болно.
+      parameters:
+      - description: Байгууллагын мэдээлэл
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/template_internal_http_datatransfers_requests.CreateOrgRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created organization
+          schema:
+            allOf:
+            - $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/template_internal_http_datatransfers_responses.OrgResponse'
+              type: object
+        "400":
+          description: Invalid request body
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+        "401":
+          description: Missing or invalid token
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+        "409":
+          description: Registration number already exists
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      security:
+      - BearerAuth: []
+      summary: Шинэ байгууллага үүсгэх
+      tags:
+      - organizations
+  /v1/org/{id}:
+    get:
+      description: ID-аар байгууллагыг буцаана; дуудагч заавал гишүүн (эсвэл admin)
+        байх ёстой.
+      parameters:
+      - description: Байгууллагын ID (uuid)
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Organization
+          schema:
+            allOf:
+            - $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/template_internal_http_datatransfers_responses.OrgResponse'
+              type: object
+        "401":
+          description: Missing or invalid token
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+        "404":
+          description: Organization not found or not accessible
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      security:
+      - BearerAuth: []
+      summary: Нэг байгууллагыг харах
+      tags:
+      - organizations
+  /v1/org/{id}/members:
+    get:
+      description: Тухайн байгууллагын бүх гишүүнийг буцаана; дуудагч гишүүн байх
+        ёстой.
+      parameters:
+      - description: Байгууллагын ID (uuid)
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Members
+          schema:
+            allOf:
+            - $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/template_internal_http_datatransfers_responses.OrgMemberResponse'
+                  type: array
+              type: object
+        "401":
+          description: Missing or invalid token
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+        "403":
+          description: Not a member
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      security:
+      - BearerAuth: []
+      summary: Байгууллагын гишүүдийг жагсаах
+      tags:
+      - organizations
+    post:
+      consumes:
+      - application/json
+      description: Байгууллагад гишүүн нэмнэ; дуудагч owner/admin байх ёстой.
+      parameters:
+      - description: Байгууллагын ID (uuid)
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Гишүүний мэдээлэл
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/template_internal_http_datatransfers_requests.AddMemberRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Membership
+          schema:
+            allOf:
+            - $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/template_internal_http_datatransfers_responses.OrgMemberResponse'
+              type: object
+        "400":
+          description: Invalid request body
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+        "401":
+          description: Missing or invalid token
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+        "403":
+          description: Not allowed to manage members
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+        "409":
+          description: Already a member
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      security:
+      - BearerAuth: []
+      summary: Гишүүн нэмэх
+      tags:
+      - organizations
+  /v1/org/{id}/members/{userID}:
+    delete:
+      description: Байгууллагаас гишүүнийг хасна; дуудагч owner/admin байх ёстой.
+        Owner-ийг хасах боломжгүй.
+      parameters:
+      - description: Байгууллагын ID (uuid)
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Гишүүн хэрэглэгчийн ID (uuid)
+        in: path
+        name: userID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Member removed
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+        "400":
+          description: Cannot remove owner
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+        "401":
+          description: Missing or invalid token
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+        "403":
+          description: Not allowed to manage members
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+        "404":
+          description: Membership not found
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      security:
+      - BearerAuth: []
+      summary: Гишүүн хасах
+      tags:
+      - organizations
+    put:
+      consumes:
+      - application/json
+      description: Гишүүний дүрийг (owner/admin/member) солино; дуудагч owner/admin
+        байх ёстой.
+      parameters:
+      - description: Байгууллагын ID (uuid)
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Гишүүн хэрэглэгчийн ID (uuid)
+        in: path
+        name: userID
+        required: true
+        type: string
+      - description: Шинэ дүр
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/template_internal_http_datatransfers_requests.UpdateMemberRoleRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Role updated
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+        "400":
+          description: Invalid request body
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+        "401":
+          description: Missing or invalid token
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+        "403":
+          description: Not allowed to manage members
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+        "404":
+          description: Membership not found
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      security:
+      - BearerAuth: []
+      summary: Гишүүний дүр солих
+      tags:
+      - organizations
+  /v1/org/lookup/{regNo}:
+    get:
+      description: Улсын бүртгэлийн дугаараар байгууллагыг хайна (зөвхөн дуудагчид
+        харагдах org).
+      parameters:
+      - description: Бүртгэлийн дугаар
+        in: path
+        name: regNo
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Organization
+          schema:
+            allOf:
+            - $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/template_internal_http_datatransfers_responses.OrgResponse'
+              type: object
+        "401":
+          description: Missing or invalid token
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+        "404":
+          description: Organization not found
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      security:
+      - BearerAuth: []
+      summary: Бүртгэлийн дугаараар хайх
+      tags:
+      - organizations
 schemes:
 - http
 - https

@@ -20,6 +20,7 @@ import (
 	docs "template/docs" // swagger тодорхойлолт, swaggo-оор init үед бүртгэгддэг
 	"template/internal/business/usecases/ai"
 	"template/internal/business/usecases/auth"
+	"template/internal/business/usecases/org"
 	"template/internal/business/usecases/rbac"
 	"template/internal/business/usecases/users"
 	"template/internal/config"
@@ -27,6 +28,7 @@ import (
 	"template/internal/datasources/caches"
 	"template/internal/datasources/drivers"
 	aipostgres "template/internal/datasources/repositories/postgres/ai"
+	orgpostgres "template/internal/datasources/repositories/postgres/org"
 	rbacpostgres "template/internal/datasources/repositories/postgres/rbac"
 	userspostgres "template/internal/datasources/repositories/postgres/users"
 	V1Handler "template/internal/http/handlers/v1"
@@ -158,6 +160,10 @@ func NewApp() (*App, error) {
 	rbacRepo := rbacpostgres.NewRBACRepository(pool)
 	rbacUC := rbac.NewUsecase(rbacRepo)
 
+	// Organizations — байгууллага + гишүүнчлэл (RLS-тэй; бичих эрх usecase-д).
+	orgRepo := orgpostgres.NewOrgRepository(pool)
+	orgUC := org.NewUsecase(orgRepo)
+
 	// AI pipeline — Gemini REST client + function-calling tools. TTS нь
 	// audio гаргадаг тусдаа model тул өөр client-ээр явна. Repo нь DB-ээс
 	// тохируулдаг prompt давхаргууд + search_knowledge tool-ийн мэдлэгийн сан.
@@ -183,6 +189,7 @@ func NewApp() (*App, error) {
 		routes.NewAuthRoute(api, authUC, authMiddleware, authRateLimiter).Routes()
 		routes.NewUsersRoute(api, usersUC, authMiddleware).Routes()
 		routes.NewRBACRoute(api, rbacUC, authMiddleware).Routes()
+		routes.NewOrgRoute(api, orgUC, authMiddleware).Routes()
 		routes.NewAdminRoute(api, usersUC, rbacUC, aiUC, authMiddleware).Routes()
 		routes.NewAIRoute(api, aiUC, authMiddleware, aiRateLimiter).Routes()
 	})
