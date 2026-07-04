@@ -66,7 +66,7 @@ func TestQRInitiate(t *testing.T) {
 	if res.VerificationCode != "7270" {
 		t.Errorf("vc = %s", res.VerificationCode)
 	}
-	want := "https://eidmongolia.mn/dl?deviceLinkType=QR&sessionToken=tok-abc&sessionType=auth&version=1.0&lang=mn"
+	want := "https://eidmongolia.mn/dl?deviceLinkType=Web2App&sessionToken=tok-abc&sessionType=auth&version=1.0&lang=mn"
 	if res.DeviceLinkURL != want {
 		t.Errorf("deviceLink =\n  %s\nwant\n  %s", res.DeviceLinkURL, want)
 	}

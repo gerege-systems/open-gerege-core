@@ -179,7 +179,7 @@ func TestE2E_EIDQRLoginCreatesUserAndIssuesTokens(t *testing.T) {
 	require.NotEmpty(t, start.SessionID)
 	assert.Equal(t, "1234", start.VerificationCode)
 	assert.Contains(t, start.DeviceLinkURL, "eidmongolia.mn/dl")
-	assert.Contains(t, start.DeviceLinkURL, "deviceLinkType=QR")
+	assert.Contains(t, start.DeviceLinkURL, "deviceLinkType=Web2App")
 
 	// Регресс: сервер rpChallenge-ийг ХООСОН БИШ хүлээж авсан байх (hash биш).
 	fake.mu.Lock()

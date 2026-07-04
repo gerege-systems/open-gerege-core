@@ -72,8 +72,12 @@ const (
 	// гаргаж чадалгүй "серверт холбогдоход алдаа" өгдөг).
 	defaultCertLevel = "ADVANCED"
 	maxRespBytes     = 256 << 10
-	deviceLinkType   = "QR"
-	sessionType      = "auth"
+	// deviceLinkType = Web2App — eID Mongolia-гийн ӨӨРИЙН web QR нэвтрэлт
+	// cross-device (desktop browser → утсаар QR уншуулах) үед ч Web2App
+	// ашигладаг (Smart-ID v3 §3). "QR" төрлийг апп өөр урсгал гэж үзэж
+	// device-link-ийг задлаж чадалгүй унадаг тул Web2App заавал.
+	deviceLinkType = "Web2App"
+	sessionType    = "auth"
 )
 
 // Identity нь IdP-ийн баталгаажуулсан иргэний таних мэдээлэл юм.
