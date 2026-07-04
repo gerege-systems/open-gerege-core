@@ -48,7 +48,9 @@ type Config struct {
 	// шинэ required-var шалгалт нэмэхгүй — IdP-ийн нийтийн endpoint өгөгдмөл).
 	// EIDCallbackURL нь IdP-ийн allowlist-д бүртгэгдсэн URL байх ёстой.
 	EIDBaseURL     string `mapstructure:"EID_BASE_URL"`
-	EIDRPClient    string `mapstructure:"EID_RP_CLIENT"`
+	EIDRPUUID      string `mapstructure:"EID_RP_UUID"`
+	EIDRPName      string `mapstructure:"EID_RP_NAME"`
+	EIDRPSecret    string `mapstructure:"EID_RP_SECRET"`
 	EIDCallbackURL string `mapstructure:"EID_CALLBACK_URL"`
 	EIDDisplayText string `mapstructure:"EID_DISPLAY_TEXT"`
 
@@ -264,10 +266,10 @@ func applyDefaults() {
 	// callback URL тул орчин болгонд найдвартай ажиллана; тохиргоогоор дарж
 	// бичиж болно.
 	if AppConfig.EIDBaseURL == "" {
-		AppConfig.EIDBaseURL = "https://api.eidgerege.mn/rp/v1"
+		AppConfig.EIDBaseURL = "https://eidmongolia.mn/v3"
 	}
-	if AppConfig.EIDRPClient == "" {
-		AppConfig.EIDRPClient = "MN/COM/6235972/template-web"
+	if AppConfig.EIDRPName == "" {
+		AppConfig.EIDRPName = "template-web"
 	}
 	if AppConfig.EIDCallbackURL == "" {
 		AppConfig.EIDCallbackURL = "https://template.gerege.mn/login/verify"

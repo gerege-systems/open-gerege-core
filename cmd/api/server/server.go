@@ -146,7 +146,7 @@ func NewApp() (*App, error) {
 	// төлөө хасагдсан ч usecase нь verifier-ийг шаардсан хэвээр; цэвэр угсралт.)
 	verifier := verify.NewClient(config.AppConfig.VerifyAPIBase, config.AppConfig.VerifyAPIKey, config.AppConfig.VerifyChannel)
 	// eID identity provider (RP) — "Login with eID"-ийн цорын ганц нэвтрэх арга.
-	eidClient := eid.NewClient(config.AppConfig.EIDBaseURL, config.AppConfig.EIDRPClient)
+	eidClient := eid.NewClient(config.AppConfig.EIDBaseURL, config.AppConfig.EIDRPUUID, config.AppConfig.EIDRPName, config.AppConfig.EIDRPSecret)
 	authUC := auth.NewUsecase(usersUC, jwtService, verifier, eidClient, redisCache, auth.Config{
 		OTPMaxAttempts:    config.AppConfig.OTPMaxAttempts,
 		OTPTTL:            time.Duration(config.AppConfig.REDISExpired) * time.Minute,

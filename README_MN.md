@@ -138,7 +138,17 @@ GEMINI_TTS_MODEL=gemini-2.5-flash-preview-tts  # сонголттой override (
 GEMINI_VOICE=Kore                # сонголттой prebuilt TTS дуу хоолой
 GEMINI_API_BASE=                 # сонголттой override (өгөгдмөл: Google generativelanguage v1beta)
 AI_SCOPE_PROMPT=                 # DB-ийн 'scope' давхарга хоосон үеийн хамрах хүрээний fallback
+EID_BASE_URL=https://eidmongolia.mn/v3  # eID Mongolia RP API (өгөгдмөл)
+EID_RP_UUID=                     # оператороос олгосон RP UUID (нэвтрэлтэд заавал)
+EID_RP_NAME=template-web         # бүртгэлтэй relyingPartyName
+EID_RP_SECRET=rp_sk_...          # RP API secret (Authorization: Bearer); gitignored нууц
+EID_DISPLAY_TEXT=template.gerege.mn  # eID апп-ийн баталгаажуулах дэлгэцэнд харагдах текст
 ```
+
+> **eID Mongolia нэвтрэлт:** энэ template нь Smart-ID нийцтэй eID Mongolia
+> (eidmongolia.mn) v3 RP API-аар нэвтэрдэг — QR (device-link/anonymous) болон
+> РД push (notification/etsi) урсгал. `EID_RP_UUID`/`EID_RP_SECRET` хоосон бол
+> нэвтрэлт ажиллахгүй; оператороос RP-гээ бүртгүүлж авна (support@eidmongolia.mn).
 
 ### AI prompt давхаргууд
 
