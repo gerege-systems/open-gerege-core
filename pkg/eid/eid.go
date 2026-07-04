@@ -66,7 +66,6 @@ const (
 	defaultBase    = "https://eidmongolia.mn/v3"
 	defaultRPName  = "template-web"
 	certLevel      = "QUALIFIED"
-	hashType       = "SHA256"
 	maxRespBytes   = 256 << 10
 	deviceLinkType = "QR"
 	sessionType    = "auth"
@@ -142,35 +141,52 @@ func NewClient(base, rpUUID, rpName, secret string) Client {
 	}
 }
 
-// initiateBody нь auth initiate (device-link болон notification хоёуланд)
-// нийтлэг ACSP_V2 хүсэлтийн their. hash нь энэ session-ийн 32 байт ACSP challenge
-// (base64-std).
-type initiateBody struct {
-	RelyingPartyUUID  string `json:"relyingPartyUUID"`
-	RelyingPartyName  string `json:"relyingPartyName"`
-	CertificateLevel  string `json:"certificateLevel"`
-	SignatureProtocol string `json:"signatureProtocol"`
-	Hash              string `json:"hash"`
-	HashType          string `json:"hashType"`
+// interaction нь eID апп-ийн баталгаажуулах дэлгэцэнд харагдах Smart-ID v3
+// interaction (одоогоор displayTextAndPIN). displayText60 нь дээд 60 тэмдэгт.
+type interaction struct {
+	Type          string `json:"type"`
+	DisplayText60 string `json:"displayText60,omitempty"`
 }
 
-func (c *client) newInitiateBody() (initiateBody, error) {
-	hash, err := randomHashB64()
+// authInitiateBody нь auth initiate (device-link + notification)-ийн ACSP_V2
+// хүсэлтийн their. АНХААР: auth-д challenge талбар нь `rpChallenge` (base64
+// nonce) — sign-ийн `digest`/`hashType`-ээс ялгаатай. Буруу `hash` талбар
+// илгээвэл сервер rpChallenge-ийг хоосон гэж үзэж, PIN үед ACSP payload
+// эвдэрч "боловсруулах алдаа" өгдөг. interactions нь заавал (апп дэлгэцэнд
+// харуулах текст).
+type authInitiateBody struct {
+	RelyingPartyUUID  string        `json:"relyingPartyUUID"`
+	RelyingPartyName  string        `json:"relyingPartyName"`
+	CertificateLevel  string        `json:"certificateLevel"`
+	SignatureProtocol string        `json:"signatureProtocol"`
+	RPChallenge       string        `json:"rpChallenge"`
+	Interactions      []interaction `json:"interactions"`
+}
+
+func (c *client) newAuthBody(displayText string) (authInitiateBody, error) {
+	challenge, err := randomHashB64()
 	if err != nil {
-		return initiateBody{}, err
+		return authInitiateBody{}, err
 	}
-	return initiateBody{
+	dt := displayText
+	if dt == "" {
+		dt = c.rpName
+	}
+	if len(dt) > 60 {
+		dt = dt[:60]
+	}
+	return authInitiateBody{
 		RelyingPartyUUID:  c.rpUUID,
 		RelyingPartyName:  c.rpName,
 		CertificateLevel:  certLevel,
 		SignatureProtocol: "ACSP_V2",
-		Hash:              hash,
-		HashType:          hashType,
+		RPChallenge:       challenge,
+		Interactions:      []interaction{{Type: "displayTextAndPIN", DisplayText60: dt}},
 	}, nil
 }
 
-func (c *client) QRInitiate(ctx context.Context, _, _, _ string) (*StartResult, error) {
-	body, err := c.newInitiateBody()
+func (c *client) QRInitiate(ctx context.Context, displayText, _, _ string) (*StartResult, error) {
+	body, err := c.newAuthBody(displayText)
 	if err != nil {
 		return nil, fmt.Errorf("eid: build challenge: %w", err)
 	}
@@ -197,8 +213,8 @@ func (c *client) QRInitiate(ctx context.Context, _, _, _ string) (*StartResult, 
 	}, nil
 }
 
-func (c *client) Initiate(ctx context.Context, nationalID, _, _ string) (*StartResult, error) {
-	body, err := c.newInitiateBody()
+func (c *client) Initiate(ctx context.Context, nationalID, displayText, _ string) (*StartResult, error) {
+	body, err := c.newAuthBody(displayText)
 	if err != nil {
 		return nil, fmt.Errorf("eid: build challenge: %w", err)
 	}

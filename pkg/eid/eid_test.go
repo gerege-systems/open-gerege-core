@@ -41,13 +41,17 @@ func TestQRInitiate(t *testing.T) {
 		if got := r.Header.Get("Authorization"); got != "Bearer "+testSecret {
 			t.Errorf("auth header = %q", got)
 		}
-		var body initiateBody
+		var body authInitiateBody
 		_ = json.NewDecoder(r.Body).Decode(&body)
 		if body.RelyingPartyUUID != testUUID || body.RelyingPartyName != testName {
 			t.Errorf("rp identity not sent: %+v", body)
 		}
-		if body.Hash == "" || body.HashType != "SHA256" || body.SignatureProtocol != "ACSP_V2" {
+		// Auth-д challenge талбар нь rpChallenge (hash БИШ) — регрессийн хамгаалалт.
+		if body.RPChallenge == "" || body.SignatureProtocol != "ACSP_V2" {
 			t.Errorf("challenge fields wrong: %+v", body)
+		}
+		if len(body.Interactions) != 1 || body.Interactions[0].Type != "displayTextAndPIN" || body.Interactions[0].DisplayText60 != "Нэвтрэх" {
+			t.Errorf("interactions wrong: %+v", body.Interactions)
 		}
 		_, _ = io.WriteString(w, `{"sessionID":"sess-1","sessionToken":"tok-abc","sessionSecret":"s","deviceLinkBase":"https://eidmongolia.mn/dl","vc":"7270"}`)
 	})
