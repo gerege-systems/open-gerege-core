@@ -40,21 +40,23 @@ func mapRepoError(err error, op string) error {
 
 // requireManager нь дуудагч тухайн байгууллагад owner/admin гишүүн эсэхийг
 // шалгана — гишүүн нэмэх/хасах/дүр солих эрхийн нэгдсэн хаалга. Гишүүн биш бол
-// apperror.Forbidden; owner/admin биш бол apperror.Forbidden буцна.
-func (uc *usecase) requireManager(ctx context.Context, orgID, callerID string) error {
+// apperror.Forbidden; owner/admin биш бол apperror.Forbidden буцна. Амжилттай
+// бол дуудагчийн гишүүнчлэлийг буцаана — owner-only дүрмүүд (owner дүр олгох
+// г.м.) дуудагчийн дүрийг шаарддаг.
+func (uc *usecase) requireManager(ctx context.Context, orgID, callerID string) (domain.OrganizationMembership, error) {
 	m, err := uc.repo.GetMembership(ctx, orgID, callerID)
 	if err != nil {
 		if _, ok := err.(*apperror.DomainError); ok {
 			// Гишүүн биш дуудагч руу "байхгүй" гэдгийг илчлэхгүйгээр
 			// Forbidden буцаана.
-			return apperror.Forbidden("you are not allowed to manage this organization")
+			return domain.OrganizationMembership{}, apperror.Forbidden("you are not allowed to manage this organization")
 		}
-		return mapRepoError(err, "get membership")
+		return domain.OrganizationMembership{}, mapRepoError(err, "get membership")
 	}
 	if !domain.CanManageMembers(m.Role) {
-		return apperror.Forbidden("you are not allowed to manage this organization")
+		return domain.OrganizationMembership{}, apperror.Forbidden("you are not allowed to manage this organization")
 	}
-	return nil
+	return m, nil
 }
 
 // requireMember нь дуудагч тухайн байгууллагын гишүүн эсэхийг шалгана (унших
@@ -149,8 +151,14 @@ func (uc *usecase) AddMember(ctx context.Context, req AddMemberRequest) (Members
 	if strings.TrimSpace(req.UserID) == "" {
 		return MembershipResponse{}, apperror.BadRequest("user id is required")
 	}
-	if err := uc.requireManager(ctx, req.OrgID, req.CallerID); err != nil {
+	caller, err := uc.requireManager(ctx, req.OrgID, req.CallerID)
+	if err != nil {
 		return MembershipResponse{}, err
+	}
+	// owner дүрийг зөвхөн owner олгоно — org admin өөрөөсөө дээш дүр
+	// (өөрт нь эсвэл бусдад) олгож эрх ахиулахаас сэргийлнэ.
+	if role == domain.OrgRoleOwner && caller.Role != domain.OrgRoleOwner {
+		return MembershipResponse{}, apperror.Forbidden("only the owner can grant the owner role")
 	}
 	m, err := uc.repo.AddMember(ctx, &domain.OrganizationMembership{
 		OrgID:  req.OrgID,
@@ -164,13 +172,28 @@ func (uc *usecase) AddMember(ctx context.Context, req AddMemberRequest) (Members
 }
 
 // UpdateMemberRole нь гишүүний дүрийг солино (дуудагч owner/admin байх ёстой).
+// Owner-ийн дүрд хоёр нэмэлт хамгаалалт бий: owner дүрийг зөвхөн owner олгоно,
+// мөн owner-ийн дүрийг өөрчилж болохгүй — эс бөгөөс org admin owner-ыг member
+// болгож бууруулаад дараа нь RemoveMember-ээр хасч, "owner-ыг хасахгүй"
+// хамгаалалтыг тойрч гарна.
 func (uc *usecase) UpdateMemberRole(ctx context.Context, req UpdateMemberRoleRequest) error {
 	role := strings.TrimSpace(req.Role)
 	if !domain.IsValidOrgRole(role) {
 		return apperror.BadRequest("invalid membership role")
 	}
-	if err := uc.requireManager(ctx, req.OrgID, req.CallerID); err != nil {
+	caller, err := uc.requireManager(ctx, req.OrgID, req.CallerID)
+	if err != nil {
 		return err
+	}
+	if role == domain.OrgRoleOwner && caller.Role != domain.OrgRoleOwner {
+		return apperror.Forbidden("only the owner can grant the owner role")
+	}
+	target, err := uc.repo.GetMembership(ctx, req.OrgID, req.UserID)
+	if err != nil {
+		return mapRepoError(err, "get target membership")
+	}
+	if target.Role == domain.OrgRoleOwner {
+		return apperror.BadRequest("the organization owner's role cannot be changed")
 	}
 	if err := uc.repo.UpdateMemberRole(ctx, req.OrgID, req.UserID, role); err != nil {
 		return mapRepoError(err, "update member role")
@@ -181,7 +204,7 @@ func (uc *usecase) UpdateMemberRole(ctx context.Context, req UpdateMemberRoleReq
 // RemoveMember нь гишүүнийг хасна (дуудагч owner/admin байх ёстой). Owner-ийг
 // хасахаас сэргийлнэ — байгууллага эзэнгүй үлдэхээс хамгаална.
 func (uc *usecase) RemoveMember(ctx context.Context, req RemoveMemberRequest) error {
-	if err := uc.requireManager(ctx, req.OrgID, req.CallerID); err != nil {
+	if _, err := uc.requireManager(ctx, req.OrgID, req.CallerID); err != nil {
 		return err
 	}
 	target, err := uc.repo.GetMembership(ctx, req.OrgID, req.UserID)
