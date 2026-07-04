@@ -58,6 +58,12 @@ type Usecase interface {
 	// байгууллагуудыг eID-ээс буцаана. Хэрэглэгч eID-ээр нэвтрээгүй (civil_id
 	// байхгүй) бол хоосон slice.
 	EIDRepresentations(ctx context.Context, userID string) ([]eid.Representation, error)
+	// EID PKI самбарын нэгдсэн/дэлгэрэнгүй мэдээлэл (PKI_READ эрхтэй RP-д).
+	// eID хэрэглэгч биш бол nil; эрхгүй бол apperror.Forbidden.
+	EIDSummary(ctx context.Context, userID string) (*eid.PersonSummary, error)
+	EIDCertificates(ctx context.Context, userID string) (*eid.PersonCertificates, error)
+	EIDDevices(ctx context.Context, userID string) (*eid.PersonDevices, error)
+	EIDActivity(ctx context.Context, userID string, limit, offset int) (*eid.PersonActivity, error)
 }
 
 // Usecase-ийн хилд зориулсан Request / Response төрлүүд. Struct-д талбар нэмэх

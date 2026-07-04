@@ -156,6 +156,54 @@ func TestEIDRepresentations(t *testing.T) {
 	})
 }
 
+func TestEIDPKISummary(t *testing.T) {
+	t.Run("eID user → summary", func(t *testing.T) {
+		f := newFixture(t)
+		user := eidUser()
+		f.users.On("GetByID", mock.Anything, users.GetByIDRequest{ID: user.ID}).
+			Return(users.GetByIDResponse{User: user}, nil).Once()
+		f.eid.On("PersonSummary", mock.Anything, "PNOMN-УБ99887766").
+			Return(&eid.PersonSummary{Certificates: eid.CertCounts{Valid: 2, Total: 3}}, nil).Once()
+
+		res, err := f.usecase.EIDSummary(context.Background(), user.ID)
+		require.NoError(t, err)
+		require.NotNil(t, res)
+		assert.Equal(t, 2, res.Certificates.Valid)
+	})
+
+	t.Run("non-eID user → nil, no eID call", func(t *testing.T) {
+		f := newFixture(t)
+		u := domain.User{ID: "pw", CivilID: ""}
+		f.users.On("GetByID", mock.Anything, mock.Anything).Return(users.GetByIDResponse{User: u}, nil).Once()
+
+		res, err := f.usecase.EIDSummary(context.Background(), u.ID)
+		require.NoError(t, err)
+		assert.Nil(t, res)
+	})
+
+	t.Run("PKI_READ эрхгүй (403) → Forbidden", func(t *testing.T) {
+		f := newFixture(t)
+		user := eidUser()
+		f.users.On("GetByID", mock.Anything, mock.Anything).Return(users.GetByIDResponse{User: user}, nil).Once()
+		f.eid.On("PersonSummary", mock.Anything, mock.Anything).Return(nil, eid.ErrPKINotPermitted).Once()
+
+		_, err := f.usecase.EIDSummary(context.Background(), user.ID)
+		requireDomainType(t, err, apperror.ErrTypeForbidden)
+	})
+}
+
+func TestEIDPKIActivity(t *testing.T) {
+	f := newFixture(t)
+	user := eidUser()
+	f.users.On("GetByID", mock.Anything, mock.Anything).Return(users.GetByIDResponse{User: user}, nil).Once()
+	f.eid.On("PersonActivity", mock.Anything, "PNOMN-УБ99887766", 20, 0).
+		Return(&eid.PersonActivity{Counts: eid.ActivityCounts{Authentication: 5}, Total: 5}, nil).Once()
+
+	res, err := f.usecase.EIDActivity(context.Background(), user.ID, 20, 0)
+	require.NoError(t, err)
+	assert.Equal(t, 5, res.Counts.Authentication)
+}
+
 func TestEIDPoll(t *testing.T) {
 	t.Run("empty session_id is rejected", func(t *testing.T) {
 		f := newFixture(t)

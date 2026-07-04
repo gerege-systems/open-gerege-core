@@ -38,3 +38,146 @@ func FromEIDRepresentations(reps []eid.Representation) []OrgRepresentationRespon
 	}
 	return out
 }
+
+// ── PKI самбар (snake_case DTO-нууд) ──
+
+type EIDCertCounts struct {
+	Valid     int `json:"valid"`
+	Revoked   int `json:"revoked"`
+	Expired   int `json:"expired"`
+	Suspended int `json:"suspended"`
+	Total     int `json:"total"`
+}
+
+type EIDActivityCounts struct {
+	Authentication int `json:"authentication"`
+	Signature      int `json:"signature"`
+}
+
+type EIDPersonCert struct {
+	DocumentNumber   string     `json:"document_number"`
+	Type             string     `json:"type"`
+	SerialNumber     string     `json:"serial_number"`
+	CertificateLevel string     `json:"certificate_level"`
+	Status           string     `json:"status"`
+	NotBefore        *time.Time `json:"not_before,omitempty"`
+	NotAfter         *time.Time `json:"not_after,omitempty"`
+	IssuerDn         string     `json:"issuer_dn,omitempty"`
+}
+
+type EIDCertificatesResponse struct {
+	Counts       EIDCertCounts   `json:"counts"`
+	Certificates []EIDPersonCert `json:"certificates"`
+}
+
+type EIDPersonDevice struct {
+	DocumentNumber string     `json:"document_number"`
+	Platform       string     `json:"platform,omitempty"`
+	EnrolledAt     *time.Time `json:"enrolled_at,omitempty"`
+	Active         bool       `json:"active"`
+	DeactivatedAt  *time.Time `json:"deactivated_at,omitempty"`
+}
+
+type EIDDevicesResponse struct {
+	Devices     []EIDPersonDevice `json:"devices"`
+	ActiveCount int               `json:"active_count"`
+	Total       int               `json:"total"`
+}
+
+type EIDActivityItem struct {
+	SessionID string     `json:"session_id,omitempty"`
+	Flow      string     `json:"flow"`
+	Outcome   string     `json:"outcome"`
+	DocText   string     `json:"doc_text,omitempty"`
+	Timestamp *time.Time `json:"timestamp,omitempty"`
+}
+
+type EIDActivityResponse struct {
+	Counts   EIDActivityCounts `json:"counts"`
+	Sessions []EIDActivityItem `json:"sessions"`
+	Total    int               `json:"total"`
+}
+
+type EIDSummaryResponse struct {
+	GivenName           string            `json:"given_name,omitempty"`
+	Surname             string            `json:"surname,omitempty"`
+	Certificates        EIDCertCounts     `json:"certificates"`
+	Activity            EIDActivityCounts `json:"activity"`
+	DevicesActive       int               `json:"devices_active"`
+	DevicesTotal        int               `json:"devices_total"`
+	RepresentationCount int               `json:"representation_count"`
+}
+
+func certCounts(c eid.CertCounts) EIDCertCounts {
+	return EIDCertCounts{Valid: c.Valid, Revoked: c.Revoked, Expired: c.Expired, Suspended: c.Suspended, Total: c.Total}
+}
+
+func tptr(t time.Time) *time.Time {
+	if t.IsZero() {
+		return nil
+	}
+	return &t
+}
+
+// FromEIDCertificates нь eID гэрчилгээний хариуг DTO руу буулгана (nil → хоосон).
+func FromEIDCertificates(c *eid.PersonCertificates) EIDCertificatesResponse {
+	if c == nil {
+		return EIDCertificatesResponse{Certificates: []EIDPersonCert{}}
+	}
+	certs := make([]EIDPersonCert, 0, len(c.Certificates))
+	for _, x := range c.Certificates {
+		certs = append(certs, EIDPersonCert{
+			DocumentNumber: x.DocumentNumber, Type: x.Type, SerialNumber: x.SerialNumber,
+			CertificateLevel: x.CertificateLevel, Status: x.Status,
+			NotBefore: tptr(x.NotBefore), NotAfter: tptr(x.NotAfter), IssuerDn: x.IssuerDn,
+		})
+	}
+	return EIDCertificatesResponse{Counts: certCounts(c.Counts), Certificates: certs}
+}
+
+// FromEIDDevices нь төхөөрөмжийн хариуг DTO руу буулгана (nil → хоосон).
+func FromEIDDevices(d *eid.PersonDevices) EIDDevicesResponse {
+	if d == nil {
+		return EIDDevicesResponse{Devices: []EIDPersonDevice{}}
+	}
+	devs := make([]EIDPersonDevice, 0, len(d.Devices))
+	for _, x := range d.Devices {
+		devs = append(devs, EIDPersonDevice{
+			DocumentNumber: x.DocumentNumber, Platform: x.Platform,
+			EnrolledAt: tptr(x.EnrolledAt), Active: x.Active, DeactivatedAt: x.DeactivatedAt,
+		})
+	}
+	return EIDDevicesResponse{Devices: devs, ActiveCount: d.ActiveCount, Total: d.Total}
+}
+
+// FromEIDActivity нь activity хариуг DTO руу буулгана (nil → хоосон).
+func FromEIDActivity(a *eid.PersonActivity) EIDActivityResponse {
+	if a == nil {
+		return EIDActivityResponse{Sessions: []EIDActivityItem{}}
+	}
+	items := make([]EIDActivityItem, 0, len(a.Sessions))
+	for _, x := range a.Sessions {
+		items = append(items, EIDActivityItem{
+			SessionID: x.SessionID, Flow: x.Flow, Outcome: x.Outcome, DocText: x.DocText, Timestamp: tptr(x.Timestamp),
+		})
+	}
+	return EIDActivityResponse{
+		Counts:   EIDActivityCounts{Authentication: a.Counts.Authentication, Signature: a.Counts.Signature},
+		Sessions: items, Total: a.Total,
+	}
+}
+
+// FromEIDSummary нь нэгдсэн хариуг DTO руу буулгана (nil → хоосон).
+func FromEIDSummary(s *eid.PersonSummary) EIDSummaryResponse {
+	if s == nil {
+		return EIDSummaryResponse{}
+	}
+	return EIDSummaryResponse{
+		GivenName: s.GivenName, Surname: s.Surname,
+		Certificates:        certCounts(s.Certificates),
+		Activity:            EIDActivityCounts{Authentication: s.Activity.Authentication, Signature: s.Activity.Signature},
+		DevicesActive:       s.DevicesActive,
+		DevicesTotal:        s.DevicesTotal,
+		RepresentationCount: s.RepresentationCount,
+	}
+}

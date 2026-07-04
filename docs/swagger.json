@@ -1182,6 +1182,128 @@
                 }
             }
         },
+        "/users/me/eid/activity": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "summary": "eID auth/sign түүх + тоо (RP-scoped)",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "хуудасны хэмжээ (default 20)",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "эхлэх байрлал",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/template_internal_http_datatransfers_responses.EIDActivityResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/users/me/eid/certificates": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "summary": "eID гэрчилгээний жагсаалт + тоо",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/template_internal_http_datatransfers_responses.EIDCertificatesResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/users/me/eid/devices": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "summary": "eID холбоотой төхөөрөмжүүд",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/template_internal_http_datatransfers_responses.EIDDevicesResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
         "/users/me/eid/organizations": {
             "get": {
                 "security": [
@@ -1229,6 +1351,43 @@
                         "description": "eID provider error",
                         "schema": {
                             "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/users/me/eid/summary": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Нэвтэрсэн иргэний гэрчилгээ/auth-sign/төхөөрөмж/байгууллагын нэгдсэн тоолол (PKI_READ эрхтэй RP). Эрхгүй бол 403.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "summary": "eID PKI самбарын нэгдсэн тоо",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/template_internal_http_datatransfers_responses.EIDSummaryResponse"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     }
                 }
@@ -2520,6 +2679,74 @@
                 }
             }
         },
+        "template_internal_http_datatransfers_responses.EIDActivityCounts": {
+            "type": "object",
+            "properties": {
+                "authentication": {
+                    "type": "integer"
+                },
+                "signature": {
+                    "type": "integer"
+                }
+            }
+        },
+        "template_internal_http_datatransfers_responses.EIDActivityItem": {
+            "type": "object",
+            "properties": {
+                "doc_text": {
+                    "type": "string"
+                },
+                "flow": {
+                    "type": "string"
+                },
+                "outcome": {
+                    "type": "string"
+                },
+                "session_id": {
+                    "type": "string"
+                },
+                "timestamp": {
+                    "type": "string"
+                }
+            }
+        },
+        "template_internal_http_datatransfers_responses.EIDActivityResponse": {
+            "type": "object",
+            "properties": {
+                "counts": {
+                    "$ref": "#/definitions/template_internal_http_datatransfers_responses.EIDActivityCounts"
+                },
+                "sessions": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/template_internal_http_datatransfers_responses.EIDActivityItem"
+                    }
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "template_internal_http_datatransfers_responses.EIDCertCounts": {
+            "type": "object",
+            "properties": {
+                "expired": {
+                    "type": "integer"
+                },
+                "revoked": {
+                    "type": "integer"
+                },
+                "suspended": {
+                    "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
+                },
+                "valid": {
+                    "type": "integer"
+                }
+            }
+        },
         "template_internal_http_datatransfers_responses.EIDCertificate": {
             "type": "object",
             "properties": {
@@ -2537,6 +2764,37 @@
                 },
                 "serial": {
                     "type": "string"
+                }
+            }
+        },
+        "template_internal_http_datatransfers_responses.EIDCertificatesResponse": {
+            "type": "object",
+            "properties": {
+                "certificates": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/template_internal_http_datatransfers_responses.EIDPersonCert"
+                    }
+                },
+                "counts": {
+                    "$ref": "#/definitions/template_internal_http_datatransfers_responses.EIDCertCounts"
+                }
+            }
+        },
+        "template_internal_http_datatransfers_responses.EIDDevicesResponse": {
+            "type": "object",
+            "properties": {
+                "active_count": {
+                    "type": "integer"
+                },
+                "devices": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/template_internal_http_datatransfers_responses.EIDPersonDevice"
+                    }
+                },
+                "total": {
+                    "type": "integer"
                 }
             }
         },
@@ -2558,6 +2816,55 @@
                 },
                 "national_id": {
                     "description": "регистрийн дугаар",
+                    "type": "string"
+                }
+            }
+        },
+        "template_internal_http_datatransfers_responses.EIDPersonCert": {
+            "type": "object",
+            "properties": {
+                "certificate_level": {
+                    "type": "string"
+                },
+                "document_number": {
+                    "type": "string"
+                },
+                "issuer_dn": {
+                    "type": "string"
+                },
+                "not_after": {
+                    "type": "string"
+                },
+                "not_before": {
+                    "type": "string"
+                },
+                "serial_number": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "template_internal_http_datatransfers_responses.EIDPersonDevice": {
+            "type": "object",
+            "properties": {
+                "active": {
+                    "type": "boolean"
+                },
+                "deactivated_at": {
+                    "type": "string"
+                },
+                "document_number": {
+                    "type": "string"
+                },
+                "enrolled_at": {
+                    "type": "string"
+                },
+                "platform": {
                     "type": "string"
                 }
             }
@@ -2633,6 +2940,32 @@
                     "type": "string"
                 },
                 "verification_code": {
+                    "type": "string"
+                }
+            }
+        },
+        "template_internal_http_datatransfers_responses.EIDSummaryResponse": {
+            "type": "object",
+            "properties": {
+                "activity": {
+                    "$ref": "#/definitions/template_internal_http_datatransfers_responses.EIDActivityCounts"
+                },
+                "certificates": {
+                    "$ref": "#/definitions/template_internal_http_datatransfers_responses.EIDCertCounts"
+                },
+                "devices_active": {
+                    "type": "integer"
+                },
+                "devices_total": {
+                    "type": "integer"
+                },
+                "given_name": {
+                    "type": "string"
+                },
+                "representation_count": {
+                    "type": "integer"
+                },
+                "surname": {
                     "type": "string"
                 }
             }

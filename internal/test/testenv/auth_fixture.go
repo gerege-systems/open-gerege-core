@@ -100,6 +100,10 @@ type FakeEID struct {
 	StartResult   *eid.StartResult
 	SessionResult *eid.SessionResult
 	Reps          []eid.Representation
+	Summary       *eid.PersonSummary
+	Certs         *eid.PersonCertificates
+	Devices       *eid.PersonDevices
+	Activity      *eid.PersonActivity
 	InitiateErr   error
 	SessionErr    error
 }
@@ -138,6 +142,20 @@ func (f *FakeEID) Session(_ context.Context, _ string, _ int) (*eid.SessionResul
 // Representations нь fake — Reps талбарыг буцаана (default хоосон).
 func (f *FakeEID) Representations(_ context.Context, _ string) ([]eid.Representation, error) {
 	return f.Reps, nil
+}
+
+// Person* fake-ууд — default nil/тэг (PKI боломжийг туршихгүй тестүүдэд хангалттай).
+func (f *FakeEID) PersonSummary(_ context.Context, _ string) (*eid.PersonSummary, error) {
+	return f.Summary, nil
+}
+func (f *FakeEID) PersonCertificates(_ context.Context, _ string) (*eid.PersonCertificates, error) {
+	return f.Certs, nil
+}
+func (f *FakeEID) PersonDevices(_ context.Context, _ string) (*eid.PersonDevices, error) {
+	return f.Devices, nil
+}
+func (f *FakeEID) PersonActivity(_ context.Context, _ string, _, _ int) (*eid.PersonActivity, error) {
+	return f.Activity, nil
 }
 
 // NewAuthFixture нь хоёр bounded context-г шинэ Postgres + Redis

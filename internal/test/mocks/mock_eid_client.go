@@ -56,6 +56,42 @@ func (_m *EIDClient) Representations(ctx context.Context, personEtsi string) ([]
 	return r0, ret.Error(1)
 }
 
+func (_m *EIDClient) PersonSummary(ctx context.Context, personEtsi string) (*eid.PersonSummary, error) {
+	ret := _m.Called(ctx, personEtsi)
+	var r0 *eid.PersonSummary
+	if v := ret.Get(0); v != nil {
+		r0 = v.(*eid.PersonSummary)
+	}
+	return r0, ret.Error(1)
+}
+
+func (_m *EIDClient) PersonCertificates(ctx context.Context, personEtsi string) (*eid.PersonCertificates, error) {
+	ret := _m.Called(ctx, personEtsi)
+	var r0 *eid.PersonCertificates
+	if v := ret.Get(0); v != nil {
+		r0 = v.(*eid.PersonCertificates)
+	}
+	return r0, ret.Error(1)
+}
+
+func (_m *EIDClient) PersonDevices(ctx context.Context, personEtsi string) (*eid.PersonDevices, error) {
+	ret := _m.Called(ctx, personEtsi)
+	var r0 *eid.PersonDevices
+	if v := ret.Get(0); v != nil {
+		r0 = v.(*eid.PersonDevices)
+	}
+	return r0, ret.Error(1)
+}
+
+func (_m *EIDClient) PersonActivity(ctx context.Context, personEtsi string, limit, offset int) (*eid.PersonActivity, error) {
+	ret := _m.Called(ctx, personEtsi, limit, offset)
+	var r0 *eid.PersonActivity
+	if v := ret.Get(0); v != nil {
+		r0 = v.(*eid.PersonActivity)
+	}
+	return r0, ret.Error(1)
+}
+
 type mockConstructorTestingTNewEIDClient interface {
 	mock.TestingT
 	Cleanup(func())

@@ -370,6 +370,50 @@ definitions:
       ok:
         type: boolean
     type: object
+  template_internal_http_datatransfers_responses.EIDActivityCounts:
+    properties:
+      authentication:
+        type: integer
+      signature:
+        type: integer
+    type: object
+  template_internal_http_datatransfers_responses.EIDActivityItem:
+    properties:
+      doc_text:
+        type: string
+      flow:
+        type: string
+      outcome:
+        type: string
+      session_id:
+        type: string
+      timestamp:
+        type: string
+    type: object
+  template_internal_http_datatransfers_responses.EIDActivityResponse:
+    properties:
+      counts:
+        $ref: '#/definitions/template_internal_http_datatransfers_responses.EIDActivityCounts'
+      sessions:
+        items:
+          $ref: '#/definitions/template_internal_http_datatransfers_responses.EIDActivityItem'
+        type: array
+      total:
+        type: integer
+    type: object
+  template_internal_http_datatransfers_responses.EIDCertCounts:
+    properties:
+      expired:
+        type: integer
+      revoked:
+        type: integer
+      suspended:
+        type: integer
+      total:
+        type: integer
+      valid:
+        type: integer
+    type: object
   template_internal_http_datatransfers_responses.EIDCertificate:
     properties:
       issuer:
@@ -382,6 +426,26 @@ definitions:
         type: string
       serial:
         type: string
+    type: object
+  template_internal_http_datatransfers_responses.EIDCertificatesResponse:
+    properties:
+      certificates:
+        items:
+          $ref: '#/definitions/template_internal_http_datatransfers_responses.EIDPersonCert'
+        type: array
+      counts:
+        $ref: '#/definitions/template_internal_http_datatransfers_responses.EIDCertCounts'
+    type: object
+  template_internal_http_datatransfers_responses.EIDDevicesResponse:
+    properties:
+      active_count:
+        type: integer
+      devices:
+        items:
+          $ref: '#/definitions/template_internal_http_datatransfers_responses.EIDPersonDevice'
+        type: array
+      total:
+        type: integer
     type: object
   template_internal_http_datatransfers_responses.EIDInfo:
     properties:
@@ -396,6 +460,38 @@ definitions:
         type: string
       national_id:
         description: регистрийн дугаар
+        type: string
+    type: object
+  template_internal_http_datatransfers_responses.EIDPersonCert:
+    properties:
+      certificate_level:
+        type: string
+      document_number:
+        type: string
+      issuer_dn:
+        type: string
+      not_after:
+        type: string
+      not_before:
+        type: string
+      serial_number:
+        type: string
+      status:
+        type: string
+      type:
+        type: string
+    type: object
+  template_internal_http_datatransfers_responses.EIDPersonDevice:
+    properties:
+      active:
+        type: boolean
+      deactivated_at:
+        type: string
+      document_number:
+        type: string
+      enrolled_at:
+        type: string
+      platform:
         type: string
     type: object
   template_internal_http_datatransfers_responses.EIDPollResponse:
@@ -446,6 +542,23 @@ definitions:
       session_id:
         type: string
       verification_code:
+        type: string
+    type: object
+  template_internal_http_datatransfers_responses.EIDSummaryResponse:
+    properties:
+      activity:
+        $ref: '#/definitions/template_internal_http_datatransfers_responses.EIDActivityCounts'
+      certificates:
+        $ref: '#/definitions/template_internal_http_datatransfers_responses.EIDCertCounts'
+      devices_active:
+        type: integer
+      devices_total:
+        type: integer
+      given_name:
+        type: string
+      representation_count:
+        type: integer
+      surname:
         type: string
     type: object
   template_internal_http_datatransfers_responses.OrgMemberResponse:
@@ -1334,6 +1447,72 @@ paths:
       summary: Одоогийн хэрэглэгчийн профайлыг буцаах
       tags:
       - users
+  /users/me/eid/activity:
+    get:
+      parameters:
+      - description: хуудасны хэмжээ (default 20)
+        in: query
+        name: limit
+        type: integer
+      - description: эхлэх байрлал
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/template_internal_http_datatransfers_responses.EIDActivityResponse'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: eID auth/sign түүх + тоо (RP-scoped)
+      tags:
+      - users
+  /users/me/eid/certificates:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/template_internal_http_datatransfers_responses.EIDCertificatesResponse'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: eID гэрчилгээний жагсаалт + тоо
+      tags:
+      - users
+  /users/me/eid/devices:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/template_internal_http_datatransfers_responses.EIDDevicesResponse'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: eID холбоотой төхөөрөмжүүд
+      tags:
+      - users
   /users/me/eid/organizations:
     get:
       description: Нэвтэрсэн eID хэрэглэгчийн eidmongolia.mn-д бүртгэлтэй, төлөөлж
@@ -1363,6 +1542,27 @@ paths:
       security:
       - BearerAuth: []
       summary: Төлөөлдөг байгууллагууд (eID)
+      tags:
+      - users
+  /users/me/eid/summary:
+    get:
+      description: Нэвтэрсэн иргэний гэрчилгээ/auth-sign/төхөөрөмж/байгууллагын нэгдсэн
+        тоолол (PKI_READ эрхтэй RP). Эрхгүй бол 403.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/template_internal_http_datatransfers_responses.EIDSummaryResponse'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: eID PKI самбарын нэгдсэн тоо
       tags:
       - users
   /v1/audit:

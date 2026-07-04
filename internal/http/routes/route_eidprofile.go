@@ -34,5 +34,9 @@ func (rt *eidProfileRoute) Routes() {
 	rt.router.Route("/v1/users/me/eid", func(r chi.Router) {
 		r.Use(rt.authMiddleware)
 		r.Get("/organizations", v1.Wrap(rt.handler.Organizations))
+		r.Get("/summary", v1.Wrap(rt.handler.Summary))
+		r.Get("/certificates", v1.Wrap(rt.handler.Certificates))
+		r.Get("/devices", v1.Wrap(rt.handler.Devices))
+		r.Get("/activity", v1.Wrap(rt.handler.Activity))
 	})
 }

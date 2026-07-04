@@ -83,6 +83,42 @@ func (_m *AuthUsecase) EIDRepresentations(ctx context.Context, userID string) ([
 	return r0, ret.Error(1)
 }
 
+func (_m *AuthUsecase) EIDSummary(ctx context.Context, userID string) (*eid.PersonSummary, error) {
+	ret := _m.Called(ctx, userID)
+	var r0 *eid.PersonSummary
+	if v := ret.Get(0); v != nil {
+		r0 = v.(*eid.PersonSummary)
+	}
+	return r0, ret.Error(1)
+}
+
+func (_m *AuthUsecase) EIDCertificates(ctx context.Context, userID string) (*eid.PersonCertificates, error) {
+	ret := _m.Called(ctx, userID)
+	var r0 *eid.PersonCertificates
+	if v := ret.Get(0); v != nil {
+		r0 = v.(*eid.PersonCertificates)
+	}
+	return r0, ret.Error(1)
+}
+
+func (_m *AuthUsecase) EIDDevices(ctx context.Context, userID string) (*eid.PersonDevices, error) {
+	ret := _m.Called(ctx, userID)
+	var r0 *eid.PersonDevices
+	if v := ret.Get(0); v != nil {
+		r0 = v.(*eid.PersonDevices)
+	}
+	return r0, ret.Error(1)
+}
+
+func (_m *AuthUsecase) EIDActivity(ctx context.Context, userID string, limit, offset int) (*eid.PersonActivity, error) {
+	ret := _m.Called(ctx, userID, limit, offset)
+	var r0 *eid.PersonActivity
+	if v := ret.Get(0); v != nil {
+		r0 = v.(*eid.PersonActivity)
+	}
+	return r0, ret.Error(1)
+}
+
 type mockConstructorTestingTNewAuthUsecase interface {
 	mock.TestingT
 	Cleanup(func())

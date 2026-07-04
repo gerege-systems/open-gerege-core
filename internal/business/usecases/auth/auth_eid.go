@@ -291,24 +291,99 @@ func mapInitiateErr(initErr error, clientMsg string) error {
 	return apperror.InternalCause(fmt.Errorf("eid initiate: %w", initErr))
 }
 
+// eidPersonEtsi нь userID-аар хэрэглэгчийг олж, ETSI танигч
+// (PNOMN-<civil_id>, томоор) буцаана. eID хэрэглэгч биш (civil_id хоосон) бол
+// эхний утга "" (алдаагүй).
+func (uc *usecase) eidPersonEtsi(ctx context.Context, userID string) (string, error) {
+	got, err := uc.users.GetByID(ctx, users.GetByIDRequest{ID: userID})
+	if err != nil {
+		return "", err
+	}
+	civilID := strings.TrimSpace(got.User.CivilID)
+	if civilID == "" {
+		return "", nil
+	}
+	return "PNOMN-" + strings.ToUpper(civilID), nil
+}
+
+// mapPKIErr нь eID PKI дуудлагын алдааг HTTP-д буулгана: PKI_READ эрхгүй (403)
+// бол Forbidden (frontend "эрх хүлээгдэж байна" харуулна), бусад бол Internal.
+func mapPKIErr(err error) error {
+	if errors.Is(err, eid.ErrPKINotPermitted) {
+		return apperror.Forbidden("eID PKI хандах эрх (PKI_READ) олгогдоогүй байна")
+	}
+	return apperror.InternalCause(fmt.Errorf("eid pki: %w", err))
+}
+
 // EIDRepresentations нь нэвтэрсэн хэрэглэгчийн civil_id-аар ETSI танигч
 // (PNOMN-<civil_id>) угсарч, eID-ээс төлөөлдөг байгууллагуудыг татна.
 // Хэрэглэгч eID-ээр нэвтрээгүй (civil_id хоосон) бол алдаагүйгээр хоосон
 // slice буцаана.
 func (uc *usecase) EIDRepresentations(ctx context.Context, userID string) ([]eid.Representation, error) {
-	got, err := uc.users.GetByID(ctx, users.GetByIDRequest{ID: userID})
+	etsi, err := uc.eidPersonEtsi(ctx, userID)
 	if err != nil {
 		return nil, err
 	}
-	civilID := strings.TrimSpace(got.User.CivilID)
-	if civilID == "" {
+	if etsi == "" {
 		return []eid.Representation{}, nil // eID хэрэглэгч биш
 	}
-	reps, repErr := uc.eid.Representations(ctx, "PNOMN-"+strings.ToUpper(civilID))
+	reps, repErr := uc.eid.Representations(ctx, etsi)
 	if repErr != nil {
 		return nil, apperror.InternalCause(fmt.Errorf("eid representations: %w", repErr))
 	}
 	return reps, nil
+}
+
+// EIDSummary нь иргэний PKI самбарын нэгдсэн тоог буцаана.
+func (uc *usecase) EIDSummary(ctx context.Context, userID string) (*eid.PersonSummary, error) {
+	etsi, err := uc.eidPersonEtsi(ctx, userID)
+	if err != nil || etsi == "" {
+		return nil, err
+	}
+	res, pErr := uc.eid.PersonSummary(ctx, etsi)
+	if pErr != nil {
+		return nil, mapPKIErr(pErr)
+	}
+	return res, nil
+}
+
+// EIDCertificates нь иргэний гэрчилгээний жагсаалт + тоог буцаана.
+func (uc *usecase) EIDCertificates(ctx context.Context, userID string) (*eid.PersonCertificates, error) {
+	etsi, err := uc.eidPersonEtsi(ctx, userID)
+	if err != nil || etsi == "" {
+		return nil, err
+	}
+	res, pErr := uc.eid.PersonCertificates(ctx, etsi)
+	if pErr != nil {
+		return nil, mapPKIErr(pErr)
+	}
+	return res, nil
+}
+
+// EIDDevices нь иргэний холбоотой төхөөрөмжүүдийг буцаана.
+func (uc *usecase) EIDDevices(ctx context.Context, userID string) (*eid.PersonDevices, error) {
+	etsi, err := uc.eidPersonEtsi(ctx, userID)
+	if err != nil || etsi == "" {
+		return nil, err
+	}
+	res, pErr := uc.eid.PersonDevices(ctx, etsi)
+	if pErr != nil {
+		return nil, mapPKIErr(pErr)
+	}
+	return res, nil
+}
+
+// EIDActivity нь RP-scoped auth/sign түүх + тоог буцаана.
+func (uc *usecase) EIDActivity(ctx context.Context, userID string, limit, offset int) (*eid.PersonActivity, error) {
+	etsi, err := uc.eidPersonEtsi(ctx, userID)
+	if err != nil || etsi == "" {
+		return nil, err
+	}
+	res, pErr := uc.eid.PersonActivity(ctx, etsi, limit, offset)
+	if pErr != nil {
+		return nil, mapPKIErr(pErr)
+	}
+	return res, nil
 }
 
 // randomNonce нь IdP-ийн replay-аас хамгаалах 32 hex тэмдэгтийн (16 байт)

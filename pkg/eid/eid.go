@@ -147,6 +147,13 @@ type Client interface {
 	// чадах идэвхтэй байгууллагуудыг буцаана. Иргэн байгууллага төлөөлдөггүй
 	// бол хоосон slice.
 	Representations(ctx context.Context, personEtsi string) ([]Representation, error)
+
+	// Person* нь иргэн өөрийн PKI самбарын endpoint-ууд — PKI_READ эрхтэй RP-д
+	// л нээгдэнэ (эрхгүй бол ErrPKINotPermitted).
+	PersonSummary(ctx context.Context, personEtsi string) (*PersonSummary, error)
+	PersonCertificates(ctx context.Context, personEtsi string) (*PersonCertificates, error)
+	PersonDevices(ctx context.Context, personEtsi string) (*PersonDevices, error)
+	PersonActivity(ctx context.Context, personEtsi string, limit, offset int) (*PersonActivity, error)
 }
 
 // client нь eID Mongolia v3 RP API руу залгах HTTP client.
