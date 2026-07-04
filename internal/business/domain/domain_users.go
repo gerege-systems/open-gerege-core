@@ -61,9 +61,17 @@ type User struct {
 	RoleID      int
 	// eID identity-ийн талбарууд. Зөвхөн eID-ээр нэвтэрсэн хэрэглэгчид
 	// бөглөгдөнө; нууц үгээр бүртгүүлсэн хэрэглэгчдэд хоосон.
-	NationalID        string // регистрийн дугаар (улсын танигч)
-	CivilID           string // иргэний бүртгэлийн дугаар
-	KYCLevel          string // IdP-ийн баталгаажуулалтын түвшин
+	NationalID string // регистрийн дугаар (улсын танигч)
+	CivilID    string // иргэний бүртгэлийн дугаар
+	KYCLevel   string // IdP-ийн баталгаажуулалтын түвшин (сертификатын түвшин)
+	// eID сертификатын дэлгэрэнгүй — login COMPLETE-ийн cert.value (DER)-ээс
+	// задлагдана. Зөвхөн eID хэрэглэгчид бөглөгдөнө.
+	DocumentNumber    string     // төхөөрөмжийн UUID (eID)
+	CertSerial        string     // сертификатын серийн дугаар
+	CertNotBefore     *time.Time // хүчинтэй эхлэх
+	CertNotAfter      *time.Time // дуусах
+	CertIssuer        string     // олгогч CA
+	CertKeyType       string     // нийтийн түлхүүрийн алгоритм
 	CreatedAt         time.Time
 	UpdatedAt         *time.Time
 	DeletedAt         *time.Time

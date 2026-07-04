@@ -2470,11 +2470,61 @@ const docTemplate = `{
                 }
             }
         },
+        "template_internal_http_datatransfers_responses.EIDCertificate": {
+            "type": "object",
+            "properties": {
+                "issuer": {
+                    "type": "string"
+                },
+                "key_type": {
+                    "type": "string"
+                },
+                "not_after": {
+                    "type": "string"
+                },
+                "not_before": {
+                    "type": "string"
+                },
+                "serial": {
+                    "type": "string"
+                }
+            }
+        },
+        "template_internal_http_datatransfers_responses.EIDInfo": {
+            "type": "object",
+            "properties": {
+                "certificate": {
+                    "$ref": "#/definitions/template_internal_http_datatransfers_responses.EIDCertificate"
+                },
+                "civil_id": {
+                    "type": "string"
+                },
+                "document_number": {
+                    "type": "string"
+                },
+                "kyc_level": {
+                    "description": "сертификатын түвшин",
+                    "type": "string"
+                },
+                "national_id": {
+                    "description": "регистрийн дугаар",
+                    "type": "string"
+                }
+            }
+        },
         "template_internal_http_datatransfers_responses.EIDPollResponse": {
             "type": "object",
             "properties": {
                 "created_at": {
                     "type": "string"
+                },
+                "eid": {
+                    "description": "EID нь eID-ээр нэвтэрсэн хэрэглэгчийн identity + сертификатын мэдээлэл.\nНууц үгээр бүртгүүлсэн хэрэглэгчид nil (omitempty).",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/template_internal_http_datatransfers_responses.EIDInfo"
+                        }
+                    ]
                 },
                 "email": {
                     "type": "string"
@@ -2618,6 +2668,14 @@ const docTemplate = `{
             "properties": {
                 "created_at": {
                     "type": "string"
+                },
+                "eid": {
+                    "description": "EID нь eID-ээр нэвтэрсэн хэрэглэгчийн identity + сертификатын мэдээлэл.\nНууц үгээр бүртгүүлсэн хэрэглэгчид nil (omitempty).",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/template_internal_http_datatransfers_responses.EIDInfo"
+                        }
+                    ]
                 },
                 "email": {
                     "type": "string"

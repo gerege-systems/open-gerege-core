@@ -33,6 +33,12 @@ type Users struct {
 	NationalID        *string    `db:"national_id"`
 	CivilID           *string    `db:"civil_id"`
 	KYCLevel          *string    `db:"kyc_level"`
+	DocumentNumber    *string    `db:"document_number"`
+	CertSerial        *string    `db:"cert_serial"`
+	CertNotBefore     *time.Time `db:"cert_not_before"`
+	CertNotAfter      *time.Time `db:"cert_not_after"`
+	CertIssuer        *string    `db:"cert_issuer"`
+	CertKeyType       *string    `db:"cert_key_type"`
 	CreatedAt         time.Time  `db:"created_at"`
 	UpdatedAt         *time.Time `db:"updated_at"`
 	DeletedAt         *time.Time `db:"deleted_at"`
@@ -42,4 +48,4 @@ type Users struct {
 // UserColumns нь SELECT/RETURNING-д ашиглах баганануудын жагсаалт —
 // pgx.RowToStructByName нь нэрээр тааруулдаг тул query-уудыг тогтвортой
 // байлгахаар нэг эх сурвалжид төвлөрүүлэв.
-const UserColumns = "id, username, first_name, last_name, first_name_en, last_name_en, email, password, active, role_id, national_id, civil_id, kyc_level, created_at, updated_at, deleted_at, password_changed_at"
+const UserColumns = "id, username, first_name, last_name, first_name_en, last_name_en, email, password, active, role_id, national_id, civil_id, kyc_level, document_number, cert_serial, cert_not_before, cert_not_after, cert_issuer, cert_key_type, created_at, updated_at, deleted_at, password_changed_at"

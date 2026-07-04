@@ -28,7 +28,10 @@ package eid
 import (
 	"bytes"
 	"context"
+	"crypto/ecdsa"
 	"crypto/rand"
+	"crypto/rsa"
+	"crypto/x509"
 	"encoding/base64"
 	"encoding/json"
 	"errors"
@@ -84,6 +87,20 @@ type Identity struct {
 	SurnameEn   string
 	FullName    string
 	KYCLevel    string
+	// Certificate нь login COMPLETE-ийн cert.value (DER)-ээс задлагдсан
+	// сертификатын дэлгэрэнгүй. Cert байхгүй/задлагдахгүй бол nil (нэвтрэлт
+	// зогсохгүй — зөвхөн нэмэлт мэдээлэл).
+	DocumentNumber string
+	Certificate    *Certificate
+}
+
+// Certificate нь иргэний eID сертификатын нээлттэй хэсэг (X.509-аас задалсан).
+type Certificate struct {
+	Serial    string
+	NotBefore time.Time
+	NotAfter  time.Time
+	Issuer    string // олгогч CA-ийн subject CN
+	KeyType   string // жишээ: "ECDSA P-256", "RSA 2048"
 }
 
 // StartResult нь initiate хариуны клиентэд харагдах хэсэг.
@@ -270,9 +287,11 @@ func (c *client) Session(ctx context.Context, sessionID string, timeoutMs int) (
 	var out struct {
 		State  string `json:"state"`
 		Result *struct {
-			EndResult string `json:"endResult"`
+			EndResult      string `json:"endResult"`
+			DocumentNumber string `json:"documentNumber"`
 		} `json:"result"`
 		Cert *struct {
+			Value            string `json:"value"` // base64 DER — иргэний сертификат
 			CertificateLevel string `json:"certificateLevel"`
 		} `json:"cert"`
 		Person *struct {
@@ -309,22 +328,59 @@ func (c *client) Session(ctx context.Context, sessionID string, timeoutMs int) (
 	if out.Person == nil {
 		return nil, fmt.Errorf("eid session: COMPLETE+OK without person block: %s", snippet(raw))
 	}
-	kyc := ""
-	if out.Cert != nil {
-		kyc = out.Cert.CertificateLevel
+	id := &Identity{
+		CivilID:     out.Person.CivilID,
+		NationalID:  out.Person.RegNo,
+		GivenName:   out.Person.GivenName,
+		Surname:     out.Person.Surname,
+		GivenNameEn: out.Person.GivenNameEn,
+		SurnameEn:   out.Person.SurnameEn,
 	}
-	return &SessionResult{
-		State: StateComplete,
-		Identity: &Identity{
-			CivilID:     out.Person.CivilID,
-			NationalID:  out.Person.RegNo,
-			GivenName:   out.Person.GivenName,
-			Surname:     out.Person.Surname,
-			GivenNameEn: out.Person.GivenNameEn,
-			SurnameEn:   out.Person.SurnameEn,
-			KYCLevel:    kyc,
-		},
-	}, nil
+	if out.Cert != nil {
+		id.KYCLevel = out.Cert.CertificateLevel
+		// cert.value байвал X.509-ийг задлан нээлттэй хэсгийг авна. Алдаа гарвал
+		// зүгээр алгасна — нэвтрэлт зогсохгүй (cert нь зөвхөн нэмэлт мэдээлэл).
+		id.Certificate = parseCertificate(out.Cert.Value)
+	}
+	if out.Result != nil {
+		id.DocumentNumber = out.Result.DocumentNumber
+	}
+	return &SessionResult{State: StateComplete, Identity: id}, nil
+}
+
+// parseCertificate нь base64 DER сертификатыг задлан нээлттэй хэсгийг буцаана.
+// Задлагдахгүй/хоосон бол nil (нэвтрэлтэд саад болохгүй).
+func parseCertificate(b64 string) *Certificate {
+	if strings.TrimSpace(b64) == "" {
+		return nil
+	}
+	der, err := base64.StdEncoding.DecodeString(strings.TrimSpace(b64))
+	if err != nil {
+		return nil
+	}
+	crt, err := x509.ParseCertificate(der)
+	if err != nil {
+		return nil
+	}
+	return &Certificate{
+		Serial:    crt.SerialNumber.Text(16),
+		NotBefore: crt.NotBefore,
+		NotAfter:  crt.NotAfter,
+		Issuer:    crt.Issuer.CommonName,
+		KeyType:   keyTypeOf(crt),
+	}
+}
+
+// keyTypeOf нь сертификатын нийтийн түлхүүрийн алгоритм + хэмжээг буцаана.
+func keyTypeOf(crt *x509.Certificate) string {
+	switch pub := crt.PublicKey.(type) {
+	case *ecdsa.PublicKey:
+		return "ECDSA " + pub.Curve.Params().Name
+	case *rsa.PublicKey:
+		return fmt.Sprintf("RSA %d", pub.N.BitLen())
+	default:
+		return crt.PublicKeyAlgorithm.String()
+	}
 }
 
 // parseVC нь vc талбарыг задлана — anonymous нь string ("7270"), notification нь

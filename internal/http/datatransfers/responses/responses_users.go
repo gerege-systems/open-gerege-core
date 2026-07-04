@@ -25,6 +25,27 @@ type UserResponse struct {
 	RefreshToken string     `json:"refresh_token,omitempty"`
 	CreatedAt    time.Time  `json:"created_at"`
 	UpdatedAt    *time.Time `json:"updated_at"`
+	// EID нь eID-ээр нэвтэрсэн хэрэглэгчийн identity + сертификатын мэдээлэл.
+	// Нууц үгээр бүртгүүлсэн хэрэглэгчид nil (omitempty).
+	EID *EIDInfo `json:"eid,omitempty"`
+}
+
+// EIDInfo нь eidmongolia.mn-ээс login үед авсан бүх нээлттэй мэдээлэл.
+type EIDInfo struct {
+	CivilID        string          `json:"civil_id,omitempty"`
+	NationalID     string          `json:"national_id,omitempty"` // регистрийн дугаар
+	KYCLevel       string          `json:"kyc_level,omitempty"`   // сертификатын түвшин
+	DocumentNumber string          `json:"document_number,omitempty"`
+	Certificate    *EIDCertificate `json:"certificate,omitempty"`
+}
+
+// EIDCertificate нь login COMPLETE-ийн cert.value (DER)-ээс задалсан хэсэг.
+type EIDCertificate struct {
+	Serial    string     `json:"serial,omitempty"`
+	NotBefore *time.Time `json:"not_before,omitempty"`
+	NotAfter  *time.Time `json:"not_after,omitempty"`
+	Issuer    string     `json:"issuer,omitempty"`
+	KeyType   string     `json:"key_type,omitempty"`
 }
 
 func (u *UserResponse) ToV1Domain() domain.User {
@@ -55,7 +76,32 @@ func FromV1Domain(u domain.User) UserResponse {
 		RoleId:      u.RoleID,
 		CreatedAt:   u.CreatedAt,
 		UpdatedAt:   u.UpdatedAt,
+		EID:         eidInfoOf(u),
 	}
+}
+
+// eidInfoOf нь eID identity талбар байвал EIDInfo блок үүсгэнэ; эс бөгөөс nil
+// (нууц үгээр бүртгүүлсэн хэрэглэгчийн хариунд eid талбар огт орохгүй).
+func eidInfoOf(u domain.User) *EIDInfo {
+	if u.CivilID == "" && u.NationalID == "" && u.DocumentNumber == "" {
+		return nil
+	}
+	info := &EIDInfo{
+		CivilID:        u.CivilID,
+		NationalID:     u.NationalID,
+		KYCLevel:       u.KYCLevel,
+		DocumentNumber: u.DocumentNumber,
+	}
+	if u.CertSerial != "" || u.CertNotAfter != nil || u.CertIssuer != "" {
+		info.Certificate = &EIDCertificate{
+			Serial:    u.CertSerial,
+			NotBefore: u.CertNotBefore,
+			NotAfter:  u.CertNotAfter,
+			Issuer:    u.CertIssuer,
+			KeyType:   u.CertKeyType,
+		}
+	}
+	return info
 }
 
 // FromLoginResponse нь /login + /refresh хариуны хэлбэр юм: хэрэглэгчийн

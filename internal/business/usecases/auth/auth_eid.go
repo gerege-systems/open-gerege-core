@@ -231,6 +231,16 @@ func (uc *usecase) EIDPoll(ctx context.Context, req EIDPollRequest) (resp EIDPol
 		})
 		return EIDPollResponse{}, err
 	}
+	// login COMPLETE-ийн cert.value-ээс задалсан сертификатын дэлгэрэнгүйг
+	// (+ documentNumber) хэрэглэгчид хадгална — Profile хуудсанд харуулна.
+	newUser.DocumentNumber = id.DocumentNumber
+	if id.Certificate != nil {
+		newUser.CertSerial = id.Certificate.Serial
+		newUser.CertNotBefore = &id.Certificate.NotBefore
+		newUser.CertNotAfter = &id.Certificate.NotAfter
+		newUser.CertIssuer = id.Certificate.Issuer
+		newUser.CertKeyType = id.Certificate.KeyType
+	}
 
 	upserted, upsertErr := uc.users.UpsertFromEID(ctx, users.UpsertFromEIDRequest{User: newUser})
 	if upsertErr != nil {

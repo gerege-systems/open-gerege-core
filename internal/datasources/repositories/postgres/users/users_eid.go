@@ -71,22 +71,30 @@ func (r *postgreUserRepository) UpsertFromEID(ctx context.Context, inDom *domain
 	var stored records.Users
 	err := r.withRLS(ctx, func(tx pgx.Tx) error {
 		rows, qErr := tx.Query(ctx, `
-			INSERT INTO users(id, username, first_name, last_name, first_name_en, last_name_en, email, password, active, role_id, national_id, civil_id, kyc_level, created_at)
-			VALUES (uuid_generate_v4(), $1, $2, $3, $4, $5, NULL, NULL, true, $6, $7, $8, $9, $10)
+			INSERT INTO users(id, username, first_name, last_name, first_name_en, last_name_en, email, password, active, role_id, national_id, civil_id, kyc_level, document_number, cert_serial, cert_not_before, cert_not_after, cert_issuer, cert_key_type, created_at)
+			VALUES (uuid_generate_v4(), $1, $2, $3, $4, $5, NULL, NULL, true, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)
 			ON CONFLICT (lower(civil_id)) WHERE civil_id IS NOT NULL
 			DO UPDATE SET
-				first_name    = EXCLUDED.first_name,
-				last_name     = EXCLUDED.last_name,
-				first_name_en = EXCLUDED.first_name_en,
-				last_name_en  = EXCLUDED.last_name_en,
-				national_id   = EXCLUDED.national_id,
-				kyc_level     = EXCLUDED.kyc_level,
-				active        = true,
-				updated_at    = now()
+				first_name      = EXCLUDED.first_name,
+				last_name       = EXCLUDED.last_name,
+				first_name_en   = EXCLUDED.first_name_en,
+				last_name_en    = EXCLUDED.last_name_en,
+				national_id     = EXCLUDED.national_id,
+				kyc_level       = EXCLUDED.kyc_level,
+				document_number = EXCLUDED.document_number,
+				cert_serial     = EXCLUDED.cert_serial,
+				cert_not_before = EXCLUDED.cert_not_before,
+				cert_not_after  = EXCLUDED.cert_not_after,
+				cert_issuer     = EXCLUDED.cert_issuer,
+				cert_key_type   = EXCLUDED.cert_key_type,
+				active          = true,
+				updated_at      = now()
 			RETURNING `+records.UserColumns+`
 		`,
 			rec.Username, rec.FirstName, rec.LastName, rec.FirstNameEn, rec.LastNameEn,
-			rec.RoleId, rec.NationalID, rec.CivilID, rec.KYCLevel, rec.CreatedAt)
+			rec.RoleId, rec.NationalID, rec.CivilID, rec.KYCLevel,
+			rec.DocumentNumber, rec.CertSerial, rec.CertNotBefore, rec.CertNotAfter, rec.CertIssuer, rec.CertKeyType,
+			rec.CreatedAt)
 		if qErr != nil {
 			return qErr
 		}
