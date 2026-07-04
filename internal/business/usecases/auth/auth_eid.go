@@ -9,6 +9,7 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	"template/internal/apperror"
@@ -111,6 +112,7 @@ func (uc *usecase) EIDStartByNationalID(ctx context.Context, nationalID string) 
 		logger.InfoWithContext(ctx, fmt.Sprintf("Lower %s", funcName), fields)
 	}()
 
+	nationalID = strings.TrimSpace(nationalID)
 	if nationalID == "" {
 		err = apperror.BadRequest("national_id is required")
 		return EIDStartResponse{}, err
