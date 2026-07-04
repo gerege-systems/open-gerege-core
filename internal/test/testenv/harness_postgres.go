@@ -24,6 +24,8 @@ import (
 	"path/filepath"
 	"runtime"
 	"sort"
+	"strconv"
+	"strings"
 	"testing"
 	"time"
 
@@ -117,10 +119,12 @@ func startPostgres(t *testing.T, runMigrations bool) *pgxpool.Pool {
 	return pool
 }
 
-// applyMigrations нь бүх .up.sql файлыг лексикографийн дарааллаар
-// ажиллуулна. integration тест нь runner-ийн транзакц /
-// schema_migrations бүртгэлээс салангид хэвээр байхын тулд cmd/migration-г
-// дахин ашиглахын оронд harness дотор inline байлгасан.
+// applyMigrations нь бүх .up.sql файлыг ТООН дарааллаар (файлын нэрний
+// эхний дугаар) ажиллуулна — лексикограф эрэмбэ "10_"-ыг "1_"-ээс өмнө
+// тавьдаг тул болохгүй (runner-ийн listFiles-тэй ижил дүрэм).
+// integration тест нь runner-ийн транзакц / schema_migrations бүртгэлээс
+// салангид хэвээр байхын тулд cmd/migration-г дахин ашиглахын оронд
+// harness дотор inline байлгасан.
 func applyMigrations(ctx context.Context, pool *pgxpool.Pool) error {
 	dir := migrationsDir()
 	entries, err := os.ReadDir(dir)
@@ -134,7 +138,13 @@ func applyMigrations(ctx context.Context, pool *pgxpool.Pool) error {
 			files = append(files, name)
 		}
 	}
-	sort.Strings(files)
+	sort.Slice(files, func(i, j int) bool {
+		ni, nj := migrationNumber(files[i]), migrationNumber(files[j])
+		if ni != nj {
+			return ni < nj
+		}
+		return files[i] < files[j]
+	})
 
 	for _, name := range files {
 		full := filepath.Join(dir, name)
@@ -149,6 +159,20 @@ func applyMigrations(ctx context.Context, pool *pgxpool.Pool) error {
 		}
 	}
 	return nil
+}
+
+// migrationNumber нь "N_name.up.sql" нэрнээс эхний N дугаарыг буцаана;
+// дугааргүй файл хамгийн сүүлд эрэмбэлэгдэнэ.
+func migrationNumber(name string) int {
+	i := strings.IndexByte(name, '_')
+	if i <= 0 {
+		return int(^uint(0) >> 1)
+	}
+	n, err := strconv.Atoi(name[:i])
+	if err != nil {
+		return int(^uint(0) >> 1)
+	}
+	return n
 }
 
 // migrationsDir нь go.mod олдтол энэ эх файлаас дээш алхах замаар
