@@ -39,6 +39,13 @@ psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-E
 	-- байгаа schema-руу дахин ажиллуулахад зөв байлгана).
 	GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO ${APP_DB_USER};
 	GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO ${APP_DB_USER};
+
+	-- Тэмдэглэл: эдгээр нь өргөн (бүх хүснэгтэд DML) default. RLS-гүй глобал
+	-- config хүснэгтүүд (permissions / role_permissions / ai_prompts /
+	-- ai_knowledge) дээрх эрхийг migration 17 нь repo-ийн бодит хэрэглээнд
+	-- нийцүүлж (defense-in-depth) багасгана. Тэр migration нь role нэрийг
+	-- 'app_user' гэж үздэг тул APP_DB_USER-г өөр нэрээр тохируулбал тэнд
+	-- заасан REVOKE-уудыг гараар давтана уу.
 EOSQL
 
 echo "initdb: least-privilege role '${APP_DB_USER}' (NOSUPERUSER NOBYPASSRLS) ready"
