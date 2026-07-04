@@ -9,12 +9,15 @@
 package migration
 
 import (
+	"cmp"
 	"context"
 	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
-	"sort"
+	"slices"
+	"strconv"
+	"strings"
 
 	"template/internal/constants"
 	"template/pkg/logger"
@@ -136,7 +139,7 @@ func (r *Runner) Down(ctx context.Context) error {
 		if err != nil {
 			return err
 		}
-		sort.Sort(sort.Reverse(sort.StringSlice(files)))
+		slices.Reverse(files)
 		for _, file := range files {
 			name := filepath.Base(file)
 			r.info("reverting migration", logger.Fields{
@@ -166,8 +169,31 @@ func (r *Runner) listFiles(action string) ([]string, error) {
 	if err != nil {
 		return nil, errors.New("glob migration files")
 	}
-	sort.Strings(files)
+	// Лексикограф эрэмбэ ашиглаж БОЛОХГҮЙ: "10_" нь "1_"-ээс өмнө ордог
+	// ('0' < '_') тул шинэ хоосон DB дээр 10-р migration 1-ээс түрүүлж
+	// ажиллана. Файлын нэрний эхний дугаараар тоон эрэмбэлнэ.
+	slices.SortFunc(files, func(a, b string) int {
+		if c := cmp.Compare(migrationNumber(a), migrationNumber(b)); c != 0 {
+			return c
+		}
+		return cmp.Compare(filepath.Base(a), filepath.Base(b))
+	})
 	return files, nil
+}
+
+// migrationNumber нь "N_name.up.sql" маягийн файлын нэрнээс эхний N
+// дугаарыг буцаана; дугааргүй файл хамгийн сүүлд эрэмбэлэгдэнэ.
+func migrationNumber(path string) int {
+	name := filepath.Base(path)
+	i := strings.IndexByte(name, '_')
+	if i <= 0 {
+		return int(^uint(0) >> 1)
+	}
+	n, err := strconv.Atoi(name[:i])
+	if err != nil {
+		return int(^uint(0) >> 1)
+	}
+	return n
 }
 
 func loadApplied(ctx context.Context, conn *pgxpool.Conn) (map[string]bool, error) {
