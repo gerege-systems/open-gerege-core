@@ -190,6 +190,17 @@ func NewApp() (*App, error) {
 		ScopePrompt: config.AppConfig.AIScopePrompt,
 	})
 
+	// TRUSTED_PROXIES хоосон бол clientIP() нь X-Forwarded-For-д итгэхгүй тул
+	// урвуу proxy-гийн ард (энэ template-ийн топологи: nginx → web BFF → api,
+	// api нь нийтийн порт-гүй) БҮХ хүсэлт нэг proxy peer IP дор орж, per-IP
+	// rate-limit ба audit-ийн клиент-IP таних нь ажиллахаа болино. Boot үед
+	// сануулна (fail-closed биш — шууд интернетэд ил api-д proxy байхгүй байж
+	// болно). BFF нь клиент IP-г XFF-ээр дамжуулдаг (frontend lib/api.ts).
+	if len(config.AppConfig.TrustedProxiesList()) == 0 {
+		logger.Warn("TRUSTED_PROXIES хоосон — клиент IP нь proxy peer рүү унана; урвуу proxy-гийн ард per-IP rate-limit ба audit клиент-IP таних ажиллахгүй. proxy/docker сүлжээгээ TRUSTED_PROXIES-д заана уу (docs/DEPLOYMENT.md).",
+			logger.Fields{constants.LoggerCategory: constants.LoggerCategoryConfig})
+	}
+
 	// Нэргүй /auth гадаргуун дээр IP тус бүрт минутанд 5 хүсэлт зөвшөөрнө.
 	authRateLimiter := middlewares.NewRateLimiter(rate.Limit(5.0/60.0), 5)
 	// Gemini дуудлага үнэтэй — /ai-д IP тус бүрт минутанд 20 хүсэлт, burst 5.
