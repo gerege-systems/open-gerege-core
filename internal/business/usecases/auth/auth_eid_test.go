@@ -51,7 +51,7 @@ func TestEIDStart(t *testing.T) {
 				DeviceLinkURL:    "https://eidmongolia.mn/dl?deviceLinkType=QR&sessionToken=tok",
 			}, nil).Once()
 
-		resp, err := f.usecase.EIDStart(context.Background())
+		resp, err := f.usecase.EIDStart(context.Background(), "")
 		require.NoError(t, err)
 		assert.Equal(t, "sess-1", resp.SessionID)
 		assert.Equal(t, "1234", resp.VerificationCode)
@@ -63,7 +63,7 @@ func TestEIDStart(t *testing.T) {
 		f.eid.On("QRInitiate", mock.Anything, mock.Anything, mock.Anything, mock.Anything).
 			Return(nil, eid.ErrInitiateRejected).Once()
 
-		_, err := f.usecase.EIDStart(context.Background())
+		_, err := f.usecase.EIDStart(context.Background(), "")
 		requireDomainType(t, err, apperror.ErrTypeBadRequest)
 	})
 
@@ -72,7 +72,7 @@ func TestEIDStart(t *testing.T) {
 		f.eid.On("QRInitiate", mock.Anything, mock.Anything, mock.Anything, mock.Anything).
 			Return(nil, errors.New("dial tcp: timeout")).Once()
 
-		_, err := f.usecase.EIDStart(context.Background())
+		_, err := f.usecase.EIDStart(context.Background(), "")
 		requireDomainType(t, err, apperror.ErrTypeInternal)
 	})
 }

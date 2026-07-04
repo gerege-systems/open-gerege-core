@@ -41,10 +41,10 @@ type Usecase interface {
 	// шинэ нууц үгийг тохируулна.
 	ResetPassword(ctx context.Context, req ResetPasswordRequest) error
 
-	// EIDStart нь eID (QR/deep-link) нэвтрэлтийг IdP дээр эхлүүлж, клиент
-	// харуулах session мэдээллийг (session_id, device_link_url, verification_code,
-	// expires_at) буцаана.
-	EIDStart(ctx context.Context) (EIDStartResponse, error)
+	// EIDStart нь eID device-link нэвтрэлтийг IdP дээр эхлүүлж, клиент харуулах session мэдээллийг
+	// буцаана. callbackURL хоосон = CROSS-DEVICE (desktop QR); хоосон биш = SAME-DEVICE (mobile
+	// browser App2App — approve-ийн дараа browser callback руу буцна).
+	EIDStart(ctx context.Context, callbackURL string) (EIDStartResponse, error)
 	// EIDStartByNationalID нь иргэний РД (national_id)-аар нэвтрэлтийг IdP дээр
 	// эхлүүлж, тухайн РД-тэй холбоотой төхөөрөмж рүү баталгаажуулах prompt push
 	// хийлгэнэ. device_link шаардлагагүй тул зөвхөн session_id, verification_code,

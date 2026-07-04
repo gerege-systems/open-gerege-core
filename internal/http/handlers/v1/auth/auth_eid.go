@@ -4,6 +4,7 @@
 package auth
 
 import (
+	"encoding/json"
 	"net/http"
 
 	authuc "template/internal/business/usecases/auth"
@@ -33,7 +34,17 @@ func (h Handler) EIDStart(w http.ResponseWriter, r *http.Request) error {
 	)
 	ctx := r.Context()
 
-	result, err := h.usecase.EIDStart(ctx)
+	// callbackUrl (сонголт): SAME-DEVICE (mobile browser) үед frontend <origin>/auth/eid/callback
+	// дамжуулна; хоосон/байхгүй бол CROSS-DEVICE (desktop QR). Body байхгүй ч зүгээр (cross-device) —
+	// декод алдааг үл хайхарч callbackUrl-ийг хоосон гэж үзнэ.
+	var body struct {
+		CallbackURL string `json:"callbackUrl"`
+	}
+	if r.Body != nil {
+		_ = json.NewDecoder(r.Body).Decode(&body)
+	}
+
+	result, err := h.usecase.EIDStart(ctx, body.CallbackURL)
 	if err != nil {
 		logger.ErrorWithContext(ctx, "EIDStart failed in controller", logger.Fields{
 			"controller": controllerName,

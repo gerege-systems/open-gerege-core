@@ -24,9 +24,11 @@ import (
 // хариу буцаах зайтай.
 const eidPollTimeoutMs = 25000
 
-// EIDStart нь eID QR/deep-link нэвтрэлтийг IdP дээр эхлүүлнэ. Config-оос
-// display text + callback URL, crypto/rand-аар nonce ашиглана.
-func (uc *usecase) EIDStart(ctx context.Context) (resp EIDStartResponse, err error) {
+// EIDStart нь eID device-link нэвтрэлтийг IdP дээр эхлүүлнэ. callbackURL хоосон бол CROSS-DEVICE
+// (desktop QR — browser өөрөө poll хийнэ); хоосон биш бол SAME-DEVICE (mobile browser App2App —
+// утас approve-ийн дараа browser-ийг тэр URL руу буцаана). callbackURL нь frontend-ээс ирсэн
+// <origin>/auth/eid/callback байх ба eID backend түүнийг стандарт зам руу force-normalize хийнэ.
+func (uc *usecase) EIDStart(ctx context.Context, callbackURL string) (resp EIDStartResponse, err error) {
 	const (
 		usecaseName = "auth"
 		funcName    = "EIDStart"
@@ -58,13 +60,11 @@ func (uc *usecase) EIDStart(ctx context.Context) (resp EIDStartResponse, err err
 		return EIDStartResponse{}, err
 	}
 
-	// Smart-ID v3 Web2App CROSS-DEVICE: callbackUrl-г ХООСОН дамжуулна. Desktop
-	// дээрх browser нь QR-аа гар утсаар уншуулаад, иргэн eID app-д баталгаажуулсны
-	// дараа device_link_url дотор callbackUrl байхгүй тул утасны browser callback
-	// руу redirect хийхгүй — эх browser зүгээр /eid/poll-оор төлвийг хүлээж нэвтэрнэ.
-	// EID_CALLBACK_URL config нь зөвхөн ирээдүйн same-device (tap-through) урсгалд
-	// зориулагдсан тул энд ашиглахгүй.
-	start, initErr := uc.eid.QRInitiate(ctx, uc.cfg.EIDDisplayText, "", nonce)
+	// callbackURL хоосон (CROSS-DEVICE, desktop QR): eID backend утас руу callback дамжуулахгүй,
+	// desktop browser device_link/QR-аа уншуулаад /eid/poll-оор нэвтэрнэ. callbackURL хоосон биш
+	// (SAME-DEVICE, mobile browser App2App): утас approve хийсний дараа browser-ийг callback руу
+	// буцаана. eID backend callbackURL-ийг стандарт зам (/auth/eid/callback) руу force-normalize хийнэ.
+	start, initErr := uc.eid.QRInitiate(ctx, uc.cfg.EIDDisplayText, callbackURL, nonce)
 	if initErr != nil {
 		err = mapInitiateErr(initErr, "eID session эхлүүлэх боломжгүй байна")
 		logger.ErrorWithContext(ctx, "EIDStart failed: initiate error", logger.Fields{

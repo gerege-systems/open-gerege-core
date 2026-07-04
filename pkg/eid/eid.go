@@ -211,9 +211,13 @@ type authInitiateBody struct {
 	SignatureProtocol string        `json:"signatureProtocol"`
 	RPChallenge       string        `json:"rpChallenge"`
 	Interactions      []interaction `json:"interactions"`
+	// InitialCallbackURL — SAME-DEVICE (mobile browser App2App) буцах URL. Хоосон бол CROSS-DEVICE
+	// (desktop QR/push): eID backend утас руу callback дамжуулахгүй, browser өөрөө poll хийнэ.
+	// eID backend үүнийг өөрийн стандарт зам (/auth/eid/callback) руу force-normalize хийдэг.
+	InitialCallbackURL string `json:"initialCallbackUrl,omitempty"`
 }
 
-func (c *client) newAuthBody(displayText string) (authInitiateBody, error) {
+func (c *client) newAuthBody(displayText, callbackURL string) (authInitiateBody, error) {
 	challenge, err := randomHashB64()
 	if err != nil {
 		return authInitiateBody{}, err
@@ -226,17 +230,20 @@ func (c *client) newAuthBody(displayText string) (authInitiateBody, error) {
 		dt = dt[:60]
 	}
 	return authInitiateBody{
-		RelyingPartyUUID:  c.rpUUID,
-		RelyingPartyName:  c.rpName,
-		CertificateLevel:  c.certLevel,
-		SignatureProtocol: "ACSP_V2",
-		RPChallenge:       challenge,
-		Interactions:      []interaction{{Type: "displayTextAndPIN", DisplayText60: dt}},
+		RelyingPartyUUID:   c.rpUUID,
+		RelyingPartyName:   c.rpName,
+		CertificateLevel:   c.certLevel,
+		SignatureProtocol:  "ACSP_V2",
+		RPChallenge:        challenge,
+		Interactions:       []interaction{{Type: "displayTextAndPIN", DisplayText60: dt}},
+		InitialCallbackURL: callbackURL,
 	}, nil
 }
 
-func (c *client) QRInitiate(ctx context.Context, displayText, _, _ string) (*StartResult, error) {
-	body, err := c.newAuthBody(displayText)
+// QRInitiate — device-link auth эхлүүлнэ. callbackURL хоосон бол CROSS-DEVICE (desktop QR); хоосон
+// биш бол SAME-DEVICE (mobile browser App2App — утас approve-ийн дараа browser-ийг буцаана).
+func (c *client) QRInitiate(ctx context.Context, displayText, callbackURL, _ string) (*StartResult, error) {
+	body, err := c.newAuthBody(displayText, callbackURL)
 	if err != nil {
 		return nil, fmt.Errorf("eid: build challenge: %w", err)
 	}
@@ -269,7 +276,8 @@ func (c *client) QRInitiate(ctx context.Context, displayText, _, _ string) (*Sta
 }
 
 func (c *client) Initiate(ctx context.Context, nationalID, displayText, _ string) (*StartResult, error) {
-	body, err := c.newAuthBody(displayText)
+	// РД push нь CROSS-DEVICE (утас руу push, browser тусдаа) — callbackURL хоосон.
+	body, err := c.newAuthBody(displayText, "")
 	if err != nil {
 		return nil, fmt.Errorf("eid: build challenge: %w", err)
 	}

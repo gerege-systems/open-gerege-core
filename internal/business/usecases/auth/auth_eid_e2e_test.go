@@ -174,7 +174,7 @@ func TestE2E_EIDQRLoginCreatesUserAndIssuesTokens(t *testing.T) {
 	authUC, usersUC := buildEIDStack(t, srv.URL)
 
 	// 1. QR нэвтрэлт эхлүүлнэ — QR агуулга нь bare sessionID (demo-той ижил) + vc.
-	start, err := authUC.EIDStart(context.Background())
+	start, err := authUC.EIDStart(context.Background(), "")
 	require.NoError(t, err)
 	require.NotEmpty(t, start.SessionID)
 	assert.Equal(t, "1234", start.VerificationCode)
