@@ -72,12 +72,6 @@ const (
 	// гаргаж чадалгүй "серверт холбогдоход алдаа" өгдөг).
 	defaultCertLevel = "ADVANCED"
 	maxRespBytes     = 256 << 10
-	// deviceLinkType = Web2App — eID Mongolia-гийн ӨӨРИЙН web QR нэвтрэлт
-	// cross-device (desktop browser → утсаар QR уншуулах) үед ч Web2App
-	// ашигладаг (Smart-ID v3 §3). "QR" төрлийг апп өөр урсгал гэж үзэж
-	// device-link-ийг задлаж чадалгүй унадаг тул Web2App заавал.
-	deviceLinkType = "Web2App"
-	sessionType    = "auth"
 )
 
 // Identity нь IdP-ийн баталгаажуулсан иргэний таних мэдээлэл юм.
@@ -221,10 +215,15 @@ func (c *client) QRInitiate(ctx context.Context, displayText, _, _ string) (*Sta
 	if jErr := json.Unmarshal(raw, &out); jErr != nil || out.SessionID == "" {
 		return nil, fmt.Errorf("eid initiate: empty/invalid sessionID: %s", snippet(raw))
 	}
+	// QR-д кодлох агуулга нь ЗҮГЭЭР session UUID — eID Mongolia-гийн ажилладаг
+	// demo (eidmongolia.mn/demo) QR-даа sessionID-г шууд тавьдаг (device-link URL
+	// БИШ). Апп-ийн QR scanner UUID-г session ID гэж тайлбарлаж, өөрийн серверт
+	// (/v3/mobile/session/{id}) резолв хийнэ. `https://…/dl?deviceLinkType=…` URL
+	// тавьбал апп задалж чадалгүй унадаг.
 	return &StartResult{
 		SessionID:        out.SessionID,
 		VerificationCode: parseVC(out.VC),
-		DeviceLinkURL:    buildDeviceLink(out.DeviceLinkBase, out.SessionToken),
+		DeviceLinkURL:    out.SessionID,
 	}, nil
 }
 
@@ -326,19 +325,6 @@ func (c *client) Session(ctx context.Context, sessionID string, timeoutMs int) (
 			KYCLevel:    kyc,
 		},
 	}, nil
-}
-
-// buildDeviceLink нь QR-д зориулсан Web2App/QR device-link URL-г угсарна. RP өөрөө
-// render хийсэн QR тул authCode HMAC шаардлагагүй (URL нь зөвхөн иргэний eID апп-д
-// уншуулагдана, гуравдагч апп дамждаггүй — eid-mongolia StartRPQR-ийн зан төлөв).
-func buildDeviceLink(base, sessionToken string) string {
-	base = strings.TrimRight(strings.TrimSpace(base), "/")
-	if base == "" || sessionToken == "" {
-		return ""
-	}
-	return base + "?deviceLinkType=" + deviceLinkType +
-		"&sessionToken=" + url.QueryEscape(sessionToken) +
-		"&sessionType=" + sessionType + "&version=1.0&lang=mn"
 }
 
 // parseVC нь vc талбарыг задлана — anonymous нь string ("7270"), notification нь

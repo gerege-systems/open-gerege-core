@@ -173,13 +173,12 @@ func TestE2E_EIDQRLoginCreatesUserAndIssuesTokens(t *testing.T) {
 
 	authUC, usersUC := buildEIDStack(t, srv.URL)
 
-	// 1. QR нэвтрэлт эхлүүлнэ — device link + vc.
+	// 1. QR нэвтрэлт эхлүүлнэ — QR агуулга нь bare sessionID (demo-той ижил) + vc.
 	start, err := authUC.EIDStart(context.Background())
 	require.NoError(t, err)
 	require.NotEmpty(t, start.SessionID)
 	assert.Equal(t, "1234", start.VerificationCode)
-	assert.Contains(t, start.DeviceLinkURL, "eidmongolia.mn/dl")
-	assert.Contains(t, start.DeviceLinkURL, "deviceLinkType=Web2App")
+	assert.Equal(t, start.SessionID, start.DeviceLinkURL, "QR агуулга нь session UUID байх ёстой")
 
 	// Регресс: сервер rpChallenge-ийг ХООСОН БИШ хүлээж авсан байх (hash биш).
 	fake.mu.Lock()

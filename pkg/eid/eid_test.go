@@ -66,9 +66,9 @@ func TestQRInitiate(t *testing.T) {
 	if res.VerificationCode != "7270" {
 		t.Errorf("vc = %s", res.VerificationCode)
 	}
-	want := "https://eidmongolia.mn/dl?deviceLinkType=Web2App&sessionToken=tok-abc&sessionType=auth&version=1.0&lang=mn"
-	if res.DeviceLinkURL != want {
-		t.Errorf("deviceLink =\n  %s\nwant\n  %s", res.DeviceLinkURL, want)
+	// QR агуулга нь ЗҮГЭЭР session UUID (ажилладаг eidmongolia.mn/demo-той ижил).
+	if res.DeviceLinkURL != "sess-1" {
+		t.Errorf("QR content = %q, want bare sessionID %q", res.DeviceLinkURL, "sess-1")
 	}
 }
 
