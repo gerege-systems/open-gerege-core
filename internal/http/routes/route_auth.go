@@ -19,21 +19,24 @@ import (
 // eID нэвтрэлт (/eid/start, /eid/poll) болон session-ийн амьдралын мөчлөг
 // (/refresh, /logout) үлдсэн. Бүгд rate limiter + чанга body хязгаар авдаг.
 type authRoute struct {
-	handler        authhandler.Handler
-	router         chi.Router
-	rateLimiter    *middlewares.RateLimiter
-	authMiddleware func(http.Handler) http.Handler
+	handler         authhandler.Handler
+	router          chi.Router
+	rateLimiter     *middlewares.RateLimiter
+	pollRateLimiter *middlewares.RateLimiter
+	authMiddleware  func(http.Handler) http.Handler
 }
 
-// NewAuthRoute нь route модулийг бүтээдэг. Rate limiter-г дуудагч
-// эзэмшдэг тул түүний cleanup goroutine-г graceful shutdown үед Stop()
-// хийж болно; auth middleware нь users route-той хуваалцагддаг.
-func NewAuthRoute(router chi.Router, authUC auth.Usecase, auditUC audit.Usecase, authMiddleware func(http.Handler) http.Handler, rateLimiter *middlewares.RateLimiter) *authRoute {
+// NewAuthRoute нь route модулийг бүтээдэг. Rate limiter-уудыг дуудагч
+// эзэмшдэг тул тэдгээрийн cleanup goroutine-г graceful shutdown үед Stop()
+// хийж болно; auth middleware нь users route-той хуваалцагддаг. pollRateLimiter
+// нь /eid/poll-д зориулсан тусдаа сул хязгаарлагч (long-poll-ийг 429-дэхгүй).
+func NewAuthRoute(router chi.Router, authUC auth.Usecase, auditUC audit.Usecase, authMiddleware func(http.Handler) http.Handler, rateLimiter, pollRateLimiter *middlewares.RateLimiter) *authRoute {
 	return &authRoute{
-		handler:        authhandler.NewHandlerWithAudit(authUC, auditUC),
-		router:         router,
-		rateLimiter:    rateLimiter,
-		authMiddleware: authMiddleware,
+		handler:         authhandler.NewHandlerWithAudit(authUC, auditUC),
+		router:          router,
+		rateLimiter:     rateLimiter,
+		pollRateLimiter: pollRateLimiter,
+		authMiddleware:  authMiddleware,
 	}
 }
 
@@ -65,11 +68,15 @@ func (rt *authRoute) Routes() {
 			rl.Post("/logout", v1.Wrap(rt.handler.Logout))
 		})
 
-		// Rate limiter-ГҮЙ дэд бүлэг — /eid/poll. Frontend нь session-ийг
-		// ~2.5с тутамд long-poll-оор асуудаг тул минут тутам 5 хүсэлтийн чанга
-		// хязгаарт орвол байнга 429 болж, амжилттай COMPLETE хариу хэзээ ч
-		// гарахгүй болно. Иймээс poll-ийг тэр хязгаараас чөлөөлнө (body хязгаар
-		// + ServiceRLSContext бүлгийн түвшинд хэвээр үйлчилнэ).
-		r.Post("/eid/poll", v1.Wrap(rt.handler.EIDPoll))
+		// /eid/poll — frontend нь session-ийг ~2.5с тутамд long-poll-оор
+		// асуудаг тул /auth-ийн чанга 5/мин хязгаарт орвол байнга 429 болж
+		// амжилттай COMPLETE хэзээ ч гарахгүй. Иймд тусдаа СУЛ limiter
+		// (~60/мин, burst 30): хууль ёсны poll-д хангалттай зайтай ч нэг
+		// IP-гээс хязгааргүй concurrent 25с long-poll эхлүүлэх slow-DoS-д тааз
+		// тавина (body хязгаар + ServiceRLSContext бүлгийн түвшинд хэвээр).
+		r.Group(func(pl chi.Router) {
+			pl.Use(rt.pollRateLimiter.Middleware())
+			pl.Post("/eid/poll", v1.Wrap(rt.handler.EIDPoll))
+		})
 	})
 }
