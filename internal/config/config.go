@@ -162,8 +162,13 @@ func InitializeAppConfig() error {
 	if AppConfig.Port < 1 || AppConfig.Port > 65535 {
 		return fmt.Errorf("PORT must be between 1 and 65535, got %d", AppConfig.Port)
 	}
-	if AppConfig.JWTExpired < 1 || AppConfig.JWTExpired > 720 {
-		return fmt.Errorf("JWT_EXPIRED must be between 1 and 720 hours, got %d", AppConfig.JWTExpired)
+	// ACCESS токены амьдрах хугацаа. Дээд хязгаарыг 24ц болгож бариулав:
+	// access токеныг Redis доголдвол revoke хийхэд саатал гарч болзошгүй тул
+	// (logout/нууц үг солилтын cutoff шалгалт) урт TTL нь revocation-ийн цонхыг
+	// уртасгана. Урт сессийг refresh токен (JWT_REFRESH_EXPIRED, хоногоор)
+	// зохицуулна — access богино байх ёстой.
+	if AppConfig.JWTExpired < 1 || AppConfig.JWTExpired > 24 {
+		return fmt.Errorf("JWT_EXPIRED must be between 1 and 24 hours, got %d", AppConfig.JWTExpired)
 	}
 	if AppConfig.JWTRefreshExpired < 1 || AppConfig.JWTRefreshExpired > 365 {
 		return fmt.Errorf("JWT_REFRESH_EXPIRED must be between 1 and 365 days, got %d", AppConfig.JWTRefreshExpired)
