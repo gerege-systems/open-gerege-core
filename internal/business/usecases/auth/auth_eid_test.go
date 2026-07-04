@@ -80,7 +80,7 @@ func TestEIDStart(t *testing.T) {
 func TestEIDStartByNationalID(t *testing.T) {
 	t.Run("empty national_id is rejected before any provider call", func(t *testing.T) {
 		f := newFixture(t)
-		_, err := f.usecase.EIDStartByNationalID(context.Background(), "  ")
+		_, err := f.usecase.EIDStartByNationalID(context.Background(), "  ", "")
 		requireDomainType(t, err, apperror.ErrTypeBadRequest)
 	})
 
@@ -89,7 +89,7 @@ func TestEIDStartByNationalID(t *testing.T) {
 		f.eid.On("Initiate", mock.Anything, "УБ99887766", "template.gerege.mn", mock.AnythingOfType("string")).
 			Return(&eid.StartResult{SessionID: "sess-2", VerificationCode: "5678"}, nil).Once()
 
-		resp, err := f.usecase.EIDStartByNationalID(context.Background(), "УБ99887766")
+		resp, err := f.usecase.EIDStartByNationalID(context.Background(), "УБ99887766", "")
 		require.NoError(t, err)
 		assert.Equal(t, "sess-2", resp.SessionID)
 		assert.Equal(t, "5678", resp.VerificationCode)
@@ -101,7 +101,7 @@ func TestEIDStartByNationalID(t *testing.T) {
 		f.eid.On("Initiate", mock.Anything, mock.Anything, mock.Anything, mock.Anything).
 			Return(nil, eid.ErrInitiateRejected).Once()
 
-		_, err := f.usecase.EIDStartByNationalID(context.Background(), "УБ00000000")
+		_, err := f.usecase.EIDStartByNationalID(context.Background(), "УБ00000000", "")
 		requireDomainType(t, err, apperror.ErrTypeBadRequest)
 	})
 
@@ -110,7 +110,7 @@ func TestEIDStartByNationalID(t *testing.T) {
 		f.eid.On("Initiate", mock.Anything, mock.Anything, mock.Anything, mock.Anything).
 			Return(nil, errors.New("connection refused")).Once()
 
-		_, err := f.usecase.EIDStartByNationalID(context.Background(), "УБ11111111")
+		_, err := f.usecase.EIDStartByNationalID(context.Background(), "УБ11111111", "")
 		requireDomainType(t, err, apperror.ErrTypeInternal)
 	})
 }

@@ -140,7 +140,7 @@ type Client interface {
 	// Initiate нь иргэний РД (civil_id)-аар нэвтрэлтийг эхлүүлнэ — IdP нь тухайн
 	// РД-тэй холбоотой бүртгэлтэй төхөөрөмж рүү баталгаажуулах push мэдэгдэл
 	// илгээдэг. device_link шаардлагагүй тул хариунд DeviceLinkURL хоосон.
-	Initiate(ctx context.Context, nationalID, displayText, nonce string) (*StartResult, error)
+	Initiate(ctx context.Context, nationalID, displayText, callbackURL string) (*StartResult, error)
 	// Session нь session-ийн төлвийг long-poll-оор асууна (timeoutMs хүртэл).
 	Session(ctx context.Context, sessionID string, timeoutMs int) (*SessionResult, error)
 	// Representations нь тухайн хүн (personEtsi = PNOMN-<civil_id>)-ий төлөөлж
@@ -275,9 +275,12 @@ func (c *client) QRInitiate(ctx context.Context, displayText, callbackURL, _ str
 	}, nil
 }
 
-func (c *client) Initiate(ctx context.Context, nationalID, displayText, _ string) (*StartResult, error) {
-	// РД push нь CROSS-DEVICE (утас руу push, browser тусдаа) — callbackURL хоосон.
-	body, err := c.newAuthBody(displayText, "")
+// Initiate — РД (national ID)-аар push нэвтрэлт эхлүүлнэ. callbackURL хоосон бол CROSS-DEVICE
+// (desktop browser + утас руу push — browser өөрөө poll хийнэ); хоосон биш бол SAME-DEVICE
+// (утасны browser — push ижил утас руу ирж, approve хийсний дараа eID app browser-ийг callback
+// руу буцаана). eID backend callbackURL-ийг стандарт зам (/auth/eid/callback) руу normalize хийнэ.
+func (c *client) Initiate(ctx context.Context, nationalID, displayText, callbackURL string) (*StartResult, error) {
+	body, err := c.newAuthBody(displayText, callbackURL)
 	if err != nil {
 		return nil, fmt.Errorf("eid: build challenge: %w", err)
 	}

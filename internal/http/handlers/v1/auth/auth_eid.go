@@ -97,7 +97,7 @@ func (h Handler) EIDStartByNationalID(w http.ResponseWriter, r *http.Request) er
 		return v1.RespondWithError(w, r, err)
 	}
 
-	result, err := h.usecase.EIDStartByNationalID(ctx, req.NationalID)
+	result, err := h.usecase.EIDStartByNationalID(ctx, req.NationalID, req.CallbackUrl)
 	if err != nil {
 		logger.ErrorWithContext(ctx, "EIDStartByNationalID failed in controller", logger.Fields{
 			"controller": controllerName,

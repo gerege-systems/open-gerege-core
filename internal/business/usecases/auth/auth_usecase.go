@@ -49,7 +49,7 @@ type Usecase interface {
 	// эхлүүлж, тухайн РД-тэй холбоотой төхөөрөмж рүү баталгаажуулах prompt push
 	// хийлгэнэ. device_link шаардлагагүй тул зөвхөн session_id, verification_code,
 	// expires_at буцна; дуусгахдаа QR урсгалтай ижил EIDPoll ашиглана.
-	EIDStartByNationalID(ctx context.Context, nationalID string) (EIDStartResponse, error)
+	EIDStartByNationalID(ctx context.Context, nationalID, callbackURL string) (EIDStartResponse, error)
 	// EIDPoll нь session-ийн төлвийг long-poll-оор асууна. COMPLETE болоход
 	// IdP-ийн identity-аар хэрэглэгчийг upsert хийж, access+refresh токен хос
 	// олгож буцаана; бусад (RUNNING/EXPIRED/REFUSED) үед зөвхөн State буцаана.

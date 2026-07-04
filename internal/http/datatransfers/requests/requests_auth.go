@@ -88,6 +88,9 @@ type EIDPollRequest struct {
 // РД-аар нэвтрэлт эхлүүлж, бүртгэлтэй төхөөрөмж рүү push хийлгэнэ.
 type EIDStartByNationalIDRequest struct {
 	NationalID string `json:"national_id" validate:"required"`
+	// CallbackUrl (сонголт): SAME-DEVICE (утасны browser) үед <origin>/auth/eid/callback; хоосон
+	// бол CROSS-DEVICE (desktop). Backend force-normalize хийнэ.
+	CallbackUrl string `json:"callbackUrl,omitempty"`
 }
 
 // ResetPasswordRequest нь POST /auth/password/reset-ийн body юм. Нууц үг

@@ -88,7 +88,10 @@ func (uc *usecase) EIDStart(ctx context.Context, callbackURL string) (resp EIDSt
 // РД-тэй холбоотой бүртгэлтэй төхөөрөмж(үүд) рүү баталгаажуулах prompt шууд push
 // хийдэг тул device_link / QR шаардлагагүй — зөвхөн session_id, verification_code,
 // expires_at буцна. Дуусгахдаа QR урсгалтай ижил EIDPoll-ийг ашиглана.
-func (uc *usecase) EIDStartByNationalID(ctx context.Context, nationalID string) (resp EIDStartResponse, err error) {
+// EIDStartByNationalID — РД-аар push нэвтрэлт. callbackURL хоосон бол CROSS-DEVICE (desktop +
+// утас руу push); хоосон биш бол SAME-DEVICE (утасны browser — push ижил утас руу, approve-ийн
+// дараа browser callback руу буцна). callbackURL нь frontend-ээс ирсэн <origin>/auth/eid/callback.
+func (uc *usecase) EIDStartByNationalID(ctx context.Context, nationalID, callbackURL string) (resp EIDStartResponse, err error) {
 	const (
 		usecaseName = "auth"
 		funcName    = "EIDStartByNationalID"
@@ -118,17 +121,7 @@ func (uc *usecase) EIDStartByNationalID(ctx context.Context, nationalID string) 
 		return EIDStartResponse{}, err
 	}
 
-	nonce, nonceErr := randomNonce()
-	if nonceErr != nil {
-		err = apperror.InternalCause(fmt.Errorf("generate nonce: %w", nonceErr))
-		logger.ErrorWithContext(ctx, "EIDStartByNationalID failed: nonce generation error", logger.Fields{
-			"usecase": usecaseName, "method": funcName, "file": fileName,
-			"step": "random_nonce", "error": nonceErr.Error(),
-		})
-		return EIDStartResponse{}, err
-	}
-
-	start, initErr := uc.eid.Initiate(ctx, nationalID, uc.cfg.EIDDisplayText, nonce)
+	start, initErr := uc.eid.Initiate(ctx, nationalID, uc.cfg.EIDDisplayText, callbackURL)
 	if initErr != nil {
 		err = mapInitiateErr(initErr, "Регистрийн дугаар олдсонгүй эсвэл буруу байна")
 		logger.ErrorWithContext(ctx, "EIDStartByNationalID failed: initiate error", logger.Fields{

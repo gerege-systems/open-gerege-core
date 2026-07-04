@@ -64,8 +64,8 @@ func (_m *AuthUsecase) EIDStart(ctx context.Context, callbackURL string) (auth.E
 	return ret.Get(0).(auth.EIDStartResponse), ret.Error(1)
 }
 
-func (_m *AuthUsecase) EIDStartByNationalID(ctx context.Context, nationalID string) (auth.EIDStartResponse, error) {
-	ret := _m.Called(ctx, nationalID)
+func (_m *AuthUsecase) EIDStartByNationalID(ctx context.Context, nationalID, callbackURL string) (auth.EIDStartResponse, error) {
+	ret := _m.Called(ctx, nationalID, callbackURL)
 	return ret.Get(0).(auth.EIDStartResponse), ret.Error(1)
 }
 

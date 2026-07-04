@@ -213,7 +213,7 @@ func TestE2E_EIDPushLoginByNationalID(t *testing.T) {
 	authUC, _ := buildEIDStack(t, srv.URL)
 
 	// РД push — device link байхгүй, зөвхөн session + vc.
-	start, err := authUC.EIDStartByNationalID(context.Background(), "УБ55443322")
+	start, err := authUC.EIDStartByNationalID(context.Background(), "УБ55443322", "")
 	require.NoError(t, err)
 	require.NotEmpty(t, start.SessionID)
 	assert.Equal(t, "5678", start.VerificationCode)

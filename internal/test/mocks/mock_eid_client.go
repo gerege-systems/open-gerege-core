@@ -29,8 +29,8 @@ func (_m *EIDClient) QRInitiate(ctx context.Context, displayText, callbackURL, n
 	return r0, ret.Error(1)
 }
 
-func (_m *EIDClient) Initiate(ctx context.Context, nationalID, displayText, nonce string) (*eid.StartResult, error) {
-	ret := _m.Called(ctx, nationalID, displayText, nonce)
+func (_m *EIDClient) Initiate(ctx context.Context, nationalID, displayText, callbackURL string) (*eid.StartResult, error) {
+	ret := _m.Called(ctx, nationalID, displayText, callbackURL)
 	var r0 *eid.StartResult
 	if v := ret.Get(0); v != nil {
 		r0 = v.(*eid.StartResult)
