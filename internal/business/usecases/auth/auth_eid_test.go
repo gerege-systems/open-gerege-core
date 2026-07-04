@@ -115,6 +115,47 @@ func TestEIDStartByNationalID(t *testing.T) {
 	})
 }
 
+func TestEIDRepresentations(t *testing.T) {
+	t.Run("eID user → fetches representations by PNOMN etsi", func(t *testing.T) {
+		f := newFixture(t)
+		user := eidUser() // CivilID "уб99887766"
+		f.users.On("GetByID", mock.Anything, users.GetByIDRequest{ID: user.ID}).
+			Return(users.GetByIDResponse{User: user}, nil).Once()
+		// civil_id-г томруулж PNOMN- угтвар нэмнэ.
+		f.eid.On("Representations", mock.Anything, "PNOMN-УБ99887766").
+			Return([]eid.Representation{{OrgEtsi: "NTRMN-1", OrgName: "Тест ХХК"}}, nil).Once()
+
+		reps, err := f.usecase.EIDRepresentations(context.Background(), user.ID)
+		require.NoError(t, err)
+		require.Len(t, reps, 1)
+		assert.Equal(t, "NTRMN-1", reps[0].OrgEtsi)
+	})
+
+	t.Run("non-eID user (no civil_id) → empty, no eID call", func(t *testing.T) {
+		f := newFixture(t)
+		u := domain.User{ID: "pw-user", CivilID: ""}
+		f.users.On("GetByID", mock.Anything, users.GetByIDRequest{ID: u.ID}).
+			Return(users.GetByIDResponse{User: u}, nil).Once()
+		// f.eid.Representations дуудагдвал mock унана (AssertExpectations).
+
+		reps, err := f.usecase.EIDRepresentations(context.Background(), u.ID)
+		require.NoError(t, err)
+		assert.Empty(t, reps)
+	})
+
+	t.Run("eID provider error → Internal", func(t *testing.T) {
+		f := newFixture(t)
+		user := eidUser()
+		f.users.On("GetByID", mock.Anything, mock.Anything).
+			Return(users.GetByIDResponse{User: user}, nil).Once()
+		f.eid.On("Representations", mock.Anything, mock.Anything).
+			Return(nil, errors.New("eid down")).Once()
+
+		_, err := f.usecase.EIDRepresentations(context.Background(), user.ID)
+		requireDomainType(t, err, apperror.ErrTypeInternal)
+	})
+}
+
 func TestEIDPoll(t *testing.T) {
 	t.Run("empty session_id is rejected", func(t *testing.T) {
 		f := newFixture(t)

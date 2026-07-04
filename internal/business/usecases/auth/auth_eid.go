@@ -291,6 +291,26 @@ func mapInitiateErr(initErr error, clientMsg string) error {
 	return apperror.InternalCause(fmt.Errorf("eid initiate: %w", initErr))
 }
 
+// EIDRepresentations нь нэвтэрсэн хэрэглэгчийн civil_id-аар ETSI танигч
+// (PNOMN-<civil_id>) угсарч, eID-ээс төлөөлдөг байгууллагуудыг татна.
+// Хэрэглэгч eID-ээр нэвтрээгүй (civil_id хоосон) бол алдаагүйгээр хоосон
+// slice буцаана.
+func (uc *usecase) EIDRepresentations(ctx context.Context, userID string) ([]eid.Representation, error) {
+	got, err := uc.users.GetByID(ctx, users.GetByIDRequest{ID: userID})
+	if err != nil {
+		return nil, err
+	}
+	civilID := strings.TrimSpace(got.User.CivilID)
+	if civilID == "" {
+		return []eid.Representation{}, nil // eID хэрэглэгч биш
+	}
+	reps, repErr := uc.eid.Representations(ctx, "PNOMN-"+strings.ToUpper(civilID))
+	if repErr != nil {
+		return nil, apperror.InternalCause(fmt.Errorf("eid representations: %w", repErr))
+	}
+	return reps, nil
+}
+
 // randomNonce нь IdP-ийн replay-аас хамгаалах 32 hex тэмдэгтийн (16 байт)
 // crypto/rand nonce үүсгэнэ.
 func randomNonce() (string, error) {

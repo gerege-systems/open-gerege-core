@@ -118,6 +118,19 @@ type SessionResult struct {
 	Identity *Identity
 }
 
+// Representation нь иргэний төлөөлж чадах НЭГ байгууллага
+// (GET /v3/organization/representations/etsi/{personEtsi}-ийн нэг элемент).
+type Representation struct {
+	OrgEtsi     string // NTRMN-...
+	OrgRegister string // улсын бүртгэлийн дугаар
+	OrgName     string // кирилл нэр
+	OrgNameEn   string // латин нэр (сонголттой)
+	Role        string // ж: Гүйцэтгэх захирал
+	RightType   string // SOLE | JOINT
+	ValidFrom   *time.Time
+	ValidTo     *time.Time // nil = хугацаагүй
+}
+
 // Client нь eID RP урсгалуудын хийсвэрлэл — тестэд хуурамчаар тавихад хялбар.
 type Client interface {
 	// QRInitiate нь QR нэвтрэлтийг эхлүүлж session мэдээллийг буцаана. callbackURL
@@ -130,6 +143,10 @@ type Client interface {
 	Initiate(ctx context.Context, nationalID, displayText, nonce string) (*StartResult, error)
 	// Session нь session-ийн төлвийг long-poll-оор асууна (timeoutMs хүртэл).
 	Session(ctx context.Context, sessionID string, timeoutMs int) (*SessionResult, error)
+	// Representations нь тухайн хүн (personEtsi = PNOMN-<civil_id>)-ий төлөөлж
+	// чадах идэвхтэй байгууллагуудыг буцаана. Иргэн байгууллага төлөөлдөггүй
+	// бол хоосон slice.
+	Representations(ctx context.Context, personEtsi string) ([]Representation, error)
 }
 
 // client нь eID Mongolia v3 RP API руу залгах HTTP client.
@@ -346,6 +363,46 @@ func (c *client) Session(ctx context.Context, sessionID string, timeoutMs int) (
 		id.DocumentNumber = out.Result.DocumentNumber
 	}
 	return &SessionResult{State: StateComplete, Identity: id}, nil
+}
+
+func (c *client) Representations(ctx context.Context, personEtsi string) ([]Representation, error) {
+	if strings.TrimSpace(personEtsi) == "" {
+		return nil, errors.New("eid: empty personEtsi")
+	}
+	path := "/organization/representations/etsi/" + url.PathEscape(strings.TrimSpace(personEtsi))
+	raw, status, err := c.get(ctx, path)
+	if err != nil {
+		return nil, err
+	}
+	if status == http.StatusNotFound {
+		return []Representation{}, nil // хүн олдсонгүй / байгууллага төлөөлдөггүй
+	}
+	if status >= 300 {
+		return nil, fmt.Errorf("eid representations: status %d: %s", status, snippet(raw))
+	}
+	var out struct {
+		Representations []struct {
+			OrgEtsi     string     `json:"orgEtsi"`
+			OrgRegister string     `json:"orgRegister"`
+			OrgName     string     `json:"orgName"`
+			OrgNameEn   string     `json:"orgNameEn"`
+			Role        string     `json:"role"`
+			RightType   string     `json:"rightType"`
+			ValidFrom   *time.Time `json:"validFrom"`
+			ValidTo     *time.Time `json:"validTo"`
+		} `json:"representations"`
+	}
+	if jErr := json.Unmarshal(raw, &out); jErr != nil {
+		return nil, fmt.Errorf("eid representations: invalid response: %s", snippet(raw))
+	}
+	reps := make([]Representation, 0, len(out.Representations))
+	for _, r := range out.Representations {
+		reps = append(reps, Representation{
+			OrgEtsi: r.OrgEtsi, OrgRegister: r.OrgRegister, OrgName: r.OrgName, OrgNameEn: r.OrgNameEn,
+			Role: r.Role, RightType: r.RightType, ValidFrom: r.ValidFrom, ValidTo: r.ValidTo,
+		})
+	}
+	return reps, nil
 }
 
 // parseCertificate нь base64 DER сертификатыг задлан нээлттэй хэсгийг буцаана.

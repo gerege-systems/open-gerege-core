@@ -10,6 +10,7 @@ import (
 	"context"
 
 	"template/internal/business/domain"
+	"template/pkg/eid"
 )
 
 // Usecase нь HTTP handler-ийн харьцдаг оролтын хил (input boundary) юм. Method
@@ -53,6 +54,10 @@ type Usecase interface {
 	// IdP-ийн identity-аар хэрэглэгчийг upsert хийж, access+refresh токен хос
 	// олгож буцаана; бусад (RUNNING/EXPIRED/REFUSED) үед зөвхөн State буцаана.
 	EIDPoll(ctx context.Context, req EIDPollRequest) (EIDPollResponse, error)
+	// EIDRepresentations нь нэвтэрсэн хэрэглэгчийн (userID-аар) төлөөлдөг
+	// байгууллагуудыг eID-ээс буцаана. Хэрэглэгч eID-ээр нэвтрээгүй (civil_id
+	// байхгүй) бол хоосон slice.
+	EIDRepresentations(ctx context.Context, userID string) ([]eid.Representation, error)
 }
 
 // Usecase-ийн хилд зориулсан Request / Response төрлүүд. Struct-д талбар нэмэх

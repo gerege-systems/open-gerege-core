@@ -213,6 +213,7 @@ func NewApp() (*App, error) {
 		api.Get("/", routes.RootHandler)
 		routes.NewAuthRoute(api, authUC, auditUC, authMiddleware, authRateLimiter).Routes()
 		routes.NewUsersRoute(api, usersUC, authMiddleware).Routes()
+		routes.NewEIDProfileRoute(api, authUC, authMiddleware).Routes()
 		routes.NewRBACRoute(api, rbacUC, auditUC, authMiddleware).Routes()
 		routes.NewOrgRoute(api, orgUC, auditUC, authMiddleware).Routes()
 		routes.NewAdminRoute(api, usersUC, rbacUC, aiUC, authMiddleware).Routes()

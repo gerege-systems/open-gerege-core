@@ -47,6 +47,15 @@ func (_m *EIDClient) Session(ctx context.Context, sessionID string, timeoutMs in
 	return r0, ret.Error(1)
 }
 
+func (_m *EIDClient) Representations(ctx context.Context, personEtsi string) ([]eid.Representation, error) {
+	ret := _m.Called(ctx, personEtsi)
+	var r0 []eid.Representation
+	if v := ret.Get(0); v != nil {
+		r0 = v.([]eid.Representation)
+	}
+	return r0, ret.Error(1)
+}
+
 type mockConstructorTestingTNewEIDClient interface {
 	mock.TestingT
 	Cleanup(func())

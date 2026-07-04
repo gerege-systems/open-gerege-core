@@ -459,6 +459,25 @@ definitions:
       user_id:
         type: string
     type: object
+  template_internal_http_datatransfers_responses.OrgRepresentationResponse:
+    properties:
+      org_etsi:
+        type: string
+      org_name:
+        type: string
+      org_name_en:
+        type: string
+      org_register:
+        type: string
+      right_type:
+        type: string
+      role:
+        type: string
+      valid_from:
+        type: string
+      valid_to:
+        type: string
+    type: object
   template_internal_http_datatransfers_responses.OrgResponse:
     properties:
       created_at:
@@ -1313,6 +1332,37 @@ paths:
       security:
       - BearerAuth: []
       summary: Одоогийн хэрэглэгчийн профайлыг буцаах
+      tags:
+      - users
+  /users/me/eid/organizations:
+    get:
+      description: Нэвтэрсэн eID хэрэглэгчийн eidmongolia.mn-д бүртгэлтэй, төлөөлж
+        чадах байгууллагуудыг буцаана. eID-ээр нэвтрээгүй хэрэглэгчид хоосон жагсаалт.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Representations
+          schema:
+            allOf:
+            - $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/template_internal_http_datatransfers_responses.OrgRepresentationResponse'
+                  type: array
+              type: object
+        "401":
+          description: Missing or invalid token
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+        "500":
+          description: eID provider error
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      security:
+      - BearerAuth: []
+      summary: Төлөөлдөг байгууллагууд (eID)
       tags:
       - users
   /v1/audit:

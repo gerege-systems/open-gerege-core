@@ -13,6 +13,7 @@ import (
 
 	mock "github.com/stretchr/testify/mock"
 	"template/internal/business/usecases/auth"
+	"template/pkg/eid"
 )
 
 type AuthUsecase struct {
@@ -71,6 +72,15 @@ func (_m *AuthUsecase) EIDStartByNationalID(ctx context.Context, nationalID stri
 func (_m *AuthUsecase) EIDPoll(ctx context.Context, req auth.EIDPollRequest) (auth.EIDPollResponse, error) {
 	ret := _m.Called(ctx, req)
 	return ret.Get(0).(auth.EIDPollResponse), ret.Error(1)
+}
+
+func (_m *AuthUsecase) EIDRepresentations(ctx context.Context, userID string) ([]eid.Representation, error) {
+	ret := _m.Called(ctx, userID)
+	var r0 []eid.Representation
+	if v := ret.Get(0); v != nil {
+		r0 = v.([]eid.Representation)
+	}
+	return r0, ret.Error(1)
 }
 
 type mockConstructorTestingTNewAuthUsecase interface {

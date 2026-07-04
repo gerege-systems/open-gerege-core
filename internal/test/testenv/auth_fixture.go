@@ -99,6 +99,7 @@ func (v *FakeVerifier) LastCode(t *testing.T, receiver string) string {
 type FakeEID struct {
 	StartResult   *eid.StartResult
 	SessionResult *eid.SessionResult
+	Reps          []eid.Representation
 	InitiateErr   error
 	SessionErr    error
 }
@@ -132,6 +133,11 @@ func (f *FakeEID) Session(_ context.Context, _ string, _ int) (*eid.SessionResul
 		return f.SessionResult, nil
 	}
 	return &eid.SessionResult{State: "RUNNING"}, nil
+}
+
+// Representations нь fake — Reps талбарыг буцаана (default хоосон).
+func (f *FakeEID) Representations(_ context.Context, _ string) ([]eid.Representation, error) {
+	return f.Reps, nil
 }
 
 // NewAuthFixture нь хоёр bounded context-г шинэ Postgres + Redis

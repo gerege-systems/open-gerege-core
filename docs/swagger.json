@@ -1182,6 +1182,58 @@
                 }
             }
         },
+        "/users/me/eid/organizations": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Нэвтэрсэн eID хэрэглэгчийн eidmongolia.mn-д бүртгэлтэй, төлөөлж чадах байгууллагуудыг буцаана. eID-ээр нэвтрээгүй хэрэглэгчид хоосон жагсаалт.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "summary": "Төлөөлдөг байгууллагууд (eID)",
+                "responses": {
+                    "200": {
+                        "description": "Representations",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/template_internal_http_datatransfers_responses.OrgRepresentationResponse"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "401": {
+                        "description": "Missing or invalid token",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "eID provider error",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/v1/audit": {
             "get": {
                 "security": [
@@ -2598,6 +2650,35 @@
                     "type": "string"
                 },
                 "user_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "template_internal_http_datatransfers_responses.OrgRepresentationResponse": {
+            "type": "object",
+            "properties": {
+                "org_etsi": {
+                    "type": "string"
+                },
+                "org_name": {
+                    "type": "string"
+                },
+                "org_name_en": {
+                    "type": "string"
+                },
+                "org_register": {
+                    "type": "string"
+                },
+                "right_type": {
+                    "type": "string"
+                },
+                "role": {
+                    "type": "string"
+                },
+                "valid_from": {
+                    "type": "string"
+                },
+                "valid_to": {
                     "type": "string"
                 }
             }
