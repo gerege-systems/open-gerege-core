@@ -6,6 +6,7 @@ package caches
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"time"
 
 	"github.com/redis/go-redis/extra/redisotel/v9"
@@ -13,6 +14,15 @@ import (
 	"template/internal/constants"
 	"template/pkg/logger"
 )
+
+// IsCacheMiss нь алдаа нь "key байхгүй" (redis.Nil) эсэхийг заана — Redis-ийн
+// жинхэнэ алдаанаас (холболт таслагдсан / timeout) ялгах зорилготой. Revocation
+// шалгалтыг fail-closed хийхэд шаардлагатай: miss = бичлэг алга (татгалзаагүй,
+// үргэлжлүүл), бусад алдаа = Redis-г шалгаж чадсангүй (болзошгүй татгалзсаныг
+// нэвтрүүлэхгүй).
+func IsCacheMiss(err error) bool {
+	return errors.Is(err, redis.Nil)
+}
 
 // defaultOpTimeout нь Redis-ийн алхам бүрийг хязгаарлаж, удаан/хүрэх
 // боломжгүй Redis нь дуудагч goroutine-уудыг хязгааргүй хугацаагаар

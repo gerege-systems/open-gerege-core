@@ -96,11 +96,16 @@ func (m *AuthMiddleware) Handle(next http.Handler) http.Handler {
 		}
 
 		// Logout хийсэн access токеныг (deny-list) татгалз. Logout нь jti-г
-		// токены үлдсэн амьдрах хугацаагаар Redis-д бичдэг; байхгүй (miss)
-		// нь logout хийгдээгүй гэсэн үг. Cutoff шалгалттай ижил — Redis
-		// алдаа нээлттэй бүтэлгүйтнэ (fail-open).
+		// токены үлдсэн амьдрах хугацаагаар Redis-д бичдэг; miss (redis.Nil)
+		// нь logout хийгдээгүй гэсэн үг. FAIL-CLOSED: Redis-ийн жинхэнэ алдаа
+		// (miss биш) үед revocation-ийг шалгаж чадахгүй тул болзошгүй
+		// татгалзсан токеныг нэвтрүүлэлгүй 503 буцаана — refresh урсгал аль
+		// хэдийн fail-closed тул нийцтэй. (Redis доголдвол богино хугацаанд
+		// auth зогсоно; аюулгүй байдлыг availability-ээс дээгүүр тавьсан.)
 		if m.redisCache != nil && user.ID != "" {
-			if denied, getErr := m.redisCache.Get(logCtx, auth.AccessDenyKey(user.ID)); getErr == nil && denied != "" {
+			denied, getErr := m.redisCache.Get(logCtx, auth.AccessDenyKey(user.ID))
+			switch {
+			case getErr == nil && denied != "":
 				logger.WarnWithContext(logCtx, "Auth: access token denied by logout", logger.Fields{
 					"middleware": middlewareName,
 					"file":       fileName,
@@ -110,17 +115,28 @@ func (m *AuthMiddleware) Handle(next http.Handler) http.Handler {
 				})
 				_ = V1Handler.NewAbortResponse(w, r, "token has been revoked")
 				return
+			case getErr != nil && !caches.IsCacheMiss(getErr):
+				logger.ErrorWithContext(logCtx, "Auth: revocation check unavailable (fail-closed)", logger.Fields{
+					"middleware": middlewareName,
+					"file":       fileName,
+					"step":       "check_access_deny",
+					"path":       path,
+					"error":      getErr.Error(),
+				})
+				_ = V1Handler.NewErrorResponse(w, r, http.StatusServiceUnavailable, "session verification temporarily unavailable")
+				return
 			}
 		}
 
 		// Хэрэглэгчийн хамгийн сүүлийн нууц үг солихоос (rotation) өмнө
 		// олгогдсон access токенуудыг татгалз. Хязгаарыг ChangePassword
-		// Redis руу нийтэлдэг; байхгүй (Redis miss) нь сүүлийн үед солилт
-		// хийгдээгүй гэсэн үг тул токен нэвтэрнэ. Redis алдаа нь нээлттэй
-		// бүтэлгүйтдэг — токен аль хэдийн гарын үсэг + хугацааг давсан бөгөөд
-		// бид Redis-ийн түр зуурын саатлаас болж бүх хүнийг түгжихийг хүсэхгүй.
+		// Redis руу нийтэлдэг; miss (redis.Nil) нь сүүлийн үед солилт
+		// хийгдээгүй гэсэн үг тул токен нэвтэрнэ. Дээрхтэй ижил FAIL-CLOSED —
+		// Redis-ийн жинхэнэ алдаа үед cutoff-ийг шалгаж чадахгүй тул 503.
 		if m.redisCache != nil && user.IssuedAt != nil {
-			if cutoffStr, getErr := m.redisCache.Get(logCtx, auth.TokenCutoffKey(user.UserID)); getErr == nil && cutoffStr != "" {
+			cutoffStr, getErr := m.redisCache.Get(logCtx, auth.TokenCutoffKey(user.UserID))
+			switch {
+			case getErr == nil && cutoffStr != "":
 				// JWT IssuedAt нь секунд хүртэл бутархайгүй болгогддог тул нууц
 				// үг солихтой яг нэг секундэд олгогдсон токеныг бас татгалзахын
 				// тулд <= ашиглана (хил дээрх секундын цоорхойг хаана).
@@ -137,6 +153,16 @@ func (m *AuthMiddleware) Handle(next http.Handler) http.Handler {
 					_ = V1Handler.NewAbortResponse(w, r, "token has been revoked")
 					return
 				}
+			case getErr != nil && !caches.IsCacheMiss(getErr):
+				logger.ErrorWithContext(logCtx, "Auth: rotation-cutoff check unavailable (fail-closed)", logger.Fields{
+					"middleware": middlewareName,
+					"file":       fileName,
+					"step":       "check_pwd_cutoff",
+					"path":       path,
+					"error":      getErr.Error(),
+				})
+				_ = V1Handler.NewErrorResponse(w, r, http.StatusServiceUnavailable, "session verification temporarily unavailable")
+				return
 			}
 		}
 

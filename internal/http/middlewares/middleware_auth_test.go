@@ -5,14 +5,18 @@ package middlewares_test
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
+	"github.com/redis/go-redis/v9"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 	"template/internal/constants"
 	"template/internal/http/middlewares"
+	"template/internal/test/mocks"
 	"template/pkg/jwt"
 )
 
@@ -153,5 +157,46 @@ func TestAuthMiddleware(t *testing.T) {
 		assert.Equal(t, http.StatusUnauthorized, rec.Code)
 		assert.Contains(t, rec.Header().Get("Content-Type"), "application/json")
 		assert.Contains(t, rec.Body.String(), "you don't have access for this action")
+	})
+}
+
+// TestAuthMiddlewareRevocationFailClosed нь revocation шалгалт (logout deny-list
+// / нууц үг солилтын cutoff) Redis-ийн жинхэнэ алдаанд FAIL-CLOSED (503) байж,
+// харин key байхгүй (redis.Nil miss) үед токеныг нэвтрүүлдгийг баталгаажуулна.
+func TestAuthMiddlewareRevocationFailClosed(t *testing.T) {
+	setup(t)
+
+	newTokenReq := func(t *testing.T) *http.Request {
+		t.Helper()
+		token, err := getBasicToken()
+		if err != nil {
+			t.Fatal(err)
+		}
+		r := httptest.NewRequest(http.MethodGet, forEveryone, http.NoBody)
+		r.Header.Set("Content-Type", "application/json")
+		r.Header.Set("Authorization", "Bearer "+token)
+		return r
+	}
+
+	t.Run("Redis unavailable → fail-closed 503", func(t *testing.T) {
+		cache := &mocks.RedisCache{}
+		cache.On("Get", mock.Anything, mock.Anything).Return("", errors.New("dial tcp: connection refused"))
+		mw := middlewares.NewAuthMiddleware(jwtService, cache, false)
+
+		rec := serve(mw, newTokenReq(t))
+
+		assert.Equal(t, http.StatusServiceUnavailable, rec.Code)
+		assert.Contains(t, rec.Body.String(), "session verification temporarily unavailable")
+	})
+
+	t.Run("Redis miss (redis.Nil) → allow 200", func(t *testing.T) {
+		cache := &mocks.RedisCache{}
+		cache.On("Get", mock.Anything, mock.Anything).Return("", redis.Nil)
+		mw := middlewares.NewAuthMiddleware(jwtService, cache, false)
+
+		rec := serve(mw, newTokenReq(t))
+
+		assert.Equal(t, http.StatusOK, rec.Code)
+		assert.Contains(t, rec.Body.String(), "nice to meet you again sir")
 	})
 }
