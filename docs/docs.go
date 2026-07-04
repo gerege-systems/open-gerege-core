@@ -614,6 +614,58 @@ const docTemplate = `{
                 }
             }
         },
+        "/auth/google": {
+            "post": {
+                "description": "Google OAuth callback-ийн code-ийг боловсруулна. Холбогдсон account бол шууд токен олгоно; эхний удаа бол eID-ээр баталгаажуулах link_token буцаана.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Google-ээр нэвтрэх (eID холболттой)",
+                "parameters": [
+                    {
+                        "description": "OAuth code + redirect_uri",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_datatransfers_requests.GoogleLoginRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Linked → tokens, эсвэл эхний удаа → link_token",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/template_internal_http_datatransfers_responses.GoogleLoginResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid code",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/auth/login": {
             "post": {
                 "description": "Access токен (богино TTL) болон refresh токен (урт TTL) буцаана. Хэрэглэгчийг тоолохоос сэргийлэхийн тулд буруу нууц үг болон тодорхойгүй email ижил хугацаа зарцуулна.",
@@ -2340,6 +2392,10 @@ const docTemplate = `{
                 "session_id"
             ],
             "properties": {
+                "google_link_token": {
+                    "description": "GoogleLinkToken нь Google-ээр эхний удаа нэвтэрсэн хэрэглэгч eID-ээр\nбаталгаажуулж байгаа үед л ирнэ (сонголттой).",
+                    "type": "string"
+                },
                 "session_id": {
                     "type": "string"
                 }
@@ -2351,6 +2407,10 @@ const docTemplate = `{
                 "national_id"
             ],
             "properties": {
+                "callbackUrl": {
+                    "description": "CallbackUrl (сонголт): SAME-DEVICE (утасны browser) үед \u003corigin\u003e/auth/eid/callback; хоосон\nбол CROSS-DEVICE (desktop). Backend force-normalize хийнэ.",
+                    "type": "string"
+                },
                 "national_id": {
                     "type": "string"
                 }
@@ -2365,6 +2425,21 @@ const docTemplate = `{
                 "email": {
                     "type": "string",
                     "maxLength": 50
+                }
+            }
+        },
+        "template_internal_http_datatransfers_requests.GoogleLoginRequest": {
+            "type": "object",
+            "required": [
+                "code",
+                "redirect_uri"
+            ],
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "redirect_uri": {
+                    "type": "string"
                 }
             }
         },
@@ -2969,6 +3044,23 @@ const docTemplate = `{
                 },
                 "surname": {
                     "type": "string"
+                }
+            }
+        },
+        "template_internal_http_datatransfers_responses.GoogleLoginResponse": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "link_token": {
+                    "type": "string"
+                },
+                "linked": {
+                    "type": "boolean"
+                },
+                "user": {
+                    "$ref": "#/definitions/template_internal_http_datatransfers_responses.UserResponse"
                 }
             }
         },

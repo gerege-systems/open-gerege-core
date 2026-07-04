@@ -65,3 +65,9 @@ func TokenCutoffKey(userID string) string {
 func AccessDenyKey(jti string) string {
 	return fmt.Sprintf("%s%s", prefixAccessDeny, jti)
 }
+
+// GoogleLinkKey нь Google-ээр эхний удаа нэвтэрсэн хэрэглэгчийн eID-ээр
+// холбогдохыг хүлээж буй богино хугацааны токеныг (→ google_sub) хадгална.
+func GoogleLinkKey(token string) string {
+	return fmt.Sprintf("google_link:%s", token)
+}

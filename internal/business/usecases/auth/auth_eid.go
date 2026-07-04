@@ -246,6 +246,10 @@ func (uc *usecase) EIDPoll(ctx context.Context, req EIDPollRequest) (resp EIDPol
 	}
 	user := upserted.User
 
+	// Google-ээр эхний удаа нэвтэрч, eID-ээр баталгаажуулж байгаа бол тухайн
+	// Google account-ийг энэ бодит хүнд холбоно (non-fatal).
+	uc.linkGoogleIfPending(ctx, user.ID, req.GoogleLinkToken)
+
 	pair, mintErr := uc.jwtService.GenerateTokenPair(user.ID, user.IsAdmin(), user.RoleID, user.Email)
 	if mintErr != nil {
 		err = apperror.InternalCause(fmt.Errorf("generate token: %w", mintErr))

@@ -92,6 +92,15 @@ func (_m *UserRepository) GetByID(ctx context.Context, id string) (domain.User, 
 	return r0, r1
 }
 
+func (_m *UserRepository) GetByGoogleSub(ctx context.Context, sub string) (domain.User, error) {
+	ret := _m.Called(ctx, sub)
+	return ret.Get(0).(domain.User), ret.Error(1)
+}
+
+func (_m *UserRepository) LinkGoogleSub(ctx context.Context, userID, sub string) error {
+	return _m.Called(ctx, userID, sub).Error(0)
+}
+
 // List provides a mock function with given fields: ctx, filter, offset, limit
 func (_m *UserRepository) List(ctx context.Context, filter repointerface.UserListFilter, offset int, limit int) ([]domain.User, error) {
 	ret := _m.Called(ctx, filter, offset, limit)

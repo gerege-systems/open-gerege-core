@@ -58,6 +58,9 @@ type Usecase interface {
 	// байгууллагуудыг eID-ээс буцаана. Хэрэглэгч eID-ээр нэвтрээгүй (civil_id
 	// байхгүй) бол хоосон slice.
 	EIDRepresentations(ctx context.Context, userID string) ([]eid.Representation, error)
+	// GoogleLogin нь Google authorization code-ийг боловсруулна: холбогдсон
+	// account бол шууд нэвтрүүлж, эс бол eID-ээр баталгаажуулах LinkToken буцаана.
+	GoogleLogin(ctx context.Context, code, redirectURI string) (GoogleLoginResponse, error)
 	// EID PKI самбарын нэгдсэн/дэлгэрэнгүй мэдээлэл (PKI_READ эрхтэй RP-д).
 	// eID хэрэглэгч биш бол nil; эрхгүй бол apperror.Forbidden.
 	EIDSummary(ctx context.Context, userID string) (*eid.PersonSummary, error)
@@ -136,6 +139,20 @@ type (
 
 	EIDPollRequest struct {
 		SessionID string
+		// GoogleLinkToken нь Google-ээр эхний удаа нэвтэрсэн хэрэглэгч eID-ээр
+		// баталгаажуулж байгаа үед л ирнэ — COMPLETE болоход тухайн Google
+		// account-ийг энэ eID хэрэглэгчид холбоно. Хоосон бол зүгээр eID нэвтрэлт.
+		GoogleLinkToken string
+	}
+
+	// GoogleLoginResponse нь Google callback-ийн үр дүн. Linked=true бол шууд
+	// нэвтэрсэн (Login дүүрэн); false бол эхний удаа тул eID-ээр баталгаажуулах
+	// шаардлагатай (LinkToken-ийг eID poll руу дамжуулна).
+	GoogleLoginResponse struct {
+		Linked    bool
+		Login     LoginResponse
+		LinkToken string
+		Email     string
 	}
 
 	// EIDPollResponse нь /eid/poll-ийн үр дүн. State нь IdP-ийн session төлөв

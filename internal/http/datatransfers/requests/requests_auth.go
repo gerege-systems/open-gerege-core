@@ -82,6 +82,16 @@ type ForgotPasswordRequest struct {
 // session_id-г IdP-д long-poll-оор асуухад дамжуулна.
 type EIDPollRequest struct {
 	SessionID string `json:"session_id" validate:"required"`
+	// GoogleLinkToken нь Google-ээр эхний удаа нэвтэрсэн хэрэглэгч eID-ээр
+	// баталгаажуулж байгаа үед л ирнэ (сонголттой).
+	GoogleLinkToken string `json:"google_link_token,omitempty"`
+}
+
+// GoogleLoginRequest нь POST /auth/google-ийн body — Google OAuth callback-ийн
+// code + redirect_uri (BFF дамжуулна).
+type GoogleLoginRequest struct {
+	Code        string `json:"code" validate:"required"`
+	RedirectURI string `json:"redirect_uri" validate:"required"`
 }
 
 // EIDStartByNationalIDRequest нь POST /auth/eid/start-id-ийн body юм — иргэний

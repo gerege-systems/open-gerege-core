@@ -11,6 +11,7 @@ import (
 	"template/internal/business/usecases/users"
 	"template/internal/datasources/caches"
 	"template/pkg/eid"
+	"template/pkg/google"
 	"template/pkg/jwt"
 	"template/pkg/logger"
 	"template/pkg/verify"
@@ -19,11 +20,19 @@ import (
 // usecase нь хамаарлууд болон method хоорондын төлөвийг агуулдаг. Нэг зан
 // төлөв өөрчлөгдөхөд PR-ийн diff нарийн (surgical) хэвээр үлдэхийн тулд method
 // бүр өөрийн файлд байрладаг.
+// GoogleClient нь Google OAuth-ийн auth usecase-д хэрэгтэй хэсэг — *google.Client
+// үүнийг хангадаг; тестэд хуурамчаар тавихад хялбар.
+type GoogleClient interface {
+	Configured() bool
+	Exchange(ctx context.Context, code, redirectURI string) (*google.User, error)
+}
+
 type usecase struct {
 	users      users.Usecase
 	jwtService jwt.JWTService
 	verifier   verify.Sender
 	eid        eid.Client
+	google     GoogleClient
 	redisCache caches.RedisCache
 	cfg        Config
 }
@@ -32,12 +41,13 @@ type usecase struct {
 // users.Usecase-ээс, бүх email/SMS OTP (бүртгэл баталгаажуулах болон нууц үг
 // сэргээх)-д verify.Sender (GeregeCloud Verify API)-ээс, бусад auth-хэсгүүдэд
 // jwt/redis-ээс хамаардаг.
-func NewUsecase(usersUC users.Usecase, jwtService jwt.JWTService, verifier verify.Sender, eidClient eid.Client, redisCache caches.RedisCache, cfg Config) Usecase {
+func NewUsecase(usersUC users.Usecase, jwtService jwt.JWTService, verifier verify.Sender, eidClient eid.Client, googleClient GoogleClient, redisCache caches.RedisCache, cfg Config) Usecase {
 	return &usecase{
 		users:      usersUC,
 		jwtService: jwtService,
 		verifier:   verifier,
 		eid:        eidClient,
+		google:     googleClient,
 		redisCache: redisCache,
 		cfg:        cfg,
 	}

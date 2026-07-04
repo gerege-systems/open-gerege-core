@@ -130,3 +130,8 @@ func NewAuthUsecase(t mockConstructorTestingTNewAuthUsecase) *AuthUsecase {
 	t.Cleanup(func() { m.AssertExpectations(t) })
 	return m
 }
+
+func (_m *AuthUsecase) GoogleLogin(ctx context.Context, code, redirectURI string) (auth.GoogleLoginResponse, error) {
+	ret := _m.Called(ctx, code, redirectURI)
+	return ret.Get(0).(auth.GoogleLoginResponse), ret.Error(1)
+}

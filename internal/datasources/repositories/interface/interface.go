@@ -50,6 +50,13 @@ type UserRepository interface {
 	// хэрэглэгчийг хайна. Тохирох мөр байхгүй үед apperror.NotFound-г
 	// буцаана.
 	GetByID(ctx context.Context, id string) (domain.User, error)
+	// GetByGoogleSub нь холбогдсон Google account (sub)-аар хэрэглэгчийг хайна.
+	// Холбоогүй бол apperror.NotFound. (Google callback дахь pre-auth хайлт —
+	// service RLS дор ажиллана.)
+	GetByGoogleSub(ctx context.Context, sub string) (domain.User, error)
+	// LinkGoogleSub нь userID-тай хэрэглэгчид Google account-ийг холбоно
+	// (eID-ээр баталгаажсаны дараа). Давхардсан sub нь apperror.Conflict.
+	LinkGoogleSub(ctx context.Context, userID, sub string) error
 	// GetByNationalID нь soft-delete хийгдсэн мөрүүдийг хасч, eID-ийн
 	// national_id-ээр (жижиг үсгээр) хэрэглэгчийг хайна. Тохирох мөр байхгүй
 	// үед apperror.NotFound-г буцаана.

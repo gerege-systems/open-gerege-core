@@ -4,6 +4,7 @@
 package auth_test
 
 import (
+	"context"
 	"testing"
 	"time"
 
@@ -11,6 +12,7 @@ import (
 	"template/internal/business/domain"
 	"template/internal/business/usecases/auth"
 	"template/internal/test/mocks"
+	"template/pkg/google"
 	"template/pkg/helpers"
 )
 
@@ -24,6 +26,18 @@ type fixture struct {
 	verifier *mocks.Verifier
 	eid      *mocks.EIDClient
 	redis    *mocks.RedisCache
+	google   *fakeGoogle
+}
+
+// fakeGoogle нь auth.GoogleClient-ийн тест fake — Exchange-ийн хариуг тохируулна.
+type fakeGoogle struct {
+	user *google.User
+	err  error
+}
+
+func (f *fakeGoogle) Configured() bool { return true }
+func (f *fakeGoogle) Exchange(_ context.Context, _, _ string) (*google.User, error) {
+	return f.user, f.err
 }
 
 func newFixture(t *testing.T) *fixture {
@@ -33,8 +47,9 @@ func newFixture(t *testing.T) *fixture {
 	verifier := mocks.NewVerifier(t)
 	eidClient := mocks.NewEIDClient(t)
 	redis := mocks.NewRedisCache(t)
+	fg := &fakeGoogle{}
 	return &fixture{
-		usecase: auth.NewUsecase(usersUC, jwtSvc, verifier, eidClient, redis, auth.Config{
+		usecase: auth.NewUsecase(usersUC, jwtSvc, verifier, eidClient, fg, redis, auth.Config{
 			OTPMaxAttempts:    5,
 			OTPTTL:            5 * time.Minute,
 			PasswordResetTTL:  30 * time.Minute,
@@ -51,6 +66,7 @@ func newFixture(t *testing.T) *fixture {
 		verifier: verifier,
 		eid:      eidClient,
 		redis:    redis,
+		google:   fg,
 	}
 }
 

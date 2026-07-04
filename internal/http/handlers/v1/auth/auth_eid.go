@@ -150,7 +150,7 @@ func (h Handler) EIDPoll(w http.ResponseWriter, r *http.Request) error {
 		return v1.RespondWithError(w, r, err)
 	}
 
-	result, err := h.usecase.EIDPoll(ctx, authuc.EIDPollRequest{SessionID: req.SessionID})
+	result, err := h.usecase.EIDPoll(ctx, authuc.EIDPollRequest{SessionID: req.SessionID, GoogleLinkToken: req.GoogleLinkToken})
 	if err != nil {
 		logger.ErrorWithContext(ctx, "EIDPoll failed in controller", logger.Fields{
 			"controller": controllerName,

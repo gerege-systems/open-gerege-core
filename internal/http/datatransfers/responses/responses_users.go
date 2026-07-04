@@ -163,3 +163,21 @@ func ToResponseList(domains []domain.User) []UserResponse {
 
 	return result
 }
+
+// GoogleLoginResponse нь POST /auth/google-ийн хариу. Linked=true бол User
+// (токентой) дүүрэн; false бол link_token + email (eID-ээр баталгаажуулах).
+type GoogleLoginResponse struct {
+	Linked    bool          `json:"linked"`
+	User      *UserResponse `json:"user,omitempty"`
+	LinkToken string        `json:"link_token,omitempty"`
+	Email     string        `json:"email,omitempty"`
+}
+
+// FromGoogleLoginResponse нь usecase-ийн үр дүнг DTO рүү буулгана.
+func FromGoogleLoginResponse(r auth.GoogleLoginResponse) GoogleLoginResponse {
+	if r.Linked {
+		u := FromLoginResponse(r.Login)
+		return GoogleLoginResponse{Linked: true, User: &u}
+	}
+	return GoogleLoginResponse{Linked: false, LinkToken: r.LinkToken, Email: r.Email}
+}

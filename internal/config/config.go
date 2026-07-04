@@ -55,6 +55,11 @@ type Config struct {
 	EIDCallbackURL string `mapstructure:"EID_CALLBACK_URL"`
 	EIDDisplayText string `mapstructure:"EID_DISPLAY_TEXT"`
 
+	// Google OAuth — Google account-ийг eID хэрэглэгчид холбох нэвтрэлт.
+	// Client secret нь код exchange-д зөвхөн server талд ашиглагдана.
+	GoogleClientID     string `mapstructure:"GOOGLE_CLIENT_ID"`
+	GoogleClientSecret string `mapstructure:"GOOGLE_CLIENT_SECRET"`
+
 	BcryptCost int `mapstructure:"BCRYPT_COST"`
 
 	// Gemini AI pipeline (/api/v1/ai/*) — REST-ээр шууд дуудна (SDK-гүй).

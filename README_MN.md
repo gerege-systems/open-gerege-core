@@ -144,7 +144,16 @@ EID_RP_NAME=template-web         # бүртгэлтэй relyingPartyName
 EID_RP_SECRET=rp_sk_...          # RP API secret (Authorization: Bearer); gitignored нууц
 EID_CERT_LEVEL=ADVANCED          # нэвтрэлтэд шаардах гэрчилгээний ДООД түвшин (ADVANCED нь бүгдийг хүлээн авна)
 EID_DISPLAY_TEXT=template.gerege.mn  # eID апп-ийн баталгаажуулах дэлгэцэнд харагдах текст
+GOOGLE_CLIENT_ID=...apps.googleusercontent.com  # Google OAuth client_id (нууц биш)
+GOOGLE_CLIENT_SECRET=...          # Google OAuth client secret (server-only, gitignored)
 ```
+
+> **Google нэвтрэлт:** Google account-ийг eID хэрэглэгчид холбоно — эхний удаа
+> ЗААВАЛ eID-ээр баталгаажуулж бодит хүнтэй холбоно, дараа нь Google-ээр шууд
+> нэвтэрнэ. Google Cloud Console-д OAuth client үүсгэж, authorized redirect URI-д
+> `https://<domain>/api/auth/google/callback` нэмнэ. Frontend-д `GOOGLE_CLIENT_ID`
+> (BFF redirect-д) + `APP_ORIGIN` хэрэгтэй; backend-д `GOOGLE_CLIENT_ID` +
+> `GOOGLE_CLIENT_SECRET` (code exchange). Хоосон бол Google товч ажиллахгүй.
 
 > **eID Mongolia нэвтрэлт:** энэ template нь Smart-ID нийцтэй eID Mongolia
 > (eidmongolia.mn) v3 RP API-аар нэвтэрдэг — QR (device-link/anonymous) болон

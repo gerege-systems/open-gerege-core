@@ -13,6 +13,7 @@ import (
 	"context"
 
 	mock "github.com/stretchr/testify/mock"
+	"template/internal/business/domain"
 	"template/internal/business/usecases/users"
 )
 
@@ -48,6 +49,15 @@ func (_m *UsersUsecase) GetByNationalID(ctx context.Context, req users.GetByNati
 func (_m *UsersUsecase) UpsertFromEID(ctx context.Context, req users.UpsertFromEIDRequest) (users.UpsertFromEIDResponse, error) {
 	ret := _m.Called(ctx, req)
 	return ret.Get(0).(users.UpsertFromEIDResponse), ret.Error(1)
+}
+
+func (_m *UsersUsecase) GetByGoogleSub(ctx context.Context, sub string) (domain.User, error) {
+	ret := _m.Called(ctx, sub)
+	return ret.Get(0).(domain.User), ret.Error(1)
+}
+
+func (_m *UsersUsecase) LinkGoogleSub(ctx context.Context, userID, sub string) error {
+	return _m.Called(ctx, userID, sub).Error(0)
 }
 
 func (_m *UsersUsecase) Activate(ctx context.Context, req users.ActivateRequest) error {

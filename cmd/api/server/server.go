@@ -40,6 +40,7 @@ import (
 	"template/internal/http/routes"
 	"template/pkg/eid"
 	"template/pkg/gemini"
+	"template/pkg/google"
 	"template/pkg/jwt"
 	"template/pkg/logger"
 	"template/pkg/observability"
@@ -148,7 +149,9 @@ func NewApp() (*App, error) {
 	verifier := verify.NewClient(config.AppConfig.VerifyAPIBase, config.AppConfig.VerifyAPIKey, config.AppConfig.VerifyChannel)
 	// eID identity provider (RP) — "Login with eID"-ийн цорын ганц нэвтрэх арга.
 	eidClient := eid.NewClient(config.AppConfig.EIDBaseURL, config.AppConfig.EIDRPUUID, config.AppConfig.EIDRPName, config.AppConfig.EIDRPSecret, config.AppConfig.EIDCertLevel)
-	authUC := auth.NewUsecase(usersUC, jwtService, verifier, eidClient, redisCache, auth.Config{
+	// Google OAuth — Google account-ийг eID хэрэглэгчид холбох нэвтрэлт.
+	googleClient := google.NewClient(config.AppConfig.GoogleClientID, config.AppConfig.GoogleClientSecret)
+	authUC := auth.NewUsecase(usersUC, jwtService, verifier, eidClient, googleClient, redisCache, auth.Config{
 		OTPMaxAttempts:    config.AppConfig.OTPMaxAttempts,
 		OTPTTL:            time.Duration(config.AppConfig.REDISExpired) * time.Minute,
 		PasswordResetTTL:  30 * time.Minute,

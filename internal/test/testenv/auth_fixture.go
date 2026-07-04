@@ -19,6 +19,7 @@ import (
 	"template/internal/datasources/caches"
 	userspostgres "template/internal/datasources/repositories/postgres/users"
 	"template/pkg/eid"
+	"template/pkg/google"
 	"template/pkg/helpers"
 	"template/pkg/jwt"
 	"template/pkg/verify"
@@ -208,7 +209,7 @@ func NewAuthFixture(t *testing.T) *AuthFixture {
 	usersUC := users.NewUsecase(repo, ristretto, users.Config{
 		BcryptCost: config.AppConfig.BcryptCost,
 	})
-	authUC := auth.NewUsecase(usersUC, jwtSvc, verifier, eidClient, redis, auth.Config{
+	authUC := auth.NewUsecase(usersUC, jwtSvc, verifier, eidClient, google.NewClient("", ""), redis, auth.Config{
 		OTPMaxAttempts:    5,
 		OTPTTL:            5 * time.Minute,
 		PasswordResetTTL:  30 * time.Minute,

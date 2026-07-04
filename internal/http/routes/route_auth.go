@@ -63,6 +63,8 @@ func (rt *authRoute) Routes() {
 			// /eid/start-id — иргэний РД-аар нэвтрэлт эхлүүлж, бүртгэлтэй
 			// төхөөрөмж рүү push хийлгэнэ (gerege.mn-ийн "РД оруулах → push").
 			rl.Post("/eid/start-id", v1.Wrap(rt.handler.EIDStartByNationalID))
+			// Google OAuth callback — code exchange + eID холболт/шууд нэвтрэлт.
+			rl.Post("/google", v1.Wrap(rt.handler.GoogleLogin))
 			// Session-ийн амьдралын мөчлөг — нэвтрэх аргаас үл хамаарна.
 			rl.Post("/refresh", v1.Wrap(rt.handler.Refresh))
 			rl.Post("/logout", v1.Wrap(rt.handler.Logout))

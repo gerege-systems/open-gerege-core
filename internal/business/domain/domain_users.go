@@ -72,6 +72,7 @@ type User struct {
 	CertNotAfter      *time.Time // дуусах
 	CertIssuer        string     // олгогч CA
 	CertKeyType       string     // нийтийн түлхүүрийн алгоритм
+	GoogleSub         string     // холбогдсон Google account (sub); хоосон бол холбоогүй
 	CreatedAt         time.Time
 	UpdatedAt         *time.Time
 	DeletedAt         *time.Time

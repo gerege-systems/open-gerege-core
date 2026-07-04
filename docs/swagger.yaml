@@ -133,6 +133,11 @@ definitions:
     type: object
   template_internal_http_datatransfers_requests.EIDPollRequest:
     properties:
+      google_link_token:
+        description: |-
+          GoogleLinkToken нь Google-ээр эхний удаа нэвтэрсэн хэрэглэгч eID-ээр
+          баталгаажуулж байгаа үед л ирнэ (сонголттой).
+        type: string
       session_id:
         type: string
     required:
@@ -140,6 +145,11 @@ definitions:
     type: object
   template_internal_http_datatransfers_requests.EIDStartByNationalIDRequest:
     properties:
+      callbackUrl:
+        description: |-
+          CallbackUrl (сонголт): SAME-DEVICE (утасны browser) үед <origin>/auth/eid/callback; хоосон
+          бол CROSS-DEVICE (desktop). Backend force-normalize хийнэ.
+        type: string
       national_id:
         type: string
     required:
@@ -152,6 +162,16 @@ definitions:
         type: string
     required:
     - email
+    type: object
+  template_internal_http_datatransfers_requests.GoogleLoginRequest:
+    properties:
+      code:
+        type: string
+      redirect_uri:
+        type: string
+    required:
+    - code
+    - redirect_uri
     type: object
   template_internal_http_datatransfers_requests.IngestSecurityEventRequest:
     properties:
@@ -560,6 +580,17 @@ definitions:
         type: integer
       surname:
         type: string
+    type: object
+  template_internal_http_datatransfers_responses.GoogleLoginResponse:
+    properties:
+      email:
+        type: string
+      link_token:
+        type: string
+      linked:
+        type: boolean
+      user:
+        $ref: '#/definitions/template_internal_http_datatransfers_responses.UserResponse'
     type: object
   template_internal_http_datatransfers_responses.OrgMemberResponse:
     properties:
@@ -1068,6 +1099,38 @@ paths:
           schema:
             $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
       summary: eID нэвтрэлт эхлүүлэх (РД-аар push)
+      tags:
+      - auth
+  /auth/google:
+    post:
+      consumes:
+      - application/json
+      description: Google OAuth callback-ийн code-ийг боловсруулна. Холбогдсон account
+        бол шууд токен олгоно; эхний удаа бол eID-ээр баталгаажуулах link_token буцаана.
+      parameters:
+      - description: OAuth code + redirect_uri
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/template_internal_http_datatransfers_requests.GoogleLoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Linked → tokens, эсвэл эхний удаа → link_token
+          schema:
+            allOf:
+            - $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/template_internal_http_datatransfers_responses.GoogleLoginResponse'
+              type: object
+        "400":
+          description: Invalid code
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      summary: Google-ээр нэвтрэх (eID холболттой)
       tags:
       - auth
   /auth/login:
