@@ -30,7 +30,7 @@ func newTestClient(t *testing.T, h http.HandlerFunc) (Client, *httptest.Server) 
 	t.Helper()
 	srv := httptest.NewServer(h)
 	t.Cleanup(srv.Close)
-	return NewClient(srv.URL, testUUID, testName, testSecret), srv
+	return NewClient(srv.URL, testUUID, testName, testSecret, "ADVANCED"), srv
 }
 
 func TestQRInitiate(t *testing.T) {

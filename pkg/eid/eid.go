@@ -63,12 +63,17 @@ const (
 )
 
 const (
-	defaultBase    = "https://eidmongolia.mn/v3"
-	defaultRPName  = "template-web"
-	certLevel      = "QUALIFIED"
-	maxRespBytes   = 256 << 10
-	deviceLinkType = "QR"
-	sessionType    = "auth"
+	defaultBase   = "https://eidmongolia.mn/v3"
+	defaultRPName = "template-web"
+	// defaultCertLevel нь нэвтрэлтэд хүсэх гэрчилгээний ДООД түвшин. Smart-ID-д
+	// хүссэн түвшин нь минимум тул ADVANCED нь ADVANCED/QUALIFIED/QSCD бүх
+	// гэрчилгээг хүлээн авна — нэвтрэлтийн гэрчилгээ ихэвчлэн ADVANCED тул
+	// QUALIFIED шаардвал ийм иргэн нэвтэрч чадахгүй (утсан дээр signature
+	// гаргаж чадалгүй "серверт холбогдоход алдаа" өгдөг).
+	defaultCertLevel = "ADVANCED"
+	maxRespBytes     = 256 << 10
+	deviceLinkType   = "QR"
+	sessionType      = "auth"
 )
 
 // Identity нь IdP-ийн баталгаажуулсан иргэний таних мэдээлэл юм.
@@ -114,30 +119,36 @@ type Client interface {
 
 // client нь eID Mongolia v3 RP API руу залгах HTTP client.
 type client struct {
-	base   string
-	rpUUID string
-	rpName string
-	secret string
-	http   *http.Client
+	base      string
+	rpUUID    string
+	rpName    string
+	secret    string
+	certLevel string
+	http      *http.Client
 }
 
-// NewClient нь eID Mongolia RP client үүсгэнэ. base/rpName хоосон бол өгөгдмөл
-// утга авна. rpUUID/secret нь оператороос олгогдсон RP таних мэдээлэл — secret
-// нь Authorization: Bearer header-т явна, log-д гарахгүй. Poll нь 25с хүртэл
+// NewClient нь eID Mongolia RP client үүсгэнэ. base/rpName/certLevel хоосон бол
+// өгөгдмөл утга авна (certLevel default = ADVANCED, нэвтрэлтэд хамгийн нийцтэй).
+// rpUUID/secret нь оператороос олгогдсон RP таних мэдээлэл — secret нь
+// Authorization: Bearer header-т явна, log-д гарахгүй. Poll нь 25с хүртэл
 // long-poll хийдэг тул HTTP timeout-ийг 30с болгов.
-func NewClient(base, rpUUID, rpName, secret string) Client {
+func NewClient(base, rpUUID, rpName, secret, certLevel string) Client {
 	if base == "" {
 		base = defaultBase
 	}
 	if rpName == "" {
 		rpName = defaultRPName
 	}
+	if certLevel == "" {
+		certLevel = defaultCertLevel
+	}
 	return &client{
-		base:   strings.TrimRight(base, "/"),
-		rpUUID: rpUUID,
-		rpName: rpName,
-		secret: secret,
-		http:   &http.Client{Timeout: 30 * time.Second},
+		base:      strings.TrimRight(base, "/"),
+		rpUUID:    rpUUID,
+		rpName:    rpName,
+		secret:    secret,
+		certLevel: certLevel,
+		http:      &http.Client{Timeout: 30 * time.Second},
 	}
 }
 
@@ -178,7 +189,7 @@ func (c *client) newAuthBody(displayText string) (authInitiateBody, error) {
 	return authInitiateBody{
 		RelyingPartyUUID:  c.rpUUID,
 		RelyingPartyName:  c.rpName,
-		CertificateLevel:  certLevel,
+		CertificateLevel:  c.certLevel,
 		SignatureProtocol: "ACSP_V2",
 		RPChallenge:       challenge,
 		Interactions:      []interaction{{Type: "displayTextAndPIN", DisplayText60: dt}},

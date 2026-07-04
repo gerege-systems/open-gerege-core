@@ -51,6 +51,7 @@ type Config struct {
 	EIDRPUUID      string `mapstructure:"EID_RP_UUID"`
 	EIDRPName      string `mapstructure:"EID_RP_NAME"`
 	EIDRPSecret    string `mapstructure:"EID_RP_SECRET"`
+	EIDCertLevel   string `mapstructure:"EID_CERT_LEVEL"`
 	EIDCallbackURL string `mapstructure:"EID_CALLBACK_URL"`
 	EIDDisplayText string `mapstructure:"EID_DISPLAY_TEXT"`
 
@@ -270,6 +271,11 @@ func applyDefaults() {
 	}
 	if AppConfig.EIDRPName == "" {
 		AppConfig.EIDRPName = "template-web"
+	}
+	if AppConfig.EIDCertLevel == "" {
+		// Нэвтрэлтэд ADVANCED — хамгийн нийцтэй (ADVANCED/QUALIFIED/QSCD бүгдийг
+		// хүлээн авна). Гарын үсэгт QUALIFIED/QSCD шаардлагатай бол override хийнэ.
+		AppConfig.EIDCertLevel = "ADVANCED"
 	}
 	if AppConfig.EIDCallbackURL == "" {
 		AppConfig.EIDCallbackURL = "https://template.gerege.mn/login/verify"

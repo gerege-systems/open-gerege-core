@@ -142,6 +142,7 @@ EID_BASE_URL=https://eidmongolia.mn/v3  # eID Mongolia RP API (өгөгдмөл)
 EID_RP_UUID=                     # оператороос олгосон RP UUID (нэвтрэлтэд заавал)
 EID_RP_NAME=template-web         # бүртгэлтэй relyingPartyName
 EID_RP_SECRET=rp_sk_...          # RP API secret (Authorization: Bearer); gitignored нууц
+EID_CERT_LEVEL=ADVANCED          # нэвтрэлтэд шаардах гэрчилгээний ДООД түвшин (ADVANCED нь бүгдийг хүлээн авна)
 EID_DISPLAY_TEXT=template.gerege.mn  # eID апп-ийн баталгаажуулах дэлгэцэнд харагдах текст
 ```
 
