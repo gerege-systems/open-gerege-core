@@ -31,6 +31,7 @@ import (
 	"template/internal/business/usecases/rbac"
 	"template/internal/business/usecases/security"
 	"template/internal/business/usecases/sign"
+	"template/internal/business/usecases/sso"
 	"template/internal/business/usecases/superadmin"
 	"template/internal/business/usecases/users"
 	"template/internal/config"
@@ -45,6 +46,7 @@ import (
 	orgpostgres "template/internal/datasources/repositories/postgres/org"
 	rbacpostgres "template/internal/datasources/repositories/postgres/rbac"
 	securitypostgres "template/internal/datasources/repositories/postgres/security"
+	ssouserpostgres "template/internal/datasources/repositories/postgres/ssouser"
 	userintegrationspostgres "template/internal/datasources/repositories/postgres/userintegrations"
 	userspostgres "template/internal/datasources/repositories/postgres/users"
 	"template/internal/datasources/rls"
@@ -57,6 +59,7 @@ import (
 	"template/pkg/jwt"
 	"template/pkg/logger"
 	"template/pkg/observability"
+	"template/pkg/oidc"
 	"template/pkg/verify"
 
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -200,6 +203,11 @@ func NewApp() (*App, error) {
 	// Gerege Core (core.gerege.mn) — USER FIND / ORG FIND хайлтын wrap.
 	coreUC := core.NewUsecase(config.AppConfig.CoreAPIBase, config.AppConfig.CoreAPIToken)
 
+	// Gerege SSO (sso.gerege.mn, OIDC) — eID-ийн зэрэгцээ 2 дахь нэвтрэлт.
+	ssoClient := oidc.NewClient(config.AppConfig.SSOIssuer, config.AppConfig.SSOClientID, config.AppConfig.SSOClientSecret, config.AppConfig.SSORedirectURI, config.AppConfig.SSOScope)
+	ssoRepo := ssouserpostgres.NewSSOUserRepository(pool)
+	ssoUC := sso.NewUsecase(ssoClient, ssoRepo, jwtService, redisCache)
+
 	// Хэрэглэгчийн гуравдагч этгээдийн интеграци (Google Drive/Meet, Dropbox) —
 	// OAuth токеныг шифрлэн хадгална (RLS-тэй per-user хүснэгт).
 	userIntegrationsRepo := userintegrationspostgres.NewUserIntegrationsRepository(pool)
@@ -293,6 +301,7 @@ func NewApp() (*App, error) {
 		routes.NewIntegrationsRoute(api, integrationsUC, authMiddleware).Routes()
 		routes.NewGatewayRoute(api, gatewayUC, rbacUC, authMiddleware).Routes()
 		routes.NewCoreRoute(api, coreUC, authMiddleware).Routes()
+		routes.NewSSORoute(api, ssoUC).Routes()
 		routes.NewAdminRoute(api, usersUC, rbacUC, aiUC, authMiddleware).Routes()
 		routes.NewSuperAdminRoute(api, superadminUC, authMiddleware).Routes()
 		routes.NewAIRoute(api, aiUC, authMiddleware, aiRateLimiter).Routes()

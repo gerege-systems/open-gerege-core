@@ -2457,6 +2457,49 @@ const docTemplate = `{
                 }
             }
         },
+        "/sso/callback": {
+            "post": {
+                "description": "authorize callback-ийн state+code-ийг шалгаж, code-ийг токен болгож солин, иргэнийг sso_sub-ээр upsert хийж, JWT хос олгоно.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "sso"
+                ],
+                "summary": "Gerege SSO callback",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/sso/start": {
+            "post": {
+                "description": "sso.gerege.mn (OIDC) authorize URL-ийг state-тэй буцаана. BFF browser-ийг тийш чиглүүлнэ.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "sso"
+                ],
+                "summary": "Gerege SSO нэвтрэлт эхлүүлэх",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/users/me": {
             "get": {
                 "security": [

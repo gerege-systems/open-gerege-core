@@ -124,6 +124,16 @@ type Config struct {
 	// ахиулна. Хоосон бол алгасна — super admin-г зөвхөн DB/энэ env-ээр л
 	// томилно (API-аар үүсгэдэггүй). Хэрэглэгч эхлээд бүртгүүлсэн байх ёстой.
 	SuperAdminEmail string `mapstructure:"SUPERADMIN_EMAIL"`
+
+	// Gerege SSO (sso.gerege.mn, OIDC) — eID-ийн зэрэгцээ 2 дахь нэвтрэлт.
+	// ClientID/Secret хоосон бол SSO урсгал inert (Landing дээр товч харагдахгүй).
+	// RedirectURI нь SSO client-д бүртгэгдсэн callback (жишээ
+	// https://template.gerege.mn/sso/callback) байх ёстой.
+	SSOIssuer       string `mapstructure:"SSO_ISSUER"`
+	SSOClientID     string `mapstructure:"SSO_CLIENT_ID"`
+	SSOClientSecret string `mapstructure:"SSO_CLIENT_SECRET"`
+	SSORedirectURI  string `mapstructure:"SSO_REDIRECT_URI"`
+	SSOScope        string `mapstructure:"SSO_SCOPE"`
 }
 
 // TrustedProxiesList нь TRUSTED_PROXIES-г таслалаар салгаж slice болгоно.
@@ -324,6 +334,12 @@ func applyDefaults() {
 	}
 	if AppConfig.CoreAPIBase == "" {
 		AppConfig.CoreAPIBase = "https://core.gerege.mn"
+	}
+	if AppConfig.SSOIssuer == "" {
+		AppConfig.SSOIssuer = "https://sso.gerege.mn"
+	}
+	if AppConfig.SSOScope == "" {
+		AppConfig.SSOScope = "openid profile email"
 	}
 	// OTel-ийн sample ratio нь зөвхөн exporter тохируулагдсан БА оператор
 	// ratio-г тодорхой зааж өгөөгүй үед 1.0 утгыг анхдагчаар авна. Exporter
