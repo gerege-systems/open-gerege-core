@@ -136,10 +136,6 @@ func (_m *AuthUsecase) GoogleLogin(ctx context.Context, code, redirectURI string
 	return ret.Get(0).(auth.GoogleLoginResponse), ret.Error(1)
 }
 
-func (_m *AuthUsecase) LinkGoogleToUser(ctx context.Context, userID, code, redirectURI string) error {
-	return _m.Called(ctx, userID, code, redirectURI).Error(0)
-}
-
 func (_m *AuthUsecase) UnlinkGoogleFromUser(ctx context.Context, userID string) error {
 	return _m.Called(ctx, userID).Error(0)
 }

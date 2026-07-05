@@ -112,31 +112,6 @@ func (uc *usecase) GoogleLogin(ctx context.Context, code, redirectURI string) (r
 	return GoogleLoginResponse{Linked: false, LinkToken: token, Email: gu.Email}, nil
 }
 
-// LinkGoogleToUser нь АЛЬ ХЭДИЙН нэвтэрсэн хэрэглэгч (userID) Google account-аа
-// шууд холбоход (integrations картаас) ашиглагдана: code-ийг exchange хийж, тухайн
-// Google sub өөр хэрэглэгчид холбогдоогүй бол энэ хэрэглэгчид холбоно/шинэчилнэ.
-func (uc *usecase) LinkGoogleToUser(ctx context.Context, userID, code, redirectURI string) error {
-	if uc.google == nil || !uc.google.Configured() {
-		return apperror.InternalCause(fmt.Errorf("google login not configured"))
-	}
-	gu, exErr := uc.google.Exchange(ctx, code, redirectURI)
-	if exErr != nil {
-		return apperror.BadRequest("Google холболт амжилтгүй боллоо")
-	}
-	// Тухайн Google account өөр хэрэглэгчид холбогдсон эсэхийг шалгана.
-	existing, lookErr := uc.users.GetByGoogleSub(ctx, gu.Sub)
-	if lookErr == nil && existing.ID != userID {
-		return apperror.Conflict("Энэ Google бүртгэл өөр хэрэглэгчид холбогдсон байна")
-	}
-	if lookErr != nil {
-		var domErr *apperror.DomainError
-		if !errors.As(lookErr, &domErr) || domErr.Type != apperror.ErrTypeNotFound {
-			return lookErr // жинхэнэ алдаа (DB г.м.)
-		}
-	}
-	return uc.users.LinkGoogleAccount(ctx, userID, googleAccountOf(*gu))
-}
-
 // UnlinkGoogleFromUser нь хэрэглэгчийн Google холболтыг арилгана.
 func (uc *usecase) UnlinkGoogleFromUser(ctx context.Context, userID string) error {
 	return uc.users.UnlinkGoogle(ctx, userID)

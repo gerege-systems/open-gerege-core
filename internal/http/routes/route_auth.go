@@ -70,11 +70,10 @@ func (rt *authRoute) Routes() {
 			rl.Post("/logout", v1.Wrap(rt.handler.Logout))
 		})
 
-		// Нэвтэрсэн хэрэглэгчийн Google холболт (integrations карт) — Google
-		// account-аа профайлдаа холбох / салгах. authMiddleware шаардана.
+		// Нэвтэрсэн хэрэглэгч Google холболтоо САЛГАХ (integrations/dashboard
+		// картаас). Холбох нь зөвхөн login урсгалаар хийгддэг. authMiddleware.
 		r.Group(func(pr chi.Router) {
 			pr.Use(rt.authMiddleware)
-			pr.Post("/google/link", v1.Wrap(rt.handler.GoogleLink))
 			pr.Delete("/google/link", v1.Wrap(rt.handler.GoogleUnlink))
 		})
 
