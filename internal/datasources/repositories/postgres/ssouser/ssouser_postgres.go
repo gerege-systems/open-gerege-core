@@ -87,3 +87,42 @@ func (r *ssoUserRepository) UpsertBySSOSub(ctx context.Context, ssoSub string, i
 	}
 	return stored.ToV1Domain(), nil
 }
+
+// UpsertByCivilID нь SSO иргэнийг civil_id-ээр (eID хэрэглэгчийн тогтвортой
+// түлхүүр) тааруулна: тухайн civil_id-тэй хэрэглэгч (eID-ээр урьд бүртгэгдсэн)
+// байвал тэр мөрд sso_sub-ыг холбож (role_id/email ХӨНДӨХГҮЙ), нэрийг нөхнө;
+// байхгүй бол шинэ хэрэглэгч (username eid_<civilID>, role RoleUser) үүсгэнэ.
+// Ингэснээр eID болон SSO нэвтрэлт нэг л данс болно (давхардал үүсэхгүй).
+func (r *ssoUserRepository) UpsertByCivilID(ctx context.Context, civilID, nationalID, ssoSub string, in *domain.User) (domain.User, error) {
+	var stored records.Users
+	err := r.withRLS(ctx, func(tx pgx.Tx) error {
+		rows, qErr := tx.Query(ctx, `
+			INSERT INTO users(id, username, first_name, last_name, first_name_en, last_name_en, email, password, active, role_id, national_id, civil_id, sso_sub, created_at)
+			VALUES (uuid_generate_v4(), $1, $2, $3, $4, $5, NULL, NULL, true, $6, $7, $8, $9, now())
+			ON CONFLICT (lower(civil_id)) WHERE civil_id IS NOT NULL
+			DO UPDATE SET
+				sso_sub    = EXCLUDED.sso_sub,
+				first_name = COALESCE(NULLIF(EXCLUDED.first_name, ''), users.first_name),
+				last_name  = COALESCE(NULLIF(EXCLUDED.last_name, ''), users.last_name),
+				active     = true,
+				updated_at = now()
+			RETURNING `+records.UserColumns+`
+		`,
+			in.Username, in.FirstName, in.LastName, in.FirstNameEn, in.LastNameEn,
+			in.RoleID, nationalID, civilID, ssoSub,
+		)
+		if qErr != nil {
+			return qErr
+		}
+		var scanErr error
+		stored, scanErr = pgx.CollectExactlyOneRow(rows, pgx.RowToStructByName[records.Users])
+		return scanErr
+	})
+	if err != nil {
+		return domain.User{}, err
+	}
+	if stored.Id == "" {
+		return domain.User{}, fmt.Errorf("sso civil upsert succeeded but RETURNING produced no row")
+	}
+	return stored.ToV1Domain(), nil
+}

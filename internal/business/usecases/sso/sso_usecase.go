@@ -15,7 +15,11 @@ import (
 
 // UserStore нь SSO иргэнийг users хүснэгтэд upsert хийх repo (postgres/ssouser).
 type UserStore interface {
+	// UpsertBySSOSub — регистр/иргэний дугааргүй үед (pairwise sub-ээр).
 	UpsertBySSOSub(ctx context.Context, ssoSub string, in *domain.User) (domain.User, error)
+	// UpsertByCivilID — nationalid scope-оос иргэний дугаар ирсэн үед байгаа eID
+	// хэрэглэгчтэй civil_id-ээр тааруулж, sso_sub холбоно (давхардлаас сэргийлнэ).
+	UpsertByCivilID(ctx context.Context, civilID, nationalID, ssoSub string, in *domain.User) (domain.User, error)
 }
 
 // StartResponse нь browser-ийг чиглүүлэх SSO authorize URL.

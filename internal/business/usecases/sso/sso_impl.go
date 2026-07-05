@@ -88,26 +88,43 @@ func (u *usecase) Complete(ctx context.Context, state, code string) (CompleteRes
 		return CompleteResponse{}, apperror.InternalCause(err)
 	}
 
-	// sub-ээс тогтвортой, аюулгүй урттай username/email гаргана (sub нь урт
-	// pairwise hash). Refresh нь email-ээр (auth_refresh) хайдаг тул синтетик
-	// email-ийг хадгална.
-	slug := subSlug(info.Sub)
-	user := &domain.User{
-		Username:    "sso_" + slug,
-		FirstName:   strings.TrimSpace(info.GivenName),
-		LastName:    strings.TrimSpace(info.FamilyName),
-		FirstNameEn: "",
-		LastNameEn:  "",
-		Email:       "sso_" + slug + "@sso.local",
-		Active:      true,
-		RoleID:      domain.RoleUser,
-	}
+	firstName := strings.TrimSpace(info.GivenName)
+	lastName := strings.TrimSpace(info.FamilyName)
 	// given/family хоосон ч name байвал бүтэн нэрийг LastName-д (fallback) тавина.
-	if user.FirstName == "" && user.LastName == "" && strings.TrimSpace(info.Name) != "" {
-		user.LastName = strings.TrimSpace(info.Name)
+	if firstName == "" && lastName == "" && strings.TrimSpace(info.Name) != "" {
+		lastName = strings.TrimSpace(info.Name)
 	}
 
-	stored, err := u.store.UpsertBySSOSub(ctx, info.Sub, user)
+	// nationalid scope-оос иргэний дугаар (register_number = civil id) ирсэн бол
+	// байгаа eID хэрэглэгчтэй civil_id-ээр тааруулна — ижил регистрээр eID болон
+	// SSO-ээр нэвтрэхэд НЭГ данс болно (давхардал үүсэхгүй). national_id (регно)
+	// нь eID-ийн адил жижиг үсгээр хадгалагдана.
+	civilID := strings.TrimSpace(info.RegisterNumber)
+	nationalID := strings.ToLower(strings.TrimSpace(info.NationalID))
+
+	var stored domain.User
+	if civilID != "" {
+		user := &domain.User{
+			Username:  "eid_" + civilID,
+			FirstName: firstName,
+			LastName:  lastName,
+			RoleID:    domain.RoleUser, // зөвхөн ШИНЭ мөрд; байгаа хэрэглэгчийн эрхийг хөндөхгүй
+		}
+		stored, err = u.store.UpsertByCivilID(ctx, civilID, nationalID, info.Sub, user)
+	} else {
+		// Иргэний дугааргүй (nationalid scope байхгүй/буцаагаагүй) — pairwise
+		// sub-ээр. Refresh нь email-ээр хайдаг тул синтетик email хадгална.
+		slug := subSlug(info.Sub)
+		user := &domain.User{
+			Username:  "sso_" + slug,
+			FirstName: firstName,
+			LastName:  lastName,
+			Email:     "sso_" + slug + "@sso.local",
+			Active:    true,
+			RoleID:    domain.RoleUser,
+		}
+		stored, err = u.store.UpsertBySSOSub(ctx, info.Sub, user)
+	}
 	if err != nil {
 		return CompleteResponse{}, apperror.InternalCause(fmt.Errorf("upsert sso user: %w", err))
 	}

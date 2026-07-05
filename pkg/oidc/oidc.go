@@ -160,6 +160,11 @@ type UserInfo struct {
 	FamilyName    string `json:"family_name"`
 	Email         string `json:"email"`
 	EmailVerified bool   `json:"email_verified"`
+	// nationalid scope-ийн claims (SSO client-д тухайн scope байвал):
+	// NationalID = регистрийн дугаар (регно), RegisterNumber = иргэний
+	// бүртгэлийн дугаар (civil id). Эдгээрээр байгаа eID хэрэглэгчтэй тааруулна.
+	NationalID     string `json:"national_id"`
+	RegisterNumber string `json:"register_number"`
 }
 
 // UserInfo нь access token-оор /userinfo дуудна.
