@@ -48,7 +48,10 @@ func (u *usecase) FindOrganizations(ctx context.Context, searchText string) (jso
 
 func (u *usecase) call(ctx context.Context, method, path, query string, body io.Reader) (json.RawMessage, error) {
 	if u.token == "" {
-		return nil, apperror.InternalCause(fmt.Errorf("core api token not configured"))
+		// CORE_API_TOKEN тохируулаагүй бол Core инерт — 500 биш, UI-д ойлгомжтой
+		// мессежээр (илэрцгүй шалтгаан) буцаана. CoreSearchView нь энэ data.message-
+		// ийг харуулдаг тул оператор Core-г идэвхжүүлэхэд юу дутууг шууд ойлгоно.
+		return json.RawMessage(`{"message":"Core үйлчилгээ (core.gerege.mn) тохируулаагүй байна. CORE_API_TOKEN-ыг backend.env-д тохируулна уу."}`), nil
 	}
 	endpoint := u.base + path
 	if query != "" {
