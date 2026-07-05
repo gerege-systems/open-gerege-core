@@ -55,6 +55,13 @@ type Config struct {
 	EIDCallbackURL string `mapstructure:"EID_CALLBACK_URL"`
 	EIDDisplayText string `mapstructure:"EID_DISPLAY_TEXT"`
 
+	// PDF гарын үсгийн (PAdES) серверийн БАЙНГЫН Document-Signer гэрчилгээ +
+	// ECDSA түлхүүрийн PEM файлын зам. Production-д ЗААВАЛ (fail-closed):
+	// эфемер self-signed key нь reproducible/verifiable/revocable бус.
+	// development-д хоосон бол sign usecase dev self-signed руу шилжинэ.
+	SignSignerCertFile string `mapstructure:"SIGN_SIGNER_CERT_FILE"`
+	SignSignerKeyFile  string `mapstructure:"SIGN_SIGNER_KEY_FILE"`
+
 	// Google OAuth — Google account-ийг eID хэрэглэгчид холбох нэвтрэлт.
 	// Client secret нь код exchange-д зөвхөн server талд ашиглагдана.
 	GoogleClientID     string `mapstructure:"GOOGLE_CLIENT_ID"`

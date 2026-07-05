@@ -2552,6 +2552,105 @@ paths:
       summary: Security event илгээх
       tags:
       - security
+  /v1/sign/{id}:
+    get:
+      description: Session-ийн төлөв (running|completed|failed|rejected). Зөвхөн эзэмшигч
+        иргэн хандана.
+      parameters:
+      - description: session_id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+            - properties:
+                data:
+                  additionalProperties:
+                    type: string
+                  type: object
+              type: object
+        "401":
+          description: unauthorized
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+        "404":
+          description: session олдсонгүй
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      security:
+      - BearerAuth: []
+      summary: Гарын үсгийн session төлөв
+      tags:
+      - sign
+  /v1/sign/{id}/download:
+    get:
+      description: PAdES гарын үсэг шигтгэсэн PDF-ийг урсгана. Зөвхөн эзэмшигч иргэн,
+        completed session.
+      parameters:
+      - description: session_id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/pdf
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: file
+        "401":
+          description: unauthorized
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+        "404":
+          description: session олдсонгүй
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      security:
+      - BearerAuth: []
+      summary: Гарын үсэгтэй PDF татах
+      tags:
+      - sign
+  /v1/sign/init:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Нэвтэрсэн иргэний eID регистрээр /v3 PIN2 гарын үсэг эхлүүлж, session_id
+        + verification_code буцаана. Иргэн утсан дээрээ PIN2-оор зөвшөөрнө.
+      parameters:
+      - description: Гарын үсэг зурах PDF (≤25MB)
+        in: formData
+        name: file
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: session_id + verification_code
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+        "400":
+          description: invalid form / регистр олдсонгүй
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+        "401":
+          description: unauthorized
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      security:
+      - BearerAuth: []
+      summary: PDF гарын үсэг эхлүүлэх (eID PIN2)
+      tags:
+      - sign
 schemes:
 - http
 - https

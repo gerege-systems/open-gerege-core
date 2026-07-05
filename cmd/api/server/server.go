@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 	"time"
 
@@ -26,6 +27,7 @@ import (
 	"template/internal/business/usecases/org"
 	"template/internal/business/usecases/rbac"
 	"template/internal/business/usecases/security"
+	"template/internal/business/usecases/sign"
 	"template/internal/business/usecases/users"
 	"template/internal/config"
 	"template/internal/constants"
@@ -211,6 +213,29 @@ func NewApp() (*App, error) {
 		ScopePrompt: config.AppConfig.AIScopePrompt,
 	})
 
+	// PDF гарын үсэг (PAdES) — eidmongolia /v3-ээр. Серверийн байнгын
+	// Document-Signer гэрчилгээ + түлхүүрийг файлаас (SIGN_SIGNER_*) уншина;
+	// хоосон бол production-д fail-closed, development-д dev self-signed.
+	signerCertPEM, signerKeyPEM, err := loadSignerMaterial()
+	if err != nil {
+		return nil, fmt.Errorf("load document-signer material: %w", err)
+	}
+	signUC, err := sign.NewUsecase(redisCache, sign.Config{
+		// EIDBaseURL нь "/v3"-ийг агуулдаг (default https://eidmongolia.mn/v3);
+		// sign usecase өөрөө "/v3/signature/..." нэмдэг тул суурийг "/v3"-гүй
+		// болгож, /v3/v3 давхардлаас сэргийлнэ.
+		V3BaseURL:     signV3Base(config.AppConfig.EIDBaseURL),
+		RPUUID:        config.AppConfig.EIDRPUUID,
+		RPName:        config.AppConfig.EIDRPName,
+		APISecret:     config.AppConfig.EIDRPSecret,
+		SignerCertPEM: signerCertPEM,
+		SignerKeyPEM:  signerKeyPEM,
+		IsProduction:  config.AppConfig.Environment == constants.EnvironmentProduction,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("init sign usecase: %w", err)
+	}
+
 	// TRUSTED_PROXIES хоосон бол clientIP() нь X-Forwarded-For-д итгэхгүй тул
 	// урвуу proxy-гийн ард (энэ template-ийн топологи: nginx → web BFF → api,
 	// api нь нийтийн порт-гүй) БҮХ хүсэлт нэг proxy peer IP дор орж, per-IP
@@ -249,6 +274,7 @@ func NewApp() (*App, error) {
 		routes.NewAIRoute(api, aiUC, authMiddleware, aiRateLimiter).Routes()
 		routes.NewAuditRoute(api, auditUC, authMiddleware).Routes()
 		routes.NewSecurityRoute(api, securityUC, authMiddleware).Routes()
+		routes.NewSignRoute(api, signUC, usersUC, authMiddleware).Routes()
 	})
 
 	// Серверийн түвшний timeout-ууд (slowloris / удаан client-ийн эсрэг):
@@ -331,4 +357,45 @@ func (a *App) Run() (err error) {
 
 	srvLog.Info("server exiting")
 	return
+}
+
+// signV3Base нь sign usecase-д зориулж eID суурь URL-ийг бэлдэнэ. My config-ийн
+// EIDBaseURL нь "/v3"-ийг агуулдаг (default https://eidmongolia.mn/v3); sign
+// usecase өөрөө "/v3/signature/..." нэмдэг тул эндээс trailing "/v3"-ийг хасаж
+// /v3/v3 давхардлаас сэргийлнэ.
+func signV3Base(eidBaseURL string) string {
+	base := strings.TrimRight(strings.TrimSpace(eidBaseURL), "/")
+	base = strings.TrimSuffix(base, "/v3")
+	if base == "" {
+		return "https://eidmongolia.mn"
+	}
+	return base
+}
+
+// loadSignerMaterial нь серверийн байнгын Document-Signer гэрчилгээ + түлхүүрийн
+// PEM-ийг config-ийн файл замаас (SIGN_SIGNER_CERT_FILE / SIGN_SIGNER_KEY_FILE)
+// уншина. Хоёулаа хоосон бол nil буцаана — sign.NewUsecase production-д
+// fail-closed, development-д dev self-signed руу шилжинэ. Зөвхөн нэг нь өгөгдвөл
+// алдаа (буруу хагас тохиргооноос сэргийлнэ).
+func loadSignerMaterial() (certPEM, keyPEM []byte, err error) {
+	certFile := strings.TrimSpace(config.AppConfig.SignSignerCertFile)
+	keyFile := strings.TrimSpace(config.AppConfig.SignSignerKeyFile)
+	if certFile == "" && keyFile == "" {
+		return nil, nil, nil
+	}
+	if certFile == "" || keyFile == "" {
+		return nil, nil, fmt.Errorf("SIGN_SIGNER_CERT_FILE ба SIGN_SIGNER_KEY_FILE хоёуланг хамт тохируул")
+	}
+	// #nosec G304 — зам нь оператор SIGN_SIGNER_CERT_FILE env-ээр өгдөг боот
+	// тохиргоо; хүсэлтийн/хэрэглэгчийн оролтоос биш (taint биш).
+	certPEM, err = os.ReadFile(certFile)
+	if err != nil {
+		return nil, nil, fmt.Errorf("read signer cert: %w", err)
+	}
+	// #nosec G304 — оператор SIGN_SIGNER_KEY_FILE env-ээр өгсөн зам.
+	keyPEM, err = os.ReadFile(keyFile)
+	if err != nil {
+		return nil, nil, fmt.Errorf("read signer key: %w", err)
+	}
+	return certPEM, keyPEM, nil
 }
