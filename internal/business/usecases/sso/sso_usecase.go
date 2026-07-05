@@ -46,6 +46,10 @@ type Usecase interface {
 	// Complete нь callback-ийн state-ийг шалгаж, code-ийг солиж, /userinfo-оос
 	// иргэнийг тодорхойлж upsert хийн, JWT хос олгоно.
 	Complete(ctx context.Context, state, code string) (CompleteResponse, error)
+	// CompleteNative нь mobile (PKCE, public client) урсгалын code-ийг public
+	// client-ээр (code_verifier-тэй, state-гүй) солиж, Complete-ийн адил иргэнийг
+	// upsert хийн JWT хос олгоно.
+	CompleteNative(ctx context.Context, code, codeVerifier, redirectURI string) (CompleteResponse, error)
 	// LogoutURL нь logout ref-ээр Redis-ээс id_token-ыг авч (GetDel), RP-initiated
 	// logout URL байгуулна. ref байхгүй/хугацаа дууссан бол хоосон буцаана.
 	LogoutURL(ctx context.Context, ref string) (string, error)

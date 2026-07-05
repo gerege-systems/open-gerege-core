@@ -207,7 +207,7 @@ func NewApp() (*App, error) {
 	// Gerege SSO (sso.gerege.mn, OIDC) — eID-ийн зэрэгцээ 2 дахь нэвтрэлт.
 	ssoClient := oidc.NewClient(config.AppConfig.SSOIssuer, config.AppConfig.SSOClientID, config.AppConfig.SSOClientSecret, config.AppConfig.SSORedirectURI, config.AppConfig.SSOScope)
 	ssoRepo := ssouserpostgres.NewSSOUserRepository(pool)
-	ssoUC := sso.NewUsecase(ssoClient, ssoRepo, jwtService, redisCache)
+	ssoUC := sso.NewUsecase(ssoClient, ssoRepo, jwtService, redisCache, config.AppConfig.SSONativeClientID)
 
 	// Хэрэглэгчийн гуравдагч этгээдийн интеграци (Google Drive/Meet, Dropbox) —
 	// OAuth токеныг шифрлэн хадгална (RLS-тэй per-user хүснэгт).

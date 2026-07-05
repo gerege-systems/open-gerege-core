@@ -121,6 +121,50 @@ func (c *Client) Exchange(ctx context.Context, code string) (accessToken, idToke
 	return tr.AccessToken, tr.IDToken, nil
 }
 
+// ExchangePKCE нь PUBLIC client (PKCE, token_endpoint_auth_method=none)-ийн
+// authorization code-ийг access + id token болгож солино. Exchange-ээс ялгаатай
+// нь: HTTP Basic auth / client_secret БАЙХГҮЙ; client_id, code_verifier-ийг
+// form-д (public client) илгээнэ. redirectURI нь native client-д бүртгэгдсэн
+// (жишээ geregetemp://oauth2/callback) байх ёстой. c.issuer л хэрэглэгдэнэ —
+// confidential client-ийн creds талбарууд ашиглагдахгүй.
+func (c *Client) ExchangePKCE(ctx context.Context, clientID, code, codeVerifier, redirectURI string) (accessToken, idToken string, err error) {
+	form := url.Values{}
+	form.Set("grant_type", "authorization_code")
+	form.Set("code", code)
+	form.Set("redirect_uri", redirectURI)
+	form.Set("client_id", clientID)
+	form.Set("code_verifier", codeVerifier)
+
+	req, reqErr := http.NewRequestWithContext(ctx, http.MethodPost, c.issuer+"/oauth2/token", strings.NewReader(form.Encode()))
+	if reqErr != nil {
+		return "", "", reqErr
+	}
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	req.Header.Set("Accept", "application/json")
+
+	res, doErr := c.http.Do(req)
+	if doErr != nil {
+		return "", "", fmt.Errorf("sso token request: %w", doErr)
+	}
+	defer func() { _ = res.Body.Close() }()
+
+	body, readErr := io.ReadAll(io.LimitReader(res.Body, maxRespBytes))
+	if readErr != nil {
+		return "", "", fmt.Errorf("sso token read: %w", readErr)
+	}
+	if res.StatusCode < 200 || res.StatusCode >= 300 {
+		return "", "", fmt.Errorf("sso token endpoint returned %d", res.StatusCode)
+	}
+	var tr tokenResponse
+	if jErr := json.Unmarshal(body, &tr); jErr != nil {
+		return "", "", fmt.Errorf("sso token decode: %w", jErr)
+	}
+	if tr.AccessToken == "" {
+		return "", "", fmt.Errorf("sso token response missing access_token")
+	}
+	return tr.AccessToken, tr.IDToken, nil
+}
+
 // LogoutURL нь RP-initiated logout (end_session_endpoint) URL-ийг байгуулна —
 // browser-ийг тийш чиглүүлэхэд SSO (Hydra) дээрх session дуусч, дараа нь
 // postLogout руу буцна. idTokenHint (сонголт) нь баталгаажуулалт/skip-д тусална.

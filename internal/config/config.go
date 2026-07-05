@@ -134,6 +134,10 @@ type Config struct {
 	SSOClientSecret string `mapstructure:"SSO_CLIENT_SECRET"`
 	SSORedirectURI  string `mapstructure:"SSO_REDIRECT_URI"`
 	SSOScope        string `mapstructure:"SSO_SCOPE"`
+	// SSONativeClientID нь mobile (PKCE, public) урсгалын Hydra client_id —
+	// iOS/Android ASWebAuthenticationSession-ийн code-ийг public client-ээр
+	// солиход хэрэглэгдэнэ (хоосон бол default template-gerege-mn-ios).
+	SSONativeClientID string `mapstructure:"SSO_NATIVE_CLIENT_ID"`
 }
 
 // TrustedProxiesList нь TRUSTED_PROXIES-г таслалаар салгаж slice болгоно.
@@ -340,6 +344,9 @@ func applyDefaults() {
 	}
 	if AppConfig.SSOScope == "" {
 		AppConfig.SSOScope = "openid profile email"
+	}
+	if AppConfig.SSONativeClientID == "" {
+		AppConfig.SSONativeClientID = "template-gerege-mn-ios"
 	}
 	// OTel-ийн sample ratio нь зөвхөн exporter тохируулагдсан БА оператор
 	// ratio-г тодорхой зааж өгөөгүй үед 1.0 утгыг анхдагчаар авна. Exporter

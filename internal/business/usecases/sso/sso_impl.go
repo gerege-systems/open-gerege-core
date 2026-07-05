@@ -31,15 +31,18 @@ const idtPrefix = "sso:idt:"
 const logoutTTL = 7 * 24 * time.Hour
 
 type usecase struct {
-	oidc  *oidc.Client
-	store UserStore
-	jwt   jwt.JWTService
-	redis caches.RedisCache
+	oidc           *oidc.Client
+	store          UserStore
+	jwt            jwt.JWTService
+	redis          caches.RedisCache
+	nativeClientID string
 }
 
-// NewUsecase нь SSO usecase угсарна.
-func NewUsecase(oidcClient *oidc.Client, store UserStore, jwtSvc jwt.JWTService, redis caches.RedisCache) Usecase {
-	return &usecase{oidc: oidcClient, store: store, jwt: jwtSvc, redis: redis}
+// NewUsecase нь SSO usecase угсарна. nativeClientID нь mobile (PKCE, public
+// client) урсгалын Hydra client_id (жишээ template-gerege-mn-ios) — хоосон бол
+// native code-exchange идэвхгүй.
+func NewUsecase(oidcClient *oidc.Client, store UserStore, jwtSvc jwt.JWTService, redis caches.RedisCache, nativeClientID string) Usecase {
+	return &usecase{oidc: oidcClient, store: store, jwt: jwtSvc, redis: redis, nativeClientID: nativeClientID}
 }
 
 func (u *usecase) Configured() bool { return u.oidc.Configured() }
@@ -78,11 +81,37 @@ func (u *usecase) Complete(ctx context.Context, state, code string) (CompleteRes
 		return CompleteResponse{}, apperror.BadRequest("SSO нэвтрэлтийн хугацаа дууссан эсвэл хүчингүй байна. Дахин оролдоно уу.")
 	}
 
-	// Code → access token + id token (client_secret_basic), дараа нь /userinfo.
+	// Code → access token + id token (client_secret_basic), дараа нь shared tail.
 	accessToken, idToken, err := u.oidc.Exchange(ctx, code)
 	if err != nil {
 		return CompleteResponse{}, apperror.InternalCause(err)
 	}
+	return u.finish(ctx, accessToken, idToken)
+}
+
+// CompleteNative нь mobile (PKCE, public client) урсгалын authorization code-ийг
+// солино. Web-ийн state/CSRF шалгалт БАЙХГҮЙ — native дээр PKCE (code_verifier)
+// нь replay/interception хамгаалалтыг хангана. code-ийг public client-ээр
+// (client_id form-д, client_secret-гүй) солиод web-ийн адил finish tail-ийг
+// (userinfo → upsert → JWT хос) дуудна.
+func (u *usecase) CompleteNative(ctx context.Context, code, codeVerifier, redirectURI string) (CompleteResponse, error) {
+	if strings.TrimSpace(u.nativeClientID) == "" {
+		return CompleteResponse{}, apperror.InternalCause(fmt.Errorf("sso native client not configured"))
+	}
+	if strings.TrimSpace(code) == "" || strings.TrimSpace(codeVerifier) == "" {
+		return CompleteResponse{}, apperror.BadRequest("SSO native нэвтрэлт дутуу параметртэй байна")
+	}
+	accessToken, idToken, err := u.oidc.ExchangePKCE(ctx, u.nativeClientID, code, codeVerifier, redirectURI)
+	if err != nil {
+		return CompleteResponse{}, apperror.InternalCause(err)
+	}
+	return u.finish(ctx, accessToken, idToken)
+}
+
+// finish нь access/id token авсны дараах нийтлэг tail — web (Complete) болон
+// native (CompleteNative) хоёулаа хуваалцана: /userinfo → нэр/иргэний дугаар →
+// upsert → JWT хос → refresh санах → id_token ref → CompleteResponse.
+func (u *usecase) finish(ctx context.Context, accessToken, idToken string) (CompleteResponse, error) {
 	info, err := u.oidc.UserInfo(ctx, accessToken)
 	if err != nil {
 		return CompleteResponse{}, apperror.InternalCause(err)
