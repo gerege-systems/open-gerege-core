@@ -33,5 +33,6 @@ func (rt *ssoRoute) Routes() {
 		r.Use(middlewares.ServiceRLSContext())
 		r.Post("/start", v1.Wrap(rt.handler.Start))
 		r.Post("/callback", v1.Wrap(rt.handler.Callback))
+		r.Post("/logout", v1.Wrap(rt.handler.Logout))
 	})
 }

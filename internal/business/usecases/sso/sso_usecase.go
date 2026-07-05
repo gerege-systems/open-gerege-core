@@ -23,12 +23,13 @@ type StartResponse struct {
 	AuthURL string
 }
 
-// CompleteResponse нь callback дуусахад олгосон токен хос + хэрэглэгч + SSO дээр
-// session дуусгах logout URL (RP-initiated logout; browser гарах үед тийш очно).
+// CompleteResponse нь callback дуусахад олгосон токен хос + хэрэглэгч + SSO logout
+// ref (богино түлхүүр). id_token нь Redis-д ref-ээр хадгалагдана — том cookie/
+// header-ээс зайлсхийж (nginx buffer), гарах үед ref-ээр logout URL байгуулна.
 type CompleteResponse struct {
 	Token        string
 	RefreshToken string
-	LogoutURL    string
+	LogoutRef    string
 	User         domain.User
 }
 
@@ -41,4 +42,7 @@ type Usecase interface {
 	// Complete нь callback-ийн state-ийг шалгаж, code-ийг солиж, /userinfo-оос
 	// иргэнийг тодорхойлж upsert хийн, JWT хос олгоно.
 	Complete(ctx context.Context, state, code string) (CompleteResponse, error)
+	// LogoutURL нь logout ref-ээр Redis-ээс id_token-ыг авч (GetDel), RP-initiated
+	// logout URL байгуулна. ref байхгүй/хугацаа дууссан бол хоосон буцаана.
+	LogoutURL(ctx context.Context, ref string) (string, error)
 }

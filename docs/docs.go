@@ -2480,6 +2480,29 @@ const docTemplate = `{
                 }
             }
         },
+        "/sso/logout": {
+            "post": {
+                "description": "logout ref-ээр (callback-д олгосон) SSO (Hydra) end_session_endpoint URL-ийг байгуулна. BFF browser-ийг тийш чиглүүлж SSO дээрх session-ийг дуусгана.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "sso"
+                ],
+                "summary": "Gerege SSO logout URL",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/sso/start": {
             "post": {
                 "description": "sso.gerege.mn (OIDC) authorize URL-ийг state-тэй буцаана. BFF browser-ийг тийш чиглүүлнэ.",

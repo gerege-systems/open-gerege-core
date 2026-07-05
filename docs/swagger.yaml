@@ -2558,6 +2558,22 @@ paths:
       summary: Gerege SSO callback
       tags:
       - sso
+  /sso/logout:
+    post:
+      consumes:
+      - application/json
+      description: logout ref-ээр (callback-д олгосон) SSO (Hydra) end_session_endpoint
+        URL-ийг байгуулна. BFF browser-ийг тийш чиглүүлж SSO дээрх session-ийг дуусгана.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      summary: Gerege SSO logout URL
+      tags:
+      - sso
   /sso/start:
     post:
       description: sso.gerege.mn (OIDC) authorize URL-ийг state-тэй буцаана. BFF browser-ийг

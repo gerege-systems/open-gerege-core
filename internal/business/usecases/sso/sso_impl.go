@@ -25,6 +25,11 @@ const stateTTL = 10 * time.Minute
 // statePrefix нь Redis дахь нэг удаагийн state (CSRF) түлхүүрийн угтвар.
 const statePrefix = "sso:state:"
 
+// idtPrefix нь logout ref → id_token хадгалуурын угтвар. logoutTTL нь session-ий
+// амьдрах хугацаатай ойролцоо (гарах хүртэл logout ажиллана).
+const idtPrefix = "sso:idt:"
+const logoutTTL = 7 * 24 * time.Hour
+
 type usecase struct {
 	oidc  *oidc.Client
 	store UserStore
@@ -115,12 +120,38 @@ func (u *usecase) Complete(ctx context.Context, state, code string) (CompleteRes
 		return CompleteResponse{}, apperror.InternalCause(fmt.Errorf("persist refresh: %w", err))
 	}
 
+	// id_token-ыг богино ref-ээр Redis-д хадгална — гарах үед ref-ээр logout URL
+	// (id_token_hint-тэй) байгуулна. Cookie-д зөвхөн ref (32 hex) л очно.
+	var logoutRef string
+	if idToken != "" {
+		if ref, rErr := randomToken(); rErr == nil {
+			if setErr := u.redis.Set(ctx, idtPrefix+ref, idToken); setErr == nil {
+				_ = u.redis.Expire(ctx, idtPrefix+ref, logoutTTL)
+				logoutRef = ref
+			}
+		}
+	}
+
 	return CompleteResponse{
 		Token:        pair.AccessToken,
 		RefreshToken: pair.RefreshToken,
-		LogoutURL:    u.oidc.LogoutURLFor(idToken),
+		LogoutRef:    logoutRef,
 		User:         stored,
 	}, nil
+}
+
+// LogoutURL нь logout ref-ээр Redis-ээс id_token-ыг GetDel-ээр авч, RP-initiated
+// logout URL байгуулна. ref байхгүй/хугацаа дууссан бол хоосон (SSO-гүй/аль
+// хэдийн гарсан) буцаана.
+func (u *usecase) LogoutURL(ctx context.Context, ref string) (string, error) {
+	if strings.TrimSpace(ref) == "" {
+		return "", nil
+	}
+	idToken, err := u.redis.GetDel(ctx, idtPrefix+ref)
+	if err != nil || idToken == "" {
+		return "", nil
+	}
+	return u.oidc.LogoutURLFor(idToken), nil
 }
 
 // rememberRefresh нь refresh jti-г Redis-д TTL-тэй хадгална — auth_refresh-ийн

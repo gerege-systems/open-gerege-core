@@ -37,9 +37,19 @@ type callbackRequest struct {
 type callbackResponse struct {
 	Token        string `json:"token"`
 	RefreshToken string `json:"refresh_token"`
-	SSOLogoutURL string `json:"sso_logout_url"`
+	SSOLogoutRef string `json:"sso_logout_ref"`
 	UserID       string `json:"user_id"`
 	Username     string `json:"username"`
+}
+
+// logoutRequest нь BFF-ээс ирэх logout ref (callback-д олгосон).
+type logoutRequest struct {
+	Ref string `json:"ref"`
+}
+
+// logoutResponse нь SSO дээр session дуусгах RP-initiated logout URL.
+type logoutResponse struct {
+	SSOLogoutURL string `json:"sso_logout_url"`
 }
 
 // Start godoc
@@ -77,8 +87,28 @@ func (h Handler) Callback(w http.ResponseWriter, r *http.Request) error {
 	return v1.NewSuccessResponse(w, r, http.StatusOK, "sso login complete", callbackResponse{
 		Token:        res.Token,
 		RefreshToken: res.RefreshToken,
-		SSOLogoutURL: res.LogoutURL,
+		SSOLogoutRef: res.LogoutRef,
 		UserID:       res.User.ID,
 		Username:     res.User.Username,
 	})
+}
+
+// Logout godoc
+// @Summary      Gerege SSO logout URL
+// @Description  logout ref-ээр (callback-д олгосон) SSO (Hydra) end_session_endpoint URL-ийг байгуулна. BFF browser-ийг тийш чиглүүлж SSO дээрх session-ийг дуусгана.
+// @Tags         sso
+// @Accept       json
+// @Produce      json
+// @Success      200  {object}  v1.BaseResponse
+// @Router       /sso/logout [post]
+func (h Handler) Logout(w http.ResponseWriter, r *http.Request) error {
+	var req logoutRequest
+	if err := v1.DecodeBody(r, &req); err != nil {
+		return v1.NewErrorResponse(w, r, http.StatusBadRequest, "invalid request body")
+	}
+	url, err := h.usecase.LogoutURL(r.Context(), req.Ref)
+	if err != nil {
+		return v1.RespondWithError(w, r, err)
+	}
+	return v1.NewSuccessResponse(w, r, http.StatusOK, "sso logout url", logoutResponse{SSOLogoutURL: url})
 }
