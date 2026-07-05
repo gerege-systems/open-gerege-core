@@ -115,6 +115,24 @@ definitions:
     - current_password
     - new_password
     type: object
+  template_internal_http_datatransfers_requests.ConnectIntegrationRequest:
+    properties:
+      access_token:
+        maxLength: 4096
+        type: string
+      expires_at_ms:
+        description: ExpiresAtMs нь токены дуусах epoch миллисекунд (0 бол хугацаагүй).
+        type: integer
+      provider:
+        maxLength: 32
+        type: string
+      refresh_token:
+        maxLength: 4096
+        type: string
+    required:
+    - access_token
+    - provider
+    type: object
   template_internal_http_datatransfers_requests.CreateOrgRequest:
     properties:
       name:
@@ -649,6 +667,26 @@ definitions:
         type: boolean
       user:
         $ref: '#/definitions/template_internal_http_datatransfers_responses.UserResponse'
+    type: object
+  template_internal_http_datatransfers_responses.IntegrationResponse:
+    properties:
+      connected:
+        type: boolean
+      connected_at:
+        type: string
+      expires_at:
+        type: string
+      provider:
+        type: string
+    type: object
+  template_internal_http_datatransfers_responses.IntegrationTokenResponse:
+    properties:
+      access_token:
+        type: string
+      expires_at_ms:
+        type: integer
+      refresh_token:
+        type: string
     type: object
   template_internal_http_datatransfers_responses.OrgMemberResponse:
     properties:
@@ -1773,6 +1811,134 @@ paths:
       summary: Төрийн үйлчилгээний каталог
       tags:
       - gov
+  /integrations:
+    get:
+      description: Тухайн хэрэглэгчийн холбосон провайдеруудыг буцаана (токенгүй —
+        зөвхөн provider + хугацаа).
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Connected providers
+          schema:
+            allOf:
+            - $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/template_internal_http_datatransfers_responses.IntegrationResponse'
+                  type: array
+              type: object
+        "401":
+          description: Unauthenticated
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      security:
+      - BearerAuth: []
+      summary: Холбосон интеграцийг жагсаах
+      tags:
+      - integrations
+    post:
+      consumes:
+      - application/json
+      description: Гуравдагч этгээдийн (Google Drive/Meet, Dropbox) OAuth токеныг
+        тухайн хэрэглэгчид холбон шифрлэн хадгална. Frontend BFF нь token exchange-ийн
+        дараа дуудна. Давхцвал шинэчилнэ.
+      parameters:
+      - description: Provider tokens
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/template_internal_http_datatransfers_requests.ConnectIntegrationRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Stored
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+        "400":
+          description: Malformed body / unknown provider
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+        "401":
+          description: Unauthenticated
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+        "422":
+          description: Validation error
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      security:
+      - BearerAuth: []
+      summary: Интеграцийн токеныг хадгалах
+      tags:
+      - integrations
+  /integrations/{provider}:
+    delete:
+      description: Тухайн хэрэглэгчийн нэг провайдерын хадгалсан токеныг устгана (idempotent).
+      parameters:
+      - description: Provider id (google-drive, dropbox, google-meet)
+        in: path
+        name: provider
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Disconnected
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+        "400":
+          description: Unknown provider
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+        "401":
+          description: Unauthenticated
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      security:
+      - BearerAuth: []
+      summary: Интеграцийг салгах
+      tags:
+      - integrations
+  /integrations/{provider}/token:
+    get:
+      description: Тухайн хэрэглэгчийн нэг провайдерын decrypt хийсэн токеныг буцаана.
+        Зөвхөн BFF дотроос дуудагдана — токен browser руу гарахгүй.
+      parameters:
+      - description: Provider id
+        in: path
+        name: provider
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/template_internal_http_datatransfers_responses.IntegrationTokenResponse'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+        "404":
+          description: Not connected
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      security:
+      - BearerAuth: []
+      summary: Провайдерын токеныг авах (server-тал, BFF)
+      tags:
+      - integrations
   /users/me:
     get:
       description: Authorization header дахь JWT-ээс баталгаажуулагдсан хэрэглэгчийг

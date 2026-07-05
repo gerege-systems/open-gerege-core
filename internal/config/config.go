@@ -100,6 +100,12 @@ type Config struct {
 	// клиент IP-г RemoteAddr-аас (peer) шууд авна. Хоосон (өгөгдмөл) =
 	// XFF-д огт итгэхгүй (rate-limit/audit spoofing-ийн эсрэг fail-safe).
 	TrustedProxies string `mapstructure:"TRUSTED_PROXIES"`
+
+	// IntegrationEncKey нь хэрэглэгчийн гуравдагч этгээдийн (Google Drive/Meet,
+	// Dropbox) OAuth токеныг storage-д хадгалахын өмнө AES-256-GCM-ээр шифрлэх
+	// нууц түлхүүр. SHA-256-аар 32 байт болгон гаргадаг тул дурын урттай байж
+	// болно. Хоосон бол сул default — production-д заавал тохируулна.
+	IntegrationEncKey string `mapstructure:"INTEGRATION_ENC_KEY"`
 }
 
 // TrustedProxiesList нь TRUSTED_PROXIES-г таслалаар салгаж slice болгоно.

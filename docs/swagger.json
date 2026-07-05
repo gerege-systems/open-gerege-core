@@ -1542,6 +1542,211 @@
                 }
             }
         },
+        "/integrations": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Тухайн хэрэглэгчийн холбосон провайдеруудыг буцаана (токенгүй — зөвхөн provider + хугацаа).",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "integrations"
+                ],
+                "summary": "Холбосон интеграцийг жагсаах",
+                "responses": {
+                    "200": {
+                        "description": "Connected providers",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/template_internal_http_datatransfers_responses.IntegrationResponse"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Гуравдагч этгээдийн (Google Drive/Meet, Dropbox) OAuth токеныг тухайн хэрэглэгчид холбон шифрлэн хадгална. Frontend BFF нь token exchange-ийн дараа дуудна. Давхцвал шинэчилнэ.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "integrations"
+                ],
+                "summary": "Интеграцийн токеныг хадгалах",
+                "parameters": [
+                    {
+                        "description": "Provider tokens",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_datatransfers_requests.ConnectIntegrationRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Stored",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Malformed body / unknown provider",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/integrations/{provider}": {
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Тухайн хэрэглэгчийн нэг провайдерын хадгалсан токеныг устгана (idempotent).",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "integrations"
+                ],
+                "summary": "Интеграцийг салгах",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Provider id (google-drive, dropbox, google-meet)",
+                        "name": "provider",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Disconnected",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Unknown provider",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/integrations/{provider}/token": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Тухайн хэрэглэгчийн нэг провайдерын decrypt хийсэн токеныг буцаана. Зөвхөн BFF дотроос дуудагдана — токен browser руу гарахгүй.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "integrations"
+                ],
+                "summary": "Провайдерын токеныг авах (server-тал, BFF)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Provider id",
+                        "name": "provider",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/template_internal_http_datatransfers_responses.IntegrationTokenResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not connected",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/users/me": {
             "get": {
                 "security": [
@@ -2719,6 +2924,31 @@
                 }
             }
         },
+        "template_internal_http_datatransfers_requests.ConnectIntegrationRequest": {
+            "type": "object",
+            "required": [
+                "access_token",
+                "provider"
+            ],
+            "properties": {
+                "access_token": {
+                    "type": "string",
+                    "maxLength": 4096
+                },
+                "expires_at_ms": {
+                    "description": "ExpiresAtMs нь токены дуусах epoch миллисекунд (0 бол хугацаагүй).",
+                    "type": "integer"
+                },
+                "provider": {
+                    "type": "string",
+                    "maxLength": 32
+                },
+                "refresh_token": {
+                    "type": "string",
+                    "maxLength": 4096
+                }
+            }
+        },
         "template_internal_http_datatransfers_requests.CreateOrgRequest": {
             "type": "object",
             "required": [
@@ -3500,6 +3730,37 @@
                 },
                 "user": {
                     "$ref": "#/definitions/template_internal_http_datatransfers_responses.UserResponse"
+                }
+            }
+        },
+        "template_internal_http_datatransfers_responses.IntegrationResponse": {
+            "type": "object",
+            "properties": {
+                "connected": {
+                    "type": "boolean"
+                },
+                "connected_at": {
+                    "type": "string"
+                },
+                "expires_at": {
+                    "type": "string"
+                },
+                "provider": {
+                    "type": "string"
+                }
+            }
+        },
+        "template_internal_http_datatransfers_responses.IntegrationTokenResponse": {
+            "type": "object",
+            "properties": {
+                "access_token": {
+                    "type": "string"
+                },
+                "expires_at_ms": {
+                    "type": "integer"
+                },
+                "refresh_token": {
+                    "type": "string"
                 }
             }
         },

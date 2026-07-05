@@ -22,6 +22,7 @@ import (
 	"template/internal/business/usecases/audit"
 	"template/internal/business/usecases/auth"
 	"template/internal/business/usecases/gov"
+	"template/internal/business/usecases/integrations"
 	"template/internal/business/usecases/org"
 	"template/internal/business/usecases/rbac"
 	"template/internal/business/usecases/security"
@@ -36,6 +37,7 @@ import (
 	orgpostgres "template/internal/datasources/repositories/postgres/org"
 	rbacpostgres "template/internal/datasources/repositories/postgres/rbac"
 	securitypostgres "template/internal/datasources/repositories/postgres/security"
+	userintegrationspostgres "template/internal/datasources/repositories/postgres/userintegrations"
 	userspostgres "template/internal/datasources/repositories/postgres/users"
 	V1Handler "template/internal/http/handlers/v1"
 	"template/internal/http/middlewares"
@@ -179,6 +181,14 @@ func NewApp() (*App, error) {
 	govRepo := govpostgres.NewGovRepository(pool)
 	govUC := gov.NewUsecase(govRepo)
 
+	// Хэрэглэгчийн гуравдагч этгээдийн интеграци (Google Drive/Meet, Dropbox) —
+	// OAuth токеныг шифрлэн хадгална (RLS-тэй per-user хүснэгт).
+	userIntegrationsRepo := userintegrationspostgres.NewUserIntegrationsRepository(pool)
+	integrationsUC, err := integrations.NewUsecase(userIntegrationsRepo, config.AppConfig.IntegrationEncKey)
+	if err != nil {
+		return nil, fmt.Errorf("init integrations usecase: %w", err)
+	}
+
 	// Audit — persisted hash-chained, append-only audit log (admin-only унших API).
 	// audit_log нь admin-only тул repository нь хүсэлтийн RLS-аас үл хамааран
 	// транзакц дотроо service/admin GUC тогтоодог.
@@ -234,6 +244,7 @@ func NewApp() (*App, error) {
 		routes.NewRBACRoute(api, rbacUC, auditUC, authMiddleware).Routes()
 		routes.NewOrgRoute(api, orgUC, auditUC, authMiddleware).Routes()
 		routes.NewGovRoute(api, govUC, authMiddleware).Routes()
+		routes.NewIntegrationsRoute(api, integrationsUC, authMiddleware).Routes()
 		routes.NewAdminRoute(api, usersUC, rbacUC, aiUC, authMiddleware).Routes()
 		routes.NewAIRoute(api, aiUC, authMiddleware, aiRateLimiter).Routes()
 		routes.NewAuditRoute(api, auditUC, authMiddleware).Routes()
