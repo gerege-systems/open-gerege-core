@@ -173,6 +173,45 @@ definitions:
     - code
     - redirect_uri
     type: object
+  template_internal_http_datatransfers_requests.GovApplyRequest:
+    properties:
+      note:
+        maxLength: 500
+        type: string
+      service_id:
+        type: string
+    required:
+    - service_id
+    type: object
+  template_internal_http_datatransfers_requests.GovBookRequest:
+    properties:
+      location:
+        maxLength: 200
+        type: string
+      note:
+        maxLength: 500
+        type: string
+      scheduled_at:
+        type: string
+      service_id:
+        type: string
+    required:
+    - scheduled_at
+    type: object
+  template_internal_http_datatransfers_requests.GovReferenceRequest:
+    properties:
+      type:
+        enum:
+        - residence
+        - birth
+        - marriage
+        - tax
+        - social_ins
+        - criminal
+        type: string
+    required:
+    - type
+    type: object
   template_internal_http_datatransfers_requests.IngestSecurityEventRequest:
     properties:
       detail:
@@ -1506,6 +1545,234 @@ paths:
       summary: OTP кодыг шалгаж бүртгэлийг идэвхжүүлэх
       tags:
       - auth
+  /gov/applications:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      summary: Миний хүсэлтүүд
+      tags:
+      - gov
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Apply
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/template_internal_http_datatransfers_requests.GovApplyRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      summary: Үйлчилгээнд хүсэлт гаргах
+      tags:
+      - gov
+  /gov/applications/{id}/cancel:
+    post:
+      parameters:
+      - description: Application ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      summary: Хүсэлт цуцлах
+      tags:
+      - gov
+  /gov/appointments:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      summary: Цаг захиалгууд
+      tags:
+      - gov
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Book
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/template_internal_http_datatransfers_requests.GovBookRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      summary: Цаг захиалах
+      tags:
+      - gov
+  /gov/appointments/{id}/cancel:
+    post:
+      parameters:
+      - description: Appointment ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      summary: Цаг захиалга цуцлах
+      tags:
+      - gov
+  /gov/notifications:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      summary: Мэдэгдлүүд
+      tags:
+      - gov
+  /gov/notifications/{id}/read:
+    post:
+      parameters:
+      - description: Notification ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      summary: Мэдэгдлийг уншсан болгох
+      tags:
+      - gov
+  /gov/notifications/read-all:
+    post:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      summary: Бүх мэдэгдлийг уншсан болгох
+      tags:
+      - gov
+  /gov/overview:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      summary: Иргэний нүүр хуудасны нэгтгэл
+      tags:
+      - gov
+  /gov/payments:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      summary: Төлбөрүүд
+      tags:
+      - gov
+  /gov/payments/{id}/pay:
+    post:
+      parameters:
+      - description: Payment ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      summary: Төлбөр төлөх
+      tags:
+      - gov
+  /gov/references:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      summary: Миний лавлагаа
+      tags:
+      - gov
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Reference
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/template_internal_http_datatransfers_requests.GovReferenceRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      summary: Лавлагаа захиалах
+      tags:
+      - gov
+  /gov/services:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      summary: Төрийн үйлчилгээний каталог
+      tags:
+      - gov
   /users/me:
     get:
       description: Authorization header дахь JWT-ээс баталгаажуулагдсан хэрэглэгчийг

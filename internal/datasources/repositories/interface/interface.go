@@ -140,6 +140,44 @@ type OrgRepository interface {
 	RemoveMember(ctx context.Context, orgID, userID string) error
 }
 
+// GovRepository нь иргэний "Төрийн үйлчилгээ" порталын өгөгдлийг хариуцна.
+// Каталог (ListServices) нь нийтийн; бусад нь хэрэглэгч-тус-бүрийн тул query
+// бүр userID-гаар scope хийгдэхээс гадна per-user хүснэгтүүд RLS-тэй (repo нь
+// withRLS транзакцид app.user_id/app.user_role GUC тавьдаг — migration 20).
+type GovRepository interface {
+	// Каталог
+	ListServices(ctx context.Context) ([]domain.GovService, error)
+	GetService(ctx context.Context, id string) (domain.GovService, error)
+
+	// Хүсэлт
+	ListApplications(ctx context.Context, userID string) ([]domain.GovApplication, error)
+	CreateApplication(ctx context.Context, in *domain.GovApplication) (domain.GovApplication, error)
+	SetApplicationStatus(ctx context.Context, userID, id, status string) error
+
+	// Лавлагаа
+	ListReferences(ctx context.Context, userID string) ([]domain.GovReference, error)
+	CreateReference(ctx context.Context, in *domain.GovReference) (domain.GovReference, error)
+
+	// Мэдэгдэл
+	ListNotifications(ctx context.Context, userID string) ([]domain.GovNotification, error)
+	MarkNotificationRead(ctx context.Context, userID, id string) error
+	MarkAllNotificationsRead(ctx context.Context, userID string) error
+
+	// Төлбөр
+	ListPayments(ctx context.Context, userID string) ([]domain.GovPayment, error)
+	PayPayment(ctx context.Context, userID, id string) error
+
+	// Цаг захиалга
+	ListAppointments(ctx context.Context, userID string) ([]domain.GovAppointment, error)
+	CreateAppointment(ctx context.Context, in *domain.GovAppointment) (domain.GovAppointment, error)
+	CancelAppointment(ctx context.Context, userID, id string) error
+
+	// Нэгтгэл + lazy demo seed
+	Overview(ctx context.Context, userID string) (domain.GovOverview, error)
+	CountUserRows(ctx context.Context, userID string) (int, error)
+	SeedDemoData(ctx context.Context, userID string) error
+}
+
 // AIRepository нь AI туслахын тохируулдаг prompt давхаргууд болон мэдлэгийн
 // санг (knowledge base) хадгалах/уншихыг хариуцна. Suurь (base) дүрэм кодод
 // хатуу бичигдсэн тул эндээс зөвхөн scope/instructions давхарга уншигдана.

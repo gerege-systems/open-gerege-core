@@ -21,6 +21,7 @@ import (
 	"template/internal/business/usecases/ai"
 	"template/internal/business/usecases/audit"
 	"template/internal/business/usecases/auth"
+	"template/internal/business/usecases/gov"
 	"template/internal/business/usecases/org"
 	"template/internal/business/usecases/rbac"
 	"template/internal/business/usecases/security"
@@ -31,6 +32,7 @@ import (
 	"template/internal/datasources/drivers"
 	aipostgres "template/internal/datasources/repositories/postgres/ai"
 	auditpostgres "template/internal/datasources/repositories/postgres/audit"
+	govpostgres "template/internal/datasources/repositories/postgres/gov"
 	orgpostgres "template/internal/datasources/repositories/postgres/org"
 	rbacpostgres "template/internal/datasources/repositories/postgres/rbac"
 	securitypostgres "template/internal/datasources/repositories/postgres/security"
@@ -172,6 +174,11 @@ func NewApp() (*App, error) {
 	orgRepo := orgpostgres.NewOrgRepository(pool)
 	orgUC := org.NewUsecase(orgRepo)
 
+	// Gov — иргэний "Төрийн үйлчилгээ" портал (per-user өгөгдөл RLS-тэй; каталог
+	// нийтийн).
+	govRepo := govpostgres.NewGovRepository(pool)
+	govUC := gov.NewUsecase(govRepo)
+
 	// Audit — persisted hash-chained, append-only audit log (admin-only унших API).
 	// audit_log нь admin-only тул repository нь хүсэлтийн RLS-аас үл хамааран
 	// транзакц дотроо service/admin GUC тогтоодог.
@@ -226,6 +233,7 @@ func NewApp() (*App, error) {
 		routes.NewEIDProfileRoute(api, authUC, authMiddleware).Routes()
 		routes.NewRBACRoute(api, rbacUC, auditUC, authMiddleware).Routes()
 		routes.NewOrgRoute(api, orgUC, auditUC, authMiddleware).Routes()
+		routes.NewGovRoute(api, govUC, authMiddleware).Routes()
 		routes.NewAdminRoute(api, usersUC, rbacUC, aiUC, authMiddleware).Routes()
 		routes.NewAIRoute(api, aiUC, authMiddleware, aiRateLimiter).Routes()
 		routes.NewAuditRoute(api, auditUC, authMiddleware).Routes()
