@@ -1378,6 +1378,49 @@ paths:
       summary: Google-ээр нэвтрэх (eID холболттой)
       tags:
       - auth
+  /auth/google/link:
+    delete:
+      description: Нэвтэрсэн хэрэглэгчийн Google холболтыг (sub + профайл) арилгана.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      summary: Google холболтыг салгах
+      tags:
+      - auth
+    post:
+      consumes:
+      - application/json
+      description: Нэвтэрсэн хэрэглэгч Google OAuth code-оор Google account-аа профайлдаа
+        холбоно (integrations).
+      parameters:
+      - description: OAuth code + redirect_uri
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/template_internal_http_datatransfers_requests.GoogleLoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+        "400":
+          description: Invalid code
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+        "409":
+          description: Өөр хэрэглэгчид холбогдсон
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      summary: Google account-аа холбох (нэвтэрсэн хэрэглэгч)
+      tags:
+      - auth
   /auth/login:
     post:
       consumes:

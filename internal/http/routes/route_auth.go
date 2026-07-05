@@ -70,6 +70,14 @@ func (rt *authRoute) Routes() {
 			rl.Post("/logout", v1.Wrap(rt.handler.Logout))
 		})
 
+		// Нэвтэрсэн хэрэглэгчийн Google холболт (integrations карт) — Google
+		// account-аа профайлдаа холбох / салгах. authMiddleware шаардана.
+		r.Group(func(pr chi.Router) {
+			pr.Use(rt.authMiddleware)
+			pr.Post("/google/link", v1.Wrap(rt.handler.GoogleLink))
+			pr.Delete("/google/link", v1.Wrap(rt.handler.GoogleUnlink))
+		})
+
 		// /eid/poll — frontend нь session-ийг ~2.5с тутамд long-poll-оор
 		// асуудаг тул /auth-ийн чанга 5/мин хязгаарт орвол байнга 429 болж
 		// амжилттай COMPLETE хэзээ ч гарахгүй. Иймд тусдаа СУЛ limiter

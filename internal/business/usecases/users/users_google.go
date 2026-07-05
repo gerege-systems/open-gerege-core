@@ -20,3 +20,8 @@ func (uc *usecase) GetByGoogleSub(ctx context.Context, sub string) (domain.User,
 func (uc *usecase) LinkGoogleAccount(ctx context.Context, userID string, acct domain.GoogleAccount) error {
 	return uc.repo.LinkGoogleAccount(ctx, userID, acct)
 }
+
+// UnlinkGoogle нь хэрэглэгчийн Google холболтыг арилгана.
+func (uc *usecase) UnlinkGoogle(ctx context.Context, userID string) error {
+	return uc.repo.UnlinkGoogle(ctx, userID)
+}

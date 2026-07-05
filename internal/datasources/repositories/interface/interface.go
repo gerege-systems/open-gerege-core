@@ -59,6 +59,8 @@ type UserRepository interface {
 	// эсвэл дараагийн нэвтрэлтэд). Давхардсан sub нь apperror.Conflict. Анх
 	// холбосон огноог (google_linked_at) нэг л удаа тэмдэглэнэ.
 	LinkGoogleAccount(ctx context.Context, userID string, acct domain.GoogleAccount) error
+	// UnlinkGoogle нь хэрэглэгчийн Google холболтыг (sub + профайл) арилгана.
+	UnlinkGoogle(ctx context.Context, userID string) error
 	// GetByNationalID нь soft-delete хийгдсэн мөрүүдийг хасч, eID-ийн
 	// national_id-ээр (жижиг үсгээр) хэрэглэгчийг хайна. Тохирох мөр байхгүй
 	// үед apperror.NotFound-г буцаана.

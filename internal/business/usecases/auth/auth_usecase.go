@@ -61,6 +61,10 @@ type Usecase interface {
 	// GoogleLogin нь Google authorization code-ийг боловсруулна: холбогдсон
 	// account бол шууд нэвтрүүлж, эс бол eID-ээр баталгаажуулах LinkToken буцаана.
 	GoogleLogin(ctx context.Context, code, redirectURI string) (GoogleLoginResponse, error)
+	// LinkGoogleToUser нь нэвтэрсэн хэрэглэгч Google account-аа шууд холбоно
+	// (integrations карт). UnlinkGoogleFromUser нь холболтыг арилгана.
+	LinkGoogleToUser(ctx context.Context, userID, code, redirectURI string) error
+	UnlinkGoogleFromUser(ctx context.Context, userID string) error
 	// EID PKI самбарын нэгдсэн/дэлгэрэнгүй мэдээлэл (PKI_READ эрхтэй RP-д).
 	// eID хэрэглэгч биш бол nil; эрхгүй бол apperror.Forbidden.
 	EIDSummary(ctx context.Context, userID string) (*eid.PersonSummary, error)

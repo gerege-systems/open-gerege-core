@@ -30,6 +30,8 @@ type Usecase interface {
 	// LinkGoogleAccount нь userID-тай хэрэглэгчид Google account + профайлыг
 	// холбоно/шинэчилнэ.
 	LinkGoogleAccount(ctx context.Context, userID string, acct domain.GoogleAccount) error
+	// UnlinkGoogle нь хэрэглэгчийн Google холболтыг арилгана.
+	UnlinkGoogle(ctx context.Context, userID string) error
 	// UpsertFromEID нь eID identity-аас хэрэглэгчийг үүсгэх/шинэчилж, тухайн
 	// мөрийг буцаана (national_id дээр давхцвал нэр/kyc шинэчилнэ).
 	UpsertFromEID(ctx context.Context, req UpsertFromEIDRequest) (UpsertFromEIDResponse, error)

@@ -101,6 +101,10 @@ func (_m *UserRepository) LinkGoogleAccount(ctx context.Context, userID string, 
 	return _m.Called(ctx, userID, acct).Error(0)
 }
 
+func (_m *UserRepository) UnlinkGoogle(ctx context.Context, userID string) error {
+	return _m.Called(ctx, userID).Error(0)
+}
+
 // List provides a mock function with given fields: ctx, filter, offset, limit
 func (_m *UserRepository) List(ctx context.Context, filter repointerface.UserListFilter, offset int, limit int) ([]domain.User, error) {
 	ret := _m.Called(ctx, filter, offset, limit)

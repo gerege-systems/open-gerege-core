@@ -56,6 +56,10 @@ func (_m *UsersUsecase) GetByGoogleSub(ctx context.Context, sub string) (domain.
 	return ret.Get(0).(domain.User), ret.Error(1)
 }
 
+func (_m *UsersUsecase) UnlinkGoogle(ctx context.Context, userID string) error {
+	return _m.Called(ctx, userID).Error(0)
+}
+
 func (_m *UsersUsecase) LinkGoogleAccount(ctx context.Context, userID string, acct domain.GoogleAccount) error {
 	return _m.Called(ctx, userID, acct).Error(0)
 }

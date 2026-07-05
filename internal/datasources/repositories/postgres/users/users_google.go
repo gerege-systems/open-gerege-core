@@ -76,6 +76,33 @@ func (r *postgreUserRepository) LinkGoogleAccount(ctx context.Context, userID st
 	return apperror.InternalCause(fmt.Errorf("link google account: %w", err))
 }
 
+// UnlinkGoogle нь хэрэглэгчийн Google холболтыг (sub + профайл) арилгана —
+// google-ээр дахин нэвтрэх боломжгүй болно. Мөр байхгүй бол apperror.NotFound.
+func (r *postgreUserRepository) UnlinkGoogle(ctx context.Context, userID string) error {
+	err := r.withRLS(ctx, func(tx pgx.Tx) error {
+		tag, execErr := tx.Exec(ctx,
+			`UPDATE users
+			   SET google_sub = NULL, google_email = NULL, google_email_verified = false,
+			       google_name = NULL, google_picture = NULL, google_linked_at = NULL,
+			       updated_at = now()
+			 WHERE id = $1 AND deleted_at IS NULL`, userID)
+		if execErr != nil {
+			return execErr
+		}
+		if tag.RowsAffected() == 0 {
+			return apperror.NotFound("user not found")
+		}
+		return nil
+	})
+	if err == nil {
+		return nil
+	}
+	if _, ok := err.(*apperror.DomainError); ok {
+		return err
+	}
+	return apperror.InternalCause(fmt.Errorf("unlink google: %w", err))
+}
+
 // nullStr нь хоосон мөрийг SQL NULL болгож дамжуулна (nullable багануудад).
 func nullStr(s string) interface{} {
 	if s == "" {
