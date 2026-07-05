@@ -29,7 +29,7 @@ func register(t *testing.T, fix *testenv.AuthFixture, email, password string) do
 		Username: "user_" + email,
 		Email:    email,
 		Password: password,
-		RoleID:   2,
+		RoleID:   domain.RoleUser,
 	}})
 	require.NoError(t, err)
 
@@ -60,7 +60,7 @@ func TestE2E_OTPBruteForceLockout(t *testing.T) {
 		Username: "lockout",
 		Email:    "lock@example.com",
 		Password: "Secret_123!",
-		RoleID:   2,
+		RoleID:   domain.RoleUser,
 	}})
 	require.NoError(t, err)
 	require.NoError(t, fix.Auth.SendOTP(ctx, auth.SendOTPRequest{Email: "lock@example.com"}))
@@ -90,7 +90,7 @@ func TestE2E_LoginRejectsInactiveUser(t *testing.T) {
 		Username: "inactive",
 		Email:    "inactive@example.com",
 		Password: "Secret_123!",
-		RoleID:   2,
+		RoleID:   domain.RoleUser,
 	}})
 	require.NoError(t, err)
 
@@ -149,7 +149,7 @@ func TestE2E_VerifyOTPActivatesUserAndAllowsLogin(t *testing.T) {
 		Username: "activate",
 		Email:    "activate@example.com",
 		Password: "Secret_123!",
-		RoleID:   2,
+		RoleID:   domain.RoleUser,
 	}})
 	require.NoError(t, err)
 

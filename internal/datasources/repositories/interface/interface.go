@@ -72,6 +72,11 @@ type UserRepository interface {
 	// буцаана. Limit нь сервер талд хатуу хязгаарлагдсан тул буруу
 	// ажиллаж буй дуудагч бүх хүснэгтийг татаж чадахгүй.
 	List(ctx context.Context, filter UserListFilter, offset, limit int) ([]domain.User, error)
+	// ListAdmins нь админ түвшний бүх бүртгэлийг (super admin + admin) буцаана —
+	// super admin-ий "админуудыг удирдах" хуудсанд зориулагдсан. Зэрэглэлээр
+	// (role_id өсөхөөр), дараа нь шинээр үүсгэснээр эрэмбэлж, soft-delete
+	// хийгдсэнийг хасна.
+	ListAdmins(ctx context.Context) ([]domain.User, error)
 	// ChangeActiveUser нь active flag-г сольдог (OTP-verify урсгалд
 	// ашиглагддаг) ба updated_at-г тэмдэглэнэ. Soft-delete хийгдсэн
 	// мөрүүд дээр no-op.

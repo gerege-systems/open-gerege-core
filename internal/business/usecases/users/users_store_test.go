@@ -42,7 +42,7 @@ func TestStore(t *testing.T) {
 				Username: "newuser",
 				Email:    "  NewUser@Example.COM ",
 				Password: "Plaintext_123!",
-				RoleID:   2,
+				RoleID:   domain.RoleUser,
 			},
 			setup: func(f *fixture) {
 				// MatchedBy нь repo-гийн харах ёстой нормчлолын дараах
@@ -60,7 +60,7 @@ func TestStore(t *testing.T) {
 		{
 			name: "propagates DomainError type from repo (conflict)",
 			in: &domain.User{
-				Username: "dup", Email: "dup@example.com", Password: "Pwd_123!", RoleID: 2,
+				Username: "dup", Email: "dup@example.com", Password: "Pwd_123!", RoleID: domain.RoleUser,
 			},
 			setup: func(f *fixture) {
 				f.repo.On("Store", mock.Anything, mock.AnythingOfType("*domain.User")).

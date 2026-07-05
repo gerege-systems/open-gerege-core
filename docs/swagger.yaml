@@ -456,6 +456,35 @@ definitions:
     required:
     - email
     type: object
+  template_internal_http_datatransfers_requests.SuperadminCreateAdminRequest:
+    properties:
+      email:
+        type: string
+      first_name:
+        maxLength: 100
+        type: string
+      first_name_en:
+        maxLength: 100
+        type: string
+      last_name:
+        maxLength: 100
+        type: string
+      last_name_en:
+        maxLength: 100
+        type: string
+      password:
+        maxLength: 128
+        minLength: 8
+        type: string
+      username:
+        maxLength: 50
+        minLength: 3
+        type: string
+    required:
+    - email
+    - password
+    - username
+    type: object
   template_internal_http_datatransfers_requests.UpdateMemberRoleRequest:
     properties:
       role:
@@ -3212,6 +3241,145 @@ paths:
       summary: PDF гарын үсэг эхлүүлэх (eID PIN2)
       tags:
       - sign
+  /v1/superadmin/admins:
+    get:
+      description: Админ түвшний бүх бүртгэлийг (super admin + admin) буцаана. Зөвхөн
+        super admin хандана.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Admins fetched
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+        "401":
+          description: Missing or invalid token
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+        "403":
+          description: Not a super admin
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      security:
+      - BearerAuth: []
+      summary: Админуудыг жагсаах
+      tags:
+      - superadmin
+    post:
+      consumes:
+      - application/json
+      description: Шинэ, идэвхтэй admin бүртгэл (нэр/и-мэйл/нууц үг) үүсгэнэ. Зөвхөн
+        super admin хандана.
+      parameters:
+      - description: New admin
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/template_internal_http_datatransfers_requests.SuperadminCreateAdminRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Admin created
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+        "400":
+          description: Invalid request body
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+        "401":
+          description: Missing or invalid token
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+        "403":
+          description: Not a super admin
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+        "409":
+          description: Email already in use
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      security:
+      - BearerAuth: []
+      summary: Шинэ админ үүсгэх
+      tags:
+      - superadmin
+  /v1/superadmin/admins/{id}:
+    delete:
+      description: Admin-ийн эрхийг хасч, энгийн хэрэглэгч болгоно. Super admin-г
+        хасахгүй, өөрийгөө хасахгүй. Зөвхөн super admin хандана.
+      parameters:
+      - description: User ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Admin revoked
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+        "400":
+          description: User is not an admin
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+        "401":
+          description: Missing or invalid token
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+        "403":
+          description: Not a super admin / cannot revoke self or super admin
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+        "404":
+          description: User not found
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      security:
+      - BearerAuth: []
+      summary: Админ эрхийг хасах
+      tags:
+      - superadmin
+  /v1/superadmin/admins/{id}/grant:
+    put:
+      description: Байгаа хэрэглэгчийг admin болгоно. Зөвхөн super admin хандана.
+      parameters:
+      - description: User ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Admin granted
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+        "401":
+          description: Missing or invalid token
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+        "403":
+          description: Not a super admin
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+        "404":
+          description: User not found
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+        "409":
+          description: Already an admin
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      security:
+      - BearerAuth: []
+      summary: Хэрэглэгчид админ эрх олгох
+      tags:
+      - superadmin
 schemes:
 - http
 - https

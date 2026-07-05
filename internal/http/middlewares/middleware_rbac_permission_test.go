@@ -58,27 +58,27 @@ func TestRequirePermission(t *testing.T) {
 		},
 		{
 			name: "admin bypasses resolver", setClaim: true,
-			claim: jwt.JwtCustomClaim{UserID: "u1", IsAdmin: true, RoleID: 1}, perm: "roles.manage",
+			claim: jwt.JwtCustomClaim{UserID: "u1", IsAdmin: true, RoleID: domain.RoleAdmin}, perm: "roles.manage",
 			resolver: &stubResolver{perms: perms}, wantStatus: http.StatusOK,
 		},
 		{
 			name: "manager has users.manage => 200", setClaim: true,
-			claim: jwt.JwtCustomClaim{UserID: "u2", RoleID: 3}, perm: "users.manage",
+			claim: jwt.JwtCustomClaim{UserID: "u2", RoleID: domain.RoleManager}, perm: "users.manage",
 			resolver: &stubResolver{perms: perms}, wantStatus: http.StatusOK,
 		},
 		{
 			name: "manager lacks roles.manage => 403", setClaim: true,
-			claim: jwt.JwtCustomClaim{UserID: "u2", RoleID: 3}, perm: "roles.manage",
+			claim: jwt.JwtCustomClaim{UserID: "u2", RoleID: domain.RoleManager}, perm: "roles.manage",
 			resolver: &stubResolver{perms: perms}, wantStatus: http.StatusForbidden,
 		},
 		{
 			name: "user lacks users.manage => 403", setClaim: true,
-			claim: jwt.JwtCustomClaim{UserID: "u3", RoleID: 2}, perm: "users.manage",
+			claim: jwt.JwtCustomClaim{UserID: "u3", RoleID: domain.RoleUser}, perm: "users.manage",
 			resolver: &stubResolver{perms: perms}, wantStatus: http.StatusForbidden,
 		},
 		{
 			name: "user has personal.view => 200", setClaim: true,
-			claim: jwt.JwtCustomClaim{UserID: "u3", RoleID: 2}, perm: "personal.view",
+			claim: jwt.JwtCustomClaim{UserID: "u3", RoleID: domain.RoleUser}, perm: "personal.view",
 			resolver: &stubResolver{perms: perms}, wantStatus: http.StatusOK,
 		},
 		{
@@ -93,7 +93,7 @@ func TestRequirePermission(t *testing.T) {
 		},
 		{
 			name: "resolver error fails closed => 403", setClaim: true,
-			claim: jwt.JwtCustomClaim{UserID: "u5", RoleID: 3}, perm: "users.manage",
+			claim: jwt.JwtCustomClaim{UserID: "u5", RoleID: domain.RoleManager}, perm: "users.manage",
 			resolver: &stubResolver{err: errors.New("db down")}, wantStatus: http.StatusForbidden,
 		},
 	}

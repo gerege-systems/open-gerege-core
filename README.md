@@ -138,7 +138,25 @@ GEMINI_TTS_MODEL=gemini-2.5-flash-preview-tts  # optional override (TTS)
 GEMINI_VOICE=Kore                # optional prebuilt TTS voice
 GEMINI_API_BASE=                 # optional override (default: Google generativelanguage v1beta)
 AI_SCOPE_PROMPT=                 # AI scope fallback when the DB 'scope' prompt layer is empty
+SUPERADMIN_EMAIL=                # optional: promote this (already-registered) user to super admin on boot
 ```
+
+### Roles & super admin
+
+Roles are ordered by privilege (id 1 = highest): **superadmin=1, admin=2,
+manager=3, user=4** (seeded/remapped by migration `23_superadmin_role`). A
+**super admin** sits above admin and is the only role that can manage admin
+accounts (create / grant / revoke) via `/api/v1/superadmin/*`
+(`RequireSuperAdmin`); regular admins cannot reach that surface. The API never
+mints a super admin — bootstrap one by setting `SUPERADMIN_EMAIL` to an
+already-registered user (promoted on the next boot) or by updating `role_id=1`
+in the DB.
+
+> **Breaking change (existing deployments):** migration `23` renumbers roles, so
+> JWTs issued before it are reinterpreted (old `admin=1` → superadmin,
+> `user=2` → admin). When applying to an existing DB, **rotate `JWT_SECRET`** (or
+> force all users to re-login) so stale tokens don't gain the wrong privilege.
+> Fresh installs are unaffected.
 
 ### AI prompt layers
 
@@ -177,6 +195,10 @@ All under `/api/v1` (ops endpoints at root):
 | POST | `/api/v1/ai/tts` | Text-to-speech (text → WAV base64) |
 | POST | `/api/v1/ai/translate` | Live translation (text/audio → target language, optional TTS) |
 | GET/PUT | `/api/v1/admin/ai/prompts` | AI prompt layers — scope/instructions (settings.manage) |
+| GET | `/api/v1/superadmin/admins` | List admin-level accounts (super admin only) |
+| POST | `/api/v1/superadmin/admins` | Create a new admin account (super admin only) |
+| PUT | `/api/v1/superadmin/admins/{id}/grant` | Grant admin to an existing user (super admin only) |
+| DELETE | `/api/v1/superadmin/admins/{id}` | Revoke admin (super admin only) |
 
 ### Ops
 `GET /health` (liveness) · `GET /ready` (DB+Redis) · `GET /metrics` · `GET /swagger/*`

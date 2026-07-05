@@ -124,6 +124,29 @@ func (_m *UserRepository) List(ctx context.Context, filter repointerface.UserLis
 	return r0, r1
 }
 
+// ListAdmins provides a mock function with given fields: ctx
+func (_m *UserRepository) ListAdmins(ctx context.Context) ([]domain.User, error) {
+	ret := _m.Called(ctx)
+
+	var r0 []domain.User
+	if rf, ok := ret.Get(0).(func(context.Context) []domain.User); ok {
+		r0 = rf(ctx)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]domain.User)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context) error); ok {
+		r1 = rf(ctx)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // UpdatePassword provides a mock function with given fields: ctx, in
 func (_m *UserRepository) UpdatePassword(ctx context.Context, in *domain.User) error {
 	ret := _m.Called(ctx, in)

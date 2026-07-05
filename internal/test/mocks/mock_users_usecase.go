@@ -69,6 +69,11 @@ func (_m *UsersUsecase) List(ctx context.Context, req users.ListRequest) (users.
 	return ret.Get(0).(users.ListResponse), ret.Error(1)
 }
 
+func (_m *UsersUsecase) ListAdmins(ctx context.Context) (users.ListResponse, error) {
+	ret := _m.Called(ctx)
+	return ret.Get(0).(users.ListResponse), ret.Error(1)
+}
+
 func (_m *UsersUsecase) UpdateRole(ctx context.Context, req users.UpdateRoleRequest) error {
 	return _m.Called(ctx, req).Error(0)
 }

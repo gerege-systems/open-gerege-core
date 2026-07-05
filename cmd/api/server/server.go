@@ -19,6 +19,7 @@ import (
 	"golang.org/x/time/rate"
 
 	docs "template/docs" // swagger тодорхойлолт, swaggo-оор init үед бүртгэгддэг
+	"template/internal/business/domain"
 	"template/internal/business/usecases/ai"
 	"template/internal/business/usecases/audit"
 	"template/internal/business/usecases/auth"
@@ -30,11 +31,13 @@ import (
 	"template/internal/business/usecases/rbac"
 	"template/internal/business/usecases/security"
 	"template/internal/business/usecases/sign"
+	"template/internal/business/usecases/superadmin"
 	"template/internal/business/usecases/users"
 	"template/internal/config"
 	"template/internal/constants"
 	"template/internal/datasources/caches"
 	"template/internal/datasources/drivers"
+	repointerface "template/internal/datasources/repositories/interface"
 	aipostgres "template/internal/datasources/repositories/postgres/ai"
 	auditpostgres "template/internal/datasources/repositories/postgres/audit"
 	gatewaypostgres "template/internal/datasources/repositories/postgres/gateway"
@@ -44,6 +47,7 @@ import (
 	securitypostgres "template/internal/datasources/repositories/postgres/security"
 	userintegrationspostgres "template/internal/datasources/repositories/postgres/userintegrations"
 	userspostgres "template/internal/datasources/repositories/postgres/users"
+	"template/internal/datasources/rls"
 	V1Handler "template/internal/http/handlers/v1"
 	"template/internal/http/middlewares"
 	"template/internal/http/routes"
@@ -153,6 +157,9 @@ func NewApp() (*App, error) {
 	usersUC := users.NewUsecase(userRepo, ristrettoCache, users.Config{
 		BcryptCost: config.AppConfig.BcryptCost,
 	})
+	// Bootstrap: SUPERADMIN_EMAIL тохируулсан бол тухайн хэрэглэгчийг super admin
+	// болгож ахиулна (best-effort; байхгүй бол warning).
+	bootstrapSuperAdmin(ctx, userRepo, config.AppConfig.SuperAdminEmail)
 	// GeregeCloud Verify API — OTP send/check. (Нууц үг/OTP route-ууд eID-ийн
 	// төлөө хасагдсан ч usecase нь verifier-ийг шаардсан хэвээр; цэвэр угсралт.)
 	verifier := verify.NewClient(config.AppConfig.VerifyAPIBase, config.AppConfig.VerifyAPIKey, config.AppConfig.VerifyChannel)
@@ -206,6 +213,10 @@ func NewApp() (*App, error) {
 	// транзакц дотроо service/admin GUC тогтоодог.
 	auditRepo := auditpostgres.NewAuditRepository(pool)
 	auditUC := audit.NewUsecase(auditRepo)
+
+	// Super admin — админ хэрэглэгчдийг удирдах (үүсгэх/эрх олгох/хасах). users
+	// давхаргаар (кэш-зөв мутациуд) ажиллаж, мутаци бүрийг audit log-д бичнэ.
+	superadminUC := superadmin.NewUsecase(usersUC, auditUC)
 
 	// Security events — RASP-style ingest (нэвтэрсэн хэрэглэгч бичнэ, admin унших).
 	securityRepo := securitypostgres.NewSecurityEventRepository(pool)
@@ -283,6 +294,7 @@ func NewApp() (*App, error) {
 		routes.NewGatewayRoute(api, gatewayUC, rbacUC, authMiddleware).Routes()
 		routes.NewCoreRoute(api, coreUC, authMiddleware).Routes()
 		routes.NewAdminRoute(api, usersUC, rbacUC, aiUC, authMiddleware).Routes()
+		routes.NewSuperAdminRoute(api, superadminUC, authMiddleware).Routes()
 		routes.NewAIRoute(api, aiUC, authMiddleware, aiRateLimiter).Routes()
 		routes.NewAuditRoute(api, auditUC, authMiddleware).Routes()
 		routes.NewSecurityRoute(api, securityUC, authMiddleware).Routes()
@@ -369,6 +381,33 @@ func (a *App) Run() (err error) {
 
 	srvLog.Info("server exiting")
 	return
+}
+
+// bootstrapSuperAdmin нь SUPERADMIN_EMAIL тохируулсан бол тухайн и-мэйлтэй
+// хэрэглэгчийг super admin (RoleSuperAdmin) болгож ахиулна. Service RLS context
+// дор ажиллана (users_service бодлого бүх мөрд хандана). Best-effort: хэрэглэгч
+// байхгүй/аль хэдийн super admin/алдаа гарвал boot-ийг эвдэлгүй warning бичнэ.
+// migration ажиллаагүй (roles(4) байхгүй) орчинд ч boot зогсохгүй.
+func bootstrapSuperAdmin(ctx context.Context, repo repointerface.UserRepository, email string) {
+	email = domain.NormalizeEmail(email)
+	if email == "" {
+		return
+	}
+	log := logger.WithFields(logger.Fields{constants.LoggerCategory: constants.LoggerCategoryConfig})
+	sctx := rls.WithService(ctx)
+	existing, err := repo.GetByEmail(sctx, &domain.User{Email: email})
+	if err != nil {
+		log.Warnf("SUPERADMIN_EMAIL (%s) ахиулалт алгаслаа: хэрэглэгч олдсонгүй эсвэл хайлт амжилтгүй (эхлээд бүртгүүлж, дараа нь дахин эхлүүлнэ үү): %v", email, err)
+		return
+	}
+	if existing.RoleID == domain.RoleSuperAdmin {
+		return // аль хэдийн super admin — no-op
+	}
+	if err := repo.UpdateRole(sctx, existing.ID, domain.RoleSuperAdmin); err != nil {
+		log.Warnf("SUPERADMIN_EMAIL (%s) ахиулалт амжилтгүй: %v", email, err)
+		return
+	}
+	log.Infof("SUPERADMIN_EMAIL (%s) super admin болголоо (role_id=%d)", email, domain.RoleSuperAdmin)
 }
 
 // signV3Base нь sign usecase-д зориулж eID суурь URL-ийг бэлдэнэ. My config-ийн

@@ -138,6 +138,7 @@ GEMINI_TTS_MODEL=gemini-2.5-flash-preview-tts  # сонголттой override (
 GEMINI_VOICE=Kore                # сонголттой prebuilt TTS дуу хоолой
 GEMINI_API_BASE=                 # сонголттой override (өгөгдмөл: Google generativelanguage v1beta)
 AI_SCOPE_PROMPT=                 # DB-ийн 'scope' давхарга хоосон үеийн хамрах хүрээний fallback
+SUPERADMIN_EMAIL=                # сонголттой: boot үед энэ (бүртгэлтэй) хэрэглэгчийг super admin болгоно
 EID_BASE_URL=https://eidmongolia.mn/v3  # eID Mongolia RP API (өгөгдмөл)
 EID_RP_UUID=                     # оператороос олгосон RP UUID (нэвтрэлтэд заавал)
 EID_RP_NAME=template-web         # бүртгэлтэй relyingPartyName
@@ -159,6 +160,23 @@ GOOGLE_CLIENT_SECRET=...          # Google OAuth client secret (server-only, git
 > (eidmongolia.mn) v3 RP API-аар нэвтэрдэг — QR (device-link/anonymous) болон
 > РД push (notification/etsi) урсгал. `EID_RP_UUID`/`EID_RP_SECRET` хоосон бол
 > нэвтрэлт ажиллахгүй; оператороос RP-гээ бүртгүүлж авна (support@eidmongolia.mn).
+
+### Эрх (role) ба super admin
+
+Role-ууд эрхийн зэрэглэлээр дугаарлагдсан (id 1 = хамгийн дээд):
+**superadmin=1, admin=2, manager=3, user=4** (`23_superadmin_role` migration-оор
+seed/remap хийгдэнэ). **Super admin** нь admin-аас дээгүүр бөгөөд админ
+бүртгэлүүдийг удирдах (үүсгэх/эрх олгох/хасах) цорын ганц эрх —
+`/api/v1/superadmin/*` (`RequireSuperAdmin`); энгийн admin энэ гадаргууд
+хүрэхгүй. API нь super admin-г хэзээ ч үүсгэдэггүй — bootstrap хийхдээ
+`SUPERADMIN_EMAIL`-д бүртгэлтэй хэрэглэгчийн и-мэйлийг заана (дараагийн boot-д
+ахиулна) эсвэл DB-д `role_id=1` болгоно.
+
+> **Эвдрэлтэй өөрчлөлт (одоо ажиллаж буй deployment):** `23` migration нь role-
+> уудыг дахин дугаарладаг тул түүнээс өмнө олгосон JWT-үүд өөр утгаар унших
+> болно (хуучин `admin=1` → superadmin, `user=2` → admin). Одоо байгаа DB дээр
+> хэрэглэхдээ **`JWT_SECRET`-ээ солино** (эсвэл бүх хэрэглэгчийг дахин нэвтрүүлнэ)
+> — эс бөгөөс хуучин токен буруу эрх авна. Шинэ суулгацад нөлөөгүй.
 
 ### AI prompt давхаргууд
 
@@ -196,6 +214,10 @@ AI туслах давхаргат system prompt-оор ажиллана: **suur
 | POST | `/api/v1/ai/tts` | Текст→яриа (текст → WAV base64) |
 | POST | `/api/v1/ai/translate` | Шууд орчуулга (текст/audio → зорилтот хэл, сонголтоор TTS) |
 | GET/PUT | `/api/v1/admin/ai/prompts` | AI prompt давхарга — хүрээ/заавар (settings.manage) |
+| GET | `/api/v1/superadmin/admins` | Админ түвшний бүртгэлүүдийг жагсаах (зөвхөн super admin) |
+| POST | `/api/v1/superadmin/admins` | Шинэ админ үүсгэх (зөвхөн super admin) |
+| PUT | `/api/v1/superadmin/admins/{id}/grant` | Байгаа хэрэглэгчид админ эрх олгох (зөвхөн super admin) |
+| DELETE | `/api/v1/superadmin/admins/{id}` | Админ эрх хасах (зөвхөн super admin) |
 
 ### Ops
 `GET /health` (liveness) · `GET /ready` (DB+Redis) · `GET /metrics` · `GET /swagger/*`

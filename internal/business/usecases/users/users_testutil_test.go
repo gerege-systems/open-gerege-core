@@ -43,7 +43,7 @@ func sampleUser() domain.User {
 		Email:     "patrick@example.com",
 		Password:  "$2a$10$hashedpasswordhashedpasswordhash",
 		Active:    true,
-		RoleID:    2,
+		RoleID:    domain.RoleUser,
 		CreatedAt: time.Now(),
 	}
 }

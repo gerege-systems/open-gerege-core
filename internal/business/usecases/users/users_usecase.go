@@ -41,6 +41,9 @@ type Usecase interface {
 
 	// List нь admin удирдлагад зориулж хэрэглэгчдийг хуудаслан буцаана.
 	List(ctx context.Context, req ListRequest) (ListResponse, error)
+	// ListAdmins нь админ түвшний бүх бүртгэлийг (super admin + admin) буцаана
+	// (super admin-ий "админуудыг удирдах" хуудас). Кэш ашиглахгүй.
+	ListAdmins(ctx context.Context) (ListResponse, error)
 	// UpdateRole нь хэрэглэгчийн role-г солино (admin удирдлага).
 	UpdateRole(ctx context.Context, req UpdateRoleRequest) error
 	// SetActive нь хэрэглэгчийг идэвхжүүлэх/идэвхгүй болгоно (admin удирдлага).

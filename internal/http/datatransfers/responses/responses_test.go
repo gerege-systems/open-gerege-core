@@ -18,13 +18,13 @@ import (
 func sampleUser() domain.User {
 	return domain.User{
 		ID: "u1", Username: "bat", FirstName: "Бат", LastName: "Дорж",
-		Email: "bat@example.com", RoleID: 2,
+		Email: "bat@example.com", RoleID: domain.RoleUser,
 	}
 }
 
 func TestFromV1Domain(t *testing.T) {
 	r := responses.FromV1Domain(sampleUser())
-	if r.Id != "u1" || r.Username != "bat" || r.Email != "bat@example.com" || r.RoleId != 2 {
+	if r.Id != "u1" || r.Username != "bat" || r.Email != "bat@example.com" || r.RoleId != domain.RoleUser {
 		t.Errorf("mapped = %+v", r)
 	}
 	// Нууц үгээр бүртгүүлсэн хэрэглэгчид eID блок орохгүй (nil).

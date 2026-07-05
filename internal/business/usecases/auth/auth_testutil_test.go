@@ -85,6 +85,6 @@ func activeUser(t *testing.T) domain.User {
 		Email:    "patrick@example.com",
 		Password: hash,
 		Active:   true,
-		RoleID:   2,
+		RoleID:   domain.RoleUser,
 	}
 }

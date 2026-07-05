@@ -27,7 +27,7 @@ func fixture(email string) *domain.User {
 		Username:  "user_" + email,
 		Email:     email,
 		Password:  "$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy",
-		RoleID:    2,
+		RoleID:    domain.RoleUser,
 		CreatedAt: time.Now().UTC(),
 	}
 }
@@ -144,7 +144,7 @@ func TestRepo_List_FiltersAndPagination(t *testing.T) {
 	for i, email := range []string{"a@x.com", "b@x.com", "c@x.com"} {
 		u := fixture(email)
 		if i == 0 {
-			u.RoleID = 1 // админ
+			u.RoleID = domain.RoleAdmin // админ
 		}
 		_, err := repo.Store(ctx, u)
 		require.NoError(t, err)
@@ -158,7 +158,7 @@ func TestRepo_List_FiltersAndPagination(t *testing.T) {
 	require.NoError(t, repo.ChangeActiveUser(ctx, &domain.User{ID: all[0].ID, Active: true}))
 
 	t.Run("filter by role", func(t *testing.T) {
-		got, err := repo.List(ctx, repointerface.UserListFilter{RoleID: 1}, 0, 10)
+		got, err := repo.List(ctx, repointerface.UserListFilter{RoleID: domain.RoleAdmin}, 0, 10)
 		require.NoError(t, err)
 		assert.Len(t, got, 1)
 	})

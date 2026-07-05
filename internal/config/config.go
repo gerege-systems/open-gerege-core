@@ -118,6 +118,12 @@ type Config struct {
 	// core.gerege.mn-д хандах урт настай service bearer (server-тал л ашиглана).
 	CoreAPIBase  string `mapstructure:"CORE_API_BASE"`
 	CoreAPIToken string `mapstructure:"CORE_API_TOKEN"`
+
+	// SuperAdminEmail нь bootstrap: тохируулсан бол boot үед энэ и-мэйлтэй
+	// хэрэглэгчийг (байгаа тохиолдолд) super admin (RoleSuperAdmin) болгож
+	// ахиулна. Хоосон бол алгасна — super admin-г зөвхөн DB/энэ env-ээр л
+	// томилно (API-аар үүсгэдэггүй). Хэрэглэгч эхлээд бүртгүүлсэн байх ёстой.
+	SuperAdminEmail string `mapstructure:"SUPERADMIN_EMAIL"`
 }
 
 // TrustedProxiesList нь TRUSTED_PROXIES-г таслалаар салгаж slice болгоно.
@@ -161,6 +167,11 @@ func InitializeAppConfig() error {
 	viper.AddConfigPath("/")
 	viper.AllowEmptyEnv(true)
 	viper.AutomaticEnv()
+	// .env файлд байхгүй байж болзошгүй, зөвхөн орчноос ирдэг сонголттой
+	// хувьсагчдыг ил BindEnv хийнэ — эс бөгөөс viper.Unmarshal нь AutomaticEnv-
+	// ийн утгыг struct руу буулгахгүй (key нь config файл/default-оос
+	// бүртгэгдээгүй бол).
+	_ = viper.BindEnv("SUPERADMIN_EMAIL")
 	// .env файл байхгүй байх нь алдаа БИШ — контейнер / 12-factor орчинд
 	// тохиргоог зөвхөн environment-ээс уншина. Зөвхөн жинхэнэ задлан унших
 	// (parse) алдааг л буцаана.

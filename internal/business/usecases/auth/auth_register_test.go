@@ -27,7 +27,7 @@ func TestRegister(t *testing.T) {
 		{
 			name: "delegates to users.Store and returns its result unchanged",
 			in: &domain.User{
-				Username: "x", Email: "x@y.com", Password: "Pwd_123!", RoleID: 2,
+				Username: "x", Email: "x@y.com", Password: "Pwd_123!", RoleID: domain.RoleUser,
 			},
 			setup: func(f *fixture) {
 				f.users.On("Store", mock.Anything, mock.AnythingOfType("users.StoreRequest")).

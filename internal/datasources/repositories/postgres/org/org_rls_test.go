@@ -41,7 +41,7 @@ func TestOrgRepositoryRLS_NoRecursion(t *testing.T) {
 	const userID = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa"
 	_, err := admin.Exec(ctx,
 		`INSERT INTO users(id, username, active, role_id, created_at)
-		 VALUES ($1, 'eid_test', true, 2, now())`, userID)
+		 VALUES ($1, 'eid_test', true, 4, now())`, userID)
 	require.NoError(t, err)
 
 	repo := orgpg.NewOrgRepository(app)
