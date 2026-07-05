@@ -92,8 +92,17 @@ func TestUser_VerifyPassword(t *testing.T) {
 
 func TestUser_IsAdmin(t *testing.T) {
 	assert.True(t, domain.User{RoleID: domain.RoleAdmin}.IsAdmin())
+	// Super admin нь admin-аас дээгүүр зэрэглэл тул IsAdmin() мөн true.
+	assert.True(t, domain.User{RoleID: domain.RoleSuperAdmin}.IsAdmin())
 	assert.False(t, domain.User{RoleID: domain.RoleUser}.IsAdmin())
 	assert.False(t, domain.User{RoleID: 0}.IsAdmin())
+}
+
+func TestUser_IsSuperAdmin(t *testing.T) {
+	assert.True(t, domain.User{RoleID: domain.RoleSuperAdmin}.IsSuperAdmin())
+	assert.False(t, domain.User{RoleID: domain.RoleAdmin}.IsSuperAdmin())
+	assert.False(t, domain.User{RoleID: domain.RoleUser}.IsSuperAdmin())
+	assert.False(t, domain.User{RoleID: 0}.IsSuperAdmin())
 }
 
 func TestNormalizeEmail(t *testing.T) {

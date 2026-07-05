@@ -2,7 +2,7 @@
 // Gerege Systems Development Team болон Claude AI хамтран бүтээв, 2026.
 
 // RequirePermission-ийн бүрэн matrix тест: admin bypass, эрхтэй/эрхгүй role,
-// хуучин токены roleID=0 fallback (=user role 2), resolver-ийн алдаанд
+// хуучин токены roleID=0 fallback (=user role), resolver-ийн алдаанд
 // fail-closed (403), claim-гүй хүсэлтэд 401.
 package middlewares
 
@@ -13,6 +13,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"template/internal/business/domain"
 	"template/pkg/jwt"
 )
 
@@ -37,10 +38,10 @@ func TestRequirePermission(t *testing.T) {
 		w.WriteHeader(http.StatusOK)
 	})
 
-	// Migration 8-ын seed-тэй ижил matrix: user(2), manager(3).
+	// Seed-тэй ижил matrix: user, manager (role ID-ууд domain тогтмолоор).
 	perms := map[int][]string{
-		2: {"dashboard.view", "personal.view"},
-		3: {"dashboard.view", "manager.view", "users.manage"},
+		domain.RoleUser:    {"dashboard.view", "personal.view"},
+		domain.RoleManager: {"dashboard.view", "manager.view", "users.manage"},
 	}
 
 	cases := []struct {

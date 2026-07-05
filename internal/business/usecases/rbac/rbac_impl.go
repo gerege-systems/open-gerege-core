@@ -15,7 +15,10 @@ import (
 	repointerface "template/internal/datasources/repositories/interface"
 )
 
-const adminRoleKey = "admin"
+const (
+	adminRoleKey      = "admin"
+	superAdminRoleKey = "superadmin"
+)
 
 // cacheTTL нь Resolve-ийн кэшийн нас. Бичих үед шууд invalidate хийдэг тул энэ нь
 // зөвхөн ховор race-ийн (жишээ нь сервер сэргэх үеийн) хуучирсан бичлэгийг өөрөө
@@ -150,7 +153,11 @@ func (u *usecase) Resolve(ctx context.Context, roleID int) ([]string, error) {
 	}
 
 	var keys []string
-	if role.Key == adminRoleKey {
+	// admin болон superadmin хоёулаа каталогийн БҮХ эрхэд auto-resolve хийгдэнэ
+	// (super admin нь admin-аас дээгүүр зэрэглэл). Хүсэлтийн үед IsAdmin bypass
+	// аль хэдийн хамардаг ч энэ нь Resolve-ийг шууд дуудагчдад ч зөв хэвээр
+	// байлгана.
+	if role.Key == adminRoleKey || role.Key == superAdminRoleKey {
 		perms, err := u.repo.ListPermissions(ctx)
 		if err != nil {
 			return nil, mapRepoError(err, "list permissions")

@@ -29,9 +29,21 @@ import (
 // логик тул role ID-ууд нь transport- эсвэл persistence-тэй зэргэлдээ
 // constants багцад биш, харин domain дотор байрладаг.
 const (
-	RoleAdmin   = 1
-	RoleUser    = 2
-	RoleManager = 3
+	// Role ID-ууд зэрэглэлийн дарааллаар (1 = хамгийн дээд эрх). RoleSuperAdmin
+	// нь admin-аас дээгүүр зэрэглэлийн эрх — зөвхөн super admin админ
+	// хэрэглэгчдийг үүсгэх/эрх олгох/хасах боломжтой. Super admin нь admin-ийн
+	// бүх эрхийг мөн эдэлдэг (IsAdmin() true) тул RLS/JWT-ийн admin зам түүнд
+	// адилхан үйлчилнэ; ялгаа нь RequireSuperAdmin gate-ээр л /superadmin
+	// гадаргууг хамгаалдагт бий. Энэ зэрэглэлийг API-аар үүсгэж болохгүй — зөвхөн
+	// bootstrap (SUPERADMIN_EMAIL) эсвэл DB-ээр л томилогдоно.
+	//
+	// АНХААР: role_id 0 нь ямар ч role БИШ — claim-гүй хуучин токенуудын sentinel
+	// (RBAC middleware үүнийг хамгийн бага эрх RoleUser рүү буулгадаг). Тиймээс
+	// нэг ч role-д 0 оноож болохгүй.
+	RoleSuperAdmin = 1
+	RoleAdmin      = 2
+	RoleManager    = 3
+	RoleUser       = 4
 )
 
 // Domain алдаануудыг энгийн sentinel хэлбэрээр тодорхойлсон тул дуудагч нь
@@ -215,7 +227,13 @@ func (u User) VerifyPassword(plain string) bool {
 // IsAdmin нь хэрэглэгчийн role нь admin эрх олгож байгаа эсэхийг мэдээлнэ.
 // Дүрэм нэг газар байрлахын тулд (дуудах газруудад нүцгэн харьцуулалт хийхгүй)
 // method болгосон — RoleAdmin-ийг нэг удаа өөрчилбөл дуудагч бүр дагана.
-func (u User) IsAdmin() bool { return u.RoleID == RoleAdmin }
+// Super admin нь admin-аас дээгүүр зэрэглэл тул admin-ийн бүх эрхийг (RLS admin
+// GUC, JWT isAdmin, RequirePermission bypass) мөн эдэлнэ.
+func (u User) IsAdmin() bool { return u.RoleID == RoleAdmin || u.RoleID == RoleSuperAdmin }
+
+// IsSuperAdmin нь хэрэглэгч super admin (админуудыг удирдах дээд эрх) эсэхийг
+// мэдээлнэ. RequireSuperAdmin middleware /superadmin гадаргууг үүгээр хаадаг.
+func (u User) IsSuperAdmin() bool { return u.RoleID == RoleSuperAdmin }
 
 // ChangePassword нь plain-ийг өгөгдсөн bcrypt cost-оор hash хийж, хадгалсан
 // hash-ийг сольж, PasswordChangedAt + UpdatedAt-ийг тэмдэглэнэ. Энэ timestamp

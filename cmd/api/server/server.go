@@ -22,6 +22,8 @@ import (
 	"template/internal/business/usecases/ai"
 	"template/internal/business/usecases/audit"
 	"template/internal/business/usecases/auth"
+	"template/internal/business/usecases/core"
+	"template/internal/business/usecases/gateway"
 	"template/internal/business/usecases/gov"
 	"template/internal/business/usecases/integrations"
 	"template/internal/business/usecases/org"
@@ -35,6 +37,7 @@ import (
 	"template/internal/datasources/drivers"
 	aipostgres "template/internal/datasources/repositories/postgres/ai"
 	auditpostgres "template/internal/datasources/repositories/postgres/audit"
+	gatewaypostgres "template/internal/datasources/repositories/postgres/gateway"
 	govpostgres "template/internal/datasources/repositories/postgres/gov"
 	orgpostgres "template/internal/datasources/repositories/postgres/org"
 	rbacpostgres "template/internal/datasources/repositories/postgres/rbac"
@@ -183,6 +186,13 @@ func NewApp() (*App, error) {
 	govRepo := govpostgres.NewGovRepository(pool)
 	govUC := gov.NewUsecase(govRepo)
 
+	// API Gateway — services/routes/consumers/api keys/policies + телеметр.
+	gatewayRepo := gatewaypostgres.NewGatewayRepository(pool)
+	gatewayUC := gateway.NewUsecase(gatewayRepo)
+
+	// Gerege Core (core.gerege.mn) — USER FIND / ORG FIND хайлтын wrap.
+	coreUC := core.NewUsecase(config.AppConfig.CoreAPIBase, config.AppConfig.CoreAPIToken)
+
 	// Хэрэглэгчийн гуравдагч этгээдийн интеграци (Google Drive/Meet, Dropbox) —
 	// OAuth токеныг шифрлэн хадгална (RLS-тэй per-user хүснэгт).
 	userIntegrationsRepo := userintegrationspostgres.NewUserIntegrationsRepository(pool)
@@ -270,6 +280,8 @@ func NewApp() (*App, error) {
 		routes.NewOrgRoute(api, orgUC, auditUC, authMiddleware).Routes()
 		routes.NewGovRoute(api, govUC, authMiddleware).Routes()
 		routes.NewIntegrationsRoute(api, integrationsUC, authMiddleware).Routes()
+		routes.NewGatewayRoute(api, gatewayUC, rbacUC, authMiddleware).Routes()
+		routes.NewCoreRoute(api, coreUC, authMiddleware).Routes()
 		routes.NewAdminRoute(api, usersUC, rbacUC, aiUC, authMiddleware).Routes()
 		routes.NewAIRoute(api, aiUC, authMiddleware, aiRateLimiter).Routes()
 		routes.NewAuditRoute(api, auditUC, authMiddleware).Routes()

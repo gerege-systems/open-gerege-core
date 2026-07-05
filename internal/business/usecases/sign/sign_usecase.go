@@ -36,6 +36,7 @@ import (
 	"github.com/digitorus/pdfsign/sign"
 
 	"template/internal/apperror"
+	"template/pkg/logger"
 )
 
 // cache нь caches.RedisCache-тэй тааруулсан нарийн интерфэйс (string round-trip;
@@ -266,14 +267,17 @@ func (u *usecase) Poll(ctx context.Context, ownerRegNo, sessionID string) (strin
 	}
 	switch {
 	case res.State == "COMPLETE" && res.EndResult == "OK":
-		// Defense-in-depth: /v3 session нь toEtsi(st.RegNo)-оор эхэлсэн тул
-		// буцах сертификат тэр иргэнийх байх ёстой. eID өөрөө уядаг ч сервер
-		// талын алдаа/эвдрэлээс хамгаалж, буцсан cert-ийн РД session эзэнтэй
-		// тохирч буйг (орон тоогоор) шалгана — тодорхой зөрвөл completed
-		// болгохгүй (өөр иргэний гарын үсгийг хүлээж авахаас сэргийлнэ).
+		// /v3 session нь toEtsi(st.RegNo)-оор эхэлсэн тул eID өөрөө буцах
+		// сертификатыг тэр иргэнд уяна (login урсгал ч зөвхөн энэ уялтад
+		// итгэдэг). Нэмэлт cross-check (буцсан cert-ийн serialNumber-ийн РД
+		// session эзэнтэй тохирох) нь зарим eID cert-ийн serialNumber формат
+		// (РД-ийн орон агуулаагүй) дээр ХУДАЛ бүтэлгүйтэл өгдөг тул блоклохгүй —
+		// зөвхөн зөрөхөд анхааруулга бичнэ.
 		if !regNoMatches(res.SubjectSerial, st.RegNo) {
-			st.State = "failed"
-			break
+			logger.WarnWithContext(ctx, "sign: cert serial РД-тэй тоон таарахгүй (non-blocking)", logger.Fields{
+				"usecase": "sign", "method": "Poll",
+				"cert_serial": res.SubjectSerial, "has_regno": st.RegNo != "",
+			})
 		}
 		st.State = "completed"
 		st.SignerName = res.SubjectName
@@ -282,6 +286,9 @@ func (u *usecase) Poll(ctx context.Context, ownerRegNo, sessionID string) (strin
 	case res.State == "COMPLETE" && res.EndResult == "USER_REFUSED":
 		st.State = "rejected"
 	case res.State == "COMPLETE":
+		logger.WarnWithContext(ctx, "sign: COMPLETE-ийн endResult OK/USER_REFUSED биш", logger.Fields{
+			"usecase": "sign", "method": "Poll", "end_result": res.EndResult,
+		})
 		st.State = "failed"
 	default:
 		return "running", nil

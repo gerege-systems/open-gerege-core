@@ -15,6 +15,7 @@ const (
 	PermRolesManage    = "roles.manage"    // RBAC: role/permission удирдах
 	PermPersonalView   = "personal.view"   // энгийн хэрэглэгчийн өөрийн хэсэг
 	PermManagerView    = "manager.view"    // manager-ийн хэсэг
+	PermGatewayManage  = "gateway.manage"  // API Gateway (services/routes/consumers/policies) удирдах
 )
 
 // AllPermissions нь эрхийн каталог (seed + ListPermissions-д ашиглана). Label/
@@ -26,6 +27,7 @@ var AllPermissions = []Permission{
 	{Key: PermRolesManage, Label: "Эрх (role) удирдах", Category: "administration"},
 	{Key: PermManagerView, Label: "Менежерийн хэсэг", Category: "management"},
 	{Key: PermPersonalView, Label: "Хувийн хэсэг", Category: "personal"},
+	{Key: PermGatewayManage, Label: "API Gateway удирдах", Category: "administration"},
 }
 
 // Role нь динамик эрх (RBAC). IsSystem эрхүүдийг (admin/manager/user) устгаж/

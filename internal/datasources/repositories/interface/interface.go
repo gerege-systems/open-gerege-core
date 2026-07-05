@@ -107,6 +107,49 @@ type RBACRepository interface {
 	SetRolePermissions(ctx context.Context, roleID int, keys []string) error
 }
 
+// GatewayRepository нь API Gateway-ийн тохиргоо (services/routes/consumers/
+// api keys/policies) болон request-log телеметрийг хадгалах/уншихыг хариуцна.
+// Эдгээр нь хэрэглэгч-тус-бүрийн биш тул RLS-д хамаарахгүй (plain pool query).
+type GatewayRepository interface {
+	// Services — upstream backend.
+	ListServices(ctx context.Context) ([]domain.GatewayService, error)
+	GetService(ctx context.Context, id string) (domain.GatewayService, error)
+	CreateService(ctx context.Context, in *domain.GatewayService) (domain.GatewayService, error)
+	UpdateService(ctx context.Context, in *domain.GatewayService) (domain.GatewayService, error)
+	DeleteService(ctx context.Context, id string) error
+
+	// Routes — (methods, paths) → service.
+	ListRoutes(ctx context.Context) ([]domain.GatewayRoute, error)
+	GetRoute(ctx context.Context, id string) (domain.GatewayRoute, error)
+	CreateRoute(ctx context.Context, in *domain.GatewayRoute) (domain.GatewayRoute, error)
+	UpdateRoute(ctx context.Context, in *domain.GatewayRoute) (domain.GatewayRoute, error)
+	DeleteRoute(ctx context.Context, id string) error
+
+	// Consumers — API client + (тоологдсон) key тоо.
+	ListConsumers(ctx context.Context) ([]domain.GatewayConsumer, error)
+	GetConsumer(ctx context.Context, id string) (domain.GatewayConsumer, error)
+	CreateConsumer(ctx context.Context, in *domain.GatewayConsumer) (domain.GatewayConsumer, error)
+	UpdateConsumer(ctx context.Context, in *domain.GatewayConsumer) (domain.GatewayConsumer, error)
+	DeleteConsumer(ctx context.Context, id string) error
+
+	// API keys — hash нь usecase-д урьдчилан тооцоологдоно.
+	ListKeys(ctx context.Context, consumerID string) ([]domain.GatewayAPIKey, error)
+	CreateKey(ctx context.Context, in *domain.GatewayAPIKey) (domain.GatewayAPIKey, error)
+	RevokeKey(ctx context.Context, id string) error
+	DeleteKey(ctx context.Context, id string) error
+
+	// Policies — route-д (эсвэл global) хавсаргасан plugin.
+	ListPolicies(ctx context.Context) ([]domain.GatewayPolicy, error)
+	GetPolicy(ctx context.Context, id string) (domain.GatewayPolicy, error)
+	CreatePolicy(ctx context.Context, in *domain.GatewayPolicy) (domain.GatewayPolicy, error)
+	UpdatePolicy(ctx context.Context, in *domain.GatewayPolicy) (domain.GatewayPolicy, error)
+	DeletePolicy(ctx context.Context, id string) error
+
+	// Telemetry — сүүлийн log-ууд + dashboard-ийн нэгтгэл.
+	ListRequestLogs(ctx context.Context, limit int) ([]domain.GatewayRequestLog, error)
+	Overview(ctx context.Context) (domain.GatewayOverview, error)
+}
+
 // OrgRepository нь байгууллага болон гишүүнчлэлийг (organization_memberships)
 // хадгалах/уншихыг хариуцна. Бичих үйлдлүүд (CreateOrg, AddMember, ...) нь
 // тухайн дуудагч бизнесийн эрх (owner/admin) шалгалтыг usecase давхаргад аль

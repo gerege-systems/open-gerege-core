@@ -113,6 +113,11 @@ type Config struct {
 	// нууц түлхүүр. SHA-256-аар 32 байт болгон гаргадаг тул дурын урттай байж
 	// болно. Хоосон бол сул default — production-д заавал тохируулна.
 	IntegrationEncKey string `mapstructure:"INTEGRATION_ENC_KEY"`
+
+	// Gerege Core (core.gerege.mn) — user/organization find. CoreAPIToken нь
+	// core.gerege.mn-д хандах урт настай service bearer (server-тал л ашиглана).
+	CoreAPIBase  string `mapstructure:"CORE_API_BASE"`
+	CoreAPIToken string `mapstructure:"CORE_API_TOKEN"`
 }
 
 // TrustedProxiesList нь TRUSTED_PROXIES-г таслалаар салгаж slice болгоно.
@@ -305,6 +310,9 @@ func applyDefaults() {
 	}
 	if AppConfig.EIDDisplayText == "" {
 		AppConfig.EIDDisplayText = "template.gerege.mn"
+	}
+	if AppConfig.CoreAPIBase == "" {
+		AppConfig.CoreAPIBase = "https://core.gerege.mn"
 	}
 	// OTel-ийн sample ratio нь зөвхөн exporter тохируулагдсан БА оператор
 	// ratio-г тодорхой зааж өгөөгүй үед 1.0 утгыг анхдагчаар авна. Exporter

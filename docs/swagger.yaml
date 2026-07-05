@@ -181,6 +181,120 @@ definitions:
     required:
     - email
     type: object
+  template_internal_http_datatransfers_requests.GatewayConsumerRequest:
+    properties:
+      custom_id:
+        maxLength: 80
+        type: string
+      enabled:
+        type: boolean
+      tags:
+        items:
+          type: string
+        type: array
+      username:
+        maxLength: 80
+        minLength: 2
+        type: string
+    required:
+    - username
+    type: object
+  template_internal_http_datatransfers_requests.GatewayKeyRequest:
+    properties:
+      expires_at:
+        type: string
+      label:
+        maxLength: 80
+        type: string
+    type: object
+  template_internal_http_datatransfers_requests.GatewayPolicyRequest:
+    properties:
+      config:
+        items:
+          type: integer
+        type: array
+      enabled:
+        type: boolean
+      route_id:
+        type: string
+      type:
+        enum:
+        - rate-limit
+        - key-auth
+        - cors
+        - ip-restriction
+        - request-transform
+        type: string
+    required:
+    - type
+    type: object
+  template_internal_http_datatransfers_requests.GatewayRouteRequest:
+    properties:
+      enabled:
+        type: boolean
+      methods:
+        items:
+          type: string
+        type: array
+      name:
+        maxLength: 80
+        minLength: 2
+        type: string
+      paths:
+        items:
+          type: string
+        minItems: 1
+        type: array
+      preserve_host:
+        type: boolean
+      service_id:
+        type: string
+      strip_path:
+        type: boolean
+    required:
+    - name
+    - paths
+    - service_id
+    type: object
+  template_internal_http_datatransfers_requests.GatewayServiceRequest:
+    properties:
+      connect_timeout_ms:
+        maximum: 600000
+        minimum: 100
+        type: integer
+      enabled:
+        type: boolean
+      host:
+        maxLength: 255
+        type: string
+      name:
+        maxLength: 80
+        minLength: 2
+        type: string
+      path:
+        maxLength: 255
+        type: string
+      port:
+        maximum: 65535
+        minimum: 1
+        type: integer
+      protocol:
+        enum:
+        - http
+        - https
+        type: string
+      retries:
+        maximum: 10
+        minimum: 0
+        type: integer
+      tags:
+        items:
+          type: string
+        type: array
+    required:
+    - host
+    - name
+    type: object
   template_internal_http_datatransfers_requests.GoogleLoginRequest:
     properties:
       code:
@@ -1583,6 +1697,453 @@ paths:
       summary: OTP кодыг шалгаж бүртгэлийг идэвхжүүлэх
       tags:
       - auth
+  /core/organizations:
+    get:
+      description: core.gerege.mn /api/organization/find — search_text (регистр г.м.).
+        Хариуг дамжуулна.
+      parameters:
+      - description: regno / нэр
+        in: query
+        name: search_text
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      summary: Gerege Core байгууллага хайх
+      tags:
+      - core
+  /core/users:
+    get:
+      description: core.gerege.mn /api/user/find — search_text (core_id эсвэл регистр).
+        Хариуг дамжуулна.
+      parameters:
+      - description: core_id / regno
+        in: query
+        name: search_text
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      summary: Gerege Core хэрэглэгч хайх
+      tags:
+      - core
+  /gateway/consumers:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      summary: Consumer-уудыг жагсаах
+      tags:
+      - gateway
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Consumer
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/template_internal_http_datatransfers_requests.GatewayConsumerRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      summary: Consumer үүсгэх
+      tags:
+      - gateway
+  /gateway/consumers/{id}:
+    delete:
+      parameters:
+      - description: Consumer ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      summary: Consumer устгах
+      tags:
+      - gateway
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: Consumer ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Consumer
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/template_internal_http_datatransfers_requests.GatewayConsumerRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      summary: Consumer шинэчлэх
+      tags:
+      - gateway
+  /gateway/consumers/{id}/keys:
+    get:
+      parameters:
+      - description: Consumer ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      summary: Consumer-ийн API key-үүдийг жагсаах
+      tags:
+      - gateway
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Consumer ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Key
+        in: body
+        name: body
+        schema:
+          $ref: '#/definitions/template_internal_http_datatransfers_requests.GatewayKeyRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      summary: Consumer-д шинэ API key үүсгэх (plaintext-ийг нэг удаа буцаана)
+      tags:
+      - gateway
+  /gateway/keys/{keyId}:
+    delete:
+      parameters:
+      - description: Key ID
+        in: path
+        name: keyId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      summary: API key-г устгах
+      tags:
+      - gateway
+  /gateway/keys/{keyId}/revoke:
+    post:
+      parameters:
+      - description: Key ID
+        in: path
+        name: keyId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      summary: API key-г хүчингүй болгох (revoke)
+      tags:
+      - gateway
+  /gateway/logs:
+    get:
+      parameters:
+      - description: Max rows (default 100, max 200)
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      summary: Gateway-ийн сүүлийн хүсэлтийн log
+      tags:
+      - gateway
+  /gateway/overview:
+    get:
+      description: Сүүлийн 24 цагийн хүсэлт/алдааны хувь/латентаас бүрдсэн dashboard
+        нэгтгэл.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      summary: API Gateway-ийн нэгтгэсэн статистик
+      tags:
+      - gateway
+  /gateway/policies:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      summary: Policy (plugin)-уудыг жагсаах
+      tags:
+      - gateway
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Policy
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/template_internal_http_datatransfers_requests.GatewayPolicyRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      summary: Policy үүсгэх
+      tags:
+      - gateway
+  /gateway/policies/{id}:
+    delete:
+      parameters:
+      - description: Policy ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      summary: Policy устгах
+      tags:
+      - gateway
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: Policy ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Policy
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/template_internal_http_datatransfers_requests.GatewayPolicyRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      summary: Policy шинэчлэх
+      tags:
+      - gateway
+  /gateway/routes:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      summary: Route-уудыг жагсаах
+      tags:
+      - gateway
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Route
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/template_internal_http_datatransfers_requests.GatewayRouteRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      summary: Route үүсгэх
+      tags:
+      - gateway
+  /gateway/routes/{id}:
+    delete:
+      parameters:
+      - description: Route ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      summary: Route устгах
+      tags:
+      - gateway
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: Route ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Route
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/template_internal_http_datatransfers_requests.GatewayRouteRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      summary: Route шинэчлэх
+      tags:
+      - gateway
+  /gateway/services:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      summary: Upstream service-үүдийг жагсаах
+      tags:
+      - gateway
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Service
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/template_internal_http_datatransfers_requests.GatewayServiceRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      summary: Upstream service үүсгэх
+      tags:
+      - gateway
+  /gateway/services/{id}:
+    delete:
+      parameters:
+      - description: Service ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      summary: Upstream service устгах
+      tags:
+      - gateway
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: Service ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Service
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/template_internal_http_datatransfers_requests.GatewayServiceRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      summary: Upstream service шинэчлэх
+      tags:
+      - gateway
   /gov/applications:
     get:
       produces:
