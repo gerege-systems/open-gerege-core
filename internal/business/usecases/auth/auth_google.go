@@ -7,15 +7,25 @@ import (
 	"context"
 	"crypto/rand"
 	"encoding/hex"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"time"
 
 	"template/internal/apperror"
 	"template/internal/business/domain"
+	"template/pkg/google"
 	"template/pkg/jwt"
 	"template/pkg/logger"
 )
+
+// googleAccountOf нь Google OAuth профайлыг холбоход хадгалах domain хэлбэрт буулгана.
+func googleAccountOf(gu google.User) domain.GoogleAccount {
+	return domain.GoogleAccount{
+		Sub: gu.Sub, Email: gu.Email, EmailVerified: gu.EmailVerified,
+		Name: gu.Name, Picture: gu.Picture,
+	}
+}
 
 // googleLinkTTL нь Google→eID холбохыг хүлээх токены амьдрах хугацаа.
 const googleLinkTTL = 15 * time.Minute
@@ -61,6 +71,13 @@ func (uc *usecase) GoogleLogin(ctx context.Context, code, redirectURI string) (r
 	// Аль хэдийн холбогдсон Google account уу?
 	user, lookErr := uc.users.GetByGoogleSub(ctx, gu.Sub)
 	if lookErr == nil {
+		// Профайлыг (нэр/зураг/и-мэйл) хамгийн сүүлийн Google утгаар шинэчилнэ
+		// (best-effort — нэвтрэлтийг тасалдуулахгүй).
+		if refreshErr := uc.users.LinkGoogleAccount(ctx, user.ID, googleAccountOf(*gu)); refreshErr != nil {
+			logger.ErrorWithContext(ctx, "google profile refresh failed (non-fatal)", logger.Fields{
+				"usecase": usecaseName, "method": funcName, "file": fileName, "error": refreshErr.Error(),
+			})
+		}
 		pair, mintErr := uc.mintSession(ctx, user)
 		if mintErr != nil {
 			return GoogleLoginResponse{}, apperror.InternalCause(fmt.Errorf("mint session: %w", mintErr))
@@ -75,13 +92,19 @@ func (uc *usecase) GoogleLogin(ctx context.Context, code, redirectURI string) (r
 		return GoogleLoginResponse{}, lookErr // жинхэнэ алдаа (DB г.м.)
 	}
 
-	// Эхний удаа — eID-ээр баталгаажуулах LinkToken үүсгэнэ.
+	// Эхний удаа — eID-ээр баталгаажуулах LinkToken үүсгэнэ. Google профайлыг
+	// бүтнээр нь (JSON) Redis-д хадгална — eID COMPLETE болоход хэрэглэгчид
+	// холбохдоо email/нэр/зураг зэргийг бүгдийг хадгалахад ашиглана.
 	token, tErr := randomLinkToken()
 	if tErr != nil {
 		return GoogleLoginResponse{}, apperror.InternalCause(fmt.Errorf("link token: %w", tErr))
 	}
+	payload, mErr := json.Marshal(gu)
+	if mErr != nil {
+		return GoogleLoginResponse{}, apperror.InternalCause(fmt.Errorf("marshal google profile: %w", mErr))
+	}
 	key := GoogleLinkKey(token)
-	if setErr := uc.redisCache.Set(ctx, key, gu.Sub); setErr != nil {
+	if setErr := uc.redisCache.Set(ctx, key, string(payload)); setErr != nil {
 		return GoogleLoginResponse{}, apperror.InternalCause(fmt.Errorf("store link token: %w", setErr))
 	}
 	_ = uc.redisCache.Expire(ctx, key, googleLinkTTL)
@@ -97,14 +120,21 @@ func (uc *usecase) linkGoogleIfPending(ctx context.Context, userID, linkToken st
 	if linkToken == "" {
 		return
 	}
-	sub, err := uc.redisCache.GetDel(ctx, GoogleLinkKey(linkToken))
-	if err != nil || sub == "" {
+	raw, err := uc.redisCache.GetDel(ctx, GoogleLinkKey(linkToken))
+	if err != nil || raw == "" {
 		logger.ErrorWithContext(ctx, "google link token invalid/expired (non-fatal)", logger.Fields{
 			"usecase": "auth", "method": "linkGoogleIfPending", "has_error": err != nil,
 		})
 		return
 	}
-	if linkErr := uc.users.LinkGoogleSub(ctx, userID, sub); linkErr != nil {
+	var gu google.User
+	if uErr := json.Unmarshal([]byte(raw), &gu); uErr != nil || gu.Sub == "" {
+		logger.ErrorWithContext(ctx, "google link payload invalid (non-fatal)", logger.Fields{
+			"usecase": "auth", "method": "linkGoogleIfPending", "has_error": uErr != nil,
+		})
+		return
+	}
+	if linkErr := uc.users.LinkGoogleAccount(ctx, userID, googleAccountOf(gu)); linkErr != nil {
 		logger.ErrorWithContext(ctx, "google link failed (non-fatal)", logger.Fields{
 			"usecase": "auth", "method": "linkGoogleIfPending", "error": linkErr.Error(), "user_id": userID,
 		})

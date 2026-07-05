@@ -15,7 +15,8 @@ func (uc *usecase) GetByGoogleSub(ctx context.Context, sub string) (domain.User,
 	return uc.repo.GetByGoogleSub(ctx, sub)
 }
 
-// LinkGoogleSub нь eID-ээр баталгаажсан хэрэглэгчид Google account-ийг холбоно.
-func (uc *usecase) LinkGoogleSub(ctx context.Context, userID, sub string) error {
-	return uc.repo.LinkGoogleSub(ctx, userID, sub)
+// LinkGoogleAccount нь eID-ээр баталгаажсан хэрэглэгчид Google account +
+// профайлыг холбоно/шинэчилнэ.
+func (uc *usecase) LinkGoogleAccount(ctx context.Context, userID string, acct domain.GoogleAccount) error {
+	return uc.repo.LinkGoogleAccount(ctx, userID, acct)
 }

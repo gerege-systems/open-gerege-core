@@ -28,6 +28,18 @@ type UserResponse struct {
 	// EID нь eID-ээр нэвтэрсэн хэрэглэгчийн identity + сертификатын мэдээлэл.
 	// Нууц үгээр бүртгүүлсэн хэрэглэгчид nil (omitempty).
 	EID *EIDInfo `json:"eid,omitempty"`
+	// Google нь холбогдсон Google account-аас хадгалсан профайл. Google
+	// холбоогүй хэрэглэгчид nil (omitempty).
+	Google *GoogleInfo `json:"google,omitempty"`
+}
+
+// GoogleInfo нь холбогдсон Google account-аас хадгалсан профайл (Dashboard-д харуулна).
+type GoogleInfo struct {
+	Email         string     `json:"email,omitempty"`
+	EmailVerified bool       `json:"email_verified"`
+	Name          string     `json:"name,omitempty"`
+	Picture       string     `json:"picture,omitempty"`
+	LinkedAt      *time.Time `json:"linked_at,omitempty"`
 }
 
 // EIDInfo нь eidmongolia.mn-ээс login үед авсан бүх нээлттэй мэдээлэл.
@@ -77,6 +89,22 @@ func FromV1Domain(u domain.User) UserResponse {
 		CreatedAt:   u.CreatedAt,
 		UpdatedAt:   u.UpdatedAt,
 		EID:         eidInfoOf(u),
+		Google:      googleInfoOf(u),
+	}
+}
+
+// googleInfoOf нь Google холбогдсон (google_sub байгаа) бол GoogleInfo блок
+// үүсгэнэ; эс бөгөөс nil (хариунд google талбар огт орохгүй).
+func googleInfoOf(u domain.User) *GoogleInfo {
+	if u.GoogleSub == "" {
+		return nil
+	}
+	return &GoogleInfo{
+		Email:         u.GoogleEmail,
+		EmailVerified: u.GoogleEmailVerified,
+		Name:          u.GoogleName,
+		Picture:       u.GooglePicture,
+		LinkedAt:      u.GoogleLinkedAt,
 	}
 }
 

@@ -66,17 +66,33 @@ type User struct {
 	KYCLevel   string // IdP-ийн баталгаажуулалтын түвшин (сертификатын түвшин)
 	// eID сертификатын дэлгэрэнгүй — login COMPLETE-ийн cert.value (DER)-ээс
 	// задлагдана. Зөвхөн eID хэрэглэгчид бөглөгдөнө.
-	DocumentNumber    string     // төхөөрөмжийн UUID (eID)
-	CertSerial        string     // сертификатын серийн дугаар
-	CertNotBefore     *time.Time // хүчинтэй эхлэх
-	CertNotAfter      *time.Time // дуусах
-	CertIssuer        string     // олгогч CA
-	CertKeyType       string     // нийтийн түлхүүрийн алгоритм
-	GoogleSub         string     // холбогдсон Google account (sub); хоосон бол холбоогүй
-	CreatedAt         time.Time
-	UpdatedAt         *time.Time
-	DeletedAt         *time.Time
-	PasswordChangedAt *time.Time
+	DocumentNumber string     // төхөөрөмжийн UUID (eID)
+	CertSerial     string     // сертификатын серийн дугаар
+	CertNotBefore  *time.Time // хүчинтэй эхлэх
+	CertNotAfter   *time.Time // дуусах
+	CertIssuer     string     // олгогч CA
+	CertKeyType    string     // нийтийн түлхүүрийн алгоритм
+	GoogleSub      string     // холбогдсон Google account (sub); хоосон бол холбоогүй
+	// Google профайл — холбогдсон account-аас хадгалсан мэдээлэл (Dashboard-д харуулна).
+	GoogleEmail         string     // Google и-мэйл
+	GoogleEmailVerified bool       // Google и-мэйл баталгаажсан эсэх
+	GoogleName          string     // Google дэлгэцийн нэр
+	GooglePicture       string     // Google профайл зургийн URL
+	GoogleLinkedAt      *time.Time // анх холбосон огноо
+	CreatedAt           time.Time
+	UpdatedAt           *time.Time
+	DeletedAt           *time.Time
+	PasswordChangedAt   *time.Time
+}
+
+// GoogleAccount нь Google OAuth-аас ирсэн профайл — eID хэрэглэгчид холбоход
+// (эсвэл дараагийн нэвтрэлтэд шинэчлэхэд) хадгалах талбарууд.
+type GoogleAccount struct {
+	Sub           string
+	Email         string
+	EmailVerified bool
+	Name          string
+	Picture       string
 }
 
 // FullName нь монгол хэлбэрээр "Овог Нэр"-г буцаана; хоёулаа хоосон бол хоосон

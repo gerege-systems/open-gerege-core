@@ -534,6 +534,12 @@ definitions:
         type: string
       full_name_en:
         type: string
+      google:
+        allOf:
+        - $ref: '#/definitions/template_internal_http_datatransfers_responses.GoogleInfo'
+        description: |-
+          Google нь холбогдсон Google account-аас хадгалсан профайл. Google
+          холбоогүй хэрэглэгчид nil (omitempty).
       id:
         type: string
       last_name:
@@ -579,6 +585,19 @@ definitions:
       representation_count:
         type: integer
       surname:
+        type: string
+    type: object
+  template_internal_http_datatransfers_responses.GoogleInfo:
+    properties:
+      email:
+        type: string
+      email_verified:
+        type: boolean
+      linked_at:
+        type: string
+      name:
+        type: string
+      picture:
         type: string
     type: object
   template_internal_http_datatransfers_responses.GoogleLoginResponse:
@@ -681,6 +700,12 @@ definitions:
         type: string
       full_name_en:
         type: string
+      google:
+        allOf:
+        - $ref: '#/definitions/template_internal_http_datatransfers_responses.GoogleInfo'
+        description: |-
+          Google нь холбогдсон Google account-аас хадгалсан профайл. Google
+          холбоогүй хэрэглэгчид nil (omitempty).
       id:
         type: string
       last_name:

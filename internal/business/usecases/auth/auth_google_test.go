@@ -29,6 +29,9 @@ func TestGoogleLogin(t *testing.T) {
 		f.google.user = &google.User{Sub: "g-123", Email: "bat@gmail.com"}
 		user := eidUser()
 		f.users.On("GetByGoogleSub", mock.Anything, "g-123").Return(user, nil).Once()
+		// Дараагийн нэвтрэлт бүрд профайлыг сүүлийн Google утгаар шинэчилнэ.
+		f.users.On("LinkGoogleAccount", mock.Anything, user.ID,
+			domain.GoogleAccount{Sub: "g-123", Email: "bat@gmail.com"}).Return(nil).Once()
 		f.jwt.On("GenerateTokenPair", user.ID, false, user.RoleID, user.Email).Return(samplePair(), nil).Once()
 		f.redis.On("Set", mock.Anything, "refresh:refresh-jti", "refresh-jti").Return(nil).Once()
 		f.redis.On("Expire", mock.Anything, "refresh:refresh-jti", mock.AnythingOfType("time.Duration")).Return(nil).Once()
@@ -45,10 +48,13 @@ func TestGoogleLogin(t *testing.T) {
 		f.google.user = &google.User{Sub: "g-new", Email: "new@gmail.com"}
 		f.users.On("GetByGoogleSub", mock.Anything, "g-new").
 			Return(domain.User{}, apperror.NotFound("user not found")).Once()
-		// link token нь Redis-д google_link:<random> түлхүүрээр хадгалагдана.
+		// link token нь Redis-д google_link:<random> түлхүүрээр хадгалагдана; утга
+		// нь Google профайлын бүтэн JSON (Sub орсон).
 		f.redis.On("Set", mock.Anything, mock.MatchedBy(func(k string) bool {
 			return strings.HasPrefix(k, "google_link:")
-		}), "g-new").Return(nil).Once()
+		}), mock.MatchedBy(func(v string) bool {
+			return strings.Contains(v, "g-new")
+		})).Return(nil).Once()
 		f.redis.On("Expire", mock.Anything, mock.MatchedBy(func(k string) bool {
 			return strings.HasPrefix(k, "google_link:")
 		}), mock.AnythingOfType("time.Duration")).Return(nil).Once()
@@ -76,9 +82,12 @@ func TestEIDPollLinksGoogle(t *testing.T) {
 		Return(&eid.SessionResult{State: eid.StateComplete, Identity: &eid.Identity{CivilID: "УБ99887766"}}, nil).Once()
 	f.users.On("UpsertFromEID", mock.Anything, mock.Anything).
 		Return(users.UpsertFromEIDResponse{User: user}, nil).Once()
-	// GoogleLinkToken байгаа тул холболт: GetDel → sub, дараа нь LinkGoogleSub.
-	f.redis.On("GetDel", mock.Anything, "google_link:tok-1").Return("g-new", nil).Once()
-	f.users.On("LinkGoogleSub", mock.Anything, user.ID, "g-new").Return(nil).Once()
+	// GoogleLinkToken байгаа тул холболт: GetDel → профайл JSON, дараа нь LinkGoogleAccount.
+	gjson := `{"Sub":"g-new","Email":"new@gmail.com","EmailVerified":true,"Name":"New User","Picture":"https://pic"}`
+	f.redis.On("GetDel", mock.Anything, "google_link:tok-1").Return(gjson, nil).Once()
+	f.users.On("LinkGoogleAccount", mock.Anything, user.ID, domain.GoogleAccount{
+		Sub: "g-new", Email: "new@gmail.com", EmailVerified: true, Name: "New User", Picture: "https://pic",
+	}).Return(nil).Once()
 	f.jwt.On("GenerateTokenPair", user.ID, false, user.RoleID, user.Email).Return(samplePair(), nil).Once()
 	f.redis.On("Set", mock.Anything, "refresh:refresh-jti", "refresh-jti").Return(nil).Once()
 	f.redis.On("Expire", mock.Anything, "refresh:refresh-jti", mock.AnythingOfType("time.Duration")).Return(nil).Once()

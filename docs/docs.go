@@ -2975,6 +2975,14 @@ const docTemplate = `{
                 "full_name_en": {
                     "type": "string"
                 },
+                "google": {
+                    "description": "Google нь холбогдсон Google account-аас хадгалсан профайл. Google\nхолбоогүй хэрэглэгчид nil (omitempty).",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/template_internal_http_datatransfers_responses.GoogleInfo"
+                        }
+                    ]
+                },
                 "id": {
                     "type": "string"
                 },
@@ -3043,6 +3051,26 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "surname": {
+                    "type": "string"
+                }
+            }
+        },
+        "template_internal_http_datatransfers_responses.GoogleInfo": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "email_verified": {
+                    "type": "boolean"
+                },
+                "linked_at": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "picture": {
                     "type": "string"
                 }
             }
@@ -3197,6 +3225,14 @@ const docTemplate = `{
                 },
                 "full_name_en": {
                     "type": "string"
+                },
+                "google": {
+                    "description": "Google нь холбогдсон Google account-аас хадгалсан профайл. Google\nхолбоогүй хэрэглэгчид nil (omitempty).",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/template_internal_http_datatransfers_responses.GoogleInfo"
+                        }
+                    ]
                 },
                 "id": {
                     "type": "string"

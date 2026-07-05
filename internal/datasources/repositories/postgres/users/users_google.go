@@ -38,12 +38,23 @@ func (r *postgreUserRepository) GetByGoogleSub(ctx context.Context, sub string) 
 	return domain.User{}, apperror.InternalCause(fmt.Errorf("get user by google_sub: %w", err))
 }
 
-// LinkGoogleSub нь userID-тай хэрэглэгчид Google account-ийг холбоно.
-func (r *postgreUserRepository) LinkGoogleSub(ctx context.Context, userID, sub string) error {
+// LinkGoogleAccount нь userID-тай хэрэглэгчид Google account + профайлыг
+// холбоно/шинэчилнэ. google_linked_at-ийг COALESCE-оор нэг л удаа (анх холбоход)
+// тэмдэглэж, дараагийн нэвтрэлтэд профайлыг шинэчлэхэд хэвээр үлдээнэ.
+func (r *postgreUserRepository) LinkGoogleAccount(ctx context.Context, userID string, acct domain.GoogleAccount) error {
 	err := r.withRLS(ctx, func(tx pgx.Tx) error {
 		tag, execErr := tx.Exec(ctx,
-			`UPDATE users SET google_sub = $2, updated_at = now() WHERE id = $1 AND deleted_at IS NULL`,
-			userID, sub)
+			`UPDATE users
+			   SET google_sub = $2,
+			       google_email = $3,
+			       google_email_verified = $4,
+			       google_name = $5,
+			       google_picture = $6,
+			       google_linked_at = COALESCE(google_linked_at, now()),
+			       updated_at = now()
+			 WHERE id = $1 AND deleted_at IS NULL`,
+			userID, acct.Sub, nullStr(acct.Email), acct.EmailVerified,
+			nullStr(acct.Name), nullStr(acct.Picture))
 		if execErr != nil {
 			return execErr
 		}
@@ -62,5 +73,13 @@ func (r *postgreUserRepository) LinkGoogleSub(ctx context.Context, userID, sub s
 	if errors.As(err, &pgErr) && pgErr.Code == "23505" { // unique_violation
 		return apperror.Conflict("this Google account is already linked to another user")
 	}
-	return apperror.InternalCause(fmt.Errorf("link google_sub: %w", err))
+	return apperror.InternalCause(fmt.Errorf("link google account: %w", err))
+}
+
+// nullStr нь хоосон мөрийг SQL NULL болгож дамжуулна (nullable багануудад).
+func nullStr(s string) interface{} {
+	if s == "" {
+		return nil
+	}
+	return s
 }

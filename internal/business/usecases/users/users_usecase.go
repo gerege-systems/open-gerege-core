@@ -27,8 +27,9 @@ type Usecase interface {
 	GetByNationalID(ctx context.Context, req GetByNationalIDRequest) (GetByNationalIDResponse, error)
 	// GetByGoogleSub нь холбогдсон Google account (sub)-аар хэрэглэгчийг олно.
 	GetByGoogleSub(ctx context.Context, sub string) (domain.User, error)
-	// LinkGoogleSub нь userID-тай хэрэглэгчид Google account-ийг холбоно.
-	LinkGoogleSub(ctx context.Context, userID, sub string) error
+	// LinkGoogleAccount нь userID-тай хэрэглэгчид Google account + профайлыг
+	// холбоно/шинэчилнэ.
+	LinkGoogleAccount(ctx context.Context, userID string, acct domain.GoogleAccount) error
 	// UpsertFromEID нь eID identity-аас хэрэглэгчийг үүсгэх/шинэчилж, тухайн
 	// мөрийг буцаана (national_id дээр давхцвал нэр/kyc шинэчилнэ).
 	UpsertFromEID(ctx context.Context, req UpsertFromEIDRequest) (UpsertFromEIDResponse, error)

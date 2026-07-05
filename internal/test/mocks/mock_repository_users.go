@@ -97,8 +97,8 @@ func (_m *UserRepository) GetByGoogleSub(ctx context.Context, sub string) (domai
 	return ret.Get(0).(domain.User), ret.Error(1)
 }
 
-func (_m *UserRepository) LinkGoogleSub(ctx context.Context, userID, sub string) error {
-	return _m.Called(ctx, userID, sub).Error(0)
+func (_m *UserRepository) LinkGoogleAccount(ctx context.Context, userID string, acct domain.GoogleAccount) error {
+	return _m.Called(ctx, userID, acct).Error(0)
 }
 
 // List provides a mock function with given fields: ctx, filter, offset, limit
