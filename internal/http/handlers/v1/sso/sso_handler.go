@@ -37,6 +37,7 @@ type callbackRequest struct {
 type callbackResponse struct {
 	Token        string `json:"token"`
 	RefreshToken string `json:"refresh_token"`
+	SSOLogoutURL string `json:"sso_logout_url"`
 	UserID       string `json:"user_id"`
 	Username     string `json:"username"`
 }
@@ -76,6 +77,7 @@ func (h Handler) Callback(w http.ResponseWriter, r *http.Request) error {
 	return v1.NewSuccessResponse(w, r, http.StatusOK, "sso login complete", callbackResponse{
 		Token:        res.Token,
 		RefreshToken: res.RefreshToken,
+		SSOLogoutURL: res.LogoutURL,
 		UserID:       res.User.ID,
 		Username:     res.User.Username,
 	})

@@ -73,8 +73,8 @@ func (u *usecase) Complete(ctx context.Context, state, code string) (CompleteRes
 		return CompleteResponse{}, apperror.BadRequest("SSO нэвтрэлтийн хугацаа дууссан эсвэл хүчингүй байна. Дахин оролдоно уу.")
 	}
 
-	// Code → access token (client_secret_basic), дараа нь /userinfo-оос claims.
-	accessToken, err := u.oidc.Exchange(ctx, code)
+	// Code → access token + id token (client_secret_basic), дараа нь /userinfo.
+	accessToken, idToken, err := u.oidc.Exchange(ctx, code)
 	if err != nil {
 		return CompleteResponse{}, apperror.InternalCause(err)
 	}
@@ -115,7 +115,12 @@ func (u *usecase) Complete(ctx context.Context, state, code string) (CompleteRes
 		return CompleteResponse{}, apperror.InternalCause(fmt.Errorf("persist refresh: %w", err))
 	}
 
-	return CompleteResponse{Token: pair.AccessToken, RefreshToken: pair.RefreshToken, User: stored}, nil
+	return CompleteResponse{
+		Token:        pair.AccessToken,
+		RefreshToken: pair.RefreshToken,
+		LogoutURL:    u.oidc.LogoutURLFor(idToken),
+		User:         stored,
+	}, nil
 }
 
 // rememberRefresh нь refresh jti-г Redis-д TTL-тэй хадгална — auth_refresh-ийн

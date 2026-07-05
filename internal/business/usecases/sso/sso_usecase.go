@@ -23,10 +23,12 @@ type StartResponse struct {
 	AuthURL string
 }
 
-// CompleteResponse нь callback дуусахад олгосон токен хос + хэрэглэгч.
+// CompleteResponse нь callback дуусахад олгосон токен хос + хэрэглэгч + SSO дээр
+// session дуусгах logout URL (RP-initiated logout; browser гарах үед тийш очно).
 type CompleteResponse struct {
 	Token        string
 	RefreshToken string
+	LogoutURL    string
 	User         domain.User
 }
 

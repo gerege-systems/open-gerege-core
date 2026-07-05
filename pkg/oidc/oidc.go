@@ -81,43 +81,73 @@ type tokenResponse struct {
 	ExpiresIn   int    `json:"expires_in"`
 }
 
-// Exchange нь authorization code-ийг access token болгож солино
-// (client_secret_basic HTTP Basic auth).
-func (c *Client) Exchange(ctx context.Context, code string) (string, error) {
+// Exchange нь authorization code-ийг access token + id token болгож солино
+// (client_secret_basic HTTP Basic auth). id_token нь RP-initiated logout-ийн
+// id_token_hint-д хэрэглэгдэнэ (SSO дээр session дуусгах).
+func (c *Client) Exchange(ctx context.Context, code string) (accessToken, idToken string, err error) {
 	form := url.Values{}
 	form.Set("grant_type", "authorization_code")
 	form.Set("code", code)
 	form.Set("redirect_uri", c.redirectURI)
 
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, c.issuer+"/oauth2/token", strings.NewReader(form.Encode()))
-	if err != nil {
-		return "", err
+	req, reqErr := http.NewRequestWithContext(ctx, http.MethodPost, c.issuer+"/oauth2/token", strings.NewReader(form.Encode()))
+	if reqErr != nil {
+		return "", "", reqErr
 	}
 	req.SetBasicAuth(url.QueryEscape(c.clientID), url.QueryEscape(c.clientSecret))
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	req.Header.Set("Accept", "application/json")
 
-	res, err := c.http.Do(req)
-	if err != nil {
-		return "", fmt.Errorf("sso token request: %w", err)
+	res, doErr := c.http.Do(req)
+	if doErr != nil {
+		return "", "", fmt.Errorf("sso token request: %w", doErr)
 	}
 	defer func() { _ = res.Body.Close() }()
 
-	body, err := io.ReadAll(io.LimitReader(res.Body, maxRespBytes))
-	if err != nil {
-		return "", fmt.Errorf("sso token read: %w", err)
+	body, readErr := io.ReadAll(io.LimitReader(res.Body, maxRespBytes))
+	if readErr != nil {
+		return "", "", fmt.Errorf("sso token read: %w", readErr)
 	}
 	if res.StatusCode < 200 || res.StatusCode >= 300 {
-		return "", fmt.Errorf("sso token endpoint returned %d", res.StatusCode)
+		return "", "", fmt.Errorf("sso token endpoint returned %d", res.StatusCode)
 	}
 	var tr tokenResponse
-	if err := json.Unmarshal(body, &tr); err != nil {
-		return "", fmt.Errorf("sso token decode: %w", err)
+	if jErr := json.Unmarshal(body, &tr); jErr != nil {
+		return "", "", fmt.Errorf("sso token decode: %w", jErr)
 	}
 	if tr.AccessToken == "" {
-		return "", fmt.Errorf("sso token response missing access_token")
+		return "", "", fmt.Errorf("sso token response missing access_token")
 	}
-	return tr.AccessToken, nil
+	return tr.AccessToken, tr.IDToken, nil
+}
+
+// LogoutURL нь RP-initiated logout (end_session_endpoint) URL-ийг байгуулна —
+// browser-ийг тийш чиглүүлэхэд SSO (Hydra) дээрх session дуусч, дараа нь
+// postLogout руу буцна. idTokenHint (сонголт) нь баталгаажуулалт/skip-д тусална.
+func (c *Client) LogoutURL(idTokenHint, postLogout string) string {
+	q := url.Values{}
+	if postLogout != "" {
+		q.Set("post_logout_redirect_uri", postLogout)
+	}
+	if idTokenHint != "" {
+		q.Set("id_token_hint", idTokenHint)
+	}
+	u := c.issuer + "/oauth2/sessions/logout"
+	if enc := q.Encode(); enc != "" {
+		u += "?" + enc
+	}
+	return u
+}
+
+// LogoutURLFor нь idTokenHint-тэй logout URL-ийг client-ийн redirect_uri-аас
+// гаргасан post-logout (scheme://host/) руугаа буцахаар байгуулна. Энэ нь SSO
+// client-д бүртгэгдсэн post_logout_redirect_uri-тай таарах ёстой.
+func (c *Client) LogoutURLFor(idTokenHint string) string {
+	post := ""
+	if u, err := url.Parse(c.redirectURI); err == nil && u.Scheme != "" && u.Host != "" {
+		post = u.Scheme + "://" + u.Host + "/"
+	}
+	return c.LogoutURL(idTokenHint, post)
 }
 
 // UserInfo нь /userinfo-оос иргэний claims-ыг буцаана. sso.gerege.mn нь eID-ээр
