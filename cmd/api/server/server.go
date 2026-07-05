@@ -68,13 +68,14 @@ import (
 const serviceName = "gerege-template"
 
 type App struct {
-	server          *http.Server
-	pool            *pgxpool.Pool
-	redisCache      caches.RedisCache
-	tracerShutdown  observability.Shutdown
-	authRateLimiter *middlewares.RateLimiter
-	aiRateLimiter   *middlewares.RateLimiter
-	pollRateLimiter *middlewares.RateLimiter
+	server              *http.Server
+	pool                *pgxpool.Pool
+	redisCache          caches.RedisCache
+	tracerShutdown      observability.Shutdown
+	authRateLimiter     *middlewares.RateLimiter
+	aiRateLimiter       *middlewares.RateLimiter
+	pollRateLimiter     *middlewares.RateLimiter
+	govWriteRateLimiter *middlewares.RateLimiter
 }
 
 func NewApp() (*App, error) {
@@ -288,6 +289,10 @@ func NewApp() (*App, error) {
 	// ~2.5с тутам poll хийхэд (~24/мин) хангалттай зайтай, гэхдээ нэг IP-гээс
 	// хязгааргүй concurrent long-poll эхлүүлэх slow-DoS-д таазтай болгоно.
 	pollRateLimiter := middlewares.NewRateLimiter(rate.Limit(1.0), 30)
+	// /gov-ийн МУТАЦИ endpoint-ууд (хүсэлт/лавлагаа/цаг үүсгэх г.м.) — нэвтэрсэн
+	// хэрэглэгч тус бүрт мөр үүсгэхийг хязгаарлана (өөрийн RLS-мөрд storage-abuse).
+	// Уншилтад хамаарахгүй; ~30/мин (burst 15) нь энгийн хэрэглээнд элбэг зайтай.
+	govWriteRateLimiter := middlewares.NewRateLimiter(rate.Limit(30.0/60.0), 15)
 
 	// API Route-ууд
 	r.Route("/api", func(api chi.Router) {
@@ -297,7 +302,7 @@ func NewApp() (*App, error) {
 		routes.NewEIDProfileRoute(api, authUC, authMiddleware).Routes()
 		routes.NewRBACRoute(api, rbacUC, auditUC, authMiddleware).Routes()
 		routes.NewOrgRoute(api, orgUC, auditUC, authMiddleware).Routes()
-		routes.NewGovRoute(api, govUC, authMiddleware).Routes()
+		routes.NewGovRoute(api, govUC, authMiddleware, govWriteRateLimiter).Routes()
 		routes.NewIntegrationsRoute(api, integrationsUC, authMiddleware).Routes()
 		routes.NewGatewayRoute(api, gatewayUC, rbacUC, authMiddleware).Routes()
 		routes.NewCoreRoute(api, coreUC, authMiddleware).Routes()
@@ -328,13 +333,14 @@ func NewApp() (*App, error) {
 	}
 
 	return &App{
-		server:          srv,
-		pool:            pool,
-		redisCache:      redisCache,
-		tracerShutdown:  shutdownTracer,
-		authRateLimiter: authRateLimiter,
-		aiRateLimiter:   aiRateLimiter,
-		pollRateLimiter: pollRateLimiter,
+		server:              srv,
+		pool:                pool,
+		redisCache:          redisCache,
+		tracerShutdown:      shutdownTracer,
+		authRateLimiter:     authRateLimiter,
+		aiRateLimiter:       aiRateLimiter,
+		pollRateLimiter:     pollRateLimiter,
+		govWriteRateLimiter: govWriteRateLimiter,
 	}, nil
 }
 
@@ -371,6 +377,9 @@ func (a *App) Run() (err error) {
 	}
 	if a.pollRateLimiter != nil {
 		a.pollRateLimiter.Stop()
+	}
+	if a.govWriteRateLimiter != nil {
+		a.govWriteRateLimiter.Stop()
 	}
 
 	// өгөгдлийн сангийн pool-г хаах

@@ -154,6 +154,10 @@ func (uc *usecase) BookAppointment(ctx context.Context, userID string, in BookRe
 	if in.ScheduledAt.Before(uc.now()) {
 		return domain.GovAppointment{}, apperror.BadRequest("scheduled time must be in the future")
 	}
+	// Дээд хязгаар — 1 жилээс хол цагийг татгалзана (утгагүй/хог өгөгдлөөс сэргийлнэ).
+	if in.ScheduledAt.After(uc.now().AddDate(1, 0, 0)) {
+		return domain.GovAppointment{}, apperror.BadRequest("scheduled time is too far in the future")
+	}
 	appt := domain.GovAppointment{
 		UserID:      userID,
 		Location:    strings.TrimSpace(in.Location),

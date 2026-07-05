@@ -17,6 +17,7 @@ import (
 	"template/pkg/validators"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/google/uuid"
 )
 
 type Handler struct {
@@ -34,6 +35,19 @@ func uid(r *http.Request) (string, bool) {
 		return "", false
 	}
 	return u.ID, true
+}
+
+// pathID нь URL-ийн {id} параметрийг задалж хүчинтэй UUID эсэхийг шалгана. Буруу
+// бол 400 бичээд false буцаана (дуудагч nil буцаана — Wrap дахин бичихгүй).
+// Ингэснээр UUID биш id нь Postgres-ийн "invalid input syntax" 500-ийн оронд
+// цэвэр 400 болно.
+func pathID(w http.ResponseWriter, r *http.Request) (string, bool) {
+	id := chi.URLParam(r, "id")
+	if _, err := uuid.Parse(id); err != nil {
+		_ = v1.NewErrorResponse(w, r, http.StatusBadRequest, "invalid id")
+		return "", false
+	}
+	return id, true
 }
 
 // ── Catalog + overview ────────────────────────────────────────────────────—
@@ -129,7 +143,11 @@ func (h Handler) CancelApplication(w http.ResponseWriter, r *http.Request) error
 	if !ok {
 		return v1.NewAbortResponse(w, r, "invalid token")
 	}
-	if err := h.usecase.CancelApplication(r.Context(), id, chi.URLParam(r, "id")); err != nil {
+	pid, ok2 := pathID(w, r)
+	if !ok2 {
+		return nil
+	}
+	if err := h.usecase.CancelApplication(r.Context(), id, pid); err != nil {
 		return v1.RespondWithError(w, r, err)
 	}
 	return v1.NewSuccessResponse(w, r, http.StatusOK, "application cancelled successfully", nil)
@@ -214,7 +232,11 @@ func (h Handler) MarkNotificationRead(w http.ResponseWriter, r *http.Request) er
 	if !ok {
 		return v1.NewAbortResponse(w, r, "invalid token")
 	}
-	if err := h.usecase.MarkNotificationRead(r.Context(), id, chi.URLParam(r, "id")); err != nil {
+	pid, ok2 := pathID(w, r)
+	if !ok2 {
+		return nil
+	}
+	if err := h.usecase.MarkNotificationRead(r.Context(), id, pid); err != nil {
 		return v1.RespondWithError(w, r, err)
 	}
 	return v1.NewSuccessResponse(w, r, http.StatusOK, "notification marked read", nil)
@@ -269,7 +291,11 @@ func (h Handler) PayPayment(w http.ResponseWriter, r *http.Request) error {
 	if !ok {
 		return v1.NewAbortResponse(w, r, "invalid token")
 	}
-	if err := h.usecase.PayPayment(r.Context(), id, chi.URLParam(r, "id")); err != nil {
+	pid, ok2 := pathID(w, r)
+	if !ok2 {
+		return nil
+	}
+	if err := h.usecase.PayPayment(r.Context(), id, pid); err != nil {
 		return v1.RespondWithError(w, r, err)
 	}
 	return v1.NewSuccessResponse(w, r, http.StatusOK, "payment completed successfully", nil)
@@ -336,7 +362,11 @@ func (h Handler) CancelAppointment(w http.ResponseWriter, r *http.Request) error
 	if !ok {
 		return v1.NewAbortResponse(w, r, "invalid token")
 	}
-	if err := h.usecase.CancelAppointment(r.Context(), id, chi.URLParam(r, "id")); err != nil {
+	pid, ok2 := pathID(w, r)
+	if !ok2 {
+		return nil
+	}
+	if err := h.usecase.CancelAppointment(r.Context(), id, pid); err != nil {
 		return v1.RespondWithError(w, r, err)
 	}
 	return v1.NewSuccessResponse(w, r, http.StatusOK, "appointment cancelled successfully", nil)

@@ -141,15 +141,20 @@ func (r *govRepository) CreateApplication(ctx context.Context, in *domain.GovApp
 	return out, err
 }
 
+// SetApplicationStatus нь одоогоор зөвхөн цуцлахад (cancelled) ашиглагдана.
+// Аль хэдийн шийдэгдсэн (approved/rejected/completed) эсвэл цуцлагдсан хүсэлтийг
+// дахин цуцлахгүйн тулд зөвхөн идэвхтэй эх төлвөөс (submitted/in_review) шилжинэ
+// (CancelAppointment/PayPayment-ийн загвартай нийцтэй).
 func (r *govRepository) SetApplicationStatus(ctx context.Context, userID, id, status string) error {
 	return r.withRLS(ctx, func(tx pgx.Tx) error {
 		tag, err := tx.Exec(ctx,
-			`UPDATE gov_applications SET status = $3, updated_at = now() WHERE id = $1 AND user_id = $2`, id, userID, status)
+			`UPDATE gov_applications SET status = $3, updated_at = now()
+			 WHERE id = $1 AND user_id = $2 AND status IN ('submitted','in_review')`, id, userID, status)
 		if err != nil {
 			return err
 		}
 		if tag.RowsAffected() == 0 {
-			return apperror.NotFound("application not found")
+			return apperror.NotFound("active application not found")
 		}
 		return nil
 	})
@@ -440,10 +445,33 @@ func (r *govRepository) CountUserRows(ctx context.Context, userID string) (int, 
 // SeedDemoData нь хэрэглэгчид анх ороход жишээ өгөгдөл (мэдэгдэл/төлбөр/хүсэлт/
 // лавлагаа/цаг) нэг withRLS транзакцид үүсгэнэ. RLS бодлого нь user_id =
 // app.user_id-г WITH CHECK-ээр баталгаажуулах тул seed нь зөвхөн тухайн
-// хэрэглэгчийн мөр бичнэ. Идемпотент биш тул usecase нь зөвхөн CountUserRows == 0
-// үед дуудна.
+// хэрэглэгчийн мөр бичнэ.
+//
+// Транзакц-скоуптай advisory lock (хэрэглэгчээр) нь анх ороход зэрэг ирсэн хоёр
+// хүсэлт хоёулаа seed хийж давхар мөр үүсгэхээс (TOCTOU) сэргийлнэ: эхнийх нь
+// lock авч seed хийгээд commit-д гарган lock-оо суллана, хоёр дахь нь lock авмагц
+// доорх дахин-шалгалтаар мөр аль хэдийн байгааг олж чимээгүй буцна.
 func (r *govRepository) SeedDemoData(ctx context.Context, userID string) error {
 	return r.withRLS(ctx, func(tx pgx.Tx) error {
+		if _, err := tx.Exec(ctx, `SELECT pg_advisory_xact_lock(hashtext($1))`, userID); err != nil {
+			return err
+		}
+		// Lock дор дахин шалгана — өөр хүсэлт аль хэдийн seed хийсэн байж болно.
+		var existing int
+		if err := tx.QueryRow(ctx, `
+			SELECT
+				(SELECT count(*) FROM gov_applications  WHERE user_id = $1) +
+				(SELECT count(*) FROM gov_references     WHERE user_id = $1) +
+				(SELECT count(*) FROM gov_notifications  WHERE user_id = $1) +
+				(SELECT count(*) FROM gov_payments       WHERE user_id = $1) +
+				(SELECT count(*) FROM gov_appointments   WHERE user_id = $1)
+		`, userID).Scan(&existing); err != nil {
+			return err
+		}
+		if existing > 0 {
+			return nil
+		}
+
 		if _, err := tx.Exec(ctx, `
 			INSERT INTO gov_notifications(user_id, title, body, category, read, created_at) VALUES
 			($1, 'Татварын тодорхойлолт бэлэн боллоо', 'Таны хүссэн татварын тодорхойлолт амжилттай олгогдлоо.', 'success', false, now() - interval '2 hours'),
