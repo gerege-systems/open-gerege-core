@@ -314,12 +314,57 @@ func (u *usecase) Download(ctx context.Context, ownerRegNo, sessionID string) (D
 	if err != nil {
 		return DownloadResult{}, apperror.InternalCause(fmt.Errorf("pdf decode: %w", err))
 	}
-	signed, err := u.embedPAdES(pdfBytes, st)
+	// eidmongolia-ийн албан ёсны PAdES-T stamp (RFC 3161 timestamp +
+	// eidmongolia.mn/verify/<sessionID> баталгаажуулах хуудас) — eidmongolia.mn/demo
+	// үүнийг ашигладаг. Stamp амжилтгүй бол сервер талын Document-Signer-ээр
+	// (self-embed) буулгаж, гаралтыг баталгаажуулна.
+	signed, err := u.stampV3(ctx, st.V3SessionID, st.Filename, pdfBytes)
 	if err != nil {
-		return DownloadResult{}, apperror.InternalCause(fmt.Errorf("pades embed: %w", err))
+		logger.WarnWithContext(ctx, "sign: v3 stamp амжилтгүй — self-embed fallback", logger.Fields{
+			"usecase": "sign", "method": "Download", "error": err.Error(),
+		})
+		signed, err = u.embedPAdES(pdfBytes, st)
+		if err != nil {
+			return DownloadResult{}, apperror.InternalCause(fmt.Errorf("pades embed: %w", err))
+		}
 	}
 	out := strings.TrimSuffix(st.Filename, ".pdf") + "-signed.pdf"
 	return DownloadResult{PDF: signed, Filename: out}, nil
+}
+
+// stampV3 — дууссан /v3 session-ий эх PDF-ийг eidmongolia-д stamp хийлгэж, албан
+// ёсны PAdES-T (timestamp + verify хуудас) шингээсэн PDF-ийг буцаана.
+// POST /v3/signature/stamp/<sessionID>?fileName=<name>, body = эх PDF, Bearer = RP secret.
+func (u *usecase) stampV3(ctx context.Context, v3SessionID, filename string, pdf []byte) ([]byte, error) {
+	if v3SessionID == "" {
+		return nil, fmt.Errorf("v3 session id хоосон")
+	}
+	q := url.Values{}
+	q.Set("fileName", filename)
+	reqURL := strings.TrimRight(u.cfg.V3BaseURL, "/") + "/v3/signature/stamp/" + url.PathEscape(v3SessionID) + "?" + q.Encode()
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, reqURL, bytes.NewReader(pdf))
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("Content-Type", "application/pdf")
+	u.setRPAuth(req)
+	res, err := u.client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer func() { _ = res.Body.Close() }()
+	if res.StatusCode >= 300 {
+		b, _ := io.ReadAll(io.LimitReader(res.Body, 512))
+		return nil, fmt.Errorf("v3 stamp %d: %s", res.StatusCode, string(b))
+	}
+	signed, err := io.ReadAll(res.Body)
+	if err != nil {
+		return nil, err
+	}
+	if len(signed) == 0 {
+		return nil, fmt.Errorf("v3 stamp хоосон PDF буцаав")
+	}
+	return signed, nil
 }
 
 // embedPAdES — серверийн Document-Signer-ээр PDF-д гарын үсгийн dictionary шигтгэнэ.
