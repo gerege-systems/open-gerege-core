@@ -32,6 +32,10 @@ var ErrPKINotPermitted = errors.New("eid: RP lacks PKI_READ permission")
 // "энэ байгууллагыг төлөөлөх эрхгүй" (Forbidden) болгон харуулна.
 var ErrNotRepresentative = errors.New("eid: not authorized to represent this organization")
 
+// ErrSignerNotEnrolled нь AddSigner-д нэмэх гэсэн иргэн eID-д бүртгэлгүй (РД
+// олдсонгүй, 404) үед буцна. Гарын үсэг зурахад eID шаардлагатай.
+var ErrSignerNotEnrolled = errors.New("eid: signer is not enrolled in eID")
+
 // CertCounts нь гэрчилгээний статусын тоолол.
 type CertCounts struct {
 	Valid     int `json:"valid"`

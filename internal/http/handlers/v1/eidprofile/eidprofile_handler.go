@@ -9,6 +9,8 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/go-chi/chi/v5"
+
 	authuc "template/internal/business/usecases/auth"
 	httpauth "template/internal/http/auth"
 	"template/internal/http/datatransfers/requests"
@@ -97,6 +99,108 @@ func (h Handler) AddOrganization(w http.ResponseWriter, r *http.Request) error {
 
 	return v1.NewSuccessResponse(w, r, http.StatusOK, "eid organization linked",
 		responses.FromEIDRepresentations(reps))
+}
+
+// RemoveOrganization godoc
+// @Summary      Байгууллага салгах (eID)
+// @Description  Нэвтэрсэн иргэн өөрийн төлөөлдөг байгууллагын (регистрийн дугаараар) холбоосыг цуцлана. Иргэний үлдсэн төлөөлдөг байгууллагыг буцаана.
+// @Tags         users
+// @Produce      json
+// @Security     BearerAuth
+// @Param        regNo  path  string  true  "Байгууллагын регистрийн дугаар"
+// @Success      200  {object}  v1.BaseResponse{data=[]responses.OrgRepresentationResponse}
+// @Router       /users/me/eid/organizations/{regNo} [delete]
+func (h Handler) RemoveOrganization(w http.ResponseWriter, r *http.Request) error {
+	ctx := r.Context()
+	user, err := httpauth.CurrentUserFromContext(r)
+	if err != nil {
+		return v1.NewAbortResponse(w, r, "invalid token")
+	}
+	reps, err := h.usecase.UnlinkEIDOrganization(ctx, user.ID, chi.URLParam(r, "regNo"))
+	if err != nil {
+		return v1.RespondWithError(w, r, err)
+	}
+	return v1.NewSuccessResponse(w, r, http.StatusOK, "eid organization unlinked",
+		responses.FromEIDRepresentations(reps))
+}
+
+// OrgSigners godoc
+// @Summary      Байгууллагын гарын үсэг зурагчид (eID)
+// @Description  Нэвтэрсэн иргэний төлөөлдөг байгууллагын гарын үсэг зурах эрхтэй хүмүүс. Иргэн тухайн байгууллагын төлөөлөгч байх ёстой.
+// @Tags         users
+// @Produce      json
+// @Security     BearerAuth
+// @Param        regNo  path  string  true  "Байгууллагын регистрийн дугаар"
+// @Success      200  {object}  v1.BaseResponse{data=[]responses.OrgSignerResponse}
+// @Router       /users/me/eid/organizations/{regNo}/signers [get]
+func (h Handler) OrgSigners(w http.ResponseWriter, r *http.Request) error {
+	ctx := r.Context()
+	user, err := httpauth.CurrentUserFromContext(r)
+	if err != nil {
+		return v1.NewAbortResponse(w, r, "invalid token")
+	}
+	signers, err := h.usecase.ListEIDOrgSigners(ctx, user.ID, chi.URLParam(r, "regNo"))
+	if err != nil {
+		return v1.RespondWithError(w, r, err)
+	}
+	return v1.NewSuccessResponse(w, r, http.StatusOK, "eid org signers fetched",
+		responses.FromEIDSigners(signers))
+}
+
+// AddOrgSigner godoc
+// @Summary      Гарын үсэг зурагч нэмэх (eID)
+// @Description  Нэвтэрсэн иргэний төлөөлдөг байгууллагад өөр eID иргэнийг (регистрийн дугаараар) гарын үсэг зурах эрхтэй болгож нэмнэ.
+// @Tags         users
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        regNo    path  string                          true  "Байгууллагын регистрийн дугаар"
+// @Param        payload  body  requests.AddEIDSignerRequest    true  "Гарын үсэг зурагчийн РД + үүрэг"
+// @Success      200  {object}  v1.BaseResponse{data=[]responses.OrgSignerResponse}
+// @Router       /users/me/eid/organizations/{regNo}/signers [post]
+func (h Handler) AddOrgSigner(w http.ResponseWriter, r *http.Request) error {
+	ctx := r.Context()
+	user, err := httpauth.CurrentUserFromContext(r)
+	if err != nil {
+		return v1.NewAbortResponse(w, r, "invalid token")
+	}
+	var req requests.AddEIDSignerRequest
+	if err := v1.DecodeBody(r, &req); err != nil {
+		return v1.NewErrorResponse(w, r, http.StatusBadRequest, "invalid request body")
+	}
+	if err := validators.ValidatePayloads(req); err != nil {
+		return v1.RespondWithError(w, r, err)
+	}
+	signers, err := h.usecase.AddEIDOrgSigner(ctx, user.ID, chi.URLParam(r, "regNo"), req.SignerRegNo, req.Role, req.RightType)
+	if err != nil {
+		return v1.RespondWithError(w, r, err)
+	}
+	return v1.NewSuccessResponse(w, r, http.StatusOK, "eid org signer added",
+		responses.FromEIDSigners(signers))
+}
+
+// RemoveOrgSigner godoc
+// @Summary      Гарын үсэг зурагч хасах (eID)
+// @Description  Нэвтэрсэн иргэний төлөөлдөг байгууллагаас гарын үсэг зурагчийг (регистрийн дугаараар) хасна.
+// @Tags         users
+// @Produce      json
+// @Security     BearerAuth
+// @Param        regNo   path   string  true  "Байгууллагын регистрийн дугаар"
+// @Param        signer  query  string  true  "Хасах гарын үсэг зурагчийн РД"
+// @Success      200  {object}  v1.BaseResponse{data=[]responses.OrgSignerResponse}
+// @Router       /users/me/eid/organizations/{regNo}/signers [delete]
+func (h Handler) RemoveOrgSigner(w http.ResponseWriter, r *http.Request) error {
+	ctx := r.Context()
+	user, err := httpauth.CurrentUserFromContext(r)
+	if err != nil {
+		return v1.NewAbortResponse(w, r, "invalid token")
+	}
+	signers, err := h.usecase.RemoveEIDOrgSigner(ctx, user.ID, chi.URLParam(r, "regNo"), r.URL.Query().Get("signer"))
+	if err != nil {
+		return v1.RespondWithError(w, r, err)
+	}
+	return v1.NewSuccessResponse(w, r, http.StatusOK, "eid org signer removed",
+		responses.FromEIDSigners(signers))
 }
 
 // Summary godoc

@@ -67,3 +67,78 @@ func TestAddRepresentation(t *testing.T) {
 		}
 	})
 }
+
+func TestUnlinkAndSigners(t *testing.T) {
+	t.Run("RemoveRepresentation DELETE path", func(t *testing.T) {
+		var gotPath, gotMethod string
+		c, _ := newTestClient(t, func(w http.ResponseWriter, r *http.Request) {
+			gotPath, gotMethod = r.URL.Path, r.Method
+			_, _ = io.WriteString(w, `{"representations":[]}`)
+		})
+		reps, err := c.RemoveRepresentation(context.Background(), "PNOMN-УБ72060800", "6235972")
+		if err != nil {
+			t.Fatal(err)
+		}
+		if gotMethod != http.MethodDelete || !strings.HasSuffix(gotPath, "/organization/representations/etsi/PNOMN-УБ72060800/6235972") {
+			t.Errorf("%s %s", gotMethod, gotPath)
+		}
+		if len(reps) != 0 {
+			t.Errorf("reps = %d", len(reps))
+		}
+	})
+
+	t.Run("AddSigner POST + parse", func(t *testing.T) {
+		var gotPath, gotMethod, gotBody string
+		c, _ := newTestClient(t, func(w http.ResponseWriter, r *http.Request) {
+			gotPath, gotMethod = r.URL.Path, r.Method
+			b, _ := io.ReadAll(r.Body)
+			gotBody = string(b)
+			_, _ = io.WriteString(w, `{"orgRegister":"6235972","signers":[{"personEtsi":"PNOMN-МА74101813","regNo":"ма74101813","name":"Цэнддорж Эрдэнэбат","role":"Нягтлан бодогч","rightType":"JOINT","source":"MANUAL","self":false}]}`)
+		})
+		signers, err := c.AddSigner(context.Background(), "6235972", "PNOMN-УБ72060800", AddSignerInput{SignerRegNo: "ма74101813", Role: "Нягтлан бодогч"})
+		if err != nil {
+			t.Fatal(err)
+		}
+		if gotMethod != http.MethodPost || !strings.HasSuffix(gotPath, "/organization/signers/6235972/etsi/PNOMN-УБ72060800") {
+			t.Errorf("%s %s", gotMethod, gotPath)
+		}
+		if !strings.Contains(gotBody, `"signerRegNo":"ма74101813"`) {
+			t.Errorf("body = %s", gotBody)
+		}
+		if len(signers) != 1 || signers[0].Role != "Нягтлан бодогч" || signers[0].RightType != "JOINT" {
+			t.Errorf("signers = %+v", signers)
+		}
+	})
+
+	t.Run("OrgSigners 403 → ErrNotRepresentative", func(t *testing.T) {
+		c, _ := newTestClient(t, func(w http.ResponseWriter, _ *http.Request) {
+			w.WriteHeader(http.StatusForbidden)
+		})
+		if _, err := c.OrgSigners(context.Background(), "6235972", "PNOMN-X"); !errors.Is(err, ErrNotRepresentative) {
+			t.Fatalf("403 → ErrNotRepresentative, авсан %v", err)
+		}
+	})
+
+	t.Run("AddSigner 404 → ErrSignerNotEnrolled", func(t *testing.T) {
+		c, _ := newTestClient(t, func(w http.ResponseWriter, _ *http.Request) {
+			w.WriteHeader(http.StatusNotFound)
+		})
+		if _, err := c.AddSigner(context.Background(), "6235972", "PNOMN-X", AddSignerInput{SignerRegNo: "яя99999999"}); !errors.Is(err, ErrSignerNotEnrolled) {
+			t.Fatalf("404 → ErrSignerNotEnrolled, авсан %v", err)
+		}
+	})
+
+	t.Run("RemoveSigner DELETE ?signer=", func(t *testing.T) {
+		var gotPath, gotQuery, gotMethod string
+		c, _ := newTestClient(t, func(w http.ResponseWriter, r *http.Request) {
+			gotPath, gotQuery, gotMethod = r.URL.Path, r.URL.RawQuery, r.Method
+			_, _ = io.WriteString(w, `{"orgRegister":"6235972","signers":[]}`)
+		})
+		if _, err := c.RemoveSigner(context.Background(), "6235972", "PNOMN-УБ72060800", "ма74101813"); err != nil {
+			t.Fatal(err)
+		}
+		if gotMethod != http.MethodDelete || !strings.HasSuffix(gotPath, "/organization/signers/6235972/etsi/PNOMN-УБ72060800") || !strings.Contains(gotQuery, "signer=") {
+			t.Errorf("%s %s?%s", gotMethod, gotPath, gotQuery)
+		}
+	})
+}

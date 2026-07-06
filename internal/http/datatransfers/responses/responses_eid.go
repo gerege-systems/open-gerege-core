@@ -39,6 +39,36 @@ func FromEIDRepresentations(reps []eid.Representation) []OrgRepresentationRespon
 	return out
 }
 
+// OrgSignerResponse нь байгууллагыг төлөөлж / гарын үсэг зурж чадах нэг иргэн.
+type OrgSignerResponse struct {
+	PersonEtsi string `json:"person_etsi"`
+	RegNo      string `json:"reg_no,omitempty"`
+	Name       string `json:"name,omitempty"`
+	NameEn     string `json:"name_en,omitempty"`
+	Role       string `json:"role,omitempty"`
+	RightType  string `json:"right_type"`
+	Source     string `json:"source"`
+	Self       bool   `json:"self"`
+}
+
+// FromEIDSigners нь eID signer-уудыг DTO жагсаалт руу буулгана.
+func FromEIDSigners(signers []eid.Signer) []OrgSignerResponse {
+	out := make([]OrgSignerResponse, 0, len(signers))
+	for _, s := range signers {
+		out = append(out, OrgSignerResponse{
+			PersonEtsi: s.PersonEtsi,
+			RegNo:      s.RegNo,
+			Name:       s.Name,
+			NameEn:     s.NameEn,
+			Role:       s.Role,
+			RightType:  s.RightType,
+			Source:     s.Source,
+			Self:       s.Self,
+		})
+	}
+	return out
+}
+
 // ── PKI самбар (snake_case DTO-нууд) ──
 
 type EIDCertCounts struct {

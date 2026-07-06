@@ -149,6 +149,25 @@ type AddRepresentationInput struct {
 	Affiliates  []OrgAffiliate
 }
 
+// Signer нь байгууллагыг төлөөлж / гарын үсэг зурж чадах нэг иргэн.
+type Signer struct {
+	PersonEtsi string
+	RegNo      string
+	Name       string
+	NameEn     string
+	Role       string
+	RightType  string
+	Source     string
+	Self       bool // нэвтэрсэн хэрэглэгч өөрөө эсэх
+}
+
+// AddSignerInput нь AddSigner-д дамжуулах шинэ гарын үсэг зурагчийн мэдээлэл.
+type AddSignerInput struct {
+	SignerRegNo string
+	Role        string
+	RightType   string // SOLE | JOINT (хоосон бол JOINT)
+}
+
 // Client нь eID RP урсгалуудын хийсвэрлэл — тестэд хуурамчаар тавихад хялбар.
 type Client interface {
 	// QRInitiate нь QR нэвтрэлтийг эхлүүлж session мэдээллийг буцаана. callbackURL
@@ -170,6 +189,17 @@ type Client interface {
 	// (ceo/founders/stakeholders) жагсаалтад байвал л (эрх бүхий) төлөөлөл
 	// нэмэгдэнэ — эс бөгөөс ErrNotRepresentative. Иргэний бүх төлөөллийг буцаана.
 	AddRepresentation(ctx context.Context, personEtsi string, in AddRepresentationInput) ([]Representation, error)
+	// RemoveRepresentation нь иргэн (personEtsi) өөрийн байгууллагын (orgRegister)
+	// төлөөллөө цуцлана. Иргэний үлдсэн төлөөллийг буцаана.
+	RemoveRepresentation(ctx context.Context, personEtsi, orgRegister string) ([]Representation, error)
+	// OrgSigners нь байгууллагын гарын үсэг зурагчдыг буцаана. actingPersonEtsi нь
+	// тухайн байгууллагын төлөөлөгч байх ёстой (эс бол ErrNotRepresentative).
+	OrgSigners(ctx context.Context, orgRegister, actingPersonEtsi string) ([]Signer, error)
+	// AddSigner нь байгууллагад өөр eID иргэнийг (РД) гарын үсэг зурах эрхтэй
+	// төлөөлөгч болгож нэмнэ. Байгууллагын шинэ жагсаалтыг буцаана.
+	AddSigner(ctx context.Context, orgRegister, actingPersonEtsi string, in AddSignerInput) ([]Signer, error)
+	// RemoveSigner нь байгууллагаас гарын үсэг зурагчийг (РД) хасна.
+	RemoveSigner(ctx context.Context, orgRegister, actingPersonEtsi, signerRegNo string) ([]Signer, error)
 
 	// Person* нь иргэн өөрийн PKI самбарын endpoint-ууд — PKI_READ эрхтэй RP-д
 	// л нээгдэнэ (эрхгүй бол ErrPKINotPermitted).
@@ -503,6 +533,145 @@ func (c *client) AddRepresentation(ctx context.Context, personEtsi string, in Ad
 	return reps, nil
 }
 
+// parseRepresentations нь representations хариуг []Representation болгож задлана.
+func parseRepresentations(raw []byte) ([]Representation, error) {
+	var out struct {
+		Representations []struct {
+			OrgEtsi     string     `json:"orgEtsi"`
+			OrgRegister string     `json:"orgRegister"`
+			OrgName     string     `json:"orgName"`
+			OrgNameEn   string     `json:"orgNameEn"`
+			Role        string     `json:"role"`
+			RightType   string     `json:"rightType"`
+			ValidFrom   *time.Time `json:"validFrom"`
+			ValidTo     *time.Time `json:"validTo"`
+		} `json:"representations"`
+	}
+	if err := json.Unmarshal(raw, &out); err != nil {
+		return nil, fmt.Errorf("eid representations: invalid response: %s", snippet(raw))
+	}
+	reps := make([]Representation, 0, len(out.Representations))
+	for _, r := range out.Representations {
+		reps = append(reps, Representation{
+			OrgEtsi: r.OrgEtsi, OrgRegister: r.OrgRegister, OrgName: r.OrgName, OrgNameEn: r.OrgNameEn,
+			Role: r.Role, RightType: r.RightType, ValidFrom: r.ValidFrom, ValidTo: r.ValidTo,
+		})
+	}
+	return reps, nil
+}
+
+// parseSigners нь signers хариуг []Signer болгож задлана.
+func parseSigners(raw []byte) ([]Signer, error) {
+	var out struct {
+		Signers []struct {
+			PersonEtsi string `json:"personEtsi"`
+			RegNo      string `json:"regNo"`
+			Name       string `json:"name"`
+			NameEn     string `json:"nameEn"`
+			Role       string `json:"role"`
+			RightType  string `json:"rightType"`
+			Source     string `json:"source"`
+			Self       bool   `json:"self"`
+		} `json:"signers"`
+	}
+	if err := json.Unmarshal(raw, &out); err != nil {
+		return nil, fmt.Errorf("eid signers: invalid response: %s", snippet(raw))
+	}
+	sgs := make([]Signer, 0, len(out.Signers))
+	for _, s := range out.Signers {
+		sgs = append(sgs, Signer{
+			PersonEtsi: s.PersonEtsi, RegNo: s.RegNo, Name: s.Name, NameEn: s.NameEn,
+			Role: s.Role, RightType: s.RightType, Source: s.Source, Self: s.Self,
+		})
+	}
+	return sgs, nil
+}
+
+func (c *client) RemoveRepresentation(ctx context.Context, personEtsi, orgRegister string) ([]Representation, error) {
+	if strings.TrimSpace(personEtsi) == "" || strings.TrimSpace(orgRegister) == "" {
+		return nil, errors.New("eid: empty personEtsi/orgRegister")
+	}
+	path := "/organization/representations/etsi/" + url.PathEscape(strings.TrimSpace(personEtsi)) + "/" + url.PathEscape(strings.TrimSpace(orgRegister))
+	raw, status, err := c.del(ctx, path)
+	if err != nil {
+		return nil, err
+	}
+	if status >= 300 {
+		return nil, fmt.Errorf("eid unlink: status %d: %s", status, snippet(raw))
+	}
+	return parseRepresentations(raw)
+}
+
+func (c *client) OrgSigners(ctx context.Context, orgRegister, actingPersonEtsi string) ([]Signer, error) {
+	raw, status, err := c.signersReq(ctx, http.MethodGet, orgRegister, actingPersonEtsi, "", nil)
+	if err != nil {
+		return nil, err
+	}
+	if status == http.StatusForbidden {
+		return nil, ErrNotRepresentative
+	}
+	if status >= 300 {
+		return nil, fmt.Errorf("eid signers: status %d: %s", status, snippet(raw))
+	}
+	return parseSigners(raw)
+}
+
+func (c *client) AddSigner(ctx context.Context, orgRegister, actingPersonEtsi string, in AddSignerInput) ([]Signer, error) {
+	body := struct {
+		SignerRegNo string `json:"signerRegNo"`
+		Role        string `json:"role,omitempty"`
+		RightType   string `json:"rightType,omitempty"`
+	}{SignerRegNo: strings.TrimSpace(in.SignerRegNo), Role: strings.TrimSpace(in.Role), RightType: strings.TrimSpace(in.RightType)}
+	raw, status, err := c.signersReq(ctx, http.MethodPost, orgRegister, actingPersonEtsi, "", body)
+	if err != nil {
+		return nil, err
+	}
+	if status == http.StatusForbidden {
+		return nil, ErrNotRepresentative
+	}
+	if status == http.StatusNotFound {
+		return nil, ErrSignerNotEnrolled
+	}
+	if status >= 300 {
+		return nil, fmt.Errorf("eid add signer: status %d: %s", status, snippet(raw))
+	}
+	return parseSigners(raw)
+}
+
+func (c *client) RemoveSigner(ctx context.Context, orgRegister, actingPersonEtsi, signerRegNo string) ([]Signer, error) {
+	raw, status, err := c.signersReq(ctx, http.MethodDelete, orgRegister, actingPersonEtsi, strings.TrimSpace(signerRegNo), nil)
+	if err != nil {
+		return nil, err
+	}
+	if status == http.StatusForbidden {
+		return nil, ErrNotRepresentative
+	}
+	if status >= 300 {
+		return nil, fmt.Errorf("eid remove signer: status %d: %s", status, snippet(raw))
+	}
+	return parseSigners(raw)
+}
+
+// signersReq нь /organization/signers/{orgRegister}/etsi/{actingPersonEtsi} руу
+// GET/POST/DELETE хүсэлт бүтээнэ. signer хоосон биш бол ?signer= query нэмнэ.
+func (c *client) signersReq(ctx context.Context, method, orgRegister, actingPersonEtsi, signer string, body any) ([]byte, int, error) {
+	if strings.TrimSpace(orgRegister) == "" || strings.TrimSpace(actingPersonEtsi) == "" {
+		return nil, 0, errors.New("eid: empty orgRegister/actingPersonEtsi")
+	}
+	path := "/organization/signers/" + url.PathEscape(strings.TrimSpace(orgRegister)) + "/etsi/" + url.PathEscape(strings.TrimSpace(actingPersonEtsi))
+	if signer != "" {
+		path += "?signer=" + url.QueryEscape(signer)
+	}
+	switch method {
+	case http.MethodPost:
+		return c.post(ctx, path, body)
+	case http.MethodDelete:
+		return c.del(ctx, path)
+	default:
+		return c.get(ctx, path)
+	}
+}
+
 // parseCertificate нь base64 DER сертификатыг задлан нээлттэй хэсгийг буцаана.
 // Задлагдахгүй/хоосон бол nil (нэвтрэлтэд саад болохгүй).
 func parseCertificate(b64 string) *Certificate {
@@ -581,6 +750,15 @@ func (c *client) post(ctx context.Context, path string, body any) ([]byte, int, 
 
 func (c *client) get(ctx context.Context, path string) ([]byte, int, error) {
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, c.base+path, nil)
+	if err != nil {
+		return nil, 0, fmt.Errorf("eid: build request: %w", err)
+	}
+	c.setHeaders(req)
+	return c.do(req)
+}
+
+func (c *client) del(ctx context.Context, path string) ([]byte, int, error) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodDelete, c.base+path, nil)
 	if err != nil {
 		return nil, 0, fmt.Errorf("eid: build request: %w", err)
 	}

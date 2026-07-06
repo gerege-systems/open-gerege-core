@@ -63,6 +63,14 @@ type Usecase interface {
 	// этгээд бол) eidmongolia-д төлөөлөл болгон холбоно. Иргэний бүх төлөөллийг
 	// буцаана. Байгууллага олдоогүй → NotFound; эрхгүй → Forbidden.
 	RegisterEIDOrganization(ctx context.Context, userID, regNo string) ([]eid.Representation, error)
+	// UnlinkEIDOrganization нь нэвтэрсэн хэрэглэгч өөрийн байгууллагын төлөөллөө цуцлана.
+	UnlinkEIDOrganization(ctx context.Context, userID, orgRegister string) ([]eid.Representation, error)
+	// ListEIDOrgSigners нь байгууллагын гарын үсэг зурагчдыг буцаана (хэрэглэгч төлөөлөгч байх ёстой).
+	ListEIDOrgSigners(ctx context.Context, userID, orgRegister string) ([]eid.Signer, error)
+	// AddEIDOrgSigner нь байгууллагад өөр иргэнийг (РД) гарын үсэг зурах эрхтэй болгож нэмнэ.
+	AddEIDOrgSigner(ctx context.Context, userID, orgRegister, signerRegNo, role, rightType string) ([]eid.Signer, error)
+	// RemoveEIDOrgSigner нь байгууллагаас гарын үсэг зурагчийг (РД) хасна.
+	RemoveEIDOrgSigner(ctx context.Context, userID, orgRegister, signerRegNo string) ([]eid.Signer, error)
 	// GoogleLogin нь Google authorization code-ийг боловсруулна: холбогдсон
 	// account бол шууд нэвтрүүлж, эс бол eID-ээр баталгаажуулах LinkToken буцаана.
 	GoogleLogin(ctx context.Context, code, redirectURI string) (GoogleLoginResponse, error)

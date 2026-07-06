@@ -2862,6 +2862,217 @@ const docTemplate = `{
                 }
             }
         },
+        "/users/me/eid/organizations/{regNo}": {
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Нэвтэрсэн иргэн өөрийн төлөөлдөг байгууллагын (регистрийн дугаараар) холбоосыг цуцлана. Иргэний үлдсэн төлөөлдөг байгууллагыг буцаана.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "summary": "Байгууллага салгах (eID)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Байгууллагын регистрийн дугаар",
+                        "name": "regNo",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/template_internal_http_datatransfers_responses.OrgRepresentationResponse"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/users/me/eid/organizations/{regNo}/signers": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Нэвтэрсэн иргэний төлөөлдөг байгууллагын гарын үсэг зурах эрхтэй хүмүүс. Иргэн тухайн байгууллагын төлөөлөгч байх ёстой.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "summary": "Байгууллагын гарын үсэг зурагчид (eID)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Байгууллагын регистрийн дугаар",
+                        "name": "regNo",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/template_internal_http_datatransfers_responses.OrgSignerResponse"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Нэвтэрсэн иргэний төлөөлдөг байгууллагад өөр eID иргэнийг (регистрийн дугаараар) гарын үсэг зурах эрхтэй болгож нэмнэ.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "summary": "Гарын үсэг зурагч нэмэх (eID)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Байгууллагын регистрийн дугаар",
+                        "name": "regNo",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Гарын үсэг зурагчийн РД + үүрэг",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_datatransfers_requests.AddEIDSignerRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/template_internal_http_datatransfers_responses.OrgSignerResponse"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Нэвтэрсэн иргэний төлөөлдөг байгууллагаас гарын үсэг зурагчийг (регистрийн дугаараар) хасна.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "summary": "Гарын үсэг зурагч хасах (eID)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Байгууллагын регистрийн дугаар",
+                        "name": "regNo",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Хасах гарын үсэг зурагчийн РД",
+                        "name": "signer",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/template_internal_http_datatransfers_responses.OrgSignerResponse"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
         "/users/me/eid/summary": {
             "get": {
                 "security": [
@@ -4154,6 +4365,30 @@ const docTemplate = `{
                 }
             }
         },
+        "template_internal_http_datatransfers_requests.AddEIDSignerRequest": {
+            "type": "object",
+            "required": [
+                "signer_reg_no"
+            ],
+            "properties": {
+                "right_type": {
+                    "type": "string",
+                    "enum": [
+                        "SOLE",
+                        "JOINT"
+                    ]
+                },
+                "role": {
+                    "type": "string",
+                    "maxLength": 100
+                },
+                "signer_reg_no": {
+                    "type": "string",
+                    "maxLength": 20,
+                    "minLength": 8
+                }
+            }
+        },
         "template_internal_http_datatransfers_requests.AddMemberRequest": {
             "type": "object",
             "required": [
@@ -5333,6 +5568,35 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "template_internal_http_datatransfers_responses.OrgSignerResponse": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "name_en": {
+                    "type": "string"
+                },
+                "person_etsi": {
+                    "type": "string"
+                },
+                "reg_no": {
+                    "type": "string"
+                },
+                "right_type": {
+                    "type": "string"
+                },
+                "role": {
+                    "type": "string"
+                },
+                "self": {
+                    "type": "boolean"
+                },
+                "source": {
                     "type": "string"
                 }
             }

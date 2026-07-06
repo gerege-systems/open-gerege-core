@@ -407,6 +407,92 @@ func affiliatesFromXYP(org *xyp.Organization) []eid.OrgAffiliate {
 	return out
 }
 
+// actingEtsi нь нэвтэрсэн хэрэглэгчийн personEtsi-г буцаана; eID-ээр нэвтрээгүй
+// (civil_id байхгүй) бол Forbidden.
+func (uc *usecase) actingEtsi(ctx context.Context, userID string) (string, error) {
+	etsi, err := uc.eidPersonEtsi(ctx, userID)
+	if err != nil {
+		return "", err
+	}
+	if etsi == "" {
+		return "", apperror.Forbidden("Энэ үйлдэлд eID-ээр нэвтэрсэн байх шаардлагатай")
+	}
+	return etsi, nil
+}
+
+// UnlinkEIDOrganization нь нэвтэрсэн хэрэглэгч өөрийн байгууллагын төлөөллөө цуцлана.
+func (uc *usecase) UnlinkEIDOrganization(ctx context.Context, userID, orgRegister string) ([]eid.Representation, error) {
+	if strings.TrimSpace(orgRegister) == "" {
+		return nil, apperror.BadRequest("Байгууллагын регистрийн дугаар шаардлагатай")
+	}
+	etsi, err := uc.actingEtsi(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
+	reps, rErr := uc.eid.RemoveRepresentation(ctx, etsi, strings.TrimSpace(orgRegister))
+	if rErr != nil {
+		return nil, apperror.InternalCause(fmt.Errorf("eid unlink: %w", rErr))
+	}
+	return reps, nil
+}
+
+// ListEIDOrgSigners нь байгууллагын гарын үсэг зурагчдыг буцаана (нэвтэрсэн хэрэглэгч
+// тухайн байгууллагын төлөөлөгч байх ёстой).
+func (uc *usecase) ListEIDOrgSigners(ctx context.Context, userID, orgRegister string) ([]eid.Signer, error) {
+	etsi, err := uc.actingEtsi(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
+	signers, sErr := uc.eid.OrgSigners(ctx, strings.TrimSpace(orgRegister), etsi)
+	if sErr != nil {
+		return nil, mapSignerErr(sErr)
+	}
+	return signers, nil
+}
+
+// AddEIDOrgSigner нь байгууллагад өөр иргэнийг (РД) гарын үсэг зурах эрхтэй болгож нэмнэ.
+func (uc *usecase) AddEIDOrgSigner(ctx context.Context, userID, orgRegister, signerRegNo, role, rightType string) ([]eid.Signer, error) {
+	if strings.TrimSpace(signerRegNo) == "" {
+		return nil, apperror.BadRequest("Гарын үсэг зурагчийн регистрийн дугаар шаардлагатай")
+	}
+	etsi, err := uc.actingEtsi(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
+	signers, sErr := uc.eid.AddSigner(ctx, strings.TrimSpace(orgRegister), etsi, eid.AddSignerInput{
+		SignerRegNo: strings.TrimSpace(signerRegNo), Role: strings.TrimSpace(role), RightType: strings.TrimSpace(rightType),
+	})
+	if sErr != nil {
+		return nil, mapSignerErr(sErr)
+	}
+	return signers, nil
+}
+
+// RemoveEIDOrgSigner нь байгууллагаас гарын үсэг зурагчийг (РД) хасна.
+func (uc *usecase) RemoveEIDOrgSigner(ctx context.Context, userID, orgRegister, signerRegNo string) ([]eid.Signer, error) {
+	etsi, err := uc.actingEtsi(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
+	signers, sErr := uc.eid.RemoveSigner(ctx, strings.TrimSpace(orgRegister), etsi, strings.TrimSpace(signerRegNo))
+	if sErr != nil {
+		return nil, mapSignerErr(sErr)
+	}
+	return signers, nil
+}
+
+// mapSignerErr нь eid signer client-ийн алдаануудыг apperror болгож буулгана.
+func mapSignerErr(err error) error {
+	switch {
+	case errors.Is(err, eid.ErrNotRepresentative):
+		return apperror.Forbidden("Та энэ байгууллагын гарын үсэг зурагчдыг удирдах эрхгүй байна")
+	case errors.Is(err, eid.ErrSignerNotEnrolled):
+		return apperror.NotFound("Энэ регистрийн дугаартай иргэн eID-д бүртгэлгүй байна")
+	default:
+		return apperror.InternalCause(fmt.Errorf("eid signer: %w", err))
+	}
+}
+
 // EIDSummary нь иргэний PKI самбарын нэгдсэн тоог буцаана.
 func (uc *usecase) EIDSummary(ctx context.Context, userID string) (*eid.PersonSummary, error) {
 	etsi, err := uc.eidPersonEtsi(ctx, userID)

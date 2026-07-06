@@ -92,6 +92,42 @@ func (_m *AuthUsecase) RegisterEIDOrganization(ctx context.Context, userID, regN
 	return r0, ret.Error(1)
 }
 
+func (_m *AuthUsecase) UnlinkEIDOrganization(ctx context.Context, userID, orgRegister string) ([]eid.Representation, error) {
+	ret := _m.Called(ctx, userID, orgRegister)
+	var r0 []eid.Representation
+	if v := ret.Get(0); v != nil {
+		r0 = v.([]eid.Representation)
+	}
+	return r0, ret.Error(1)
+}
+
+func (_m *AuthUsecase) ListEIDOrgSigners(ctx context.Context, userID, orgRegister string) ([]eid.Signer, error) {
+	ret := _m.Called(ctx, userID, orgRegister)
+	var r0 []eid.Signer
+	if v := ret.Get(0); v != nil {
+		r0 = v.([]eid.Signer)
+	}
+	return r0, ret.Error(1)
+}
+
+func (_m *AuthUsecase) AddEIDOrgSigner(ctx context.Context, userID, orgRegister, signerRegNo, role, rightType string) ([]eid.Signer, error) {
+	ret := _m.Called(ctx, userID, orgRegister, signerRegNo, role, rightType)
+	var r0 []eid.Signer
+	if v := ret.Get(0); v != nil {
+		r0 = v.([]eid.Signer)
+	}
+	return r0, ret.Error(1)
+}
+
+func (_m *AuthUsecase) RemoveEIDOrgSigner(ctx context.Context, userID, orgRegister, signerRegNo string) ([]eid.Signer, error) {
+	ret := _m.Called(ctx, userID, orgRegister, signerRegNo)
+	var r0 []eid.Signer
+	if v := ret.Get(0); v != nil {
+		r0 = v.([]eid.Signer)
+	}
+	return r0, ret.Error(1)
+}
+
 func (_m *AuthUsecase) EIDSummary(ctx context.Context, userID string) (*eid.PersonSummary, error) {
 	ret := _m.Called(ctx, userID)
 	var r0 *eid.PersonSummary

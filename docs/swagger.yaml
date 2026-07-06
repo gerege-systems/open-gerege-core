@@ -88,6 +88,23 @@ definitions:
     required:
     - target_lang
     type: object
+  template_internal_http_datatransfers_requests.AddEIDSignerRequest:
+    properties:
+      right_type:
+        enum:
+        - SOLE
+        - JOINT
+        type: string
+      role:
+        maxLength: 100
+        type: string
+      signer_reg_no:
+        maxLength: 20
+        minLength: 8
+        type: string
+    required:
+    - signer_reg_no
+    type: object
   template_internal_http_datatransfers_requests.AddMemberRequest:
     properties:
       role:
@@ -901,6 +918,25 @@ definitions:
       reg_no:
         type: string
       updated_at:
+        type: string
+    type: object
+  template_internal_http_datatransfers_responses.OrgSignerResponse:
+    properties:
+      name:
+        type: string
+      name_en:
+        type: string
+      person_etsi:
+        type: string
+      reg_no:
+        type: string
+      right_type:
+        type: string
+      role:
+        type: string
+      self:
+        type: boolean
+      source:
         type: string
     type: object
   template_internal_http_datatransfers_responses.SecurityEventResponse:
@@ -2815,6 +2851,133 @@ paths:
       security:
       - BearerAuth: []
       summary: Байгууллага холбох (eID)
+      tags:
+      - users
+  /users/me/eid/organizations/{regNo}:
+    delete:
+      description: Нэвтэрсэн иргэн өөрийн төлөөлдөг байгууллагын (регистрийн дугаараар)
+        холбоосыг цуцлана. Иргэний үлдсэн төлөөлдөг байгууллагыг буцаана.
+      parameters:
+      - description: Байгууллагын регистрийн дугаар
+        in: path
+        name: regNo
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/template_internal_http_datatransfers_responses.OrgRepresentationResponse'
+                  type: array
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Байгууллага салгах (eID)
+      tags:
+      - users
+  /users/me/eid/organizations/{regNo}/signers:
+    delete:
+      description: Нэвтэрсэн иргэний төлөөлдөг байгууллагаас гарын үсэг зурагчийг
+        (регистрийн дугаараар) хасна.
+      parameters:
+      - description: Байгууллагын регистрийн дугаар
+        in: path
+        name: regNo
+        required: true
+        type: string
+      - description: Хасах гарын үсэг зурагчийн РД
+        in: query
+        name: signer
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/template_internal_http_datatransfers_responses.OrgSignerResponse'
+                  type: array
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Гарын үсэг зурагч хасах (eID)
+      tags:
+      - users
+    get:
+      description: Нэвтэрсэн иргэний төлөөлдөг байгууллагын гарын үсэг зурах эрхтэй
+        хүмүүс. Иргэн тухайн байгууллагын төлөөлөгч байх ёстой.
+      parameters:
+      - description: Байгууллагын регистрийн дугаар
+        in: path
+        name: regNo
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/template_internal_http_datatransfers_responses.OrgSignerResponse'
+                  type: array
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Байгууллагын гарын үсэг зурагчид (eID)
+      tags:
+      - users
+    post:
+      consumes:
+      - application/json
+      description: Нэвтэрсэн иргэний төлөөлдөг байгууллагад өөр eID иргэнийг (регистрийн
+        дугаараар) гарын үсэг зурах эрхтэй болгож нэмнэ.
+      parameters:
+      - description: Байгууллагын регистрийн дугаар
+        in: path
+        name: regNo
+        required: true
+        type: string
+      - description: Гарын үсэг зурагчийн РД + үүрэг
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/template_internal_http_datatransfers_requests.AddEIDSignerRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/template_internal_http_datatransfers_responses.OrgSignerResponse'
+                  type: array
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Гарын үсэг зурагч нэмэх (eID)
       tags:
       - users
   /users/me/eid/summary:

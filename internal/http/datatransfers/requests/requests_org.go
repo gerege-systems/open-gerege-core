@@ -18,6 +18,14 @@ type EIDOrgRegisterRequest struct {
 	RegNo string `json:"reg_no" validate:"required,min=4,max=16"`
 }
 
+// AddEIDSignerRequest нь POST /v1/users/me/eid/organizations/{regNo}/signers-ийн body —
+// байгууллагад өөр иргэнийг (РД) гарын үсэг зурах эрхтэй төлөөлөгч болгон нэмнэ.
+type AddEIDSignerRequest struct {
+	SignerRegNo string `json:"signer_reg_no" validate:"required,min=8,max=20"`
+	Role        string `json:"role" validate:"omitempty,max=100"`
+	RightType   string `json:"right_type" validate:"omitempty,oneof=SOLE JOINT"`
+}
+
 // AddMemberRequest нь POST /v1/org/{id}/members-ийн body. role хоосон бол
 // 'member' болж өгөгдмөлддөг (usecase шийднэ).
 type AddMemberRequest struct {

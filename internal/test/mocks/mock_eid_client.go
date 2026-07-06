@@ -65,6 +65,42 @@ func (_m *EIDClient) AddRepresentation(ctx context.Context, personEtsi string, i
 	return r0, ret.Error(1)
 }
 
+func (_m *EIDClient) RemoveRepresentation(ctx context.Context, personEtsi, orgRegister string) ([]eid.Representation, error) {
+	ret := _m.Called(ctx, personEtsi, orgRegister)
+	var r0 []eid.Representation
+	if v := ret.Get(0); v != nil {
+		r0 = v.([]eid.Representation)
+	}
+	return r0, ret.Error(1)
+}
+
+func (_m *EIDClient) OrgSigners(ctx context.Context, orgRegister, actingPersonEtsi string) ([]eid.Signer, error) {
+	ret := _m.Called(ctx, orgRegister, actingPersonEtsi)
+	var r0 []eid.Signer
+	if v := ret.Get(0); v != nil {
+		r0 = v.([]eid.Signer)
+	}
+	return r0, ret.Error(1)
+}
+
+func (_m *EIDClient) AddSigner(ctx context.Context, orgRegister, actingPersonEtsi string, in eid.AddSignerInput) ([]eid.Signer, error) {
+	ret := _m.Called(ctx, orgRegister, actingPersonEtsi, in)
+	var r0 []eid.Signer
+	if v := ret.Get(0); v != nil {
+		r0 = v.([]eid.Signer)
+	}
+	return r0, ret.Error(1)
+}
+
+func (_m *EIDClient) RemoveSigner(ctx context.Context, orgRegister, actingPersonEtsi, signerRegNo string) ([]eid.Signer, error) {
+	ret := _m.Called(ctx, orgRegister, actingPersonEtsi, signerRegNo)
+	var r0 []eid.Signer
+	if v := ret.Get(0); v != nil {
+		r0 = v.([]eid.Signer)
+	}
+	return r0, ret.Error(1)
+}
+
 func (_m *EIDClient) PersonSummary(ctx context.Context, personEtsi string) (*eid.PersonSummary, error) {
 	ret := _m.Called(ctx, personEtsi)
 	var r0 *eid.PersonSummary

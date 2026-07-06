@@ -42,6 +42,11 @@ func (rt *eidProfileRoute) Routes() {
 
 		r.Get("/organizations", v1.Wrap(rt.handler.Organizations))
 		r.With(write).Post("/organizations", v1.Wrap(rt.handler.AddOrganization))
+		r.With(write).Delete("/organizations/{regNo}", v1.Wrap(rt.handler.RemoveOrganization))
+		// Байгууллагын гарын үсэг зурагчид (нэвтэрсэн иргэн тухайн байгууллагын төлөөлөгч байх ёстой).
+		r.Get("/organizations/{regNo}/signers", v1.Wrap(rt.handler.OrgSigners))
+		r.With(write).Post("/organizations/{regNo}/signers", v1.Wrap(rt.handler.AddOrgSigner))
+		r.With(write).Delete("/organizations/{regNo}/signers", v1.Wrap(rt.handler.RemoveOrgSigner))
 		r.Get("/summary", v1.Wrap(rt.handler.Summary))
 		r.Get("/certificates", v1.Wrap(rt.handler.Certificates))
 		r.Get("/devices", v1.Wrap(rt.handler.Devices))
