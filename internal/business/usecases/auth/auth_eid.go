@@ -431,6 +431,9 @@ func (uc *usecase) UnlinkEIDOrganization(ctx context.Context, userID, orgRegiste
 	}
 	reps, rErr := uc.eid.RemoveRepresentation(ctx, etsi, strings.TrimSpace(orgRegister))
 	if rErr != nil {
+		if errors.Is(rErr, eid.ErrNotRepresentative) {
+			return nil, apperror.Forbidden("Зөвхөн ADMIN эрхтэй хүн байгууллагыг салгаж чадна")
+		}
 		return nil, apperror.InternalCause(fmt.Errorf("eid unlink: %w", rErr))
 	}
 	return reps, nil

@@ -597,6 +597,9 @@ func (c *client) RemoveRepresentation(ctx context.Context, personEtsi, orgRegist
 	if err != nil {
 		return nil, err
 	}
+	if status == http.StatusForbidden {
+		return nil, ErrNotRepresentative
+	}
 	if status >= 300 {
 		return nil, fmt.Errorf("eid unlink: status %d: %s", status, snippet(raw))
 	}
