@@ -5,6 +5,7 @@
 package sign
 
 import (
+	"fmt"
 	"io"
 	"net/http"
 	"strings"
@@ -150,8 +151,59 @@ func (h Handler) Download(w http.ResponseWriter, r *http.Request) error {
 		return v1.RespondWithError(w, r, err)
 	}
 	w.Header().Set("Content-Type", "application/pdf")
-	w.Header().Set("Content-Disposition", `attachment; filename="`+res.Filename+`"`)
+	w.Header().Set("Content-Disposition", contentDisposition(res.Filename))
 	w.WriteHeader(http.StatusOK)
 	_, _ = w.Write(res.PDF)
 	return nil
+}
+
+// contentDisposition нь татах файлын нэрийг зөв дамжуулна. HTTP header-ийн утга
+// нь ISO-8859-1 (latin-1) тул кирилл/UTF-8 нэрийг filename="..."-д шууд тавьбал
+// browser буруу тайлж "арзайсан" нэр гаргадаг. RFC 5987/6266 дагуу жинхэнэ
+// нэрийг filename*=UTF-8”<percent-encoded>-оор өгч, filename*-ийг ойлгодоггүй
+// хуучин client-д зориулж ASCII fallback filename="..."-ийг мөн үлдээнэ.
+func contentDisposition(name string) string {
+	name = strings.TrimSpace(name)
+	if name == "" {
+		name = "signed.pdf"
+	}
+	return fmt.Sprintf("attachment; filename=%q; filename*=UTF-8''%s", asciiFallback(name), rfc5987Escape(name))
+}
+
+// asciiFallback нь ASCII бус, control болон quote тэмдэгтүүдийг '_'-оор солино
+// (header-т аюулгүй, filename*-гүй client дээр ядаж уншигдахуйц нэр).
+func asciiFallback(name string) string {
+	var b strings.Builder
+	for i := 0; i < len(name); i++ {
+		c := name[i]
+		if c < 0x20 || c >= 0x7f || c == '"' || c == '\\' {
+			b.WriteByte('_')
+		} else {
+			b.WriteByte(c)
+		}
+	}
+	if s := strings.Trim(b.String(), "_"); s == "" {
+		return "signed.pdf"
+	}
+	return b.String()
+}
+
+// rfc5987Escape нь мөрийг байт тус бүрээр RFC 5987 ext-value болгон percent-encode
+// хийнэ (attr-char-аас бусад бүх байтыг %XX болгоно; UTF-8 олон-байт тэмдэгт
+// байтаараа кодлогдоно).
+func rfc5987Escape(s string) string {
+	const hex = "0123456789ABCDEF"
+	const attrChars = "!#$&+-.^_`|~"
+	var b strings.Builder
+	for i := 0; i < len(s); i++ {
+		c := s[i]
+		if (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') || strings.IndexByte(attrChars, c) >= 0 {
+			b.WriteByte(c)
+		} else {
+			b.WriteByte('%')
+			b.WriteByte(hex[c>>4])
+			b.WriteByte(hex[c&0x0f])
+		}
+	}
+	return b.String()
 }
