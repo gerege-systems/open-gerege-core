@@ -101,6 +101,15 @@ func (_m *EIDClient) RemoveSigner(ctx context.Context, orgRegister, actingPerson
 	return r0, ret.Error(1)
 }
 
+func (_m *EIDClient) ResendSigner(ctx context.Context, orgRegister, actingPersonEtsi, signerRegNo string) (*eid.SignersResult, error) {
+	ret := _m.Called(ctx, orgRegister, actingPersonEtsi, signerRegNo)
+	var r0 *eid.SignersResult
+	if v := ret.Get(0); v != nil {
+		r0 = v.(*eid.SignersResult)
+	}
+	return r0, ret.Error(1)
+}
+
 func (_m *EIDClient) PersonSummary(ctx context.Context, personEtsi string) (*eid.PersonSummary, error) {
 	ret := _m.Called(ctx, personEtsi)
 	var r0 *eid.PersonSummary

@@ -46,6 +46,7 @@ func (rt *eidProfileRoute) Routes() {
 		// Байгууллагын гарын үсэг зурагчид (нэвтэрсэн иргэн тухайн байгууллагын төлөөлөгч байх ёстой).
 		r.Get("/organizations/{regNo}/signers", v1.Wrap(rt.handler.OrgSigners))
 		r.With(write).Post("/organizations/{regNo}/signers", v1.Wrap(rt.handler.AddOrgSigner))
+		r.With(write).Post("/organizations/{regNo}/signers/resend", v1.Wrap(rt.handler.ResendOrgSigner))
 		r.With(write).Delete("/organizations/{regNo}/signers", v1.Wrap(rt.handler.RemoveOrgSigner))
 		r.Get("/summary", v1.Wrap(rt.handler.Summary))
 		r.Get("/certificates", v1.Wrap(rt.handler.Certificates))

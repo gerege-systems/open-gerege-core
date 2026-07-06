@@ -221,6 +221,9 @@ type Client interface {
 	AddSigner(ctx context.Context, orgRegister, actingPersonEtsi string, in AddSignerInput) (*SignersResult, error)
 	// RemoveSigner нь байгууллагаас гарын үсэг зурагчийг (РД) хасна.
 	RemoveSigner(ctx context.Context, orgRegister, actingPersonEtsi, signerRegNo string) ([]Signer, error)
+	// ResendSigner нь баталгаажаагүй (PENDING) гарын үсэг зурагч руу sign-push-ийг
+	// дахин илгээнэ. Шинэ жагсаалт + хүлээгдэж буй баталгаажуулалтыг буцаана.
+	ResendSigner(ctx context.Context, orgRegister, actingPersonEtsi, signerRegNo string) (*SignersResult, error)
 
 	// Person* нь иргэн өөрийн PKI самбарын endpoint-ууд — PKI_READ эрхтэй RP-д
 	// л нээгдэнэ (эрхгүй бол ErrPKINotPermitted).
@@ -696,6 +699,31 @@ func (c *client) RemoveSigner(ctx context.Context, orgRegister, actingPersonEtsi
 		return nil, fmt.Errorf("eid remove signer: status %d: %s", status, snippet(raw))
 	}
 	return parseSigners(raw)
+}
+
+func (c *client) ResendSigner(ctx context.Context, orgRegister, actingPersonEtsi, signerRegNo string) (*SignersResult, error) {
+	if strings.TrimSpace(orgRegister) == "" || strings.TrimSpace(actingPersonEtsi) == "" {
+		return nil, errors.New("eid: empty orgRegister/actingPersonEtsi")
+	}
+	if strings.TrimSpace(signerRegNo) == "" {
+		return nil, errors.New("eid: empty signerRegNo")
+	}
+	path := "/organization/signers/" + url.PathEscape(strings.TrimSpace(orgRegister)) + "/etsi/" +
+		url.PathEscape(strings.TrimSpace(actingPersonEtsi)) + "/resend?signer=" + url.QueryEscape(strings.TrimSpace(signerRegNo))
+	raw, status, err := c.post(ctx, path, nil)
+	if err != nil {
+		return nil, err
+	}
+	if status == http.StatusForbidden {
+		return nil, ErrNotRepresentative
+	}
+	if status == http.StatusNotFound {
+		return nil, ErrSignerNotEnrolled
+	}
+	if status >= 300 {
+		return nil, fmt.Errorf("eid resend signer: status %d: %s", status, snippet(raw))
+	}
+	return parseSignersResult(raw)
 }
 
 // signersReq нь /organization/signers/{orgRegister}/etsi/{actingPersonEtsi} руу

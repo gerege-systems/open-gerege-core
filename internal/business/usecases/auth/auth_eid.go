@@ -473,6 +473,22 @@ func (uc *usecase) AddEIDOrgSigner(ctx context.Context, userID, orgRegister, sig
 	return res, nil
 }
 
+// ResendEIDOrgSigner нь баталгаажаагүй гарын үсэг зурагч руу sign-push дахин илгээнэ.
+func (uc *usecase) ResendEIDOrgSigner(ctx context.Context, userID, orgRegister, signerRegNo string) (*eid.SignersResult, error) {
+	if strings.TrimSpace(signerRegNo) == "" {
+		return nil, apperror.BadRequest("Гарын үсэг зурагчийн регистрийн дугаар шаардлагатай")
+	}
+	etsi, err := uc.actingEtsi(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
+	res, sErr := uc.eid.ResendSigner(ctx, strings.TrimSpace(orgRegister), etsi, strings.TrimSpace(signerRegNo))
+	if sErr != nil {
+		return nil, mapSignerErr(sErr)
+	}
+	return res, nil
+}
+
 // RemoveEIDOrgSigner нь байгууллагаас гарын үсэг зурагчийг (РД) хасна.
 func (uc *usecase) RemoveEIDOrgSigner(ctx context.Context, userID, orgRegister, signerRegNo string) ([]eid.Signer, error) {
 	etsi, err := uc.actingEtsi(ctx, userID)

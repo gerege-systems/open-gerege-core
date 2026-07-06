@@ -128,6 +128,15 @@ func (_m *AuthUsecase) RemoveEIDOrgSigner(ctx context.Context, userID, orgRegist
 	return r0, ret.Error(1)
 }
 
+func (_m *AuthUsecase) ResendEIDOrgSigner(ctx context.Context, userID, orgRegister, signerRegNo string) (*eid.SignersResult, error) {
+	ret := _m.Called(ctx, userID, orgRegister, signerRegNo)
+	var r0 *eid.SignersResult
+	if v := ret.Get(0); v != nil {
+		r0 = v.(*eid.SignersResult)
+	}
+	return r0, ret.Error(1)
+}
+
 func (_m *AuthUsecase) EIDSummary(ctx context.Context, userID string) (*eid.PersonSummary, error) {
 	ret := _m.Called(ctx, userID)
 	var r0 *eid.PersonSummary

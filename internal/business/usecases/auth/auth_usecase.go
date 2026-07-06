@@ -72,6 +72,8 @@ type Usecase interface {
 	AddEIDOrgSigner(ctx context.Context, userID, orgRegister, signerRegNo, role string) (*eid.SignersResult, error)
 	// RemoveEIDOrgSigner нь байгууллагаас гарын үсэг зурагчийг (РД) хасна.
 	RemoveEIDOrgSigner(ctx context.Context, userID, orgRegister, signerRegNo string) ([]eid.Signer, error)
+	// ResendEIDOrgSigner нь баталгаажаагүй гарын үсэг зурагч руу sign-push дахин илгээнэ.
+	ResendEIDOrgSigner(ctx context.Context, userID, orgRegister, signerRegNo string) (*eid.SignersResult, error)
 	// GoogleLogin нь Google authorization code-ийг боловсруулна: холбогдсон
 	// account бол шууд нэвтрүүлж, эс бол eID-ээр баталгаажуулах LinkToken буцаана.
 	GoogleLogin(ctx context.Context, code, redirectURI string) (GoogleLoginResponse, error)

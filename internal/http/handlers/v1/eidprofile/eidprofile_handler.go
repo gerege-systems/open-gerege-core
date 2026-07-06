@@ -179,6 +179,30 @@ func (h Handler) AddOrgSigner(w http.ResponseWriter, r *http.Request) error {
 		responses.FromEIDSignersResult(res))
 }
 
+// ResendOrgSigner godoc
+// @Summary      Баталгаажуулах хүсэлт дахин илгээх (eID)
+// @Description  Баталгаажаагүй (PENDING) гарын үсэг зурагч руу eID sign-push баталгаажуулах хүсэлтийг дахин илгээнэ.
+// @Tags         users
+// @Produce      json
+// @Security     BearerAuth
+// @Param        regNo   path   string  true  "Байгууллагын регистрийн дугаар"
+// @Param        signer  query  string  true  "Гарын үсэг зурагчийн РД"
+// @Success      200  {object}  v1.BaseResponse{data=responses.OrgSignersResultResponse}
+// @Router       /users/me/eid/organizations/{regNo}/signers/resend [post]
+func (h Handler) ResendOrgSigner(w http.ResponseWriter, r *http.Request) error {
+	ctx := r.Context()
+	user, err := httpauth.CurrentUserFromContext(r)
+	if err != nil {
+		return v1.NewAbortResponse(w, r, "invalid token")
+	}
+	res, err := h.usecase.ResendEIDOrgSigner(ctx, user.ID, chi.URLParam(r, "regNo"), r.URL.Query().Get("signer"))
+	if err != nil {
+		return v1.RespondWithError(w, r, err)
+	}
+	return v1.NewSuccessResponse(w, r, http.StatusOK, "eid org signer confirmation resent",
+		responses.FromEIDSignersResult(res))
+}
+
 // RemoveOrgSigner godoc
 // @Summary      Гарын үсэг зурагч хасах (eID)
 // @Description  Нэвтэрсэн иргэний төлөөлдөг байгууллагаас гарын үсэг зурагчийг (регистрийн дугаараар) хасна.

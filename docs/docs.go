@@ -3070,6 +3070,59 @@ const docTemplate = `{
                 }
             }
         },
+        "/users/me/eid/organizations/{regNo}/signers/resend": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Баталгаажаагүй (PENDING) гарын үсэг зурагч руу eID sign-push баталгаажуулах хүсэлтийг дахин илгээнэ.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "summary": "Баталгаажуулах хүсэлт дахин илгээх (eID)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Байгууллагын регистрийн дугаар",
+                        "name": "regNo",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Гарын үсэг зурагчийн РД",
+                        "name": "signer",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/template_internal_http_datatransfers_responses.OrgSignersResultResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
         "/users/me/eid/summary": {
             "get": {
                 "security": [

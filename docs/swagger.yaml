@@ -2994,6 +2994,38 @@ paths:
       summary: Гарын үсэг зурагч нэмэх (eID)
       tags:
       - users
+  /users/me/eid/organizations/{regNo}/signers/resend:
+    post:
+      description: Баталгаажаагүй (PENDING) гарын үсэг зурагч руу eID sign-push баталгаажуулах
+        хүсэлтийг дахин илгээнэ.
+      parameters:
+      - description: Байгууллагын регистрийн дугаар
+        in: path
+        name: regNo
+        required: true
+        type: string
+      - description: Гарын үсэг зурагчийн РД
+        in: query
+        name: signer
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/template_internal_http_datatransfers_responses.OrgSignersResultResponse'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Баталгаажуулах хүсэлт дахин илгээх (eID)
+      tags:
+      - users
   /users/me/eid/summary:
     get:
       description: Нэвтэрсэн иргэний гэрчилгээ/auth-sign/төхөөрөмж/байгууллагын нэгдсэн
