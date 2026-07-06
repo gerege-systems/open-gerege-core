@@ -454,8 +454,9 @@ func (uc *usecase) ListEIDOrgSigners(ctx context.Context, userID, orgRegister st
 }
 
 // AddEIDOrgSigner нь байгууллагад өөр иргэнийг (РД) гарын үсэг зурах эрхтэй (MANAGER)
-// болгож нэмнэ. Нэмэгдэх эрх нь үргэлж MANAGER (eidmongolia талд шийдэгдэнэ).
-func (uc *usecase) AddEIDOrgSigner(ctx context.Context, userID, orgRegister, signerRegNo, role string) ([]eid.Signer, error) {
+// болгож нэмнэ. Тэр хүн рүү eID sign-push илгээгдэж, өөрөө PIN-ээрээ баталгаажуулах
+// хүртэл PENDING (хүчингүй). Шинэ жагсаалт + хүлээгдэж буй баталгаажуулалтыг буцаана.
+func (uc *usecase) AddEIDOrgSigner(ctx context.Context, userID, orgRegister, signerRegNo, role string) (*eid.SignersResult, error) {
 	if strings.TrimSpace(signerRegNo) == "" {
 		return nil, apperror.BadRequest("Гарын үсэг зурагчийн регистрийн дугаар шаардлагатай")
 	}
@@ -463,13 +464,13 @@ func (uc *usecase) AddEIDOrgSigner(ctx context.Context, userID, orgRegister, sig
 	if err != nil {
 		return nil, err
 	}
-	signers, sErr := uc.eid.AddSigner(ctx, strings.TrimSpace(orgRegister), etsi, eid.AddSignerInput{
+	res, sErr := uc.eid.AddSigner(ctx, strings.TrimSpace(orgRegister), etsi, eid.AddSignerInput{
 		SignerRegNo: strings.TrimSpace(signerRegNo), Role: strings.TrimSpace(role),
 	})
 	if sErr != nil {
 		return nil, mapSignerErr(sErr)
 	}
-	return signers, nil
+	return res, nil
 }
 
 // RemoveEIDOrgSigner нь байгууллагаас гарын үсэг зурагчийг (РД) хасна.

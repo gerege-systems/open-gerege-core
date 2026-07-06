@@ -110,11 +110,11 @@ func (_m *AuthUsecase) ListEIDOrgSigners(ctx context.Context, userID, orgRegiste
 	return r0, ret.Error(1)
 }
 
-func (_m *AuthUsecase) AddEIDOrgSigner(ctx context.Context, userID, orgRegister, signerRegNo, role string) ([]eid.Signer, error) {
+func (_m *AuthUsecase) AddEIDOrgSigner(ctx context.Context, userID, orgRegister, signerRegNo, role string) (*eid.SignersResult, error) {
 	ret := _m.Called(ctx, userID, orgRegister, signerRegNo, role)
-	var r0 []eid.Signer
+	var r0 *eid.SignersResult
 	if v := ret.Get(0); v != nil {
-		r0 = v.([]eid.Signer)
+		r0 = v.(*eid.SignersResult)
 	}
 	return r0, ret.Error(1)
 }

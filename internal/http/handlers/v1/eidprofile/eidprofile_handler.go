@@ -156,7 +156,7 @@ func (h Handler) OrgSigners(w http.ResponseWriter, r *http.Request) error {
 // @Security     BearerAuth
 // @Param        regNo    path  string                          true  "Байгууллагын регистрийн дугаар"
 // @Param        payload  body  requests.AddEIDSignerRequest    true  "Гарын үсэг зурагчийн РД + үүрэг"
-// @Success      200  {object}  v1.BaseResponse{data=[]responses.OrgSignerResponse}
+// @Success      200  {object}  v1.BaseResponse{data=responses.OrgSignersResultResponse}  "Signers + pending confirmation"
 // @Router       /users/me/eid/organizations/{regNo}/signers [post]
 func (h Handler) AddOrgSigner(w http.ResponseWriter, r *http.Request) error {
 	ctx := r.Context()
@@ -171,12 +171,12 @@ func (h Handler) AddOrgSigner(w http.ResponseWriter, r *http.Request) error {
 	if err := validators.ValidatePayloads(req); err != nil {
 		return v1.RespondWithError(w, r, err)
 	}
-	signers, err := h.usecase.AddEIDOrgSigner(ctx, user.ID, chi.URLParam(r, "regNo"), req.SignerRegNo, req.Role)
+	res, err := h.usecase.AddEIDOrgSigner(ctx, user.ID, chi.URLParam(r, "regNo"), req.SignerRegNo, req.Role)
 	if err != nil {
 		return v1.RespondWithError(w, r, err)
 	}
 	return v1.NewSuccessResponse(w, r, http.StatusOK, "eid org signer added",
-		responses.FromEIDSigners(signers))
+		responses.FromEIDSignersResult(res))
 }
 
 // RemoveOrgSigner godoc

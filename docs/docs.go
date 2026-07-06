@@ -2996,7 +2996,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "Signers + pending confirmation",
                         "schema": {
                             "allOf": [
                                 {
@@ -3006,10 +3006,7 @@ const docTemplate = `{
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "type": "array",
-                                            "items": {
-                                                "$ref": "#/definitions/template_internal_http_datatransfers_responses.OrgSignerResponse"
-                                            }
+                                            "$ref": "#/definitions/template_internal_http_datatransfers_responses.OrgSignersResultResponse"
                                         }
                                     }
                                 }
@@ -5510,6 +5507,20 @@ const docTemplate = `{
                 }
             }
         },
+        "template_internal_http_datatransfers_responses.OrgPendingConfirmationResponse": {
+            "type": "object",
+            "properties": {
+                "session_id": {
+                    "type": "string"
+                },
+                "signer_etsi": {
+                    "type": "string"
+                },
+                "signer_reg_no": {
+                    "type": "string"
+                }
+            }
+        },
         "template_internal_http_datatransfers_responses.OrgRepresentationResponse": {
             "type": "object",
             "properties": {
@@ -5591,6 +5602,24 @@ const docTemplate = `{
                 },
                 "source": {
                     "type": "string"
+                },
+                "status": {
+                    "description": "ACTIVE | PENDING (sign-push баталгаажуулалт)",
+                    "type": "string"
+                }
+            }
+        },
+        "template_internal_http_datatransfers_responses.OrgSignersResultResponse": {
+            "type": "object",
+            "properties": {
+                "pending_confirmation": {
+                    "$ref": "#/definitions/template_internal_http_datatransfers_responses.OrgPendingConfirmationResponse"
+                },
+                "signers": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/template_internal_http_datatransfers_responses.OrgSignerResponse"
+                    }
                 }
             }
         },

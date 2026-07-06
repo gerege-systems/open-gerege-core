@@ -83,11 +83,11 @@ func (_m *EIDClient) OrgSigners(ctx context.Context, orgRegister, actingPersonEt
 	return r0, ret.Error(1)
 }
 
-func (_m *EIDClient) AddSigner(ctx context.Context, orgRegister, actingPersonEtsi string, in eid.AddSignerInput) ([]eid.Signer, error) {
+func (_m *EIDClient) AddSigner(ctx context.Context, orgRegister, actingPersonEtsi string, in eid.AddSignerInput) (*eid.SignersResult, error) {
 	ret := _m.Called(ctx, orgRegister, actingPersonEtsi, in)
-	var r0 []eid.Signer
+	var r0 *eid.SignersResult
 	if v := ret.Get(0); v != nil {
-		r0 = v.([]eid.Signer)
+		r0 = v.(*eid.SignersResult)
 	}
 	return r0, ret.Error(1)
 }

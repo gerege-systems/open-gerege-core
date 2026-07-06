@@ -87,15 +87,15 @@ func TestUnlinkAndSigners(t *testing.T) {
 		}
 	})
 
-	t.Run("AddSigner POST + parse", func(t *testing.T) {
+	t.Run("AddSigner POST → PENDING + pendingConfirmation", func(t *testing.T) {
 		var gotPath, gotMethod, gotBody string
 		c, _ := newTestClient(t, func(w http.ResponseWriter, r *http.Request) {
 			gotPath, gotMethod = r.URL.Path, r.Method
 			b, _ := io.ReadAll(r.Body)
 			gotBody = string(b)
-			_, _ = io.WriteString(w, `{"orgRegister":"6235972","signers":[{"personEtsi":"PNOMN-МА74101813","regNo":"ма74101813","name":"Цэнддорж Эрдэнэбат","role":"Нягтлан бодогч","rightType":"MANAGER","source":"MANUAL","self":false}]}`)
+			_, _ = io.WriteString(w, `{"orgRegister":"6235972","signers":[{"personEtsi":"PNOMN-МА74101813","regNo":"ма74101813","name":"Цэнддорж Эрдэнэбат","role":"Нягтлан бодогч","rightType":"MANAGER","status":"PENDING","source":"MANUAL","self":false}],"pendingConfirmation":{"orgRegister":"6235972","orgName":"Гэрэгэ системс","signerEtsi":"PNOMN-МА74101813","signerRegNo":"ма74101813","sessionId":"sess-1"}}`)
 		})
-		signers, err := c.AddSigner(context.Background(), "6235972", "PNOMN-УБ72060800", AddSignerInput{SignerRegNo: "ма74101813", Role: "Нягтлан бодогч"})
+		res, err := c.AddSigner(context.Background(), "6235972", "PNOMN-УБ72060800", AddSignerInput{SignerRegNo: "ма74101813", Role: "Нягтлан бодогч"})
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -105,8 +105,11 @@ func TestUnlinkAndSigners(t *testing.T) {
 		if !strings.Contains(gotBody, `"signerRegNo":"ма74101813"`) {
 			t.Errorf("body = %s", gotBody)
 		}
-		if len(signers) != 1 || signers[0].Role != "Нягтлан бодогч" || signers[0].RightType != "MANAGER" {
-			t.Errorf("signers = %+v", signers)
+		if len(res.Signers) != 1 || res.Signers[0].Role != "Нягтлан бодогч" || res.Signers[0].RightType != "MANAGER" || res.Signers[0].Status != "PENDING" {
+			t.Errorf("signers = %+v", res.Signers)
+		}
+		if res.PendingConfirmation == nil || res.PendingConfirmation.SessionID != "sess-1" || res.PendingConfirmation.SignerEtsi != "PNOMN-МА74101813" {
+			t.Errorf("pendingConfirmation = %+v", res.PendingConfirmation)
 		}
 	})
 

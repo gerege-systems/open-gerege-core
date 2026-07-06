@@ -879,6 +879,15 @@ definitions:
       user_id:
         type: string
     type: object
+  template_internal_http_datatransfers_responses.OrgPendingConfirmationResponse:
+    properties:
+      session_id:
+        type: string
+      signer_etsi:
+        type: string
+      signer_reg_no:
+        type: string
+    type: object
   template_internal_http_datatransfers_responses.OrgRepresentationResponse:
     properties:
       org_etsi:
@@ -933,6 +942,18 @@ definitions:
         type: boolean
       source:
         type: string
+      status:
+        description: ACTIVE | PENDING (sign-push баталгаажуулалт)
+        type: string
+    type: object
+  template_internal_http_datatransfers_responses.OrgSignersResultResponse:
+    properties:
+      pending_confirmation:
+        $ref: '#/definitions/template_internal_http_datatransfers_responses.OrgPendingConfirmationResponse'
+      signers:
+        items:
+          $ref: '#/definitions/template_internal_http_datatransfers_responses.OrgSignerResponse'
+        type: array
     type: object
   template_internal_http_datatransfers_responses.SecurityEventResponse:
     properties:
@@ -2960,15 +2981,13 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
+          description: Signers + pending confirmation
           schema:
             allOf:
             - $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
             - properties:
                 data:
-                  items:
-                    $ref: '#/definitions/template_internal_http_datatransfers_responses.OrgSignerResponse'
-                  type: array
+                  $ref: '#/definitions/template_internal_http_datatransfers_responses.OrgSignersResultResponse'
               type: object
       security:
       - BearerAuth: []

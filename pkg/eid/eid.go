@@ -156,9 +156,28 @@ type Signer struct {
 	Name       string
 	NameEn     string
 	Role       string
-	RightType  string
+	RightType  string // ADMIN | MANAGER
+	Status     string // ACTIVE | PENDING (sign-push баталгаажуулалт хүлээж буй)
 	Source     string
 	Self       bool // нэвтэрсэн хэрэглэгч өөрөө эсэх
+}
+
+// OrgConfirmation нь MANAGER нэмэхэд тэр хүн рүү илгээгдсэн eID sign-push
+// баталгаажуулалтын session — тэр хүн утсаараа PIN-ээ зурж зөвшөөрөх хүртэл rep
+// нь PENDING (хүчингүй) хэвээр.
+type OrgConfirmation struct {
+	OrgRegister string
+	OrgName     string
+	SignerEtsi  string
+	SignerRegNo string
+	SessionID   string
+}
+
+// SignersResult нь байгууллагын гарын үсэг зурагчдын жагсаалт + (шинээр нэмэх үед)
+// хүлээгдэж буй sign-push баталгаажуулалт.
+type SignersResult struct {
+	Signers             []Signer
+	PendingConfirmation *OrgConfirmation
 }
 
 // AddSignerInput нь AddSigner-д дамжуулах шинэ гарын үсэг зурагчийн мэдээлэл.
@@ -197,8 +216,9 @@ type Client interface {
 	// тухайн байгууллагын төлөөлөгч байх ёстой (эс бол ErrNotRepresentative).
 	OrgSigners(ctx context.Context, orgRegister, actingPersonEtsi string) ([]Signer, error)
 	// AddSigner нь байгууллагад өөр eID иргэнийг (РД) гарын үсэг зурах эрхтэй
-	// төлөөлөгч болгож нэмнэ. Байгууллагын шинэ жагсаалтыг буцаана.
-	AddSigner(ctx context.Context, orgRegister, actingPersonEtsi string, in AddSignerInput) ([]Signer, error)
+	// (MANAGER) төлөөлөгч болгож нэмнэ. Тэр хүн рүү sign-push илгээж, PENDING rep
+	// үүсгэнэ. Шинэ жагсаалт + хүлээгдэж буй баталгаажуулалтыг буцаана.
+	AddSigner(ctx context.Context, orgRegister, actingPersonEtsi string, in AddSignerInput) (*SignersResult, error)
 	// RemoveSigner нь байгууллагаас гарын үсэг зурагчийг (РД) хасна.
 	RemoveSigner(ctx context.Context, orgRegister, actingPersonEtsi, signerRegNo string) ([]Signer, error)
 
@@ -561,8 +581,8 @@ func parseRepresentations(raw []byte) ([]Representation, error) {
 	return reps, nil
 }
 
-// parseSigners нь signers хариуг []Signer болгож задлана.
-func parseSigners(raw []byte) ([]Signer, error) {
+// parseSignersResult нь signers хариуг (жагсаалт + pendingConfirmation) задлана.
+func parseSignersResult(raw []byte) (*SignersResult, error) {
 	var out struct {
 		Signers []struct {
 			PersonEtsi string `json:"personEtsi"`
@@ -571,21 +591,44 @@ func parseSigners(raw []byte) ([]Signer, error) {
 			NameEn     string `json:"nameEn"`
 			Role       string `json:"role"`
 			RightType  string `json:"rightType"`
+			Status     string `json:"status"`
 			Source     string `json:"source"`
 			Self       bool   `json:"self"`
 		} `json:"signers"`
+		PendingConfirmation *struct {
+			OrgRegister string `json:"orgRegister"`
+			OrgName     string `json:"orgName"`
+			SignerEtsi  string `json:"signerEtsi"`
+			SignerRegNo string `json:"signerRegNo"`
+			SessionID   string `json:"sessionId"`
+		} `json:"pendingConfirmation"`
 	}
 	if err := json.Unmarshal(raw, &out); err != nil {
 		return nil, fmt.Errorf("eid signers: invalid response: %s", snippet(raw))
 	}
-	sgs := make([]Signer, 0, len(out.Signers))
+	res := &SignersResult{Signers: make([]Signer, 0, len(out.Signers))}
 	for _, s := range out.Signers {
-		sgs = append(sgs, Signer{
+		res.Signers = append(res.Signers, Signer{
 			PersonEtsi: s.PersonEtsi, RegNo: s.RegNo, Name: s.Name, NameEn: s.NameEn,
-			Role: s.Role, RightType: s.RightType, Source: s.Source, Self: s.Self,
+			Role: s.Role, RightType: s.RightType, Status: s.Status, Source: s.Source, Self: s.Self,
 		})
 	}
-	return sgs, nil
+	if pc := out.PendingConfirmation; pc != nil {
+		res.PendingConfirmation = &OrgConfirmation{
+			OrgRegister: pc.OrgRegister, OrgName: pc.OrgName, SignerEtsi: pc.SignerEtsi,
+			SignerRegNo: pc.SignerRegNo, SessionID: pc.SessionID,
+		}
+	}
+	return res, nil
+}
+
+// parseSigners нь signers хариуг []Signer болгож задлана (pending-г үл тооно).
+func parseSigners(raw []byte) ([]Signer, error) {
+	r, err := parseSignersResult(raw)
+	if err != nil {
+		return nil, err
+	}
+	return r.Signers, nil
 }
 
 func (c *client) RemoveRepresentation(ctx context.Context, personEtsi, orgRegister string) ([]Representation, error) {
@@ -620,7 +663,7 @@ func (c *client) OrgSigners(ctx context.Context, orgRegister, actingPersonEtsi s
 	return parseSigners(raw)
 }
 
-func (c *client) AddSigner(ctx context.Context, orgRegister, actingPersonEtsi string, in AddSignerInput) ([]Signer, error) {
+func (c *client) AddSigner(ctx context.Context, orgRegister, actingPersonEtsi string, in AddSignerInput) (*SignersResult, error) {
 	body := struct {
 		SignerRegNo string `json:"signerRegNo"`
 		Role        string `json:"role,omitempty"`
@@ -638,7 +681,7 @@ func (c *client) AddSigner(ctx context.Context, orgRegister, actingPersonEtsi st
 	if status >= 300 {
 		return nil, fmt.Errorf("eid add signer: status %d: %s", status, snippet(raw))
 	}
-	return parseSigners(raw)
+	return parseSignersResult(raw)
 }
 
 func (c *client) RemoveSigner(ctx context.Context, orgRegister, actingPersonEtsi, signerRegNo string) ([]Signer, error) {

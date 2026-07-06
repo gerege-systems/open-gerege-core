@@ -47,8 +47,23 @@ type OrgSignerResponse struct {
 	NameEn     string `json:"name_en,omitempty"`
 	Role       string `json:"role,omitempty"`
 	RightType  string `json:"right_type"`
+	Status     string `json:"status"` // ACTIVE | PENDING (sign-push баталгаажуулалт)
 	Source     string `json:"source"`
 	Self       bool   `json:"self"`
+}
+
+// OrgPendingConfirmationResponse нь MANAGER нэмэхэд тэр хүн рүү илгээгдсэн sign-push
+// баталгаажуулалтын мэдээлэл (клиент "хүсэлт илгээгдлээ" гэж харуулна).
+type OrgPendingConfirmationResponse struct {
+	SignerEtsi  string `json:"signer_etsi"`
+	SignerRegNo string `json:"signer_reg_no,omitempty"`
+	SessionID   string `json:"session_id"`
+}
+
+// OrgSignersResultResponse нь POST (нэмэх)-ийн хариу — жагсаалт + хүлээгдэж буй баталгаажуулалт.
+type OrgSignersResultResponse struct {
+	Signers             []OrgSignerResponse             `json:"signers"`
+	PendingConfirmation *OrgPendingConfirmationResponse `json:"pending_confirmation,omitempty"`
 }
 
 // FromEIDSigners нь eID signer-уудыг DTO жагсаалт руу буулгана.
@@ -62,9 +77,24 @@ func FromEIDSigners(signers []eid.Signer) []OrgSignerResponse {
 			NameEn:     s.NameEn,
 			Role:       s.Role,
 			RightType:  s.RightType,
+			Status:     s.Status,
 			Source:     s.Source,
 			Self:       s.Self,
 		})
+	}
+	return out
+}
+
+// FromEIDSignersResult нь AddSigner-ийн үр дүнг (жагсаалт + pending) DTO руу буулгана.
+func FromEIDSignersResult(res *eid.SignersResult) OrgSignersResultResponse {
+	if res == nil {
+		return OrgSignersResultResponse{Signers: []OrgSignerResponse{}}
+	}
+	out := OrgSignersResultResponse{Signers: FromEIDSigners(res.Signers)}
+	if pc := res.PendingConfirmation; pc != nil {
+		out.PendingConfirmation = &OrgPendingConfirmationResponse{
+			SignerEtsi: pc.SignerEtsi, SignerRegNo: pc.SignerRegNo, SessionID: pc.SessionID,
+		}
 	}
 	return out
 }
