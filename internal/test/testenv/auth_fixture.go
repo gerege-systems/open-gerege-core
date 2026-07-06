@@ -145,6 +145,28 @@ func (f *FakeEID) Representations(_ context.Context, _ string) ([]eid.Representa
 	return f.Reps, nil
 }
 
+// Байгууллага холбох / гарын үсэг зурагч удирдах fake-ууд — тэг утга (энэ урсгалыг
+// туршихгүй интеграц тестүүдэд хангалттай; eid.Client интерфейсийг л хангана).
+func (f *FakeEID) AddRepresentation(_ context.Context, _ string, _ eid.AddRepresentationInput) ([]eid.Representation, error) {
+	return f.Reps, nil
+}
+
+func (f *FakeEID) RemoveRepresentation(_ context.Context, _, _ string) ([]eid.Representation, error) {
+	return f.Reps, nil
+}
+
+func (f *FakeEID) OrgSigners(_ context.Context, _, _ string) ([]eid.Signer, error) {
+	return nil, nil
+}
+
+func (f *FakeEID) AddSigner(_ context.Context, _, _ string, _ eid.AddSignerInput) (*eid.SignersResult, error) {
+	return &eid.SignersResult{}, nil
+}
+
+func (f *FakeEID) RemoveSigner(_ context.Context, _, _, _ string) ([]eid.Signer, error) {
+	return nil, nil
+}
+
 // Person* fake-ууд — default nil/тэг (PKI боломжийг туршихгүй тестүүдэд хангалттай).
 func (f *FakeEID) PersonSummary(_ context.Context, _ string) (*eid.PersonSummary, error) {
 	return f.Summary, nil
