@@ -2790,6 +2790,76 @@ const docTemplate = `{
                         }
                     }
                 }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Улсын бүртгэлээс (XYP) байгууллагыг регистрийн дугаараар хайж, нэвтэрсэн иргэнийг (eID РД нь тухайн байгууллагын захирал/үүсгэн байгуулагч/хувь эзэмшигч бол) eidmongolia.mn-д төлөөлөл болгон холбоно. Иргэний бүх төлөөлдөг байгууллагыг буцаана.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "summary": "Байгууллага холбох (eID)",
+                "parameters": [
+                    {
+                        "description": "Байгууллагын регистрийн дугаар",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_datatransfers_requests.EIDOrgRegisterRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Representations",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/template_internal_http_datatransfers_responses.OrgRepresentationResponse"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid body",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Not authorized to represent this organization",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Organization not found",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    }
+                }
             }
         },
         "/users/me/eid/summary": {
@@ -4160,6 +4230,19 @@ const docTemplate = `{
                 "reg_no": {
                     "type": "string",
                     "maxLength": 40
+                }
+            }
+        },
+        "template_internal_http_datatransfers_requests.EIDOrgRegisterRequest": {
+            "type": "object",
+            "required": [
+                "reg_no"
+            ],
+            "properties": {
+                "reg_no": {
+                    "type": "string",
+                    "maxLength": 16,
+                    "minLength": 4
                 }
             }
         },

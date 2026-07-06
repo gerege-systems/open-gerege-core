@@ -27,6 +27,11 @@ import (
 // үүнийг "эрх хүлээгдэж байна" төлөв болгон харуулж болно (алдаа биш).
 var ErrPKINotPermitted = errors.New("eid: RP lacks PKI_READ permission")
 
+// ErrNotRepresentative нь AddRepresentation-д иргэн тухайн байгууллагыг төлөөлөх
+// эрхгүй (РД нь affiliate жагсаалтад алга) үед 403-аар буцна. Дуудагч үүнийг
+// "энэ байгууллагыг төлөөлөх эрхгүй" (Forbidden) болгон харуулна.
+var ErrNotRepresentative = errors.New("eid: not authorized to represent this organization")
+
 // CertCounts нь гэрчилгээний статусын тоолол.
 type CertCounts struct {
 	Valid     int `json:"valid"`

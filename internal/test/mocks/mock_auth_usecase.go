@@ -83,6 +83,15 @@ func (_m *AuthUsecase) EIDRepresentations(ctx context.Context, userID string) ([
 	return r0, ret.Error(1)
 }
 
+func (_m *AuthUsecase) RegisterEIDOrganization(ctx context.Context, userID, regNo string) ([]eid.Representation, error) {
+	ret := _m.Called(ctx, userID, regNo)
+	var r0 []eid.Representation
+	if v := ret.Get(0); v != nil {
+		r0 = v.([]eid.Representation)
+	}
+	return r0, ret.Error(1)
+}
+
 func (_m *AuthUsecase) EIDSummary(ctx context.Context, userID string) (*eid.PersonSummary, error) {
 	ret := _m.Called(ctx, userID)
 	var r0 *eid.PersonSummary

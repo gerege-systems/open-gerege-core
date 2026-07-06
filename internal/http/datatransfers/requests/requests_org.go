@@ -11,6 +11,13 @@ type CreateOrgRequest struct {
 	NameLatin string `json:"name_latin" validate:"omitempty,max=200"`
 }
 
+// EIDOrgRegisterRequest нь POST /v1/users/me/eid/organizations-ийн body — улсын
+// бүртгэлээс (XYP) байгууллагыг regNo-гоор хайж, нэвтэрсэн иргэнд (эрх бүхий бол)
+// eidmongolia-д төлөөлөл болгон холбоно.
+type EIDOrgRegisterRequest struct {
+	RegNo string `json:"reg_no" validate:"required,min=4,max=16"`
+}
+
 // AddMemberRequest нь POST /v1/org/{id}/members-ийн body. role хоосон бол
 // 'member' болж өгөгдмөлддөг (usecase шийднэ).
 type AddMemberRequest struct {

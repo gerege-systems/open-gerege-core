@@ -61,6 +61,7 @@ import (
 	"template/pkg/observability"
 	"template/pkg/oidc"
 	"template/pkg/verify"
+	"template/pkg/xyp"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -171,7 +172,9 @@ func NewApp() (*App, error) {
 	eidClient := eid.NewClient(config.AppConfig.EIDBaseURL, config.AppConfig.EIDRPUUID, config.AppConfig.EIDRPName, config.AppConfig.EIDRPSecret, config.AppConfig.EIDCertLevel)
 	// Google OAuth — Google account-ийг eID хэрэглэгчид холбох нэвтрэлт.
 	googleClient := google.NewClient(config.AppConfig.GoogleClientID, config.AppConfig.GoogleClientSecret)
-	authUC := auth.NewUsecase(usersUC, jwtService, verifier, eidClient, googleClient, redisCache, auth.Config{
+	// Gerege Verify / XYP — улсын бүртгэлээс байгууллагын мэдээлэл (eID байгууллага холбох).
+	xypClient := xyp.NewClient(config.AppConfig.XYPAPIBase, config.AppConfig.XYPClientID, config.AppConfig.XYPClientSecret)
+	authUC := auth.NewUsecase(usersUC, jwtService, verifier, eidClient, xypClient, googleClient, redisCache, auth.Config{
 		OTPMaxAttempts:    config.AppConfig.OTPMaxAttempts,
 		OTPTTL:            time.Duration(config.AppConfig.REDISExpired) * time.Minute,
 		PasswordResetTTL:  30 * time.Minute,
@@ -299,7 +302,7 @@ func NewApp() (*App, error) {
 		api.Get("/", routes.RootHandler)
 		routes.NewAuthRoute(api, authUC, auditUC, authMiddleware, authRateLimiter, pollRateLimiter).Routes()
 		routes.NewUsersRoute(api, usersUC, authMiddleware).Routes()
-		routes.NewEIDProfileRoute(api, authUC, authMiddleware).Routes()
+		routes.NewEIDProfileRoute(api, authUC, authMiddleware, govWriteRateLimiter).Routes()
 		routes.NewRBACRoute(api, rbacUC, auditUC, authMiddleware).Routes()
 		routes.NewOrgRoute(api, orgUC, auditUC, authMiddleware).Routes()
 		routes.NewGovRoute(api, govUC, authMiddleware, govWriteRateLimiter).Routes()

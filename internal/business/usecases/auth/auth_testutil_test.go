@@ -49,7 +49,7 @@ func newFixture(t *testing.T) *fixture {
 	redis := mocks.NewRedisCache(t)
 	fg := &fakeGoogle{}
 	return &fixture{
-		usecase: auth.NewUsecase(usersUC, jwtSvc, verifier, eidClient, fg, redis, auth.Config{
+		usecase: auth.NewUsecase(usersUC, jwtSvc, verifier, eidClient, nil, fg, redis, auth.Config{
 			OTPMaxAttempts:    5,
 			OTPTTL:            5 * time.Minute,
 			PasswordResetTTL:  30 * time.Minute,

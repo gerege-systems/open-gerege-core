@@ -143,7 +143,7 @@ func buildEIDStack(t *testing.T, baseURL string) (auth.Usecase, users.Usecase) {
 
 	usersUC := users.NewUsecase(userspostgres.NewUserRepository(db), ristretto, users.Config{BcryptCost: 4})
 	eidClient := eid.NewClient(baseURL, "c4f371c3-20bd-462e-8d97-5bc4a20fde08", "template-web", "rp_sk_test", "ADVANCED")
-	authUC := auth.NewUsecase(usersUC, jwtSvc, &testenv.FakeVerifier{}, eidClient, google.NewClient("", ""), redis, auth.Config{
+	authUC := auth.NewUsecase(usersUC, jwtSvc, &testenv.FakeVerifier{}, eidClient, nil, google.NewClient("", ""), redis, auth.Config{
 		OTPMaxAttempts: 5, OTPTTL: 5 * time.Minute, PasswordResetTTL: 30 * time.Minute,
 		BcryptCost: 4, LoginMaxAttempts: 10, LoginLockoutTTL: 15 * time.Minute,
 		ForgotMaxAttempts: 3, ForgotLockoutTTL: 15 * time.Minute,

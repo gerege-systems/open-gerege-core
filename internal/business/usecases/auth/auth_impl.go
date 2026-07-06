@@ -15,6 +15,7 @@ import (
 	"template/pkg/jwt"
 	"template/pkg/logger"
 	"template/pkg/verify"
+	"template/pkg/xyp"
 )
 
 // usecase нь хамаарлууд болон method хоорондын төлөвийг агуулдаг. Нэг зан
@@ -32,6 +33,7 @@ type usecase struct {
 	jwtService jwt.JWTService
 	verifier   verify.Sender
 	eid        eid.Client
+	xyp        xyp.Lookuper
 	google     GoogleClient
 	redisCache caches.RedisCache
 	cfg        Config
@@ -41,12 +43,13 @@ type usecase struct {
 // users.Usecase-ээс, бүх email/SMS OTP (бүртгэл баталгаажуулах болон нууц үг
 // сэргээх)-д verify.Sender (GeregeCloud Verify API)-ээс, бусад auth-хэсгүүдэд
 // jwt/redis-ээс хамаардаг.
-func NewUsecase(usersUC users.Usecase, jwtService jwt.JWTService, verifier verify.Sender, eidClient eid.Client, googleClient GoogleClient, redisCache caches.RedisCache, cfg Config) Usecase {
+func NewUsecase(usersUC users.Usecase, jwtService jwt.JWTService, verifier verify.Sender, eidClient eid.Client, xypClient xyp.Lookuper, googleClient GoogleClient, redisCache caches.RedisCache, cfg Config) Usecase {
 	return &usecase{
 		users:      usersUC,
 		jwtService: jwtService,
 		verifier:   verifier,
 		eid:        eidClient,
+		xyp:        xypClient,
 		google:     googleClient,
 		redisCache: redisCache,
 		cfg:        cfg,

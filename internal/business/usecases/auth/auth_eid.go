@@ -17,6 +17,7 @@ import (
 	"template/internal/business/usecases/users"
 	"template/pkg/eid"
 	"template/pkg/logger"
+	"template/pkg/xyp"
 )
 
 // eidPollTimeoutMs нь IdP-ийн session long-poll-ийн хүлээх дээд хугацаа (мс).
@@ -329,6 +330,81 @@ func (uc *usecase) EIDRepresentations(ctx context.Context, userID string) ([]eid
 		return nil, apperror.InternalCause(fmt.Errorf("eid representations: %w", repErr))
 	}
 	return reps, nil
+}
+
+// RegisterEIDOrganization — regNo-гоор улсын бүртгэлээс (XYP) байгууллагыг хайж,
+// нэвтэрсэн иргэнийг eidmongolia-д төлөөлөл болгон холбоно. Эрхийн шалгалт (иргэний
+// РД нь тухайн байгууллагын ceo/founder/stakeholder мөн эсэх) нь eidmongolia талд
+// (РД тэнд мэдэгддэг) хийгдэнэ — template нь зөвхөн XYP-ээс эрх бүхий этгээдийн РД
+// жагсаалтыг дамжуулна. Иргэний бүх идэвхтэй төлөөллийг буцаана.
+func (uc *usecase) RegisterEIDOrganization(ctx context.Context, userID, regNo string) ([]eid.Representation, error) {
+	regNo = strings.TrimSpace(regNo)
+	if regNo == "" {
+		return nil, apperror.BadRequest("Байгууллагын регистрийн дугаар шаардлагатай")
+	}
+	etsi, err := uc.eidPersonEtsi(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
+	if etsi == "" {
+		return nil, apperror.Forbidden("Байгууллага холбохын тулд eID-ээр нэвтэрсэн байх шаардлагатай")
+	}
+	if uc.xyp == nil {
+		return nil, apperror.Internal("Байгууллагын лавлагаа (XYP) тохируулагдаагүй")
+	}
+	org, lookupErr := uc.xyp.Lookup(ctx, regNo)
+	if lookupErr != nil {
+		if errors.Is(lookupErr, xyp.ErrNotFound) {
+			return nil, apperror.NotFound("Энэ регистрийн дугаартай байгууллага олдсонгүй")
+		}
+		if errors.Is(lookupErr, xyp.ErrNotConfigured) {
+			return nil, apperror.Internal("Байгууллагын лавлагаа (XYP) тохируулагдаагүй")
+		}
+		return nil, apperror.InternalCause(fmt.Errorf("xyp lookup: %w", lookupErr))
+	}
+	in := eid.AddRepresentationInput{
+		OrgRegister: org.RegNo,
+		OrgName:     org.Name,
+		Affiliates:  affiliatesFromXYP(org),
+	}
+	reps, addErr := uc.eid.AddRepresentation(ctx, etsi, in)
+	if addErr != nil {
+		if errors.Is(addErr, eid.ErrNotRepresentative) {
+			return nil, apperror.Forbidden("Та энэ байгууллагыг төлөөлөх эрхгүй байна (захирал / үүсгэн байгуулагч / хувь эзэмшигч биш)")
+		}
+		return nil, apperror.InternalCause(fmt.Errorf("eid add representation: %w", addErr))
+	}
+	return reps, nil
+}
+
+// affiliatesFromXYP — XYP-ийн байгууллагаас эрх бүхий этгээдийн (захирал → үүсгэн
+// байгуулагч → хувь эзэмшигч дарааллаар) РД жагсаалтыг угсарна. Захирлыг ЭХЭНД
+// тавьсан нь eidmongolia эхний таарсан бичлэгээр rightType тодорхойлдогтой
+// холбоотой (захирал → SOLE). Хоосон РД-г алгасна.
+func affiliatesFromXYP(org *xyp.Organization) []eid.OrgAffiliate {
+	var out []eid.OrgAffiliate
+	add := func(regNo, role, kind string) {
+		if strings.TrimSpace(regNo) == "" {
+			return
+		}
+		out = append(out, eid.OrgAffiliate{RegNo: strings.TrimSpace(regNo), Role: strings.TrimSpace(role), Kind: kind})
+	}
+	ceoRole := org.CEOPosition
+	if strings.TrimSpace(ceoRole) == "" {
+		ceoRole = "Гүйцэтгэх захирал"
+	}
+	add(org.CEORegNo, ceoRole, "CEO")
+	for _, f := range org.Founders {
+		add(f.RegNo, "Үүсгэн байгуулагч", "FOUNDER")
+	}
+	for _, sh := range org.StakeHolders {
+		role := sh.Position
+		if strings.TrimSpace(role) == "" {
+			role = "Хувь эзэмшигч"
+		}
+		add(sh.RegNo, role, "STAKEHOLDER")
+	}
+	return out
 }
 
 // EIDSummary нь иргэний PKI самбарын нэгдсэн тоог буцаана.

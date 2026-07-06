@@ -42,6 +42,13 @@ type Config struct {
 	VerifyAPIKey  string `mapstructure:"VERIFY_API_KEY"`
 	VerifyChannel string `mapstructure:"VERIFY_CHANNEL"`
 
+	// Gerege Verify / XYP (xyp.gerege.mn) — улсын бүртгэлээс байгууллагын мэдээлэл
+	// авах лавлагаа API. HTTP Basic Auth (client_id:client_secret). Креденшлгүй бол
+	// eID байгууллага холбох функц идэвхгүй болно (boot-ыг эвдэхгүй; сонголттой).
+	XYPAPIBase      string `mapstructure:"XYP_API_BASE"`
+	XYPClientID     string `mapstructure:"XYP_CLIENT_ID"`
+	XYPClientSecret string `mapstructure:"XYP_CLIENT_SECRET"`
+
 	// eID identity provider (RP contract) — энэ template нь Relying Party.
 	// "Login with eID" нь цорын ганц нэвтрэх арга тул эдгээр нь сонголттой
 	// биш ч boot-ийг эвдэхгүйн тулд бүгд зохистой default-той (production-д
@@ -186,6 +193,11 @@ func InitializeAppConfig() error {
 	// ийн утгыг struct руу буулгахгүй (key нь config файл/default-оос
 	// бүртгэгдээгүй бол).
 	_ = viper.BindEnv("SUPERADMIN_EMAIL")
+	// XYP (байгууллагын лавлагаа) креденшл — 12-factor орчинд зөвхөн environment-ээс
+	// ирж болзошгүй тул ил bind хийнэ (нууц; .env.example-д хоосон).
+	_ = viper.BindEnv("XYP_API_BASE")
+	_ = viper.BindEnv("XYP_CLIENT_ID")
+	_ = viper.BindEnv("XYP_CLIENT_SECRET")
 	// .env файл байхгүй байх нь алдаа БИШ — контейнер / 12-factor орчинд
 	// тохиргоог зөвхөн environment-ээс уншина. Зөвхөн жинхэнэ задлан унших
 	// (parse) алдааг л буцаана.
@@ -338,6 +350,9 @@ func applyDefaults() {
 	}
 	if AppConfig.CoreAPIBase == "" {
 		AppConfig.CoreAPIBase = "https://core.gerege.mn"
+	}
+	if AppConfig.XYPAPIBase == "" {
+		AppConfig.XYPAPIBase = "https://xyp.gerege.mn"
 	}
 	if AppConfig.SSOIssuer == "" {
 		AppConfig.SSOIssuer = "https://sso.gerege.mn"

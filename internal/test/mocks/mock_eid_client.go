@@ -56,6 +56,15 @@ func (_m *EIDClient) Representations(ctx context.Context, personEtsi string) ([]
 	return r0, ret.Error(1)
 }
 
+func (_m *EIDClient) AddRepresentation(ctx context.Context, personEtsi string, in eid.AddRepresentationInput) ([]eid.Representation, error) {
+	ret := _m.Called(ctx, personEtsi, in)
+	var r0 []eid.Representation
+	if v := ret.Get(0); v != nil {
+		r0 = v.([]eid.Representation)
+	}
+	return r0, ret.Error(1)
+}
+
 func (_m *EIDClient) PersonSummary(ctx context.Context, personEtsi string) (*eid.PersonSummary, error) {
 	ret := _m.Called(ctx, personEtsi)
 	var r0 *eid.PersonSummary

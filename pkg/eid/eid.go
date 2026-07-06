@@ -131,6 +131,24 @@ type Representation struct {
 	ValidTo     *time.Time // nil = хугацаагүй
 }
 
+// OrgAffiliate нь байгууллагыг төлөөлж болох эрх бүхий этгээд (улсын бүртгэлээс).
+// RegNo нь хувь хүний РД; eidmongolia иргэний РД-г энэ жагсаалттай тааруулж эрхийг
+// баталгаажуулна. Kind (CEO|FOUNDER|STAKEHOLDER) нь rightType-г тодорхойлно.
+type OrgAffiliate struct {
+	RegNo string
+	Role  string
+	Kind  string
+}
+
+// AddRepresentationInput нь AddRepresentation-д дамжуулах, XYP-ээс баталгаажсан
+// байгууллагын мэдээлэл + эрх бүхий этгээдийн жагсаалт.
+type AddRepresentationInput struct {
+	OrgRegister string
+	OrgName     string
+	OrgNameEn   string
+	Affiliates  []OrgAffiliate
+}
+
 // Client нь eID RP урсгалуудын хийсвэрлэл — тестэд хуурамчаар тавихад хялбар.
 type Client interface {
 	// QRInitiate нь QR нэвтрэлтийг эхлүүлж session мэдээллийг буцаана. callbackURL
@@ -147,6 +165,11 @@ type Client interface {
 	// чадах идэвхтэй байгууллагуудыг буцаана. Иргэн байгууллага төлөөлдөггүй
 	// бол хоосон slice.
 	Representations(ctx context.Context, personEtsi string) ([]Representation, error)
+	// AddRepresentation нь улсын бүртгэлээс (XYP) баталгаажуулсан байгууллагыг
+	// иргэнд холбоно (ORG_LINK_WRITE эрх шаардана). Иргэний РД нь affiliates
+	// (ceo/founders/stakeholders) жагсаалтад байвал л (эрх бүхий) төлөөлөл
+	// нэмэгдэнэ — эс бөгөөс ErrNotRepresentative. Иргэний бүх төлөөллийг буцаана.
+	AddRepresentation(ctx context.Context, personEtsi string, in AddRepresentationInput) ([]Representation, error)
 
 	// Person* нь иргэн өөрийн PKI самбарын endpoint-ууд — PKI_READ эрхтэй RP-д
 	// л нээгдэнэ (эрхгүй бол ErrPKINotPermitted).
@@ -412,6 +435,63 @@ func (c *client) Representations(ctx context.Context, personEtsi string) ([]Repr
 	}
 	if jErr := json.Unmarshal(raw, &out); jErr != nil {
 		return nil, fmt.Errorf("eid representations: invalid response: %s", snippet(raw))
+	}
+	reps := make([]Representation, 0, len(out.Representations))
+	for _, r := range out.Representations {
+		reps = append(reps, Representation{
+			OrgEtsi: r.OrgEtsi, OrgRegister: r.OrgRegister, OrgName: r.OrgName, OrgNameEn: r.OrgNameEn,
+			Role: r.Role, RightType: r.RightType, ValidFrom: r.ValidFrom, ValidTo: r.ValidTo,
+		})
+	}
+	return reps, nil
+}
+
+func (c *client) AddRepresentation(ctx context.Context, personEtsi string, in AddRepresentationInput) ([]Representation, error) {
+	if strings.TrimSpace(personEtsi) == "" {
+		return nil, errors.New("eid: empty personEtsi")
+	}
+	if strings.TrimSpace(in.OrgRegister) == "" {
+		return nil, errors.New("eid: empty orgRegister")
+	}
+	type affiliate struct {
+		RegNo string `json:"regNo"`
+		Role  string `json:"role,omitempty"`
+		Kind  string `json:"kind,omitempty"`
+	}
+	body := struct {
+		OrgRegister string      `json:"orgRegister"`
+		OrgName     string      `json:"orgName"`
+		OrgNameEn   string      `json:"orgNameEn,omitempty"`
+		Affiliates  []affiliate `json:"affiliates"`
+	}{OrgRegister: strings.TrimSpace(in.OrgRegister), OrgName: strings.TrimSpace(in.OrgName), OrgNameEn: strings.TrimSpace(in.OrgNameEn)}
+	for _, a := range in.Affiliates {
+		body.Affiliates = append(body.Affiliates, affiliate{RegNo: a.RegNo, Role: a.Role, Kind: a.Kind})
+	}
+	path := "/organization/representations/etsi/" + url.PathEscape(strings.TrimSpace(personEtsi))
+	raw, status, err := c.post(ctx, path, body)
+	if err != nil {
+		return nil, err
+	}
+	if status == http.StatusForbidden {
+		return nil, ErrNotRepresentative
+	}
+	if status >= 300 {
+		return nil, fmt.Errorf("eid add representation: status %d: %s", status, snippet(raw))
+	}
+	var out struct {
+		Representations []struct {
+			OrgEtsi     string     `json:"orgEtsi"`
+			OrgRegister string     `json:"orgRegister"`
+			OrgName     string     `json:"orgName"`
+			OrgNameEn   string     `json:"orgNameEn"`
+			Role        string     `json:"role"`
+			RightType   string     `json:"rightType"`
+			ValidFrom   *time.Time `json:"validFrom"`
+			ValidTo     *time.Time `json:"validTo"`
+		} `json:"representations"`
+	}
+	if jErr := json.Unmarshal(raw, &out); jErr != nil {
+		return nil, fmt.Errorf("eid add representation: invalid response: %s", snippet(raw))
 	}
 	reps := make([]Representation, 0, len(out.Representations))
 	for _, r := range out.Representations {

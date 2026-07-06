@@ -58,6 +58,11 @@ type Usecase interface {
 	// байгууллагуудыг eID-ээс буцаана. Хэрэглэгч eID-ээр нэвтрээгүй (civil_id
 	// байхгүй) бол хоосон slice.
 	EIDRepresentations(ctx context.Context, userID string) ([]eid.Representation, error)
+	// RegisterEIDOrganization нь улсын бүртгэлээс (XYP) байгууллагыг regNo-гоор
+	// хайж, нэвтэрсэн хэрэглэгчийг (eID РД нь тухайн байгууллагын эрх бүхий
+	// этгээд бол) eidmongolia-д төлөөлөл болгон холбоно. Иргэний бүх төлөөллийг
+	// буцаана. Байгууллага олдоогүй → NotFound; эрхгүй → Forbidden.
+	RegisterEIDOrganization(ctx context.Context, userID, regNo string) ([]eid.Representation, error)
 	// GoogleLogin нь Google authorization code-ийг боловсруулна: холбогдсон
 	// account бол шууд нэвтрүүлж, эс бол eID-ээр баталгаажуулах LinkToken буцаана.
 	GoogleLogin(ctx context.Context, code, redirectURI string) (GoogleLoginResponse, error)
