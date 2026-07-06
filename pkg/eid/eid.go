@@ -126,7 +126,7 @@ type Representation struct {
 	OrgName     string // кирилл нэр
 	OrgNameEn   string // латин нэр (сонголттой)
 	Role        string // ж: Гүйцэтгэх захирал
-	RightType   string // SOLE | JOINT
+	RightType   string // ADMIN | MANAGER
 	ValidFrom   *time.Time
 	ValidTo     *time.Time // nil = хугацаагүй
 }
@@ -162,10 +162,11 @@ type Signer struct {
 }
 
 // AddSignerInput нь AddSigner-д дамжуулах шинэ гарын үсэг зурагчийн мэдээлэл.
+// Нэмэгдэх гарын үсэг зурагчийн эрх нь ҮРГЭЛЖ MANAGER (eidmongolia талд шийдэгдэнэ)
+// тул rightType дамжуулахгүй.
 type AddSignerInput struct {
 	SignerRegNo string
 	Role        string
-	RightType   string // SOLE | JOINT (хоосон бол JOINT)
 }
 
 // Client нь eID RP урсгалуудын хийсвэрлэл — тестэд хуурамчаар тавихад хялбар.
@@ -620,8 +621,7 @@ func (c *client) AddSigner(ctx context.Context, orgRegister, actingPersonEtsi st
 	body := struct {
 		SignerRegNo string `json:"signerRegNo"`
 		Role        string `json:"role,omitempty"`
-		RightType   string `json:"rightType,omitempty"`
-	}{SignerRegNo: strings.TrimSpace(in.SignerRegNo), Role: strings.TrimSpace(in.Role), RightType: strings.TrimSpace(in.RightType)}
+	}{SignerRegNo: strings.TrimSpace(in.SignerRegNo), Role: strings.TrimSpace(in.Role)}
 	raw, status, err := c.signersReq(ctx, http.MethodPost, orgRegister, actingPersonEtsi, "", body)
 	if err != nil {
 		return nil, err

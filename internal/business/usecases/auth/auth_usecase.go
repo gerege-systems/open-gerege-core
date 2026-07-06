@@ -67,8 +67,8 @@ type Usecase interface {
 	UnlinkEIDOrganization(ctx context.Context, userID, orgRegister string) ([]eid.Representation, error)
 	// ListEIDOrgSigners нь байгууллагын гарын үсэг зурагчдыг буцаана (хэрэглэгч төлөөлөгч байх ёстой).
 	ListEIDOrgSigners(ctx context.Context, userID, orgRegister string) ([]eid.Signer, error)
-	// AddEIDOrgSigner нь байгууллагад өөр иргэнийг (РД) гарын үсэг зурах эрхтэй болгож нэмнэ.
-	AddEIDOrgSigner(ctx context.Context, userID, orgRegister, signerRegNo, role, rightType string) ([]eid.Signer, error)
+	// AddEIDOrgSigner нь байгууллагад өөр иргэнийг (РД) гарын үсэг зурах эрхтэй (MANAGER) болгож нэмнэ.
+	AddEIDOrgSigner(ctx context.Context, userID, orgRegister, signerRegNo, role string) ([]eid.Signer, error)
 	// RemoveEIDOrgSigner нь байгууллагаас гарын үсэг зурагчийг (РД) хасна.
 	RemoveEIDOrgSigner(ctx context.Context, userID, orgRegister, signerRegNo string) ([]eid.Signer, error)
 	// GoogleLogin нь Google authorization code-ийг боловсруулна: холбогдсон

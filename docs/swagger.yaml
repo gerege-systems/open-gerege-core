@@ -90,11 +90,6 @@ definitions:
     type: object
   template_internal_http_datatransfers_requests.AddEIDSignerRequest:
     properties:
-      right_type:
-        enum:
-        - SOLE
-        - JOINT
-        type: string
       role:
         maxLength: 100
         type: string

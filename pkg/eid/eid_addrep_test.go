@@ -22,7 +22,7 @@ func TestAddRepresentation(t *testing.T) {
 			b, _ := io.ReadAll(r.Body)
 			gotBody = string(b)
 			_, _ = io.WriteString(w, `{"personEtsi":"PNOMN-УБ72060800","representations":[
-				{"orgEtsi":"NTRMN-6235972","orgRegister":"6235972","orgName":"Гэрэгэ системс","orgNameEn":"Gerege LLC","role":"Гүйцэтгэх захирал","rightType":"SOLE"}
+				{"orgEtsi":"NTRMN-6235972","orgRegister":"6235972","orgName":"Гэрэгэ системс","orgNameEn":"Gerege LLC","role":"Гүйцэтгэх захирал","rightType":"ADMIN"}
 			]}`)
 		})
 		reps, err := c.AddRepresentation(context.Background(), "PNOMN-УБ72060800", AddRepresentationInput{
@@ -41,7 +41,7 @@ func TestAddRepresentation(t *testing.T) {
 		if !strings.Contains(gotBody, `"orgRegister":"6235972"`) || !strings.Contains(gotBody, `"regNo":"уш72060800"`) || !strings.Contains(gotBody, `"kind":"CEO"`) {
 			t.Errorf("body = %s", gotBody)
 		}
-		if len(reps) != 1 || reps[0].OrgEtsi != "NTRMN-6235972" || reps[0].RightType != "SOLE" {
+		if len(reps) != 1 || reps[0].OrgEtsi != "NTRMN-6235972" || reps[0].RightType != "ADMIN" {
 			t.Errorf("reps = %+v", reps)
 		}
 	})
@@ -93,7 +93,7 @@ func TestUnlinkAndSigners(t *testing.T) {
 			gotPath, gotMethod = r.URL.Path, r.Method
 			b, _ := io.ReadAll(r.Body)
 			gotBody = string(b)
-			_, _ = io.WriteString(w, `{"orgRegister":"6235972","signers":[{"personEtsi":"PNOMN-МА74101813","regNo":"ма74101813","name":"Цэнддорж Эрдэнэбат","role":"Нягтлан бодогч","rightType":"JOINT","source":"MANUAL","self":false}]}`)
+			_, _ = io.WriteString(w, `{"orgRegister":"6235972","signers":[{"personEtsi":"PNOMN-МА74101813","regNo":"ма74101813","name":"Цэнддорж Эрдэнэбат","role":"Нягтлан бодогч","rightType":"MANAGER","source":"MANUAL","self":false}]}`)
 		})
 		signers, err := c.AddSigner(context.Background(), "6235972", "PNOMN-УБ72060800", AddSignerInput{SignerRegNo: "ма74101813", Role: "Нягтлан бодогч"})
 		if err != nil {
@@ -105,7 +105,7 @@ func TestUnlinkAndSigners(t *testing.T) {
 		if !strings.Contains(gotBody, `"signerRegNo":"ма74101813"`) {
 			t.Errorf("body = %s", gotBody)
 		}
-		if len(signers) != 1 || signers[0].Role != "Нягтлан бодогч" || signers[0].RightType != "JOINT" {
+		if len(signers) != 1 || signers[0].Role != "Нягтлан бодогч" || signers[0].RightType != "MANAGER" {
 			t.Errorf("signers = %+v", signers)
 		}
 	})

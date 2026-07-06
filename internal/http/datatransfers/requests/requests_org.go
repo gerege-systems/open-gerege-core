@@ -19,11 +19,11 @@ type EIDOrgRegisterRequest struct {
 }
 
 // AddEIDSignerRequest нь POST /v1/users/me/eid/organizations/{regNo}/signers-ийн body —
-// байгууллагад өөр иргэнийг (РД) гарын үсэг зурах эрхтэй төлөөлөгч болгон нэмнэ.
+// байгууллагад өөр иргэнийг (РД) гарын үсэг зурах эрхтэй (MANAGER) төлөөлөгч болгон нэмнэ.
+// Нэмэгдэх эрх нь үргэлж MANAGER (eidmongolia талд шийдэгдэнэ).
 type AddEIDSignerRequest struct {
 	SignerRegNo string `json:"signer_reg_no" validate:"required,min=8,max=20"`
 	Role        string `json:"role" validate:"omitempty,max=100"`
-	RightType   string `json:"right_type" validate:"omitempty,oneof=SOLE JOINT"`
 }
 
 // AddMemberRequest нь POST /v1/org/{id}/members-ийн body. role хоосон бол

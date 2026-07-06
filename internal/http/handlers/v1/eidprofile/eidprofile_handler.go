@@ -171,7 +171,7 @@ func (h Handler) AddOrgSigner(w http.ResponseWriter, r *http.Request) error {
 	if err := validators.ValidatePayloads(req); err != nil {
 		return v1.RespondWithError(w, r, err)
 	}
-	signers, err := h.usecase.AddEIDOrgSigner(ctx, user.ID, chi.URLParam(r, "regNo"), req.SignerRegNo, req.Role, req.RightType)
+	signers, err := h.usecase.AddEIDOrgSigner(ctx, user.ID, chi.URLParam(r, "regNo"), req.SignerRegNo, req.Role)
 	if err != nil {
 		return v1.RespondWithError(w, r, err)
 	}

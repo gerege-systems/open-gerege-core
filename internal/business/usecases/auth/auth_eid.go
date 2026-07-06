@@ -379,8 +379,8 @@ func (uc *usecase) RegisterEIDOrganization(ctx context.Context, userID, regNo st
 
 // affiliatesFromXYP — XYP-ийн байгууллагаас эрх бүхий этгээдийн (захирал → үүсгэн
 // байгуулагч → хувь эзэмшигч дарааллаар) РД жагсаалтыг угсарна. Захирлыг ЭХЭНД
-// тавьсан нь eidmongolia эхний таарсан бичлэгээр rightType тодорхойлдогтой
-// холбоотой (захирал → SOLE). Хоосон РД-г алгасна.
+// тавьсан нь eidmongolia эхний таарсан бичлэгээр role-г тодорхойлдогтой холбоотой
+// (холбосон этгээд ADMIN эрхтэй болно). Хоосон РД-г алгасна.
 func affiliatesFromXYP(org *xyp.Organization) []eid.OrgAffiliate {
 	var out []eid.OrgAffiliate
 	add := func(regNo, role, kind string) {
@@ -450,8 +450,9 @@ func (uc *usecase) ListEIDOrgSigners(ctx context.Context, userID, orgRegister st
 	return signers, nil
 }
 
-// AddEIDOrgSigner нь байгууллагад өөр иргэнийг (РД) гарын үсэг зурах эрхтэй болгож нэмнэ.
-func (uc *usecase) AddEIDOrgSigner(ctx context.Context, userID, orgRegister, signerRegNo, role, rightType string) ([]eid.Signer, error) {
+// AddEIDOrgSigner нь байгууллагад өөр иргэнийг (РД) гарын үсэг зурах эрхтэй (MANAGER)
+// болгож нэмнэ. Нэмэгдэх эрх нь үргэлж MANAGER (eidmongolia талд шийдэгдэнэ).
+func (uc *usecase) AddEIDOrgSigner(ctx context.Context, userID, orgRegister, signerRegNo, role string) ([]eid.Signer, error) {
 	if strings.TrimSpace(signerRegNo) == "" {
 		return nil, apperror.BadRequest("Гарын үсэг зурагчийн регистрийн дугаар шаардлагатай")
 	}
@@ -460,7 +461,7 @@ func (uc *usecase) AddEIDOrgSigner(ctx context.Context, userID, orgRegister, sig
 		return nil, err
 	}
 	signers, sErr := uc.eid.AddSigner(ctx, strings.TrimSpace(orgRegister), etsi, eid.AddSignerInput{
-		SignerRegNo: strings.TrimSpace(signerRegNo), Role: strings.TrimSpace(role), RightType: strings.TrimSpace(rightType),
+		SignerRegNo: strings.TrimSpace(signerRegNo), Role: strings.TrimSpace(role),
 	})
 	if sErr != nil {
 		return nil, mapSignerErr(sErr)

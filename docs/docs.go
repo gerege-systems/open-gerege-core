@@ -4371,13 +4371,6 @@ const docTemplate = `{
                 "signer_reg_no"
             ],
             "properties": {
-                "right_type": {
-                    "type": "string",
-                    "enum": [
-                        "SOLE",
-                        "JOINT"
-                    ]
-                },
                 "role": {
                     "type": "string",
                     "maxLength": 100

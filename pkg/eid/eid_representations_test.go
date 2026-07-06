@@ -21,7 +21,7 @@ func TestRepresentations(t *testing.T) {
 		c, _ := newTestClient(t, func(w http.ResponseWriter, r *http.Request) {
 			gotPath = r.URL.Path
 			_, _ = io.WriteString(w, `{"personEtsi":"PNOMN-УБ99887766","representations":[
-				{"orgEtsi":"NTRMN-1234567","orgRegister":"1234567","orgName":"Тест ХХК","orgNameEn":"Test LLC","role":"Захирал","rightType":"SOLE"}
+				{"orgEtsi":"NTRMN-1234567","orgRegister":"1234567","orgName":"Тест ХХК","orgNameEn":"Test LLC","role":"Захирал","rightType":"ADMIN"}
 			]}`)
 		})
 		reps, err := c.Representations(context.Background(), "PNOMN-УБ99887766")
@@ -34,7 +34,7 @@ func TestRepresentations(t *testing.T) {
 		if len(reps) != 1 {
 			t.Fatalf("reps = %d", len(reps))
 		}
-		if reps[0].OrgEtsi != "NTRMN-1234567" || reps[0].OrgName != "Тест ХХК" || reps[0].RightType != "SOLE" || reps[0].Role != "Захирал" {
+		if reps[0].OrgEtsi != "NTRMN-1234567" || reps[0].OrgName != "Тест ХХК" || reps[0].RightType != "ADMIN" || reps[0].Role != "Захирал" {
 			t.Errorf("rep = %+v", reps[0])
 		}
 	})
