@@ -3383,6 +3383,11 @@ paths:
         name: file
         required: true
         type: file
+      - description: Байгууллагын etsi (NTRMN-<РД>) — тухайн байгууллагын нэрийн өмнөөс
+          зурах. Хоосон бол хувь хүний гарын үсэг.
+        in: formData
+        name: onBehalfOf
+        type: string
       produces:
       - application/json
       responses:

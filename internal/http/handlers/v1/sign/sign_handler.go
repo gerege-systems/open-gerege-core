@@ -56,7 +56,8 @@ func (h Handler) currentRegNo(r *http.Request) (string, error) {
 // @Tags         sign
 // @Accept       multipart/form-data
 // @Produce      json
-// @Param        file  formData  file  true  "Гарын үсэг зурах PDF (≤25MB)"
+// @Param        file        formData  file    true   "Гарын үсэг зурах PDF (≤25MB)"
+// @Param        onBehalfOf  formData  string  false  "Байгууллагын etsi (NTRMN-<РД>) — тухайн байгууллагын нэрийн өмнөөс зурах. Хоосон бол хувь хүний гарын үсэг."
 // @Security     BearerAuth
 // @Success      200  {object}  v1.BaseResponse  "session_id + verification_code"
 // @Failure      400  {object}  v1.BaseResponse  "invalid form / регистр олдсонгүй"
@@ -94,7 +95,11 @@ func (h Handler) Init(w http.ResponseWriter, r *http.Request) error {
 		return v1.NewErrorResponse(w, r, http.StatusBadRequest, "read failed")
 	}
 	name := strings.TrimSpace(u.LastName + " " + u.FirstName)
-	res, err := h.sign.Init(r.Context(), regNo, name, hdr.Filename, body)
+	// onBehalfOf (NTRMN-<РД>) — сонголтот: тухайн иргэний төлөөлдөг байгууллагын
+	// нэрийн өмнөөс зурна. Хоосон бол хувь хүний гарын үсэг. Төлөөллийн эрхийг
+	// eidmongolia session үүсгэх үедээ шалгана (эрхгүй бол 403 → Forbidden).
+	onBehalfOf := strings.TrimSpace(r.FormValue("onBehalfOf"))
+	res, err := h.sign.Init(r.Context(), regNo, name, hdr.Filename, body, onBehalfOf)
 	if err != nil {
 		return v1.RespondWithError(w, r, err)
 	}

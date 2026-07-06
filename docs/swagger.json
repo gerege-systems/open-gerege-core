@@ -3674,6 +3674,12 @@
                         "name": "file",
                         "in": "formData",
                         "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Байгууллагын etsi (NTRMN-\u003cРД\u003e) — тухайн байгууллагын нэрийн өмнөөс зурах. Хоосон бол хувь хүний гарын үсэг.",
+                        "name": "onBehalfOf",
+                        "in": "formData"
                     }
                 ],
                 "responses": {

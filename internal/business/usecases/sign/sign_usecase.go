@@ -1,14 +1,22 @@
 // Gerege Template Version 27.0
 // Gerege Systems Development Team болон Claude AI хамтран бүтээв, 2026.
 
-// Package sign — PDF гарын үсэг (PAdES) eidmongolia.mn /v3-ээр. Хувь хүн.
+// Package sign — PDF гарын үсэг (PAdES) eidmongolia.mn /v3-ээр. Хувь хүн, эсвэл
+// төлөөлж чадах байгууллагынхаа нэрийн өмнөөс (onBehalfOf).
 //
 // Урсгал: иргэн PDF оруулна → серверт hash тооцоод, eidmongolia /v3
 // signature/notification/etsi-д digest илгээж утсанд PIN2 push явуулна → иргэн
 // утсан дээрээ зөвшөөрнө (энэ нь хууль зүйн зөвшөөрөл) → сервер /v3 session-ийг
-// poll хийж баталгаажуулна → татах үед СЕРВЕРИЙН Document-Signer гэрчилгээгээр
-// PDF дотор PAdES гарын үсэг шигтгэж (digitorus/pdfsign), иргэний нэр/регистрийг
-// гарын үсгийн талбарт тусгана. (Org-seal + TSA дараагийн үе шат.)
+// poll хийж баталгаажуулна → татах үед eidmongolia-ийн албан ёсны stamp (PAdES-T +
+// verify хуудас), эс бөгөөс СЕРВЕРИЙН Document-Signer гэрчилгээгээр PDF дотор PAdES
+// гарын үсэг шигтгэж (digitorus/pdfsign), иргэний нэр/регистрийг гарын үсгийн талбарт
+// тусгана.
+//
+// Байгууллагын нэрийн өмнөөс (onBehalfOf, NTRMN-<РД>): гарын үсэг өөрөө ИРГЭНИЙ PIN2
+// сертификатаар зурагдана (тамга биш), гэхдээ eidmongolia session-д тухайн байгууллагыг
+// уяж, төлөөллийн эрхийг ШАЛГАНА (эрхгүй бол 403 → Forbidden). Дуусахад poll-оос
+// баталгаажсан байгууллагын нэрийг авч, гарын үсгийн шалтгаанд "…-ийн нэрийн өмнөөс"
+// гэж тусгана. (TSA дараагийн үе шат.)
 package sign
 
 import (
@@ -72,7 +80,9 @@ type usecase struct {
 
 // Usecase — нийтийн интерфэйс.
 type Usecase interface {
-	Init(ctx context.Context, regNo, fullName, filename string, pdf []byte) (InitResult, error)
+	// Init — onBehalfOfOrg хоосон бол хувь хүний гарын үсэг; NTRMN-<РД> бол тухайн
+	// байгууллагын нэрийн өмнөөс (eidmongolia төлөөллийн эрхийг шалгана).
+	Init(ctx context.Context, regNo, fullName, filename string, pdf []byte, onBehalfOfOrg string) (InitResult, error)
 	Poll(ctx context.Context, ownerRegNo, sessionID string) (string, error)
 	Download(ctx context.Context, ownerRegNo, sessionID string) (DownloadResult, error)
 }
@@ -101,6 +111,11 @@ type signState struct {
 	SignerName   string `json:"signer_name"`
 	SignerSerial string `json:"signer_serial"`
 	CompletedAt  string `json:"completed_at"`
+	// OnBehalfOfOrg — байгууллагын etsi (NTRMN-<РД>); хоосон бол хувь хүний гарын үсэг.
+	OnBehalfOfOrg string `json:"on_behalf_of_org"`
+	// OnBehalfOfOrgName — eidmongolia poll-оос ирсэн БАТАЛГААЖСАН байгууллагын нэр
+	// (fallback embed-ийн шалтгаанд ашиглана; client-ийн өгсөн нэрэнд итгэхгүй).
+	OnBehalfOfOrgName string `json:"on_behalf_of_org_name"`
 }
 
 const (
@@ -221,18 +236,25 @@ func regNoMatches(certSerial, regNo string) bool {
 }
 
 // Init — PDF-ийн hash тооцоод /v3-д PIN2 sign session эхлүүлж, Redis-д хадгална.
-func (u *usecase) Init(ctx context.Context, regNo, fullName, filename string, pdfBytes []byte) (InitResult, error) {
+// onBehalfOfOrg (NTRMN-<РД>) өгвөл тухайн байгууллагын нэрийн өмнөөс зурна —
+// eidmongolia төлөөллийн эрхийг шалгаж, эрхгүй бол 403 (Forbidden) буцаана.
+func (u *usecase) Init(ctx context.Context, regNo, fullName, filename string, pdfBytes []byte, onBehalfOfOrg string) (InitResult, error) {
 	if len(pdfBytes) == 0 || len(pdfBytes) > maxPDFBytes {
 		return InitResult{}, apperror.BadRequest("PDF хэмжээ буруу (1 байт–25 MB)")
 	}
 	if strings.TrimSpace(regNo) == "" {
 		return InitResult{}, apperror.Unauthorized("регистр тодорхойгүй")
 	}
+	onBehalfOfOrg = strings.ToUpper(strings.TrimSpace(onBehalfOfOrg))
 	sum := sha256.Sum256(pdfBytes)
 	digestB64 := base64.StdEncoding.EncodeToString(sum[:])
 
-	v3SessionID, vc, err := u.startV3Sign(ctx, toEtsi(regNo), digestB64, fullName)
+	v3SessionID, vc, err := u.startV3Sign(ctx, toEtsi(regNo), digestB64, fullName, onBehalfOfOrg)
 	if err != nil {
+		// Төлөөллийн эрхгүй (403) г.м. domain алдааг ил гаргана; бусад нь дотоод.
+		if de, ok := err.(*apperror.DomainError); ok {
+			return InitResult{}, de
+		}
 		return InitResult{}, apperror.InternalCause(fmt.Errorf("v3 sign start: %w", err))
 	}
 
@@ -241,6 +263,7 @@ func (u *usecase) Init(ctx context.Context, regNo, fullName, filename string, pd
 		RegNo: regNo, FullName: fullName, Filename: filename,
 		PDFBase64:  base64.StdEncoding.EncodeToString(pdfBytes),
 		DocHashB64: digestB64, V3SessionID: v3SessionID, State: "running",
+		OnBehalfOfOrg: onBehalfOfOrg,
 	}
 	if err := u.saveState(ctx, sessionID, st); err != nil {
 		return InitResult{}, apperror.InternalCause(fmt.Errorf("sign state store: %w", err))
@@ -283,6 +306,11 @@ func (u *usecase) Poll(ctx context.Context, ownerRegNo, sessionID string) (strin
 		st.SignerName = res.SubjectName
 		st.SignerSerial = res.SubjectSerial
 		st.CompletedAt = time.Now().UTC().Format(time.RFC3339)
+		// Байгууллагын нэрийн өмнөөс байсан бол — eidmongolia-гийн БАТАЛГААЖСАН нэрийг
+		// (client биш) fallback embed-д ашиглахаар хадгална.
+		if res.OrgName != "" {
+			st.OnBehalfOfOrgName = res.OrgName
+		}
 	case res.State == "COMPLETE" && res.EndResult == "USER_REFUSED":
 		st.State = "rejected"
 	case res.State == "COMPLETE":
@@ -378,12 +406,20 @@ func (u *usecase) embedPAdES(pdfBytes []byte, st signState) ([]byte, error) {
 	if name == "" {
 		name = st.FullName
 	}
+	// Гарын үсэг өөрөө иргэний PIN2 cert-ээр. Байгууллагын нэрийн өмнөөс байсан бол
+	// шалтгаанд "…-ийн нэрийн өмнөөс" гэж нэмнэ (eidmongolia stamp-ийн "ON BEHALF OF"-ийн дүйцэл).
+	reason := "eID PIN2 гарын үсэг — РД " + st.RegNo
+	if st.OnBehalfOfOrgName != "" {
+		reason += " · " + st.OnBehalfOfOrgName + "-ийн нэрийн өмнөөс"
+	} else if st.OnBehalfOfOrg != "" {
+		reason += " · " + st.OnBehalfOfOrg + "-ийн нэрийн өмнөөс"
+	}
 	var out bytes.Buffer
 	err = sign.Sign(bytes.NewReader(pdfBytes), &out, rdr, int64(len(pdfBytes)), sign.SignData{
 		Signature: sign.SignDataSignature{
 			Info: sign.SignDataSignatureInfo{
 				Name:   name,
-				Reason: "eID PIN2 гарын үсэг — РД " + st.RegNo,
+				Reason: reason,
 				Date:   time.Now().Local(),
 			},
 			CertType:   sign.CertificationSignature,
@@ -447,9 +483,7 @@ func (u *usecase) setRPAuth(req *http.Request) {
 	}
 }
 
-func (u *usecase) startV3Sign(ctx context.Context, etsi, digestB64, displayName string) (sessionID, vc string, err error) {
-	chal := make([]byte, 48)
-	_, _ = rand.Read(chal)
+func (u *usecase) startV3Sign(ctx context.Context, etsi, digestB64, displayName, onBehalfOfOrg string) (sessionID, vc string, err error) {
 	body := map[string]any{
 		"relyingPartyUUID":  u.cfg.RPUUID,
 		"relyingPartyName":  u.cfg.RPName,
@@ -461,6 +495,11 @@ func (u *usecase) startV3Sign(ctx context.Context, etsi, digestB64, displayName 
 			{"type": "displayTextAndPIN", "displayText60": "Gerege — баримтад гарын үсэг"},
 		},
 	}
+	// onBehalfOf (NTRMN-<РД>) — байгууллагын нэрийн өмнөөс. Сервер төлөөллийн эрхийг
+	// session үүсэх үед шалгаж, эрхгүй бол 403 буцаана.
+	if onBehalfOfOrg != "" {
+		body["onBehalfOf"] = onBehalfOfOrg
+	}
 	raw, _ := json.Marshal(body)
 	reqURL := strings.TrimRight(u.cfg.V3BaseURL, "/") + "/v3/signature/notification/etsi/" + url.PathEscape(etsi)
 	req, _ := http.NewRequestWithContext(ctx, http.MethodPost, reqURL, bytes.NewReader(raw))
@@ -471,6 +510,11 @@ func (u *usecase) startV3Sign(ctx context.Context, etsi, digestB64, displayName 
 		return "", "", err
 	}
 	defer func() { _ = res.Body.Close() }()
+	// 403 = иргэн тухайн байгууллагыг төлөөлөх эрхгүй (эсвэл RP-д SIGN эрх алга) —
+	// хэрэглэгчид ойлгомжтой Forbidden болгож ил гаргана (5xx болгож нуухгүй).
+	if res.StatusCode == http.StatusForbidden {
+		return "", "", apperror.Forbidden("энэ байгууллагыг төлөөлөх эрхгүй байна")
+	}
 	if res.StatusCode >= 300 {
 		b, _ := io.ReadAll(res.Body)
 		return "", "", fmt.Errorf("v3 %d: %s", res.StatusCode, string(b))
@@ -492,6 +536,7 @@ type v3PollResult struct {
 	EndResult     string
 	SubjectName   string
 	SubjectSerial string
+	OrgName       string // onBehalfOf.orgName — байгууллагын нэрийн өмнөөс байсан бол (баталгаажсан)
 }
 
 func (u *usecase) pollV3(ctx context.Context, v3SessionID string) (v3PollResult, error) {
@@ -514,11 +559,15 @@ func (u *usecase) pollV3(ctx context.Context, v3SessionID string) (v3PollResult,
 		Cert struct {
 			Value string `json:"value"`
 		} `json:"cert"`
+		OnBehalfOf struct {
+			OrgEtsi string `json:"orgEtsi"`
+			OrgName string `json:"orgName"`
+		} `json:"onBehalfOf"`
 	}
 	if err := json.NewDecoder(res.Body).Decode(&r); err != nil {
 		return v3PollResult{}, err
 	}
-	out := v3PollResult{State: r.State, EndResult: r.Result.EndResult}
+	out := v3PollResult{State: r.State, EndResult: r.Result.EndResult, OrgName: r.OnBehalfOf.OrgName}
 	if r.Cert.Value != "" {
 		if der, e := base64.StdEncoding.DecodeString(r.Cert.Value); e == nil {
 			if c, e2 := x509.ParseCertificate(der); e2 == nil {
