@@ -210,6 +210,18 @@ definitions:
     required:
     - email
     type: object
+  template_internal_http_datatransfers_requests.GSpaceUploadRequest:
+    properties:
+      data:
+        maxLength: 2900000
+        type: string
+      name:
+        maxLength: 200
+        type: string
+    required:
+    - data
+    - name
+    type: object
   template_internal_http_datatransfers_requests.GatewayConsumerRequest:
     properties:
       custom_id:
@@ -3314,6 +3326,82 @@ paths:
       summary: Audit гинж шалгах (admin)
       tags:
       - audit
+  /v1/gspace:
+    delete:
+      parameters:
+      - description: Файлын нэр
+        in: query
+        name: name
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      security:
+      - BearerAuth: []
+      summary: Gerege Space-с файл устгах
+      tags:
+      - gspace
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      security:
+      - BearerAuth: []
+      summary: Gerege Space товч (файлууд + квот)
+      tags:
+      - gspace
+  /v1/gspace/download:
+    get:
+      parameters:
+      - description: Файлын нэр
+        in: query
+        name: name
+        required: true
+        type: string
+      produces:
+      - application/octet-stream
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: file
+      security:
+      - BearerAuth: []
+      summary: Gerege Space-с файл татах
+      tags:
+      - gspace
+  /v1/gspace/upload:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Файл (base64)
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/template_internal_http_datatransfers_requests.GSpaceUploadRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      security:
+      - BearerAuth: []
+      summary: Gerege Space-д файл оруулах
+      tags:
+      - gspace
   /v1/org:
     get:
       description: Нэвтэрсэн хэрэглэгч гишүүн болсон бүх байгууллагыг буцаана.

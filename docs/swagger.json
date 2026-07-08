@@ -3557,6 +3557,132 @@
                 }
             }
         },
+        "/v1/gspace": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "gspace"
+                ],
+                "summary": "Gerege Space товч (файлууд + квот)",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "gspace"
+                ],
+                "summary": "Gerege Space-с файл устгах",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Файлын нэр",
+                        "name": "name",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/gspace/download": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/octet-stream"
+                ],
+                "tags": [
+                    "gspace"
+                ],
+                "summary": "Gerege Space-с файл татах",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Файлын нэр",
+                        "name": "name",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "file"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/gspace/upload": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "gspace"
+                ],
+                "summary": "Gerege Space-д файл оруулах",
+                "parameters": [
+                    {
+                        "description": "Файл (base64)",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_datatransfers_requests.GSpaceUploadRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/v1/org": {
             "get": {
                 "security": [
@@ -4851,6 +4977,23 @@
                 "email": {
                     "type": "string",
                     "maxLength": 50
+                }
+            }
+        },
+        "template_internal_http_datatransfers_requests.GSpaceUploadRequest": {
+            "type": "object",
+            "required": [
+                "data",
+                "name"
+            ],
+            "properties": {
+                "data": {
+                    "type": "string",
+                    "maxLength": 2900000
+                },
+                "name": {
+                    "type": "string",
+                    "maxLength": 200
                 }
             }
         },

@@ -49,6 +49,15 @@ type Config struct {
 	XYPClientID     string `mapstructure:"XYP_CLIENT_ID"`
 	XYPClientSecret string `mapstructure:"XYP_CLIENT_SECRET"`
 
+	// Gerege Space — апп-ын өөрийн SFTP хадгалалт. Хэрэглэгч бүр квоттой (default
+	// 2MB). Host/User/Password нууц (env-д). Тохируулаагүй бол функц идэвхгүй.
+	GSpaceHost     string `mapstructure:"GSPACE_HOST"`
+	GSpacePort     int    `mapstructure:"GSPACE_PORT"`
+	GSpaceUser     string `mapstructure:"GSPACE_USER"`
+	GSpacePassword string `mapstructure:"GSPACE_PASSWORD"`
+	GSpaceBasePath string `mapstructure:"GSPACE_BASE_PATH"`
+	GSpaceQuota    int64  `mapstructure:"GSPACE_QUOTA_BYTES"`
+
 	// eID identity provider (RP contract) — энэ template нь Relying Party.
 	// "Login with eID" нь цорын ганц нэвтрэх арга тул эдгээр нь сонголттой
 	// биш ч boot-ийг эвдэхгүйн тулд бүгд зохистой default-той (production-д
@@ -198,6 +207,13 @@ func InitializeAppConfig() error {
 	_ = viper.BindEnv("XYP_API_BASE")
 	_ = viper.BindEnv("XYP_CLIENT_ID")
 	_ = viper.BindEnv("XYP_CLIENT_SECRET")
+	// Gerege Space SFTP — нууц; 12-factor орчинд зөвхөн environment-ээс.
+	_ = viper.BindEnv("GSPACE_HOST")
+	_ = viper.BindEnv("GSPACE_PORT")
+	_ = viper.BindEnv("GSPACE_USER")
+	_ = viper.BindEnv("GSPACE_PASSWORD")
+	_ = viper.BindEnv("GSPACE_BASE_PATH")
+	_ = viper.BindEnv("GSPACE_QUOTA_BYTES")
 	// .env файл байхгүй байх нь алдаа БИШ — контейнер / 12-factor орчинд
 	// тохиргоог зөвхөн environment-ээс уншина. Зөвхөн жинхэнэ задлан унших
 	// (parse) алдааг л буцаана.
@@ -353,6 +369,15 @@ func applyDefaults() {
 	}
 	if AppConfig.XYPAPIBase == "" {
 		AppConfig.XYPAPIBase = "https://xyp.gerege.mn"
+	}
+	if AppConfig.GSpacePort == 0 {
+		AppConfig.GSpacePort = 22
+	}
+	if AppConfig.GSpaceBasePath == "" {
+		AppConfig.GSpaceBasePath = "gerege-space"
+	}
+	if AppConfig.GSpaceQuota == 0 {
+		AppConfig.GSpaceQuota = 2 << 20 // 2 MB
 	}
 	if AppConfig.SSOIssuer == "" {
 		AppConfig.SSOIssuer = "https://sso.gerege.mn"

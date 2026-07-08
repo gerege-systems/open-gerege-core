@@ -27,6 +27,7 @@ import (
 	"template/internal/business/usecases/core"
 	"template/internal/business/usecases/gateway"
 	"template/internal/business/usecases/gov"
+	"template/internal/business/usecases/gspace"
 	"template/internal/business/usecases/integrations"
 	"template/internal/business/usecases/org"
 	"template/internal/business/usecases/rbac"
@@ -58,6 +59,7 @@ import (
 	"template/pkg/eid"
 	"template/pkg/gemini"
 	"template/pkg/google"
+	gspaceclient "template/pkg/gspace"
 	"template/pkg/jwt"
 	"template/pkg/logger"
 	"template/pkg/observability"
@@ -225,6 +227,18 @@ func NewApp() (*App, error) {
 		return nil, fmt.Errorf("init integrations usecase: %w", err)
 	}
 
+	// Gerege Space — апп-ын өөрийн SFTP хадгалалт (per-user 2MB, OAuth-гүй, шууд
+	// холбогдсон). Тохиргоо (GSPACE_*) хоосон бол Configured()=false болж
+	// endpoint-ууд 500 буцаана; UI нь "тохируулаагүй" төлөвийг зохицуулна.
+	gspaceClient := gspaceclient.NewClient(gspaceclient.Config{
+		Host:     config.AppConfig.GSpaceHost,
+		Port:     config.AppConfig.GSpacePort,
+		User:     config.AppConfig.GSpaceUser,
+		Password: config.AppConfig.GSpacePassword,
+		BasePath: config.AppConfig.GSpaceBasePath,
+	})
+	gspaceUC := gspace.NewUsecase(gspaceClient, config.AppConfig.GSpaceQuota)
+
 	// Audit — persisted hash-chained, append-only audit log (admin-only унших API).
 	// audit_log нь admin-only тул repository нь хүсэлтийн RLS-аас үл хамааран
 	// транзакц дотроо service/admin GUC тогтоодог.
@@ -313,6 +327,7 @@ func NewApp() (*App, error) {
 		routes.NewGovRoute(api, govUC, authMiddleware, govWriteRateLimiter).Routes()
 		routes.NewIntegrationsRoute(api, integrationsUC, authMiddleware).Routes()
 		routes.NewAssetsRoute(api, assetsUC, authMiddleware, govWriteRateLimiter).Routes()
+		routes.NewGSpaceRoute(api, gspaceUC, authMiddleware, govWriteRateLimiter).Routes()
 		routes.NewGatewayRoute(api, gatewayUC, rbacUC, authMiddleware).Routes()
 		routes.NewCoreRoute(api, coreUC, authMiddleware).Routes()
 		routes.NewSSORoute(api, ssoUC).Routes()
