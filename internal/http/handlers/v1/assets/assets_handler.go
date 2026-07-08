@@ -44,7 +44,7 @@ func (h Handler) user(w http.ResponseWriter, r *http.Request) (string, bool) {
 // @Produce json
 // @Security BearerAuth
 // @Success 200 {object} v1.BaseResponse
-// @Router /users/me/signature [get]
+// @Router /me/signature [get]
 func (h Handler) GetSignature(w http.ResponseWriter, r *http.Request) error {
 	uid, ok := h.user(w, r)
 	if !ok {
@@ -65,7 +65,7 @@ func (h Handler) GetSignature(w http.ResponseWriter, r *http.Request) error {
 // @Security BearerAuth
 // @Param payload body requests.AssetURLRequest true "Зургийн URL"
 // @Success 200 {object} v1.BaseResponse
-// @Router /users/me/signature [put]
+// @Router /me/signature [put]
 func (h Handler) SetSignature(w http.ResponseWriter, r *http.Request) error {
 	uid, ok := h.user(w, r)
 	if !ok {
@@ -90,7 +90,7 @@ func (h Handler) SetSignature(w http.ResponseWriter, r *http.Request) error {
 // @Produce json
 // @Security BearerAuth
 // @Success 200 {object} v1.BaseResponse
-// @Router /users/me/signature [delete]
+// @Router /me/signature [delete]
 func (h Handler) DeleteSignature(w http.ResponseWriter, r *http.Request) error {
 	uid, ok := h.user(w, r)
 	if !ok {
@@ -109,7 +109,7 @@ func (h Handler) DeleteSignature(w http.ResponseWriter, r *http.Request) error {
 // @Security BearerAuth
 // @Param regNo path string true "Байгууллагын регистрийн дугаар"
 // @Success 200 {object} v1.BaseResponse
-// @Router /users/me/eid/organizations/{regNo}/stamp [get]
+// @Router /me/orgstamp/{regNo} [get]
 func (h Handler) GetStamp(w http.ResponseWriter, r *http.Request) error {
 	uid, ok := h.user(w, r)
 	if !ok {
@@ -131,7 +131,7 @@ func (h Handler) GetStamp(w http.ResponseWriter, r *http.Request) error {
 // @Param regNo path string true "Байгууллагын регистрийн дугаар"
 // @Param payload body requests.AssetURLRequest true "Зургийн URL"
 // @Success 200 {object} v1.BaseResponse
-// @Router /users/me/eid/organizations/{regNo}/stamp [put]
+// @Router /me/orgstamp/{regNo} [put]
 func (h Handler) SetStamp(w http.ResponseWriter, r *http.Request) error {
 	uid, ok := h.user(w, r)
 	if !ok {
@@ -157,7 +157,7 @@ func (h Handler) SetStamp(w http.ResponseWriter, r *http.Request) error {
 // @Security BearerAuth
 // @Param regNo path string true "Байгууллагын регистрийн дугаар"
 // @Success 200 {object} v1.BaseResponse
-// @Router /users/me/eid/organizations/{regNo}/stamp [delete]
+// @Router /me/orgstamp/{regNo} [delete]
 func (h Handler) DeleteStamp(w http.ResponseWriter, r *http.Request) error {
 	uid, ok := h.user(w, r)
 	if !ok {

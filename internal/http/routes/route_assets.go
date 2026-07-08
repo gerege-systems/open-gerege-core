@@ -33,7 +33,10 @@ func NewAssetsRoute(router chi.Router, assetsUC assetsuc.Usecase, authMiddleware
 }
 
 func (rt *assetsRoute) Routes() {
-	rt.router.Route("/v1/users/me", func(r chi.Router) {
+	// ЧУХАЛ: /v1/users/me-д mount хийвэл chi-ийн longest-prefix match нь одоо байгаа
+	// GET /v1/users/me (who-am-I) endpoint-ийг шадовлаж 404 болгоно. Тиймээс зөрчилгүй
+	// /v1/me namespace-д (нэрлэсэн leaf-үүдтэй) байрлуулна.
+	rt.router.Route("/v1/me", func(r chi.Router) {
 		r.Use(rt.authMiddleware)
 		write := rt.writeRateLimiter.Middleware()
 
@@ -43,8 +46,8 @@ func (rt *assetsRoute) Routes() {
 		r.With(write).Delete("/signature", v1.Wrap(rt.handler.DeleteSignature))
 
 		// Байгууллагын тамганы дардас (зөвхөн ADMIN бичнэ).
-		r.Get("/eid/organizations/{regNo}/stamp", v1.Wrap(rt.handler.GetStamp))
-		r.With(write).Put("/eid/organizations/{regNo}/stamp", v1.Wrap(rt.handler.SetStamp))
-		r.With(write).Delete("/eid/organizations/{regNo}/stamp", v1.Wrap(rt.handler.DeleteStamp))
+		r.Get("/orgstamp/{regNo}", v1.Wrap(rt.handler.GetStamp))
+		r.With(write).Put("/orgstamp/{regNo}", v1.Wrap(rt.handler.SetStamp))
+		r.With(write).Delete("/orgstamp/{regNo}", v1.Wrap(rt.handler.DeleteStamp))
 	})
 }
