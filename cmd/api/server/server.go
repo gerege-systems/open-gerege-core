@@ -321,7 +321,7 @@ func NewApp() (*App, error) {
 		routes.NewAIRoute(api, aiUC, authMiddleware, aiRateLimiter).Routes()
 		routes.NewAuditRoute(api, auditUC, authMiddleware).Routes()
 		routes.NewSecurityRoute(api, securityUC, authMiddleware).Routes()
-		routes.NewSignRoute(api, signUC, usersUC, authMiddleware).Routes()
+		routes.NewSignRoute(api, signUC, usersUC, assetsUC, authMiddleware).Routes()
 	})
 
 	// Серверийн түвшний timeout-ууд (slowloris / удаан client-ийн эсрэг):

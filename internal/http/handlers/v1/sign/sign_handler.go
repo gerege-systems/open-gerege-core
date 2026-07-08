@@ -13,6 +13,7 @@ import (
 	"github.com/go-chi/chi/v5"
 
 	"template/internal/apperror"
+	assetsuc "template/internal/business/usecases/assets"
 	signuc "template/internal/business/usecases/sign"
 	"template/internal/business/usecases/users"
 	httpauth "template/internal/http/auth"
@@ -21,13 +22,16 @@ import (
 
 const maxUpload = 26 << 20 // 25 MB + overhead
 
-// Handler — sign + users usecase.
+// Handler — sign + users + assets usecase (гарын үсэг/тамганы зургийг PDF-д давхарлана).
 type Handler struct {
-	sign  signuc.Usecase
-	users users.Usecase
+	sign   signuc.Usecase
+	users  users.Usecase
+	assets assetsuc.Usecase
 }
 
-func NewHandler(s signuc.Usecase, u users.Usecase) Handler { return Handler{sign: s, users: u} }
+func NewHandler(s signuc.Usecase, u users.Usecase, a assetsuc.Usecase) Handler {
+	return Handler{sign: s, users: u, assets: a}
+}
 
 // currentRegNo — нэвтэрсэн иргэний регистрийн дугаар. ЭНЭ template-д eID
 // хэрэглэгчийн Username нь "eid_"+civil_id (регистр БИШ) тул регистрийг
@@ -99,7 +103,15 @@ func (h Handler) Init(w http.ResponseWriter, r *http.Request) error {
 	// нэрийн өмнөөс зурна. Хоосон бол хувь хүний гарын үсэг. Төлөөллийн эрхийг
 	// eidmongolia session үүсгэх үедээ шалгана (эрхгүй бол 403 → Forbidden).
 	onBehalfOf := strings.TrimSpace(r.FormValue("onBehalfOf"))
-	res, err := h.sign.Init(r.Context(), regNo, name, hdr.Filename, body, onBehalfOf)
+	// Визуал гарын үсэг (хувь хүн) + тамга (байгууллагын нэрийн өмнөөс) зургийн URL —
+	// эх PDF-д давхарлахаар sign usecase руу дамжуулна. Best-effort (алдаа → хоосон).
+	signatureURL, _ := h.assets.GetSignature(r.Context(), cu.ID)
+	stampURL := ""
+	if onBehalfOf != "" {
+		orgReg := strings.TrimPrefix(strings.ToUpper(onBehalfOf), "NTRMN-")
+		stampURL, _ = h.assets.GetStamp(r.Context(), cu.ID, orgReg)
+	}
+	res, err := h.sign.Init(r.Context(), regNo, name, hdr.Filename, body, onBehalfOf, signatureURL, stampURL)
 	if err != nil {
 		return v1.RespondWithError(w, r, err)
 	}

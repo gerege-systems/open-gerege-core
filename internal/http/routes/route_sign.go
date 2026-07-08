@@ -6,6 +6,7 @@ package routes
 import (
 	"net/http"
 
+	assetsuc "template/internal/business/usecases/assets"
 	signuc "template/internal/business/usecases/sign"
 	"template/internal/business/usecases/users"
 	v1 "template/internal/http/handlers/v1"
@@ -22,9 +23,9 @@ type signRoute struct {
 	authMiddleware func(http.Handler) http.Handler
 }
 
-func NewSignRoute(router chi.Router, signUC signuc.Usecase, usersUC users.Usecase, authMiddleware func(http.Handler) http.Handler) *signRoute {
+func NewSignRoute(router chi.Router, signUC signuc.Usecase, usersUC users.Usecase, assetsUC assetsuc.Usecase, authMiddleware func(http.Handler) http.Handler) *signRoute {
 	return &signRoute{
-		handler:        signhandler.NewHandler(signUC, usersUC),
+		handler:        signhandler.NewHandler(signUC, usersUC, assetsUC),
 		router:         router,
 		authMiddleware: authMiddleware,
 	}

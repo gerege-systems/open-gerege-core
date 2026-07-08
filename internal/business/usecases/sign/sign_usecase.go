@@ -37,11 +37,15 @@ import (
 	"math/big"
 	"net/http"
 	"net/url"
+	"strconv"
 	"strings"
 	"time"
 
 	"github.com/digitorus/pdf"
 	"github.com/digitorus/pdfsign/sign"
+	"github.com/pdfcpu/pdfcpu/pkg/api"
+	pdfcpumodel "github.com/pdfcpu/pdfcpu/pkg/pdfcpu/model"
+	pdfcputypes "github.com/pdfcpu/pdfcpu/pkg/pdfcpu/types"
 
 	"template/internal/apperror"
 	"template/pkg/logger"
@@ -82,7 +86,7 @@ type usecase struct {
 type Usecase interface {
 	// Init — onBehalfOfOrg хоосон бол хувь хүний гарын үсэг; NTRMN-<РД> бол тухайн
 	// байгууллагын нэрийн өмнөөс (eidmongolia төлөөллийн эрхийг шалгана).
-	Init(ctx context.Context, regNo, fullName, filename string, pdf []byte, onBehalfOfOrg string) (InitResult, error)
+	Init(ctx context.Context, regNo, fullName, filename string, pdf []byte, onBehalfOfOrg, signatureURL, stampURL string) (InitResult, error)
 	Poll(ctx context.Context, ownerRegNo, sessionID string) (string, error)
 	Download(ctx context.Context, ownerRegNo, sessionID string) (DownloadResult, error)
 }
@@ -238,7 +242,7 @@ func regNoMatches(certSerial, regNo string) bool {
 // Init — PDF-ийн hash тооцоод /v3-д PIN2 sign session эхлүүлж, Redis-д хадгална.
 // onBehalfOfOrg (NTRMN-<РД>) өгвөл тухайн байгууллагын нэрийн өмнөөс зурна —
 // eidmongolia төлөөллийн эрхийг шалгаж, эрхгүй бол 403 (Forbidden) буцаана.
-func (u *usecase) Init(ctx context.Context, regNo, fullName, filename string, pdfBytes []byte, onBehalfOfOrg string) (InitResult, error) {
+func (u *usecase) Init(ctx context.Context, regNo, fullName, filename string, pdfBytes []byte, onBehalfOfOrg, signatureURL, stampURL string) (InitResult, error) {
 	if len(pdfBytes) == 0 || len(pdfBytes) > maxPDFBytes {
 		return InitResult{}, apperror.BadRequest("PDF хэмжээ буруу (1 байт–25 MB)")
 	}
@@ -246,6 +250,10 @@ func (u *usecase) Init(ctx context.Context, regNo, fullName, filename string, pd
 		return InitResult{}, apperror.Unauthorized("регистр тодорхойгүй")
 	}
 	onBehalfOfOrg = strings.ToUpper(strings.TrimSpace(onBehalfOfOrg))
+	// Визуал гарын үсэг (хувь хүн) + тамга (байгууллагын нэрийн өмнөөс) зургийг эх
+	// PDF-д давхарлана — hash тооцохоос ӨМНӨ, ингэснээр гарын үсэглэсэн агуулгын
+	// нэг хэсэг болно. Best-effort: алдаа гарвал эх PDF хэвээр (гарын үсэг зогсохгүй).
+	pdfBytes = u.applyVisualAssets(ctx, pdfBytes, signatureURL, stampURL)
 	sum := sha256.Sum256(pdfBytes)
 	digestB64 := base64.StdEncoding.EncodeToString(sum[:])
 
@@ -269,6 +277,75 @@ func (u *usecase) Init(ctx context.Context, regNo, fullName, filename string, pd
 		return InitResult{}, apperror.InternalCause(fmt.Errorf("sign state store: %w", err))
 	}
 	return InitResult{SessionID: sessionID, DocumentHash: digestB64, VerificationCode: vc, Filename: filename}, nil
+}
+
+// applyVisualAssets — сүүлчийн хуудасны БАРУУН ДООД буланд тамга (байгууллагын
+// нэрийн өмнөөс, зүүн талд) + гарын үсэг (хувь хүн, баруун талд) зургийг давхарлана.
+// Best-effort: зураг татах/давхарлах алдаа гарвал тухайн зургийг алгасаж, эх PDF-ийг
+// (эсвэл хагас боловсруулсан) буцаана — гарын үсэг зогсохгүй.
+func (u *usecase) applyVisualAssets(ctx context.Context, pdfBytes []byte, signatureURL, stampURL string) []byte {
+	out := pdfBytes
+	// Тамга — гарын үсгийн зүүн талд, арай том.
+	if img := u.fetchAssetImage(ctx, stampURL); img != nil {
+		if r, err := overlayImageLastPage(out, img, "scale:0.20, pos:br, off:-170 30, rot:0"); err == nil {
+			out = r
+		} else {
+			logger.WarnWithContext(ctx, "sign: тамга давхарлах алдаа (алгасав)", logger.Fields{"usecase": "sign", "error": err.Error()})
+		}
+	}
+	// Гарын үсэг — баруун доод булан.
+	if img := u.fetchAssetImage(ctx, signatureURL); img != nil {
+		if r, err := overlayImageLastPage(out, img, "scale:0.15, pos:br, off:-30 30, rot:0"); err == nil {
+			out = r
+		} else {
+			logger.WarnWithContext(ctx, "sign: гарын үсэг давхарлах алдаа (алгасав)", logger.Fields{"usecase": "sign", "error": err.Error()})
+		}
+	}
+	return out
+}
+
+// fetchAssetImage — тамга/гарын үсгийн зургийг URL-ээс (нээлттэй Google Drive lh3)
+// татна. Хоосон URL / алдаа / хэт том бол nil.
+func (u *usecase) fetchAssetImage(ctx context.Context, imgURL string) []byte {
+	if strings.TrimSpace(imgURL) == "" {
+		return nil
+	}
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, imgURL, nil)
+	if err != nil {
+		return nil
+	}
+	res, err := u.client.Do(req)
+	if err != nil {
+		return nil
+	}
+	defer func() { _ = res.Body.Close() }()
+	if res.StatusCode >= 300 {
+		return nil
+	}
+	b, err := io.ReadAll(io.LimitReader(res.Body, 6<<20))
+	if err != nil || len(b) == 0 {
+		return nil
+	}
+	return b
+}
+
+// overlayImageLastPage — pdfcpu-ээр зургийг ЗӨВХӨН сүүлчийн хуудсанд watermark
+// (onTop) болгон давхарлана. desc: pdfcpu-ийн watermark тайлбар (scale/pos/off).
+func overlayImageLastPage(pdfBytes, imgBytes []byte, desc string) ([]byte, error) {
+	conf := pdfcpumodel.NewDefaultConfiguration()
+	n, err := api.PageCount(bytes.NewReader(pdfBytes), conf)
+	if err != nil || n < 1 {
+		return nil, fmt.Errorf("pdf page count: %w", err)
+	}
+	wm, err := api.ImageWatermarkForReader(bytes.NewReader(imgBytes), desc, true, false, pdfcputypes.POINTS)
+	if err != nil {
+		return nil, fmt.Errorf("image watermark: %w", err)
+	}
+	var out bytes.Buffer
+	if err := api.AddWatermarks(bytes.NewReader(pdfBytes), &out, []string{strconv.Itoa(n)}, wm, conf); err != nil {
+		return nil, fmt.Errorf("add watermark: %w", err)
+	}
+	return out.Bytes(), nil
 }
 
 // Poll — /v3 session-ийг шалгаж төлвийг шинэчилнэ.

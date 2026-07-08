@@ -92,7 +92,7 @@ func TestInit_OnBehalfOf(t *testing.T) {
 	u := newTestUsecase(t, srv.URL)
 	ctx := context.Background()
 
-	res, err := u.Init(ctx, "УБ12345678", "Бат Болд", "doc.pdf", []byte("%PDF-1.4 test"), wantOrg)
+	res, err := u.Init(ctx, "УБ12345678", "Бат Болд", "doc.pdf", []byte("%PDF-1.4 test"), wantOrg, "", "")
 	if err != nil {
 		t.Fatalf("Init: %v", err)
 	}
@@ -132,7 +132,7 @@ func TestInit_PersonalSigning(t *testing.T) {
 	defer srv.Close()
 
 	u := newTestUsecase(t, srv.URL)
-	if _, err := u.Init(context.Background(), "УБ12345678", "Бат Болд", "d.pdf", []byte("%PDF"), ""); err != nil {
+	if _, err := u.Init(context.Background(), "УБ12345678", "Бат Болд", "d.pdf", []byte("%PDF"), "", "", ""); err != nil {
 		t.Fatalf("Init: %v", err)
 	}
 	if hasOnBehalfOf {
@@ -149,7 +149,7 @@ func TestInit_NotRepresentative_403(t *testing.T) {
 	defer srv.Close()
 
 	u := newTestUsecase(t, srv.URL)
-	_, err := u.Init(context.Background(), "УБ12345678", "Бат Болд", "d.pdf", []byte("%PDF"), "NTRMN-7654321")
+	_, err := u.Init(context.Background(), "УБ12345678", "Бат Болд", "d.pdf", []byte("%PDF"), "NTRMN-7654321", "", "")
 	if err == nil {
 		t.Fatal("алдаа хүлээв (403)")
 	}
