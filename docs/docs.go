@@ -2457,6 +2457,89 @@ const docTemplate = `{
                 }
             }
         },
+        "/me/latin-name": {
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "summary": "Латин нэр засах",
+                "parameters": [
+                    {
+                        "description": "Латин нэр",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_datatransfers_requests.LatinNameRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/me/org-name-latin/{regNo}": {
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "summary": "Байгууллагын латин нэр засах (ADMIN)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Байгууллагын регистрийн дугаар",
+                        "name": "regNo",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Латин нэр",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_datatransfers_requests.OrgNameLatinRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/me/orgstamp/{regNo}": {
             "get": {
                 "security": [
@@ -5034,6 +5117,19 @@ const docTemplate = `{
                 }
             }
         },
+        "template_internal_http_datatransfers_requests.LatinNameRequest": {
+            "type": "object",
+            "properties": {
+                "first_name_en": {
+                    "type": "string",
+                    "maxLength": 120
+                },
+                "last_name_en": {
+                    "type": "string",
+                    "maxLength": 120
+                }
+            }
+        },
         "template_internal_http_datatransfers_requests.LoginRequest": {
             "type": "object",
             "required": [
@@ -5063,6 +5159,15 @@ const docTemplate = `{
                 },
                 "refresh_token": {
                     "type": "string"
+                }
+            }
+        },
+        "template_internal_http_datatransfers_requests.OrgNameLatinRequest": {
+            "type": "object",
+            "properties": {
+                "name_latin": {
+                    "type": "string",
+                    "maxLength": 200
                 }
             }
         },

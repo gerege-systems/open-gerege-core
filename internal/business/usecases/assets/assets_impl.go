@@ -67,18 +67,46 @@ func (uc *usecase) DeleteStamp(ctx context.Context, userID, orgRegister string) 
 	return uc.stamps.Delete(ctx, strings.TrimSpace(orgRegister))
 }
 
-// requireOrgAdmin нь нэвтэрсэн хэрэглэгч тухайн байгууллагын ADMIN эрхтэй төлөөлөгч
-// мөн эсэхийг eID-ээр (eidmongolia OrgSigners) шалгана.
-func (uc *usecase) requireOrgAdmin(ctx context.Context, userID, orgRegister string) error {
-	got, err := uc.users.GetByID(ctx, users.GetByIDRequest{ID: userID})
+// ── Латин нэр засах (галиглалт заримдаа буруу тул гараар) ──
+
+func (uc *usecase) SetLatinName(ctx context.Context, userID, firstEn, lastEn string) error {
+	return uc.userRepo.SetLatinName(ctx, userID, firstEn, lastEn)
+}
+
+func (uc *usecase) SetOrgNameLatin(ctx context.Context, userID, orgRegister, nameLatin string) error {
+	etsi, err := uc.actingEtsi(ctx, userID)
 	if err != nil {
 		return err
 	}
+	if _, err := uc.eid.UpdateOrgNameLatin(ctx, strings.TrimSpace(orgRegister), etsi, nameLatin); err != nil {
+		if errors.Is(err, eid.ErrNotRepresentative) {
+			return apperror.Forbidden("Зөвхөн ADMIN эрхтэй хүн байгууллагын латин нэрийг засаж чадна")
+		}
+		return apperror.InternalCause(err)
+	}
+	return nil
+}
+
+// actingEtsi нь нэвтэрсэн хэрэглэгчийн civil_id-аас ETSI (PNOMN-<CIVIL>) угсарна.
+func (uc *usecase) actingEtsi(ctx context.Context, userID string) (string, error) {
+	got, err := uc.users.GetByID(ctx, users.GetByIDRequest{ID: userID})
+	if err != nil {
+		return "", err
+	}
 	civ := strings.TrimSpace(got.User.CivilID)
 	if civ == "" {
-		return apperror.Forbidden("eID-ээр нэвтэрсэн байх шаардлагатай")
+		return "", apperror.Forbidden("eID-ээр нэвтэрсэн байх шаардлагатай")
 	}
-	etsi := "PNOMN-" + strings.ToUpper(civ)
+	return "PNOMN-" + strings.ToUpper(civ), nil
+}
+
+// requireOrgAdmin нь нэвтэрсэн хэрэглэгч тухайн байгууллагын ADMIN эрхтэй төлөөлөгч
+// мөн эсэхийг eID-ээр (eidmongolia OrgSigners) шалгана.
+func (uc *usecase) requireOrgAdmin(ctx context.Context, userID, orgRegister string) error {
+	etsi, err := uc.actingEtsi(ctx, userID)
+	if err != nil {
+		return err
+	}
 	signers, err := uc.eid.OrgSigners(ctx, strings.TrimSpace(orgRegister), etsi)
 	if err != nil {
 		if errors.Is(err, eid.ErrNotRepresentative) {

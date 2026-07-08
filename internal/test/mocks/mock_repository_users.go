@@ -208,6 +208,12 @@ func (_m *UserRepository) SetSignature(ctx context.Context, userID string, img s
 	return ret.Error(0)
 }
 
+// SetLatinName provides a mock function with given fields: ctx, userID, firstEn, lastEn
+func (_m *UserRepository) SetLatinName(ctx context.Context, userID string, firstEn string, lastEn string) error {
+	ret := _m.Called(ctx, userID, firstEn, lastEn)
+	return ret.Error(0)
+}
+
 // GetByNationalID provides a mock function with given fields: ctx, nationalID
 func (_m *UserRepository) GetByNationalID(ctx context.Context, nationalID string) (domain.User, error) {
 	ret := _m.Called(ctx, nationalID)

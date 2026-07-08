@@ -224,6 +224,9 @@ type Client interface {
 	// ResendSigner нь баталгаажаагүй (PENDING) гарын үсэг зурагч руу sign-push-ийг
 	// дахин илгээнэ. Шинэ жагсаалт + хүлээгдэж буй баталгаажуулалтыг буцаана.
 	ResendSigner(ctx context.Context, orgRegister, actingPersonEtsi, signerRegNo string) (*SignersResult, error)
+	// UpdateOrgNameLatin нь байгууллагын латин нэрийг засна (зөвхөн ADMIN). Иргэний
+	// шинэ төлөөллийг буцаана.
+	UpdateOrgNameLatin(ctx context.Context, orgRegister, actingPersonEtsi, nameLatin string) ([]Representation, error)
 
 	// Person* нь иргэн өөрийн PKI самбарын endpoint-ууд — PKI_READ эрхтэй RP-д
 	// л нээгдэнэ (эрхгүй бол ErrPKINotPermitted).
@@ -838,6 +841,34 @@ func (c *client) del(ctx context.Context, path string) ([]byte, int, error) {
 	}
 	c.setHeaders(req)
 	return c.do(req)
+}
+
+func (c *client) put(ctx context.Context, path string, body any) ([]byte, int, error) {
+	buf, _ := json.Marshal(body)
+	req, err := http.NewRequestWithContext(ctx, http.MethodPut, c.base+path, bytes.NewReader(buf))
+	if err != nil {
+		return nil, 0, fmt.Errorf("eid: build request: %w", err)
+	}
+	c.setHeaders(req)
+	return c.do(req)
+}
+
+func (c *client) UpdateOrgNameLatin(ctx context.Context, orgRegister, actingPersonEtsi, nameLatin string) ([]Representation, error) {
+	if strings.TrimSpace(orgRegister) == "" || strings.TrimSpace(actingPersonEtsi) == "" {
+		return nil, errors.New("eid: empty orgRegister/actingPersonEtsi")
+	}
+	path := "/organization/name-latin/" + url.PathEscape(strings.TrimSpace(orgRegister)) + "/etsi/" + url.PathEscape(strings.TrimSpace(actingPersonEtsi))
+	raw, status, err := c.put(ctx, path, map[string]string{"nameLatin": strings.TrimSpace(nameLatin)})
+	if err != nil {
+		return nil, err
+	}
+	if status == http.StatusForbidden {
+		return nil, ErrNotRepresentative
+	}
+	if status >= 300 {
+		return nil, fmt.Errorf("eid update org name-latin: status %d: %s", status, snippet(raw))
+	}
+	return parseRepresentations(raw)
 }
 
 // setHeaders нь бүх хүсэлтэд RP Bearer secret болон JSON content-type-г тавина.

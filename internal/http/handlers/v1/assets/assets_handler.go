@@ -102,6 +102,61 @@ func (h Handler) DeleteSignature(w http.ResponseWriter, r *http.Request) error {
 	return v1.NewSuccessResponse(w, r, http.StatusOK, "signature deleted", urlResponse{})
 }
 
+// SetLatinName godoc
+// @Summary Латин нэр засах
+// @Tags users
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param payload body requests.LatinNameRequest true "Латин нэр"
+// @Success 200 {object} v1.BaseResponse
+// @Router /me/latin-name [put]
+func (h Handler) SetLatinName(w http.ResponseWriter, r *http.Request) error {
+	uid, ok := h.user(w, r)
+	if !ok {
+		return nil
+	}
+	var req requests.LatinNameRequest
+	if err := v1.DecodeBody(r, &req); err != nil {
+		return v1.NewErrorResponse(w, r, http.StatusBadRequest, "invalid request body")
+	}
+	if err := validators.ValidatePayloads(req); err != nil {
+		return v1.RespondWithError(w, r, err)
+	}
+	if err := h.usecase.SetLatinName(r.Context(), uid, req.FirstNameEn, req.LastNameEn); err != nil {
+		return v1.RespondWithError(w, r, err)
+	}
+	return v1.NewSuccessResponse(w, r, http.StatusOK, "latin name saved", nil)
+}
+
+// SetOrgNameLatin godoc
+// @Summary Байгууллагын латин нэр засах (ADMIN)
+// @Tags users
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param regNo path string true "Байгууллагын регистрийн дугаар"
+// @Param payload body requests.OrgNameLatinRequest true "Латин нэр"
+// @Success 200 {object} v1.BaseResponse
+// @Router /me/org-name-latin/{regNo} [put]
+func (h Handler) SetOrgNameLatin(w http.ResponseWriter, r *http.Request) error {
+	uid, ok := h.user(w, r)
+	if !ok {
+		return nil
+	}
+	var req requests.OrgNameLatinRequest
+	if err := v1.DecodeBody(r, &req); err != nil {
+		return v1.NewErrorResponse(w, r, http.StatusBadRequest, "invalid request body")
+	}
+	if err := validators.ValidatePayloads(req); err != nil {
+		return v1.RespondWithError(w, r, err)
+	}
+	if err := h.usecase.SetOrgNameLatin(r.Context(), uid, chi.URLParam(r, "regNo"), req.NameLatin); err != nil {
+		return v1.RespondWithError(w, r, err)
+	}
+	return v1.NewSuccessResponse(w, r, http.StatusOK, "org name latin saved", nil)
+}
+
 // GetStamp godoc
 // @Summary Байгууллагын тамга авах
 // @Tags users

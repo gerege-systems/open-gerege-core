@@ -45,6 +45,10 @@ func (rt *assetsRoute) Routes() {
 		r.With(write).Put("/signature", v1.Wrap(rt.handler.SetSignature))
 		r.With(write).Delete("/signature", v1.Wrap(rt.handler.DeleteSignature))
 
+		// Латин нэр засах (галиглалт заримдаа буруу).
+		r.With(write).Put("/latin-name", v1.Wrap(rt.handler.SetLatinName))
+		r.With(write).Put("/org-name-latin/{regNo}", v1.Wrap(rt.handler.SetOrgNameLatin))
+
 		// Байгууллагын тамганы дардас (зөвхөн ADMIN бичнэ).
 		r.Get("/orgstamp/{regNo}", v1.Wrap(rt.handler.GetStamp))
 		r.With(write).Put("/orgstamp/{regNo}", v1.Wrap(rt.handler.SetStamp))

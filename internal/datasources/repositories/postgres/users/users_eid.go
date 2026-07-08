@@ -77,8 +77,11 @@ func (r *postgreUserRepository) UpsertFromEID(ctx context.Context, inDom *domain
 			DO UPDATE SET
 				first_name      = EXCLUDED.first_name,
 				last_name       = EXCLUDED.last_name,
-				first_name_en   = EXCLUDED.first_name_en,
-				last_name_en    = EXCLUDED.last_name_en,
+				-- Латин нэрийг НЭГ УДАА (анхны insert-д) л eID-ээс авна; дараа нь дарж
+				-- бичихгүй (COALESCE) — учир нь автомат галиглалт заримдаа буруу тул
+				-- хэрэглэгч гараар засах бөгөөд тэр засвар нь дараагийн нэвтрэлтэд хэвээр.
+				first_name_en   = COALESCE(users.first_name_en, EXCLUDED.first_name_en),
+				last_name_en    = COALESCE(users.last_name_en, EXCLUDED.last_name_en),
 				national_id     = EXCLUDED.national_id,
 				kyc_level       = EXCLUDED.kyc_level,
 				document_number = EXCLUDED.document_number,

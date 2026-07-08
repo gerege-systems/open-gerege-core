@@ -171,6 +171,10 @@ func (f *FakeEID) ResendSigner(_ context.Context, _, _, _ string) (*eid.SignersR
 	return &eid.SignersResult{}, nil
 }
 
+func (f *FakeEID) UpdateOrgNameLatin(_ context.Context, _, _, _ string) ([]eid.Representation, error) {
+	return f.Reps, nil
+}
+
 // Person* fake-ууд — default nil/тэг (PKI боломжийг туршихгүй тестүүдэд хангалттай).
 func (f *FakeEID) PersonSummary(_ context.Context, _ string) (*eid.PersonSummary, error) {
 	return f.Summary, nil

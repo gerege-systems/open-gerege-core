@@ -394,6 +394,15 @@ definitions:
     required:
     - kind
     type: object
+  template_internal_http_datatransfers_requests.LatinNameRequest:
+    properties:
+      first_name_en:
+        maxLength: 120
+        type: string
+      last_name_en:
+        maxLength: 120
+        type: string
+    type: object
   template_internal_http_datatransfers_requests.LoginRequest:
     properties:
       email:
@@ -415,6 +424,12 @@ definitions:
         type: string
     required:
     - refresh_token
+    type: object
+  template_internal_http_datatransfers_requests.OrgNameLatinRequest:
+    properties:
+      name_latin:
+        maxLength: 200
+        type: string
     type: object
   template_internal_http_datatransfers_requests.RefreshRequest:
     properties:
@@ -2627,6 +2642,57 @@ paths:
       summary: Провайдерын токеныг авах (server-тал, BFF)
       tags:
       - integrations
+  /me/latin-name:
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: Латин нэр
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/template_internal_http_datatransfers_requests.LatinNameRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      security:
+      - BearerAuth: []
+      summary: Латин нэр засах
+      tags:
+      - users
+  /me/org-name-latin/{regNo}:
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: Байгууллагын регистрийн дугаар
+        in: path
+        name: regNo
+        required: true
+        type: string
+      - description: Латин нэр
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/template_internal_http_datatransfers_requests.OrgNameLatinRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      security:
+      - BearerAuth: []
+      summary: Байгууллагын латин нэр засах (ADMIN)
+      tags:
+      - users
   /me/orgstamp/{regNo}:
     delete:
       parameters:

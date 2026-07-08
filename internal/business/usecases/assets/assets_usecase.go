@@ -21,4 +21,8 @@ type Usecase interface {
 	SetStamp(ctx context.Context, userID, orgRegister, url string) error
 	// DeleteStamp нь байгууллагын тамгыг устгана — зөвхөн ADMIN.
 	DeleteStamp(ctx context.Context, userID, orgRegister string) error
+	// SetLatinName нь нэвтэрсэн хэрэглэгчийн латин нэрийг (first_name_en/last_name_en) засна.
+	SetLatinName(ctx context.Context, userID, firstEn, lastEn string) error
+	// SetOrgNameLatin нь байгууллагын латин нэрийг засна (eidmongolia талд ADMIN шалгана).
+	SetOrgNameLatin(ctx context.Context, userID, orgRegister, nameLatin string) error
 }

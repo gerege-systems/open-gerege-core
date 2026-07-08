@@ -99,6 +99,8 @@ type UserRepository interface {
 	GetSignature(ctx context.Context, userID string) (string, error)
 	// SetSignature нь гарын үсгийн зургийг тавина/шинэчилнэ; хоосон img нь устгана.
 	SetSignature(ctx context.Context, userID, img string) error
+	// SetLatinName нь хэрэглэгчийн латин нэрийг (first_name_en/last_name_en) гараар засна.
+	SetLatinName(ctx context.Context, userID, firstEn, lastEn string) error
 }
 
 // RBACRepository нь динамик role-ууд болон тэдгээрийн эрхийг (role↔permission)
