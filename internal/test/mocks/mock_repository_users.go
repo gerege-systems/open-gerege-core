@@ -192,6 +192,22 @@ func (_m *UserRepository) UpdateRole(ctx context.Context, id string, roleID int)
 	return r0
 }
 
+// GetSignature provides a mock function with given fields: ctx, userID
+func (_m *UserRepository) GetSignature(ctx context.Context, userID string) (string, error) {
+	ret := _m.Called(ctx, userID)
+	var r0 string
+	if v, ok := ret.Get(0).(string); ok {
+		r0 = v
+	}
+	return r0, ret.Error(1)
+}
+
+// SetSignature provides a mock function with given fields: ctx, userID, img
+func (_m *UserRepository) SetSignature(ctx context.Context, userID string, img string) error {
+	ret := _m.Called(ctx, userID, img)
+	return ret.Error(0)
+}
+
 // GetByNationalID provides a mock function with given fields: ctx, nationalID
 func (_m *UserRepository) GetByNationalID(ctx context.Context, nationalID string) (domain.User, error) {
 	ret := _m.Called(ctx, nationalID)

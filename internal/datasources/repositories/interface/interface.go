@@ -95,6 +95,10 @@ type UserRepository interface {
 	// UpdateRole нь хэрэглэгчийн role_id-г солино (admin удирдлага). Мөр
 	// байхгүй/soft-delete хийгдсэн бол apperror.NotFound буцаана.
 	UpdateRole(ctx context.Context, id string, roleID int) error
+	// GetSignature нь хэрэглэгчийн гарын үсгийн зургийг (data-URL) буцаана (хоосон бол "").
+	GetSignature(ctx context.Context, userID string) (string, error)
+	// SetSignature нь гарын үсгийн зургийг тавина/шинэчилнэ; хоосон img нь устгана.
+	SetSignature(ctx context.Context, userID, img string) error
 }
 
 // RBACRepository нь динамик role-ууд болон тэдгээрийн эрхийг (role↔permission)

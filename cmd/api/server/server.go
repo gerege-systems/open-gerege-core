@@ -21,6 +21,7 @@ import (
 	docs "template/docs" // swagger тодорхойлолт, swaggo-оор init үед бүртгэгддэг
 	"template/internal/business/domain"
 	"template/internal/business/usecases/ai"
+	"template/internal/business/usecases/assets"
 	"template/internal/business/usecases/audit"
 	"template/internal/business/usecases/auth"
 	"template/internal/business/usecases/core"
@@ -44,6 +45,7 @@ import (
 	gatewaypostgres "template/internal/datasources/repositories/postgres/gateway"
 	govpostgres "template/internal/datasources/repositories/postgres/gov"
 	orgpostgres "template/internal/datasources/repositories/postgres/org"
+	orgstamppostgres "template/internal/datasources/repositories/postgres/orgstamp"
 	rbacpostgres "template/internal/datasources/repositories/postgres/rbac"
 	securitypostgres "template/internal/datasources/repositories/postgres/security"
 	ssouserpostgres "template/internal/datasources/repositories/postgres/ssouser"
@@ -215,6 +217,9 @@ func NewApp() (*App, error) {
 	// Хэрэглэгчийн гуравдагч этгээдийн интеграци (Google Drive/Meet, Dropbox) —
 	// OAuth токеныг шифрлэн хадгална (RLS-тэй per-user хүснэгт).
 	userIntegrationsRepo := userintegrationspostgres.NewUserIntegrationsRepository(pool)
+	// Гарын үсэг (хувь хүн) + байгууллагын тамга (ADMIN) — зураг Google Drive-д, URL DB-д.
+	orgStampRepo := orgstamppostgres.NewOrgStampRepository(pool)
+	assetsUC := assets.NewUsecase(usersUC, userRepo, orgStampRepo, eidClient)
 	integrationsUC, err := integrations.NewUsecase(userIntegrationsRepo, config.AppConfig.IntegrationEncKey)
 	if err != nil {
 		return nil, fmt.Errorf("init integrations usecase: %w", err)
@@ -307,6 +312,7 @@ func NewApp() (*App, error) {
 		routes.NewOrgRoute(api, orgUC, auditUC, authMiddleware).Routes()
 		routes.NewGovRoute(api, govUC, authMiddleware, govWriteRateLimiter).Routes()
 		routes.NewIntegrationsRoute(api, integrationsUC, authMiddleware).Routes()
+		routes.NewAssetsRoute(api, assetsUC, authMiddleware, govWriteRateLimiter).Routes()
 		routes.NewGatewayRoute(api, gatewayUC, rbacUC, authMiddleware).Routes()
 		routes.NewCoreRoute(api, coreUC, authMiddleware).Routes()
 		routes.NewSSORoute(api, ssoUC).Routes()

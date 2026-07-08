@@ -113,6 +113,14 @@ definitions:
     required:
     - user_id
     type: object
+  template_internal_http_datatransfers_requests.AssetURLRequest:
+    properties:
+      url:
+        maxLength: 1000
+        type: string
+    required:
+    - url
+    type: object
   template_internal_http_datatransfers_requests.ChangePasswordRequest:
     properties:
       current_password:
@@ -3026,6 +3034,72 @@ paths:
       summary: Баталгаажуулах хүсэлт дахин илгээх (eID)
       tags:
       - users
+  /users/me/eid/organizations/{regNo}/stamp:
+    delete:
+      parameters:
+      - description: Байгууллагын регистрийн дугаар
+        in: path
+        name: regNo
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      security:
+      - BearerAuth: []
+      summary: Байгууллагын тамга устгах (ADMIN)
+      tags:
+      - users
+    get:
+      parameters:
+      - description: Байгууллагын регистрийн дугаар
+        in: path
+        name: regNo
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      security:
+      - BearerAuth: []
+      summary: Байгууллагын тамга авах
+      tags:
+      - users
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: Байгууллагын регистрийн дугаар
+        in: path
+        name: regNo
+        required: true
+        type: string
+      - description: Зургийн URL
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/template_internal_http_datatransfers_requests.AssetURLRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      security:
+      - BearerAuth: []
+      summary: Байгууллагын тамга хадгалах (ADMIN)
+      tags:
+      - users
   /users/me/eid/summary:
     get:
       description: Нэвтэрсэн иргэний гэрчилгээ/auth-sign/төхөөрөмж/байгууллагын нэгдсэн
@@ -3045,6 +3119,55 @@ paths:
       security:
       - BearerAuth: []
       summary: eID PKI самбарын нэгдсэн тоо
+      tags:
+      - users
+  /users/me/signature:
+    delete:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      security:
+      - BearerAuth: []
+      summary: Гарын үсэг устгах
+      tags:
+      - users
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      security:
+      - BearerAuth: []
+      summary: Гарын үсэг (eID) авах
+      tags:
+      - users
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: Зургийн URL
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/template_internal_http_datatransfers_requests.AssetURLRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      security:
+      - BearerAuth: []
+      summary: Гарын үсэг (eID) хадгалах
       tags:
       - users
   /v1/audit:
