@@ -44,8 +44,13 @@ func (uc *usecase) ListAdmins(ctx context.Context) (ListResponse, error) {
 // өөрчилж болохгүй — эс бөгөөс users.manage эрхтэй энгийн admin өөр бүртгэлийг
 // super admin болгож эрх нэмэгдүүлэх, эсвэл super admin-г буулгах боломжтой болно.
 func (uc *usecase) UpdateRole(ctx context.Context, req UpdateRoleRequest) error {
-	if req.RoleID == domain.RoleSuperAdmin {
-		return apperror.Forbidden("cannot assign the super admin role")
+	// Admin түвшний (super admin + admin) зэрэглэлийг энэ ерөнхий users.manage
+	// замаар ХЭЗЭЭ Ч оноож болохгүй — эс бөгөөс users.manage эрхтэй энгийн (custom)
+	// role өөрийгөө admin болгож бүх эрхийг булаах privilege-escalation боломжтой.
+	// Admin олгох/хасах нь зөвхөн super-admin-ий тусгай урсгалаар (GrantAdmin/
+	// RevokeAdmin) явна.
+	if req.RoleID == domain.RoleSuperAdmin || req.RoleID == domain.RoleAdmin {
+		return apperror.Forbidden("cannot assign an admin-level role via this endpoint; use the super-admin admin-management flow")
 	}
 	existing, err := uc.repo.GetByID(ctx, req.UserID)
 	if err != nil {

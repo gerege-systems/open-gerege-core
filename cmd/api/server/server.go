@@ -236,6 +236,7 @@ func NewApp() (*App, error) {
 		User:     config.AppConfig.GSpaceUser,
 		Password: config.AppConfig.GSpacePassword,
 		BasePath: config.AppConfig.GSpaceBasePath,
+		HostKey:  config.AppConfig.GSpaceHostKey,
 	})
 	gspaceUC := gspace.NewUsecase(gspaceClient, config.AppConfig.GSpaceQuota)
 

@@ -48,6 +48,7 @@ import (
 	pdfcputypes "github.com/pdfcpu/pdfcpu/pkg/pdfcpu/types"
 
 	"template/internal/apperror"
+	"template/pkg/asseturl"
 	"template/pkg/logger"
 )
 
@@ -307,14 +308,21 @@ func (u *usecase) applyVisualAssets(ctx context.Context, pdfBytes []byte, signat
 // fetchAssetImage — тамга/гарын үсгийн зургийг URL-ээс (нээлттэй Google Drive lh3)
 // татна. Хоосон URL / алдаа / хэт том бол nil.
 func (u *usecase) fetchAssetImage(ctx context.Context, imgURL string) []byte {
-	if strings.TrimSpace(imgURL) == "" {
+	imgURL = strings.TrimSpace(imgURL)
+	if imgURL == "" {
+		return nil
+	}
+	// SSRF хамгаалалт: зөвхөн найдвартай Google host руу (redirect бүрийг дахин
+	// шалгаж) татна — дотоод сүлжээ/metadata руу хандах боломжгүй.
+	if err := asseturl.Validate(imgURL); err != nil {
+		logger.WarnWithContext(ctx, "sign: зургийн URL найдваргүй (алгасав)", logger.Fields{"usecase": "sign", "error": err.Error()})
 		return nil
 	}
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, imgURL, nil)
 	if err != nil {
 		return nil
 	}
-	res, err := u.client.Do(req)
+	res, err := asseturl.SafeClient(15 * time.Second).Do(req)
 	if err != nil {
 		return nil
 	}

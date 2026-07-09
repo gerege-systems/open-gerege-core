@@ -57,6 +57,7 @@ type Config struct {
 	GSpacePassword string `mapstructure:"GSPACE_PASSWORD"`
 	GSpaceBasePath string `mapstructure:"GSPACE_BASE_PATH"`
 	GSpaceQuota    int64  `mapstructure:"GSPACE_QUOTA_BYTES"`
+	GSpaceHostKey  string `mapstructure:"GSPACE_HOST_KEY"` // SFTP host key pin (authorized_keys мөр)
 
 	// eID identity provider (RP contract) — энэ template нь Relying Party.
 	// "Login with eID" нь цорын ганц нэвтрэх арга тул эдгээр нь сонголттой
@@ -214,6 +215,7 @@ func InitializeAppConfig() error {
 	_ = viper.BindEnv("GSPACE_PASSWORD")
 	_ = viper.BindEnv("GSPACE_BASE_PATH")
 	_ = viper.BindEnv("GSPACE_QUOTA_BYTES")
+	_ = viper.BindEnv("GSPACE_HOST_KEY")
 	// .env файл байхгүй байх нь алдаа БИШ — контейнер / 12-factor орчинд
 	// тохиргоог зөвхөн environment-ээс уншина. Зөвхөн жинхэнэ задлан унших
 	// (parse) алдааг л буцаана.
@@ -292,6 +294,12 @@ func InitializeAppConfig() error {
 		// VERIFY_API_KEY заавал шаардлагатай (эс бөгөөс OTP илгээх боломжгүй).
 		if AppConfig.VerifyAPIKey == "" {
 			return fmt.Errorf("VERIFY_API_KEY must be set in production (GeregeCloud Verify OTP)")
+		}
+		// INTEGRATION_ENC_KEY хоосон бол OAuth токены шифрлэлтийн түлхүүр sha256("")
+		// буюу нийтэд мэдэгдэх тогтмол болно — DB задарвал бүх хэрэглэгчийн гуравдагч
+		// этгээдийн токен ил гарна. Production-д заавал (хангалттай урттай) тохируулна.
+		if len(AppConfig.IntegrationEncKey) < 16 {
+			return fmt.Errorf("INTEGRATION_ENC_KEY must be set in production and at least 16 characters (OAuth token encryption)")
 		}
 	default:
 		return fmt.Errorf("ENVIRONMENT must be 'development' or 'production', got %q", AppConfig.Environment)

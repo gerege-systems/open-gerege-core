@@ -39,7 +39,7 @@ type SendOTPRequest struct {
 // VerifyOTPRequest нь POST /auth/verify-otp-ийн body юм.
 type VerifyOTPRequest struct {
 	Email string `json:"email" validate:"required,email,max=50"`
-	Code  string `json:"code" validate:"required,numeric"`
+	Code  string `json:"code" validate:"required,numeric,max=10"`
 }
 
 // LoginRequest нь POST /auth/login-ийн body юм.
@@ -57,14 +57,14 @@ func (r *LoginRequest) ToV1Domain() *domain.User {
 
 // RefreshRequest нь POST /auth/refresh-ийн body юм.
 type RefreshRequest struct {
-	RefreshToken string `json:"refresh_token" validate:"required"`
+	RefreshToken string `json:"refresh_token" validate:"required,max=4096"`
 }
 
 // LogoutRequest нь POST /auth/logout-ийн body юм. access_token нь сонголттой —
 // өгвөл түүний jti deny-list-д орж access токен шууд хүчингүй болно.
 type LogoutRequest struct {
-	RefreshToken string `json:"refresh_token" validate:"required"`
-	AccessToken  string `json:"access_token" validate:"omitempty"`
+	RefreshToken string `json:"refresh_token" validate:"required,max=4096"`
+	AccessToken  string `json:"access_token" validate:"omitempty,max=4096"`
 }
 
 // ChangePasswordRequest нь PUT /auth/password/change-ийн body юм.
@@ -81,7 +81,7 @@ type ForgotPasswordRequest struct {
 // EIDPollRequest нь POST /auth/eid/poll-ийн body юм — /eid/start-аас авсан
 // session_id-г IdP-д long-poll-оор асуухад дамжуулна.
 type EIDPollRequest struct {
-	SessionID string `json:"session_id" validate:"required"`
+	SessionID string `json:"session_id" validate:"required,max=128"`
 	// GoogleLinkToken нь Google-ээр эхний удаа нэвтэрсэн хэрэглэгч eID-ээр
 	// баталгаажуулж байгаа үед л ирнэ (сонголттой).
 	GoogleLinkToken string `json:"google_link_token,omitempty"`
@@ -90,17 +90,17 @@ type EIDPollRequest struct {
 // GoogleLoginRequest нь POST /auth/google-ийн body — Google OAuth callback-ийн
 // code + redirect_uri (BFF дамжуулна).
 type GoogleLoginRequest struct {
-	Code        string `json:"code" validate:"required"`
-	RedirectURI string `json:"redirect_uri" validate:"required"`
+	Code        string `json:"code" validate:"required,max=1024"`
+	RedirectURI string `json:"redirect_uri" validate:"required,url,max=1024"`
 }
 
 // EIDStartByNationalIDRequest нь POST /auth/eid/start-id-ийн body юм — иргэний
 // РД-аар нэвтрэлт эхлүүлж, бүртгэлтэй төхөөрөмж рүү push хийлгэнэ.
 type EIDStartByNationalIDRequest struct {
-	NationalID string `json:"national_id" validate:"required"`
+	NationalID string `json:"national_id" validate:"required,max=32"`
 	// CallbackUrl (сонголт): SAME-DEVICE (утасны browser) үед <origin>/auth/eid/callback; хоосон
 	// бол CROSS-DEVICE (desktop). Backend force-normalize хийнэ.
-	CallbackUrl string `json:"callbackUrl,omitempty"`
+	CallbackUrl string `json:"callbackUrl,omitempty" validate:"omitempty,max=1024"`
 }
 
 // ResetPasswordRequest нь POST /auth/password/reset-ийн body юм. Нууц үг
@@ -108,6 +108,6 @@ type EIDStartByNationalIDRequest struct {
 // шаардана.
 type ResetPasswordRequest struct {
 	Email       string `json:"email" validate:"required,email,max=50"`
-	Code        string `json:"code" validate:"required"`
+	Code        string `json:"code" validate:"required,max=10"`
 	NewPassword string `json:"new_password" validate:"required,min=12,max=72,strongpassword"`
 }
