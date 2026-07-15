@@ -155,6 +155,58 @@ type Config struct {
 	// iOS/Android ASWebAuthenticationSession-ийн code-ийг public client-ээр
 	// солиход хэрэглэгдэнэ (хоосон бол default template-gerege-mn-ios).
 	SSONativeClientID string `mapstructure:"SSO_NATIVE_CLIENT_ID"`
+
+	// --- OIDC PROVIDER тал (энэ апп-ыг Ory Hydra-г урдаа тавьж SSO provider
+	// болгоно). Дээрх SSO_* нь RP (нэвтрэгч) тал; доорхи HYDRA_*/SSO_ADMIN_* нь
+	// PROVIDER (issuer) тал. Зөвхөн Hydra тохируулагдсан (ProviderConfigured)
+	// үед идэвхжинэ; эс бөгөөс provider урсгал бүхэлдээ inert. ---
+	// HydraAdminURL нь Hydra admin API (client CRUD + login/consent/logout
+	// challenge). Compose дотор http://hydra:4445. Public-д ХЭЗЭЭ Ч гаргаж болохгүй.
+	HydraAdminURL string `mapstructure:"HYDRA_ADMIN_URL"`
+	// HydraPublicURL нь issuer (жишээ https://template.gerege.mn) — login/consent
+	// redirect байгуулахад ашиглана. Хоосон бол provider урсгал inert.
+	HydraPublicURL string `mapstructure:"HYDRA_PUBLIC_URL"`
+	// SSOStateKey нь login/consent урсгалын transient state cookie HMAC түлхүүр
+	// (>=32 bytes).
+	SSOStateKey string `mapstructure:"SSO_STATE_KEY"`
+	// SSOFirstPartyClients нь consent UI-г алгасах client_id-уудын CSV (эхний
+	// талын апп-ууд).
+	SSOFirstPartyClients string `mapstructure:"SSO_FIRSTPARTY_CLIENTS"`
+	// SSOAdminAPIKeys нь /admin гадаргууг баталгаажуулах bootstrap key-үүдийн CSV
+	// (SHA-256 hash-аар тааруулна; хадгалагдахгүй).
+	SSOAdminAPIKeys string `mapstructure:"SSO_ADMIN_API_KEYS"`
+	// SSOAdminSubs нь superadmin эрхтэй eid_sub-уудын CSV.
+	SSOAdminSubs string `mapstructure:"SSO_ADMIN_SUBS"`
+}
+
+// SSOFirstPartyClientsList нь SSO_FIRSTPARTY_CLIENTS-г таслалаар салгаж slice болгоно.
+func (c *Config) SSOFirstPartyClientsList() []string { return splitCSVConfig(c.SSOFirstPartyClients) }
+
+// SSOAdminAPIKeysList нь SSO_ADMIN_API_KEYS-г таслалаар салгаж slice болгоно.
+func (c *Config) SSOAdminAPIKeysList() []string { return splitCSVConfig(c.SSOAdminAPIKeys) }
+
+// SSOAdminSubsList нь SSO_ADMIN_SUBS-г таслалаар салгаж slice болгоно.
+func (c *Config) SSOAdminSubsList() []string { return splitCSVConfig(c.SSOAdminSubs) }
+
+// ProviderConfigured нь энэ апп-ыг OIDC provider болгох гол тохиргоо (Hydra)
+// бүрдсэн эсэхийг мэдээлнэ.
+func (c *Config) ProviderConfigured() bool {
+	return c.HydraAdminURL != "" && c.HydraPublicURL != "" && len(c.SSOStateKey) >= 32
+}
+
+// splitCSVConfig нь таслалаар салгаж, хоосон/зайг арилгаж slice болгоно.
+func splitCSVConfig(s string) []string {
+	if strings.TrimSpace(s) == "" {
+		return nil
+	}
+	parts := strings.Split(s, ",")
+	out := make([]string, 0, len(parts))
+	for _, p := range parts {
+		if p = strings.TrimSpace(p); p != "" {
+			out = append(out, p)
+		}
+	}
+	return out
 }
 
 // TrustedProxiesList нь TRUSTED_PROXIES-г таслалаар салгаж slice болгоно.
@@ -216,6 +268,14 @@ func InitializeAppConfig() error {
 	_ = viper.BindEnv("GSPACE_BASE_PATH")
 	_ = viper.BindEnv("GSPACE_QUOTA_BYTES")
 	_ = viper.BindEnv("GSPACE_HOST_KEY")
+	// OIDC PROVIDER тал (энэ апп-ыг Hydra-г урдаа тавьж SSO болгоно) — нууц/
+	// орчин-тусгай тул ил bind хийнэ.
+	_ = viper.BindEnv("HYDRA_ADMIN_URL")
+	_ = viper.BindEnv("HYDRA_PUBLIC_URL")
+	_ = viper.BindEnv("SSO_STATE_KEY")
+	_ = viper.BindEnv("SSO_FIRSTPARTY_CLIENTS")
+	_ = viper.BindEnv("SSO_ADMIN_API_KEYS")
+	_ = viper.BindEnv("SSO_ADMIN_SUBS")
 	// .env файл байхгүй байх нь алдаа БИШ — контейнер / 12-factor орчинд
 	// тохиргоог зөвхөн environment-ээс уншина. Зөвхөн жинхэнэ задлан унших
 	// (parse) алдааг л буцаана.
@@ -395,6 +455,10 @@ func applyDefaults() {
 	}
 	if AppConfig.SSONativeClientID == "" {
 		AppConfig.SSONativeClientID = "template-gerege-mn-ios"
+	}
+	// OIDC provider тал: Hydra admin URL default нь compose доторх hydra:4445.
+	if AppConfig.HydraAdminURL == "" {
+		AppConfig.HydraAdminURL = "http://hydra:4445"
 	}
 	// OTel-ийн sample ratio нь зөвхөн exporter тохируулагдсан БА оператор
 	// ratio-г тодорхой зааж өгөөгүй үед 1.0 утгыг анхдагчаар авна. Exporter

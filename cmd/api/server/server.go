@@ -30,6 +30,7 @@ import (
 	"template/internal/business/usecases/gspace"
 	"template/internal/business/usecases/integrations"
 	"template/internal/business/usecases/org"
+	provideruc "template/internal/business/usecases/provider"
 	"template/internal/business/usecases/rbac"
 	"template/internal/business/usecases/security"
 	"template/internal/business/usecases/sign"
@@ -56,10 +57,14 @@ import (
 	V1Handler "template/internal/http/handlers/v1"
 	"template/internal/http/middlewares"
 	"template/internal/http/routes"
+	"template/internal/provider/adminapi"
+	"template/internal/provider/adminkeys"
+	"template/internal/provider/devapps"
 	"template/pkg/eid"
 	"template/pkg/gemini"
 	"template/pkg/google"
 	gspaceclient "template/pkg/gspace"
+	"template/pkg/hydra"
 	"template/pkg/jwt"
 	"template/pkg/logger"
 	"template/pkg/observability"
@@ -317,6 +322,16 @@ func NewApp() (*App, error) {
 	// Уншилтад хамаарахгүй; ~30/мин (burst 15) нь энгийн хэрэглээнд элбэг зайтай.
 	govWriteRateLimiter := middlewares.NewRateLimiter(rate.Limit(30.0/60.0), 15)
 
+	// OIDC provider (энэ апп-ыг Hydra урдаа тавьж SSO болгоно) — login/consent/
+	// logout цөм. Зөвхөн Hydra тохируулагдсан (ProviderConfigured) үед идэвхжинэ;
+	// эс бөгөөс providerUC == nil тул route бүртгэгдэхгүй (inert).
+	var providerUC provideruc.Usecase
+	var hydraAdmin *hydra.Admin
+	if config.AppConfig.ProviderConfigured() {
+		hydraAdmin = hydra.NewAdmin(config.AppConfig.HydraAdminURL)
+		providerUC = provideruc.NewUsecase(hydraAdmin, usersUC, config.AppConfig.SSOFirstPartyClientsList())
+	}
+
 	// API Route-ууд
 	r.Route("/api", func(api chi.Router) {
 		api.Get("/", routes.RootHandler)
@@ -332,6 +347,10 @@ func NewApp() (*App, error) {
 		routes.NewGatewayRoute(api, gatewayUC, rbacUC, authMiddleware).Routes()
 		routes.NewCoreRoute(api, coreUC, authMiddleware).Routes()
 		routes.NewSSORoute(api, ssoUC).Routes()
+		// OIDC provider login/consent/logout (Hydra тохируулагдсан үед).
+		if providerUC != nil {
+			routes.NewProviderRoute(api, providerUC, authMiddleware).Routes()
+		}
 		routes.NewAdminRoute(api, usersUC, rbacUC, aiUC, authMiddleware).Routes()
 		routes.NewSuperAdminRoute(api, superadminUC, authMiddleware).Routes()
 		routes.NewAIRoute(api, aiUC, authMiddleware, aiRateLimiter).Routes()
@@ -339,6 +358,21 @@ func NewApp() (*App, error) {
 		routes.NewSecurityRoute(api, securityUC, authMiddleware).Routes()
 		routes.NewSignRoute(api, signUC, usersUC, assetsUC, authMiddleware).Routes()
 	})
+
+	// OIDC provider — /admin оператор гадаргуу (RP OAuth2 client бүртгэл/удирдлага
+	// + admin API key). Энэ апп-ыг Ory Hydra-г урдаа тавьж SSO болгоно. Зөвхөн
+	// Hydra тохируулагдсан (ProviderConfigured) үед идэвхжинэ; эс бөгөөс inert.
+	if config.AppConfig.ProviderConfigured() {
+		devAppsStore := devapps.New(pool)
+		adminKeyStore := adminkeys.New(pool, config.AppConfig.SSOAdminAPIKeysList())
+		// chi.Mount нь plain http.Handler-ийн r.URL.Path-аас prefix-ыг хасдаггүй
+		// тул StripPrefix-ээр хасна — ингэснээр доторх ServeMux нь /api/v1/...
+		// pattern-тэй таарна.
+		r.Mount("/admin", http.StripPrefix("/admin", adminapi.New(hydraAdmin, devAppsStore, adminKeyStore).Router()))
+		logger.Info("OIDC provider admin surface mounted at /admin", logger.Fields{
+			"hydra_admin": config.AppConfig.HydraAdminURL,
+		})
+	}
 
 	// Серверийн түвшний timeout-ууд (slowloris / удаан client-ийн эсрэг):
 	//   - ReadTimeout нь header+body уншилтыг бүхэлд нь хязгаарлана;
