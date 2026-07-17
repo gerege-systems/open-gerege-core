@@ -186,6 +186,7 @@ definitions:
           баталгаажуулж байгаа үед л ирнэ (сонголттой).
         type: string
       session_id:
+        maxLength: 128
         type: string
     required:
     - session_id
@@ -196,8 +197,10 @@ definitions:
         description: |-
           CallbackUrl (сонголт): SAME-DEVICE (утасны browser) үед <origin>/auth/eid/callback; хоосон
           бол CROSS-DEVICE (desktop). Backend force-normalize хийнэ.
+        maxLength: 1024
         type: string
       national_id:
+        maxLength: 32
         type: string
     required:
     - national_id
@@ -339,8 +342,10 @@ definitions:
   template_internal_http_datatransfers_requests.GoogleLoginRequest:
     properties:
       code:
+        maxLength: 1024
         type: string
       redirect_uri:
+        maxLength: 1024
         type: string
     required:
     - code
@@ -431,8 +436,10 @@ definitions:
   template_internal_http_datatransfers_requests.LogoutRequest:
     properties:
       access_token:
+        maxLength: 4096
         type: string
       refresh_token:
+        maxLength: 4096
         type: string
     required:
     - refresh_token
@@ -446,6 +453,7 @@ definitions:
   template_internal_http_datatransfers_requests.RefreshRequest:
     properties:
       refresh_token:
+        maxLength: 4096
         type: string
     required:
     - refresh_token
@@ -491,6 +499,7 @@ definitions:
   template_internal_http_datatransfers_requests.ResetPasswordRequest:
     properties:
       code:
+        maxLength: 10
         type: string
       email:
         maxLength: 50
@@ -571,6 +580,7 @@ definitions:
   template_internal_http_datatransfers_requests.VerifyOTPRequest:
     properties:
       code:
+        maxLength: 10
         type: string
       email:
         maxLength: 50
@@ -1157,6 +1167,45 @@ paths:
       security:
       - BearerAuth: []
       summary: AI prompt давхаргыг шинэчлэх
+      tags:
+      - admin
+  /admin/landing/config:
+    put:
+      consumes:
+      - application/json
+      description: Нүүрний харагдацын тохиргооны баримтыг бүхэлд нь солино. Body нь
+        бүрэн JSON объект (схемийг frontend эзэмшдэг). Хүчинтэй JSON объект + хэмжээний
+        хязгаар (64 KiB) шалгагдаж, advanced CSS override ариутгагдана. Өөрчлөлт нэн
+        даруй үйлчилнэ (тохиргооны кэш хүчингүй болно).
+      parameters:
+      - description: Landing config document
+        in: body
+        name: request
+        required: true
+        schema:
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Updated
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+        "400":
+          description: Not a JSON object / too large
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+        "401":
+          description: Missing/invalid token
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+        "403":
+          description: Missing settings.manage permission
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      security:
+      - BearerAuth: []
+      summary: Нүүр хуудасны тохиргоог шинэчлэх
       tags:
       - admin
   /ai/chat:
@@ -2654,6 +2703,22 @@ paths:
       summary: Провайдерын токеныг авах (server-тал, BFF)
       tags:
       - integrations
+  /landing/config:
+    get:
+      description: Нүүр хуудасны (landing + auth бүрхүүл) харагдацын тохиргоог (өнгө,
+        фонт, хэмжээ, текст mn/en, товч/цэс) буцаана. Нэвтрэлт шаардахгүй — зочид
+        нүүрээ энэ тохиргоогоор буулгана. DB алдаа үед хоосон объект руу fail-open
+        хийнэ.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Landing config document
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      summary: Нүүр хуудасны тохиргоог авах (нийтийн)
+      tags:
+      - public
   /me/latin-name:
     put:
       consumes:

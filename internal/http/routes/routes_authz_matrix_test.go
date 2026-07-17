@@ -25,6 +25,7 @@ import (
 
 	"template/internal/business/usecases/ai"
 	"template/internal/business/usecases/audit"
+	"template/internal/business/usecases/landing"
 	"template/internal/business/usecases/org"
 	"template/internal/business/usecases/rbac"
 	"template/internal/business/usecases/security"
@@ -32,6 +33,7 @@ import (
 	"template/internal/datasources/caches"
 	aipostgres "template/internal/datasources/repositories/postgres/ai"
 	auditpostgres "template/internal/datasources/repositories/postgres/audit"
+	landingpostgres "template/internal/datasources/repositories/postgres/landing"
 	orgpostgres "template/internal/datasources/repositories/postgres/org"
 	rbacpostgres "template/internal/datasources/repositories/postgres/rbac"
 	securitypostgres "template/internal/datasources/repositories/postgres/security"
@@ -74,13 +76,14 @@ func newAuthzServer(t *testing.T) (*httptest.Server, jwt.JWTService) {
 	// Gemini рүү гарахгүй — matrix нь зөвхөн DB-д суурилсан admin prompt
 	// endpoint-уудыг ашигладаг.
 	aiUC := ai.NewUsecase(gemini.NewClient("", "", ""), gemini.NewClient("", "", ""), aiRepo, ai.DefaultTools(), ai.Config{})
+	landingUC := landing.NewUsecase(landingpostgres.NewLandingConfigRepository(pool))
 
 	r := chi.NewRouter()
 	r.Route("/api", func(api chi.Router) {
 		routes.NewUsersRoute(api, usersUC, authMW).Routes()
 		routes.NewRBACRoute(api, rbacUC, auditUC, authMW).Routes()
 		routes.NewOrgRoute(api, orgUC, auditUC, authMW).Routes()
-		routes.NewAdminRoute(api, usersUC, rbacUC, aiUC, authMW).Routes()
+		routes.NewAdminRoute(api, usersUC, rbacUC, aiUC, landingUC, authMW).Routes()
 		routes.NewAuditRoute(api, auditUC, authMW).Routes()
 		routes.NewSecurityRoute(api, securityUC, authMW).Routes()
 	})
@@ -127,6 +130,12 @@ func TestAuthorizationMatrix(t *testing.T) {
 		{
 			// settings.manage: зөвхөн admin (manager-т олгогдоогүй).
 			name: "admin AI prompts (settings.manage)", method: http.MethodGet, path: "/api/v1/admin/ai/prompts",
+			want: expectations{"anon": 401, "user": 403, "legacy": 403, "manager": 403, "admin": 200},
+		},
+		{
+			// settings.manage: нүүр хуудасны тохиргоо бичих — зөвхөн admin.
+			name: "admin landing config (settings.manage)", method: http.MethodPut, path: "/api/v1/admin/landing/config",
+			body: `{"content":{"title":{"mn":"x","en":"x"}}}`,
 			want: expectations{"anon": 401, "user": 403, "legacy": 403, "manager": 403, "admin": 200},
 		},
 		{

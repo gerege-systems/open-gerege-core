@@ -246,6 +246,27 @@ layer is hardcoded and not exposed here.
 
 ---
 
+## Landing page (configurable look)
+
+The public landing (and the shared `SigninShell` auth pages) render from a
+single admin-editable config document stored in the `landing_config` table
+(one row, `id = 1`, no RLS — a global config like `ai_prompts`). Theme tokens
+(colors/fonts/sizes), text (`{mn, en}` pairs), CTA buttons, trust badges, a top
+nav menu and an advanced raw-CSS override are all editable at runtime.
+
+### GET `/landing/config`
+**Public** (no auth). Returns the config document (`data` is the raw JSON —
+frontend owns the schema, see `lib/landing.ts`). Fails open to `{}` on a DB
+error so the landing never 5xx's; the frontend fills defaults.
+
+### PUT `/admin/landing/config` 🔒
+Admin (requires `settings.manage`). Body is the full config JSON object.
+Validated as a JSON object, capped at 64 KiB; the `rawCss` field is sanitized
+server-side (strips `</style>`, `<script>`, `@import`, `expression(`,
+`javascript:`). Changes take effect immediately (config cache invalidated).
+
+---
+
 ## Operations (no `/api/v1` prefix)
 
 | Method | Path | Description |

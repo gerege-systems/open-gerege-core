@@ -104,6 +104,21 @@ prompt-оор ажиллана — кодод хатуу suurь дүрэм + а�
 
 ---
 
+## Нүүр хуудасны тохиргоо (тохируулж болох харагдац)
+
+Нийтийн нүүр (болон хуваалцсан `SigninShell` auth хуудаснууд) нь `landing_config`
+хүснэгтийн (нэг мөр, `id = 1`, RLS-гүй — `ai_prompts`-тай адил глобал тохиргоо)
+ганц JSON баримтаас render хийгддэг. Өнгө/фонт/хэмжээ, текст (`{mn, en}` хос),
+нэвтрэх товч, тэмдэг, дээд цэс, нэмэлт raw-CSS — бүгд ажиллаж байх үед
+тохируулагдана.
+
+| Method | Path | Body | Хариу (200) |
+|--------|------|------|-------------|
+| GET | `/landing/config` | — (**нийтийн**, auth-гүй) | Тохиргооны JSON баримт (схемийг frontend эзэмшинэ). DB алдаа үед `{}` руу fail-open |
+| PUT 🔒 | `/admin/landing/config` | Бүрэн JSON объект (`settings.manage` эрх) | JSON объект + ≤64 KiB шалгагдана; `rawCss` ариутгагдана (`</style>`, `<script>`, `@import`, `expression(`, `javascript:`); шууд үйлчилнэ |
+
+---
+
 ## Үйлдлийн endpoint-ууд (`/api/v1` угтваргүй)
 
 `GET /health` (liveness) · `GET /ready` (Postgres + Redis шалгана) ·

@@ -145,6 +145,63 @@ const docTemplate = `{
                 }
             }
         },
+        "/admin/landing/config": {
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Нүүрний харагдацын тохиргооны баримтыг бүхэлд нь солино. Body нь бүрэн JSON объект (схемийг frontend эзэмшдэг). Хүчинтэй JSON объект + хэмжээний хязгаар (64 KiB) шалгагдаж, advanced CSS override ариутгагдана. Өөрчлөлт нэн даруй үйлчилнэ (тохиргооны кэш хүчингүй болно).",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin"
+                ],
+                "summary": "Нүүр хуудасны тохиргоог шинэчлэх",
+                "parameters": [
+                    {
+                        "description": "Landing config document",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "object"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Updated",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Not a JSON object / too large",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Missing/invalid token",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Missing settings.manage permission",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/ai/chat": {
             "post": {
                 "security": [
@@ -2450,6 +2507,26 @@ const docTemplate = `{
                     },
                     "404": {
                         "description": "Not connected",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/landing/config": {
+            "get": {
+                "description": "Нүүр хуудасны (landing + auth бүрхүүл) харагдацын тохиргоог (өнгө, фонт, хэмжээ, текст mn/en, товч/цэс) буцаана. Нэвтрэлт шаардахгүй — зочид нүүрээ энэ тохиргоогоор буулгана. DB алдаа үед хоосон объект руу fail-open хийнэ.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "public"
+                ],
+                "summary": "Нүүр хуудасны тохиргоог авах (нийтийн)",
+                "responses": {
+                    "200": {
+                        "description": "Landing config document",
                         "schema": {
                             "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
                         }
@@ -4951,7 +5028,8 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "session_id": {
-                    "type": "string"
+                    "type": "string",
+                    "maxLength": 128
                 }
             }
         },
@@ -4963,10 +5041,12 @@ const docTemplate = `{
             "properties": {
                 "callbackUrl": {
                     "description": "CallbackUrl (сонголт): SAME-DEVICE (утасны browser) үед \u003corigin\u003e/auth/eid/callback; хоосон\nбол CROSS-DEVICE (desktop). Backend force-normalize хийнэ.",
-                    "type": "string"
+                    "type": "string",
+                    "maxLength": 1024
                 },
                 "national_id": {
-                    "type": "string"
+                    "type": "string",
+                    "maxLength": 32
                 }
             }
         },
@@ -5168,10 +5248,12 @@ const docTemplate = `{
             ],
             "properties": {
                 "code": {
-                    "type": "string"
+                    "type": "string",
+                    "maxLength": 1024
                 },
                 "redirect_uri": {
-                    "type": "string"
+                    "type": "string",
+                    "maxLength": 1024
                 }
             }
         },
@@ -5298,10 +5380,12 @@ const docTemplate = `{
             ],
             "properties": {
                 "access_token": {
-                    "type": "string"
+                    "type": "string",
+                    "maxLength": 4096
                 },
                 "refresh_token": {
-                    "type": "string"
+                    "type": "string",
+                    "maxLength": 4096
                 }
             }
         },
@@ -5321,7 +5405,8 @@ const docTemplate = `{
             ],
             "properties": {
                 "refresh_token": {
-                    "type": "string"
+                    "type": "string",
+                    "maxLength": 4096
                 }
             }
         },
@@ -5382,7 +5467,8 @@ const docTemplate = `{
             ],
             "properties": {
                 "code": {
-                    "type": "string"
+                    "type": "string",
+                    "maxLength": 10
                 },
                 "email": {
                     "type": "string",
@@ -5490,7 +5576,8 @@ const docTemplate = `{
             ],
             "properties": {
                 "code": {
-                    "type": "string"
+                    "type": "string",
+                    "maxLength": 10
                 },
                 "email": {
                     "type": "string",

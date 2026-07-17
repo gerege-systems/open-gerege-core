@@ -17,6 +17,7 @@ package _interface
 
 import (
 	"context"
+	"encoding/json"
 	"time"
 
 	"template/internal/business/domain"
@@ -248,6 +249,18 @@ type AIRepository interface {
 	// буцаана (title/content ILIKE + tag тэнцэл). AI-ийн search_knowledge
 	// tool үүгээр ажилладаг.
 	SearchKnowledge(ctx context.Context, query string, limit int) ([]domain.AIKnowledge, error)
+}
+
+// LandingConfigRepository нь нүүр хуудасны тохируулдаг харагдацын ганц JSON
+// баримтыг (landing_config, id=1) хадгалах/уншихыг хариуцна. ai_prompts-той
+// адил хэрэглэгч-тус-бүрийн биш глобал тохиргоо тул RLS-гүй (plain pool query);
+// апп-ын урсгал зөвхөн UPDATE (мөр migration-д seed хийгддэг).
+type LandingConfigRepository interface {
+	// GetConfig нь одоогийн тохиргооны JSON баримтыг буцаана. Мөр байхгүй
+	// (seed хийгдээгүй) бол apperror.NotFound.
+	GetConfig(ctx context.Context) (domain.LandingConfig, error)
+	// SetConfig нь тохиргооны баримтыг бүхэлд нь солино (UPDATE-only).
+	SetConfig(ctx context.Context, config json.RawMessage) error
 }
 
 // AuditLogRow нь hash-chained audit_log хүснэгтийн нэг мөрийн уншсан хэлбэр —

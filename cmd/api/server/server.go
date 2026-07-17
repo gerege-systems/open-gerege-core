@@ -29,6 +29,7 @@ import (
 	"template/internal/business/usecases/gov"
 	"template/internal/business/usecases/gspace"
 	"template/internal/business/usecases/integrations"
+	"template/internal/business/usecases/landing"
 	"template/internal/business/usecases/org"
 	provideruc "template/internal/business/usecases/provider"
 	"template/internal/business/usecases/rbac"
@@ -46,6 +47,7 @@ import (
 	auditpostgres "template/internal/datasources/repositories/postgres/audit"
 	gatewaypostgres "template/internal/datasources/repositories/postgres/gateway"
 	govpostgres "template/internal/datasources/repositories/postgres/gov"
+	landingpostgres "template/internal/datasources/repositories/postgres/landing"
 	orgpostgres "template/internal/datasources/repositories/postgres/org"
 	orgstamppostgres "template/internal/datasources/repositories/postgres/orgstamp"
 	rbacpostgres "template/internal/datasources/repositories/postgres/rbac"
@@ -259,6 +261,12 @@ func NewApp() (*App, error) {
 	securityRepo := securitypostgres.NewSecurityEventRepository(pool)
 	securityUC := security.NewUsecase(securityRepo)
 
+	// Landing — нүүр хуудасны ажиллаж байх үед тохируулдаг харагдац (өнгө/фонт/
+	// текст mn+en/товч/цэс). Уншилт нийтийн (зочид), бичилт settings.manage.
+	// ai_prompts-тай адил глобал тохиргоо тул RLS-гүй.
+	landingRepo := landingpostgres.NewLandingConfigRepository(pool)
+	landingUC := landing.NewUsecase(landingRepo)
+
 	// AI pipeline — Gemini REST client + function-calling tools. TTS нь
 	// audio гаргадаг тусдаа model тул өөр client-ээр явна. Repo нь DB-ээс
 	// тохируулдаг prompt давхаргууд + search_knowledge tool-ийн мэдлэгийн сан.
@@ -347,11 +355,13 @@ func NewApp() (*App, error) {
 		routes.NewGatewayRoute(api, gatewayUC, rbacUC, authMiddleware).Routes()
 		routes.NewCoreRoute(api, coreUC, authMiddleware).Routes()
 		routes.NewSSORoute(api, ssoUC).Routes()
+		// Нүүр хуудасны тохиргоо — нийтийн уншилт (нэвтрэлтгүй зочид).
+		routes.NewLandingRoute(api, landingUC).Routes()
 		// OIDC provider login/consent/logout (Hydra тохируулагдсан үед).
 		if providerUC != nil {
 			routes.NewProviderRoute(api, providerUC, authMiddleware).Routes()
 		}
-		routes.NewAdminRoute(api, usersUC, rbacUC, aiUC, authMiddleware).Routes()
+		routes.NewAdminRoute(api, usersUC, rbacUC, aiUC, landingUC, authMiddleware).Routes()
 		routes.NewSuperAdminRoute(api, superadminUC, authMiddleware).Routes()
 		routes.NewAIRoute(api, aiUC, authMiddleware, aiRateLimiter).Routes()
 		routes.NewAuditRoute(api, auditUC, authMiddleware).Routes()
