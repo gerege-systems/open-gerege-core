@@ -3,10 +3,10 @@
 > 🌐 **English** · [Монгол](DEVELOPMENT_MN.md)
 
 This guide helps developers set up and work with the **Gerege Template
-Platform V3.0** (Цахим засаглалыг бүтээх суурь) codebase — a production-ready
-foundation on which any digital-government service can be built. Its flagship
+Platform V3.0** (Төр, хувийн хэвшлийн үйлчилгээний суурь платформ) codebase — a production-ready
+foundation on which any public- or private-sector digital service can be built. Its flagship
 reference deployment is **Gerege Template Platform** (template.gerege.mn), an eID-based
-government service platform built on this stack.
+public and private service platform built on this stack.
 
 > **Origin.** Derived from the open-source
 > [snykk/go-rest-boilerplate](https://github.com/snykk/go-rest-boilerplate)

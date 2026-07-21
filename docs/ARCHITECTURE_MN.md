@@ -2,8 +2,8 @@
 
 > 🌐 [English](ARCHITECTURE.md) · **Монгол**
 
-Энэ баримт нь **Gerege Template Platform V3.0** (Цахим засаглалыг бүтээх суурь)
-— аливаа цахим засаглалын үйлчилгээг дээр нь босгох боломжтой production-д бэлэн
+Энэ баримт нь **Gerege Template Platform V3.0** (Төр, хувийн хэвшлийн үйлчилгээний суурь платформ)
+— төр, хувийн хэвшлийн аливаа цахим үйлчилгээг дээр нь босгох боломжтой production-д бэлэн
 суурийн ерөнхий архитектурыг тайлбарлана. Түүний тэргүүлэх жишиг deployment нь
 **Gerege Template Platform** (**template.gerege.mn** дээр байрласан) — **eID-д суурилсан
 төрийн үйлчилгээний платформ** (Gerege SSO-ийн Relying Party) юм. Backend модуль нь `template`; стек нь **chi (net/http) + pgx

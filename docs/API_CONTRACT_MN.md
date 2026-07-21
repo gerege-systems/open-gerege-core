@@ -2,8 +2,8 @@
 
 > 🌐 [English](API_CONTRACT.md) · **Монгол**
 
-**Gerege Template Platform V3.0** (Цахим засаглалыг бүтээх суурь)-ийн REST API
-лавлагаа — цахим засаглалын үйлчилгээг дээр нь босгох production-д бэлэн суурь
+**Gerege Template Platform V3.0** (Төр, хувийн хэвшлийн үйлчилгээний суурь платформ)-ийн REST API
+лавлагаа — төр, хувийн хэвшлийн үйлчилгээг дээр нь босгох production-д бэлэн суурь
 (Clean-Architecture Go backend + Next.js BFF + Gemini AI). Энэ лавлагаа нь түүний
 жишиг deployment болох **Gerege Template Platform** (template.gerege.mn) — eID-д
 суурилсан төрийн үйлчилгээний платформыг тусгана. Амьд, автоматаар

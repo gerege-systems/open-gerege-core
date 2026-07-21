@@ -1,6 +1,6 @@
 # Gerege Template Platform V3.0 — Backend (Go)
 
-> _One foundation — every government service._
+> _One foundation — every public and private service._
 
 > 🌐 **English** · [Монгол](README_MN.md)
 
@@ -10,7 +10,7 @@
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
 The Go backend of the **Gerege Template Platform V3.0** — a production-ready
-foundation on which *any* digital-government service can be built. It pairs a
+foundation on which *any* public- or private-sector digital service can be built. It pairs a
 disciplined **Clean Architecture** core with hand-written **pgx SQL** (no ORM),
 and ships with a full suite of government-grade capabilities out of the box:
 **eID Mongolia** authentication, **Google** account-linking,

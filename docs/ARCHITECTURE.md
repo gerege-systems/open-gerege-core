@@ -3,15 +3,15 @@
 > 🌐 **English** · [Монгол](ARCHITECTURE_MN.md)
 
 This document describes the high-level architecture of the **Gerege Template
-Platform V3.0** (Цахим засаглалыг бүтээх суурь) — a production-ready foundation on
-which any digital-government service can be built. Its flagship reference
+Platform V3.0** (Төр, хувийн хэвшлийн үйлчилгээний суурь платформ) — a production-ready foundation on
+which any public- or private-sector digital service can be built. Its flagship reference
 deployment is **Gerege Template Platform** (at **template.gerege.mn**), an **eID-based
 government service platform** — a Relying Party of Gerege SSO. The backend module is `template`; the stack is **chi (net/http)
 + pgx (pgxpool) + PostgreSQL + Redis + Gemini AI**, organized along Clean
 Architecture lines and fronted by a Next.js BFF.
 
 In that reference deployment the platform serves as both an **eID Relying Party**
-(users log in with eID) and an **OIDC Identity Provider** (other government apps
+(users log in with eID) and an **OIDC Identity Provider** (other relying-party apps
 log in *through* it via the built-in Go provider). Row-Level Security in PostgreSQL is the
 load-bearing per-user isolation boundary — see
 [Row-Level Security](#row-level-security-rls).
@@ -52,7 +52,7 @@ load-bearing per-user isolation boundary — see
 The platform is composed of **19 usecase modules** under
 `internal/business/usecases/`, each an interface + implementation wired by hand in
 the composition root. Beyond the boilerplate core (`auth`, `users`, `rbac`, `ai`)
-the platform adds the eID/SSO/government-service surface:
+the platform adds the eID/SSO/service-delivery surface:
 
 | Module         | Responsibility |
 |----------------|----------------|
@@ -341,7 +341,7 @@ connecting role at startup:
 
 ## OIDC Provider (Ory Hydra)
 
-The platform can itself act as an **Identity Provider**: other government apps
+The platform can itself act as an **Identity Provider**: other relying-party apps
 delegate login to dan via **Ory Hydra**. This surface activates only when
 `ProviderConfigured()` is true (`HYDRA_ADMIN_URL` + `HYDRA_PUBLIC_URL` +
 `SSO_STATE_KEY ≥ 32 bytes`); otherwise it is inert and its routes are never
