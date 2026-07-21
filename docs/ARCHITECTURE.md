@@ -3,7 +3,7 @@
 > 🌐 **English** · [Монгол](ARCHITECTURE_MN.md)
 
 This document describes the high-level architecture of the **Gerege Template
-Platform V3.0** (Төр, хувийн хэвшлийн үйлчилгээний суурь платформ) — a production-ready foundation on
+Platform V3.0** (Цахим үйлчилгээг бүтээх суурь) — a production-ready foundation on
 which any public- or private-sector digital service can be built. Its flagship reference
 deployment is **Gerege Template Platform** (at **template.gerege.mn**), an **eID-based
 government service platform** — a Relying Party of Gerege SSO. The backend module is `template`; the stack is **chi (net/http)
