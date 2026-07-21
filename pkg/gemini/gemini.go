@@ -1,4 +1,4 @@
-// Gerege Template Version 27.0
+// Government Template Platform V3.0
 // Gerege Systems Development Team болон Claude AI хамтран бүтээв, 2026.
 
 // Package gemini нь Google Gemini API-ийн хөнгөн REST client юм — SDK
@@ -31,7 +31,11 @@ var ErrNotConfigured = errors.New("gemini: API key not configured (GEMINI_API_KE
 const (
 	defaultBase  = "https://generativelanguage.googleapis.com/v1beta"
 	defaultModel = "gemini-2.5-flash"
-	maxRespBytes = 4 << 20 // Gemini-ийн урт хариу + candidates-ийг багтаана.
+	// maxRespBytes нь хариуг санах ойд буулгах дээд хэмжээ. TTS/Speak-ийн хариу
+	// нь base64 PCM аудиог JSON дотор шигтгэдэг тул урт текст (≤2000 тэмдэгт) хэдэн
+	// MiB болно; 4 MiB хэт бага байсан тул body таслагдаж, JSON задлалт унаж 500
+	// өгдөг байв. 32 MiB нь хамгийн урт TTS-ийг ч багтаана (текст чат хэвийн бага).
+	maxRespBytes = 32 << 20
 
 	// maxAttempts = 1 анхны оролдлого + 2 дахин оролдлого. Backoff нь
 	// initialBackoff * 2^attempt (500ms → 1s).
@@ -275,7 +279,16 @@ func (c *Client) generateOnce(ctx context.Context, req Request) (Response, bool,
 	}
 	defer func() { _ = httpResp.Body.Close() }()
 
-	raw, _ := io.ReadAll(io.LimitReader(httpResp.Body, maxRespBytes))
+	raw, readErr := io.ReadAll(io.LimitReader(httpResp.Body, maxRespBytes))
+	if readErr != nil {
+		// Body-ийн уншилт тасарсан (сүлжээний түр саатал). ctx амьд бол түр зуурын
+		// гэж үзэж дахин оролдоно — эс бөгөөс хэсэгчилсэн JSON нь бус-retryable
+		// алдаа болж, retry хийвэл амжилттай болох байсныг 500 болгодог байв.
+		if ctx.Err() != nil {
+			return Response{}, false, fmt.Errorf("gemini: read body: %w", readErr)
+		}
+		return Response{}, true, fmt.Errorf("gemini: read body: %w", readErr)
+	}
 
 	switch {
 	case httpResp.StatusCode == http.StatusTooManyRequests || httpResp.StatusCode >= 500:
@@ -283,6 +296,12 @@ func (c *Client) generateOnce(ctx context.Context, req Request) (Response, bool,
 	case httpResp.StatusCode >= 300:
 		// Бусад 4xx (буруу хүсэлт, эрхгүй түлхүүр) — дахин оролдоод нэмэргүй.
 		return Response{}, false, fmt.Errorf("gemini: status %d: %s", httpResp.StatusCode, snippet(raw))
+	}
+
+	// Хариу cap-д хүрсэн бол таслагдсан байж болзошгүй — дахин оролдвол мөн адил
+	// таслагдах тул тодорхой алдаа буцаана (JSON задлалтын төөрөгдөлтэй алдааг биш).
+	if int64(len(raw)) >= maxRespBytes {
+		return Response{}, false, fmt.Errorf("gemini: response exceeded %d bytes (likely truncated audio/text)", int64(maxRespBytes))
 	}
 
 	var out Response

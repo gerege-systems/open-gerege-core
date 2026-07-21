@@ -1,4 +1,4 @@
-// Gerege Template Version 27.0
+// Government Template Platform V3.0
 // Gerege Systems Development Team болон Claude AI хамтран бүтээв, 2026.
 
 package routes
@@ -10,13 +10,11 @@ import (
 
 	"template/internal/business/domain"
 	aiuc "template/internal/business/usecases/ai"
-	landinguc "template/internal/business/usecases/landing"
 	rbacuc "template/internal/business/usecases/rbac"
 	"template/internal/business/usecases/users"
 	v1 "template/internal/http/handlers/v1"
 	adminhandler "template/internal/http/handlers/v1/admin"
 	aihandler "template/internal/http/handlers/v1/ai"
-	landinghandler "template/internal/http/handlers/v1/landing"
 	"template/internal/http/middlewares"
 )
 
@@ -26,17 +24,15 @@ import (
 type adminRoute struct {
 	handler        adminhandler.Handler
 	aiHandler      aihandler.Handler
-	landingHandler landinghandler.Handler
 	rbacUC         rbacuc.Usecase
 	router         chi.Router
 	authMiddleware func(http.Handler) http.Handler
 }
 
-func NewAdminRoute(router chi.Router, usersUC users.Usecase, rbacUC rbacuc.Usecase, aiUC aiuc.Usecase, landingUC landinguc.Usecase, authMiddleware func(http.Handler) http.Handler) *adminRoute {
+func NewAdminRoute(router chi.Router, usersUC users.Usecase, rbacUC rbacuc.Usecase, aiUC aiuc.Usecase, authMiddleware func(http.Handler) http.Handler) *adminRoute {
 	return &adminRoute{
 		handler:        adminhandler.NewHandler(usersUC),
 		aiHandler:      aihandler.NewHandler(aiUC),
-		landingHandler: landinghandler.NewHandler(landingUC),
 		rbacUC:         rbacUC,
 		router:         router,
 		authMiddleware: authMiddleware,
@@ -48,6 +44,7 @@ func (rt *adminRoute) Routes() {
 		r.Use(rt.authMiddleware)
 		manage := middlewares.RequirePermission(rt.rbacUC, domain.PermUsersManage)
 		r.With(manage).Get("/users", v1.Wrap(rt.handler.ListUsers))
+		r.With(manage).Post("/users", v1.Wrap(rt.handler.CreateUser))
 		r.With(manage).Put("/users/{id}/role", v1.Wrap(rt.handler.UpdateUserRole))
 		r.With(manage).Put("/users/{id}/active", v1.Wrap(rt.handler.SetUserActive))
 		r.With(manage).Delete("/users/{id}", v1.Wrap(rt.handler.DeleteUser))
@@ -56,9 +53,5 @@ func (rt *adminRoute) Routes() {
 		manageSettings := middlewares.RequirePermission(rt.rbacUC, domain.PermSettingsManage)
 		r.With(manageSettings).Get("/ai/prompts", v1.Wrap(rt.aiHandler.ListPrompts))
 		r.With(manageSettings).Put("/ai/prompts/{key}", v1.Wrap(rt.aiHandler.SetPrompt))
-
-		// Нүүр хуудасны харагдацын тохиргоо (өнгө/фонт/текст/цэс) — мөн
-		// системийн тохиргооны эрхээр. Уншилт нь нийтийн (route_landing.go).
-		r.With(manageSettings).Put("/landing/config", v1.Wrap(rt.landingHandler.SetConfig))
 	})
 }

@@ -1,4 +1,4 @@
-// Gerege Template Version 27.0
+// Government Template Platform V3.0
 // Gerege Systems Development Team болон Claude AI хамтран бүтээв, 2026.
 
 // Audit handler-ийн unit тест (mock usecase): хуудаслалтын хязгаар (limit clamp
@@ -45,7 +45,7 @@ func TestAuditListPagination(t *testing.T) {
 
 			h := audithandler.NewHandler(uc)
 			rec := httptest.NewRecorder()
-			r := httptest.NewRequest(http.MethodGet, "/audit"+tc.query, nil)
+			r := httptest.NewRequest(http.MethodGet, "/audit"+tc.query, http.NoBody)
 			v1.Wrap(h.List)(rec, r)
 			require.Equal(t, http.StatusOK, rec.Code)
 		})
@@ -60,7 +60,7 @@ func TestAuditListForwardsFilter(t *testing.T) {
 
 	h := audithandler.NewHandler(uc)
 	rec := httptest.NewRecorder()
-	r := httptest.NewRequest(http.MethodGet, "/audit?action=user.login&actor=u1", nil)
+	r := httptest.NewRequest(http.MethodGet, "/audit?action=user.login&actor=u1", http.NoBody)
 	v1.Wrap(h.List)(rec, r)
 }
 
@@ -70,7 +70,7 @@ func TestAuditVerify(t *testing.T) {
 
 	h := audithandler.NewHandler(uc)
 	rec := httptest.NewRecorder()
-	r := httptest.NewRequest(http.MethodGet, "/audit/verify", nil)
+	r := httptest.NewRequest(http.MethodGet, "/audit/verify", http.NoBody)
 	v1.Wrap(h.Verify)(rec, r)
 	require.Equal(t, http.StatusOK, rec.Code)
 

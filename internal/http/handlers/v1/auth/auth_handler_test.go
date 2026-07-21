@@ -1,4 +1,4 @@
-// Gerege Template Version 27.0
+// Government Template Platform V3.0
 // Gerege Systems Development Team болон Claude AI хамтран бүтээв, 2026.
 
 package auth_test
@@ -11,9 +11,6 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/mock"
-	"github.com/stretchr/testify/require"
 	"template/internal/apperror"
 	authuc "template/internal/business/usecases/auth"
 	"template/internal/constants"
@@ -22,6 +19,10 @@ import (
 	"template/internal/test/mocks"
 	jwtpkg "template/pkg/jwt"
 	"template/pkg/validators"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
 )
 
 func init() {

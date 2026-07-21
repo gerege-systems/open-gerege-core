@@ -1,4 +1,4 @@
-// Gerege Template Version 27.0
+// Government Template Platform V3.0
 // Gerege Systems Development Team болон Claude AI хамтран бүтээв, 2026.
 
 package jwt
@@ -8,10 +8,11 @@ import (
 	"fmt"
 	"time"
 
-	golangJWT "github.com/golang-jwt/jwt/v5"
-	"github.com/google/uuid"
 	"template/pkg/clock"
 	"template/pkg/logger"
+
+	golangJWT "github.com/golang-jwt/jwt/v5"
+	"github.com/google/uuid"
 )
 
 // ErrInvalidToken нь токен задлан унших эсвэл баталгаажуулахад амжилтгүй болоход буцаагдана.

@@ -1,54 +1,61 @@
-// Gerege Template Version 27.0
+// eID based AI enabled Government Template Platform V3.0
 // Gerege Systems Development Team болон Claude AI хамтран бүтээв, 2026.
 
-// Package provider нь dan.dgov.mn-ийг OIDC provider болгосон login/consent/
-// logout цөм. Ory Hydra нь /oauth2/auth дээр browser-ыг энд (dan-ийн login/
-// consent хуудас) чиглүүлж challenge өгдөг; энэ usecase нь challenge-ыг Hydra-
-// аас авч, иргэнийг dan-ийн ЕОДОО БАЙГАА eID нэвтрэлтээр (session) баталгаажуулж,
-// subject-аар dan-ийн user ID-г Hydra-д accept хийнэ. Consent дээр scope-оос
-// хамааран иргэний claims-ыг (name/email/national_id...) id_token/access_token-д
-// байрлуулна. sso-dgov-mn-ий internal/{auth,consent}-ийн provider логикийг dan-
-// ийн identity model дээр дахин хэрэгжүүлэв.
+// Package provider нь sso.dgov.mn-ийг OIDC provider болгосон login/consent/
+// logout цөм. `/oauth2/auth` нь browser-ыг энд (нэвтрэх/зөвшөөрөх хуудас руу)
+// challenge-тэй чиглүүлдэг; энэ usecase нь challenge-ыг уншиж, иргэнийг
+// платформын ОДОО БАЙГАА eID нэвтрэлтээр (session) баталгаажуулж, subject-ээр
+// user ID-г тэмдэглэнэ.
+//
+// Өмнө нь challenge-уудыг Ory Hydra эзэмшдэг байсан. Одоо usecases/oidc
+// эзэмшинэ; энэ багц нь HTTP/UI-д тохирсон нимгэн бүрхүүл хэвээр үлдсэн тул
+// frontend (`/oauth/*`, `/api/provider/*`) огт өөрчлөгдөөгүй.
 package provider
 
 import (
 	"context"
-	"fmt"
+	"net/url"
 	"strings"
 
 	"template/internal/apperror"
 	"template/internal/business/domain"
+	oidcuc "template/internal/business/usecases/oidc"
 	usersuc "template/internal/business/usecases/users"
-	"template/pkg/hydra"
 )
 
-// UserLookup нь subject (dan user ID)-ээр иргэний record-ыг авах минимал хараат
+// UserLookup нь subject (user ID)-ээр иргэний record-ыг авах минимал хараат
 // байдал (users usecase үүнийг хангана).
 type UserLookup interface {
 	GetByID(ctx context.Context, req usersuc.GetByIDRequest) (usersuc.GetByIDResponse, error)
 }
 
-// LoginInfo нь login хуудсанд харуулах Hydra login request-ийн товч.
+// ClientLookup нь challenge дээрх client_id-аас апп-ийн мэдээллийг авна.
+type ClientLookup interface {
+	Get(ctx context.Context, clientID string) (domain.OAuthClient, error)
+}
+
+// LoginInfo нь login хуудсанд харуулах login хүсэлтийн товч.
 type LoginInfo struct {
 	Challenge      string
 	ClientID       string
 	ClientName     string
 	RequestedScope []string
 	Subject        string
-	// Skip нь Hydra аль хэдийн энэ subject-ийн session-тай (дахин eID шаардахгүй)
-	// гэдгийг илэрхийлнэ.
+	// Skip нь дахин eID шаардахгүй гэдгийг илэрхийлнэ. Бидний загварт нэвтрэлт
+	// нь платформын session тул энэ нь үргэлж false — session байвал frontend
+	// шууд accept руу шилждэг.
 	Skip bool
 }
 
-// ConsentInfo нь consent хуудсанд харуулах Hydra consent request-ийн товч.
+// ConsentInfo нь consent хуудсанд харуулах зөвшөөрлийн хүсэлтийн товч.
 type ConsentInfo struct {
 	Challenge      string
 	ClientID       string
 	ClientName     string
 	Subject        string
 	RequestedScope []string
-	// Skip нь consent UI-г алгасах эсэх (first-party апп эсвэл Hydra-ийн санасан
-	// grant).
+	// Skip нь consent UI-г алгасах эсэх (first-party апп эсвэл өмнө нь санагдсан
+	// зөвшөөрөл хүссэн бүх scope-ыг хамарсан).
 	Skip bool
 }
 
@@ -57,6 +64,10 @@ type Usecase interface {
 	GetLogin(ctx context.Context, challenge string) (LoginInfo, error)
 	AcceptLogin(ctx context.Context, userID, challenge string) (redirectTo string, err error)
 	RejectLogin(ctx context.Context, challenge, reason string) (redirectTo string, err error)
+	// LoginAppContext нь login_challenge-аас нэвтэрч буй RP апп-ийн (rp_app нэр,
+	// rp_app_url домэйн)-г буцаана — eID push-д дамжуулна. Base SSO / first-party /
+	// хоосон/буруу challenge үед хоосон (нэвтрэлтийг блоклохгүй, fail-open).
+	LoginAppContext(ctx context.Context, challenge string) (rpApp, rpAppURL string)
 	GetConsent(ctx context.Context, challenge string) (ConsentInfo, error)
 	AcceptConsent(ctx context.Context, userID, challenge string, grantScope []string) (redirectTo string, err error)
 	RejectConsent(ctx context.Context, challenge, reason string) (redirectTo string, err error)
@@ -64,39 +75,78 @@ type Usecase interface {
 }
 
 type usecase struct {
-	hydra      *hydra.Admin
+	oidc       *oidcuc.Service
+	clients    ClientLookup
 	users      UserLookup
 	firstParty map[string]struct{}
+	issuer     string
 }
 
-// NewUsecase нь Hydra admin client, user lookup, first-party client_id жагсаалтаас
-// provider usecase үүсгэнэ.
-func NewUsecase(h *hydra.Admin, users UserLookup, firstPartyClients []string) Usecase {
+// NewUsecase нь OIDC service, client lookup, user lookup болон first-party
+// client_id жагсаалтаас provider usecase үүсгэнэ.
+func NewUsecase(svc *oidcuc.Service, clients ClientLookup, users UserLookup, firstPartyClients []string, issuer string) Usecase {
 	fp := make(map[string]struct{}, len(firstPartyClients))
 	for _, c := range firstPartyClients {
 		fp[c] = struct{}{}
 	}
-	return &usecase{hydra: h, users: users, firstParty: fp}
+	return &usecase{oidc: svc, clients: clients, users: users, firstParty: fp, issuer: strings.TrimRight(issuer, "/")}
 }
 
-const rememberFor = 3600 // session-ийг санах хугацаа (секунд)
-
 func (u *usecase) GetLogin(ctx context.Context, challenge string) (LoginInfo, error) {
-	if challenge == "" {
+	if strings.TrimSpace(challenge) == "" {
 		return LoginInfo{}, apperror.BadRequest("login_challenge шаардлагатай")
 	}
-	req, err := u.hydra.GetLoginRequest(ctx, challenge)
+	c, err := u.oidc.LoginChallenge(ctx, challenge)
 	if err != nil {
-		return LoginInfo{}, apperror.InternalCause(fmt.Errorf("hydra login request: %w", err))
+		return LoginInfo{}, err
 	}
+	name, _ := u.clientDisplay(ctx, c.ClientID)
 	return LoginInfo{
 		Challenge:      challenge,
-		ClientID:       req.Client.ClientID,
-		ClientName:     req.Client.ClientName,
-		RequestedScope: req.RequestedScope,
-		Subject:        req.Subject,
-		Skip:           req.Skip,
+		ClientID:       c.ClientID,
+		ClientName:     name,
+		RequestedScope: c.RequestedScopes,
 	}, nil
+}
+
+func (u *usecase) LoginAppContext(ctx context.Context, challenge string) (rpApp, rpAppURL string) {
+	if strings.TrimSpace(challenge) == "" {
+		return "", ""
+	}
+	c, err := u.oidc.LoginChallenge(ctx, challenge)
+	if err != nil {
+		return "", "" // resolve чадсангүй — base гэж үзэж хоосон (fail-open)
+	}
+	// First-party client (base SSO / өөрийн web) → rp_app хоосон: "SSO өөрөө".
+	if _, ok := u.firstParty[c.ClientID]; ok {
+		return "", ""
+	}
+	name, origin := u.clientDisplay(ctx, c.ClientID)
+	return name, origin
+}
+
+// clientDisplay нь апп-ийн харагдах нэр болон эхний redirect origin-ыг буцаана.
+func (u *usecase) clientDisplay(ctx context.Context, clientID string) (name, origin string) {
+	c, err := u.clients.Get(ctx, clientID)
+	if err != nil {
+		return clientID, ""
+	}
+	name = strings.TrimSpace(c.ClientName)
+	if name == "" {
+		name = c.ClientID
+	}
+	return name, redirectOrigin(c.RedirectURIs)
+}
+
+// redirectOrigin нь эхний хүчинтэй redirect_uri-ийн origin (scheme://host)-г буцаана.
+func redirectOrigin(uris []string) string {
+	for _, u := range uris {
+		p, err := url.Parse(strings.TrimSpace(u))
+		if err == nil && p.Scheme != "" && p.Host != "" {
+			return p.Scheme + "://" + p.Host
+		}
+	}
+	return ""
 }
 
 func (u *usecase) AcceptLogin(ctx context.Context, userID, challenge string) (string, error) {
@@ -106,19 +156,13 @@ func (u *usecase) AcceptLogin(ctx context.Context, userID, challenge string) (st
 	if userID == "" {
 		return "", apperror.Unauthorized("нэвтрээгүй байна")
 	}
-	// subject нь dan-ийн тогтвортой, opaque per-citizen танигч (user UUID). eID-
-	// ээр баталгаажсан тул ACR/AMR-д "eid"-г тэмдэглэнэ.
-	redirect, err := u.hydra.AcceptLogin(ctx, challenge, hydra.LoginAccept{
-		Subject:     userID,
-		Remember:    true,
-		RememberFor: rememberFor,
-		ACR:         "eid",
-		AMR:         []string{"eid"},
-	})
+	// subject нь платформын тогтвортой, opaque per-citizen танигч (user UUID).
+	consentChallenge, _, err := u.oidc.AcceptLogin(ctx, challenge, userID)
 	if err != nil {
-		return "", apperror.InternalCause(fmt.Errorf("hydra accept login: %w", err))
+		return "", err
 	}
-	return redirect, nil
+	// Browser-ыг зөвшөөрлийн хуудас руу (өмнө нь Hydra-аар дамждаг байсан).
+	return u.issuer + "/oauth/consent?consent_challenge=" + url.QueryEscape(consentChallenge), nil
 }
 
 func (u *usecase) RejectLogin(ctx context.Context, challenge, reason string) (string, error) {
@@ -128,29 +172,26 @@ func (u *usecase) RejectLogin(ctx context.Context, challenge, reason string) (st
 	if reason == "" {
 		reason = "хэрэглэгч нэвтрэлтийг цуцлав"
 	}
-	redirect, err := u.hydra.RejectLogin(ctx, challenge, "access_denied", reason)
-	if err != nil {
-		return "", apperror.InternalCause(fmt.Errorf("hydra reject login: %w", err))
-	}
-	return redirect, nil
+	return u.oidc.Reject(ctx, domain.ChallengeLogin, challenge, reason)
 }
 
 func (u *usecase) GetConsent(ctx context.Context, challenge string) (ConsentInfo, error) {
-	if challenge == "" {
+	if strings.TrimSpace(challenge) == "" {
 		return ConsentInfo{}, apperror.BadRequest("consent_challenge шаардлагатай")
 	}
-	req, err := u.hydra.GetConsentRequest(ctx, challenge)
+	c, err := u.oidc.ConsentChallenge(ctx, challenge)
 	if err != nil {
-		return ConsentInfo{}, apperror.InternalCause(fmt.Errorf("hydra consent request: %w", err))
+		return ConsentInfo{}, err
 	}
-	_, firstParty := u.firstParty[req.Client.ClientID]
+	name, _ := u.clientDisplay(ctx, c.ClientID)
+	_, firstParty := u.firstParty[c.ClientID]
 	return ConsentInfo{
 		Challenge:      challenge,
-		ClientID:       req.Client.ClientID,
-		ClientName:     req.Client.ClientName,
-		Subject:        req.Subject,
-		RequestedScope: req.RequestedScope,
-		Skip:           firstParty || req.Skip,
+		ClientID:       c.ClientID,
+		ClientName:     name,
+		Subject:        c.Subject,
+		RequestedScope: c.RequestedScopes,
+		Skip:           firstParty || c.Skip,
 	}, nil
 }
 
@@ -158,40 +199,15 @@ func (u *usecase) AcceptConsent(ctx context.Context, userID, challenge string, g
 	if challenge == "" {
 		return "", apperror.BadRequest("consent_challenge шаардлагатай")
 	}
-	req, err := u.hydra.GetConsentRequest(ctx, challenge)
-	if err != nil {
-		return "", apperror.InternalCause(fmt.Errorf("hydra consent request: %w", err))
+	if userID == "" {
+		return "", apperror.Forbidden("нэвтрээгүй байна")
 	}
-	// Нэвтэрсэн иргэн consent-ийн subject-тай ЗААВАЛ таарна — өөр иргэний нэрийн
-	// өмнөөс consent өгөх боломжгүй.
-	if userID == "" || req.Subject != userID {
-		return "", apperror.Forbidden("consent subject нэвтэрсэн хэрэглэгчтэй таарахгүй")
+	// Иргэний бүртгэл байгааг ЭНД шалгана (fail-closed). Claims нь token
+	// endpoint дээр, тухайн үеийн бодит өгөгдлөөр угсрагдана.
+	if _, err := u.users.GetByID(ctx, usersuc.GetByIDRequest{ID: userID}); err != nil {
+		return "", apperror.InternalCause(err)
 	}
-	// Хүссэнээс илүү scope олгохгүй: grantScope-ыг requested-ээр хязгаарлана.
-	granted := intersect(req.RequestedScope, grantScope)
-	if len(grantScope) == 0 {
-		granted = req.RequestedScope
-	}
-
-	var idClaims, atClaims map[string]any
-	if resp, uerr := u.users.GetByID(ctx, usersuc.GetByIDRequest{ID: userID}); uerr == nil {
-		idClaims, atClaims = claimsForScopes(granted, resp.User)
-	}
-
-	_, firstParty := u.firstParty[req.Client.ClientID]
-	redirect, err := u.hydra.AcceptConsent(ctx, challenge, hydra.ConsentAccept{
-		GrantScope: granted,
-		Session: hydra.ConsentSession{
-			IDToken:     idClaims,
-			AccessToken: atClaims,
-		},
-		Remember:    firstParty, // first-party апп-д дахин асуухгүй
-		RememberFor: rememberFor,
-	})
-	if err != nil {
-		return "", apperror.InternalCause(fmt.Errorf("hydra accept consent: %w", err))
-	}
-	return redirect, nil
+	return u.oidc.AcceptConsent(ctx, challenge, userID, grantScope)
 }
 
 func (u *usecase) RejectConsent(ctx context.Context, challenge, reason string) (string, error) {
@@ -201,68 +217,12 @@ func (u *usecase) RejectConsent(ctx context.Context, challenge, reason string) (
 	if reason == "" {
 		reason = "хэрэглэгч зөвшөөрлийг цуцлав"
 	}
-	redirect, err := u.hydra.RejectConsent(ctx, challenge, "access_denied", reason)
-	if err != nil {
-		return "", apperror.InternalCause(fmt.Errorf("hydra reject consent: %w", err))
-	}
-	return redirect, nil
+	return u.oidc.Reject(ctx, domain.ChallengeConsent, challenge, reason)
 }
 
 func (u *usecase) AcceptLogout(ctx context.Context, challenge string) (string, error) {
 	if challenge == "" {
 		return "", apperror.BadRequest("logout_challenge шаардлагатай")
 	}
-	redirect, err := u.hydra.AcceptLogout(ctx, challenge)
-	if err != nil {
-		return "", apperror.InternalCause(fmt.Errorf("hydra accept logout: %w", err))
-	}
-	return redirect, nil
-}
-
-// claimsForScopes нь олгосон scope-оос хамааран (id_token, access_token)-ий
-// claims-ыг dan-ийн User record-оос гаргана. `sub`-ыг ЭНД тавихгүй — Hydra
-// login subject-ээс тавина.
-func claimsForScopes(scopes []string, u domain.User) (idToken, accessToken map[string]any) {
-	idToken = map[string]any{}
-	accessToken = map[string]any{}
-	for _, s := range scopes {
-		switch s {
-		case "profile":
-			setIfNonEmpty(idToken, "name", u.FullName())
-			setIfNonEmpty(idToken, "given_name", u.FirstName)
-			setIfNonEmpty(idToken, "family_name", u.LastName)
-			setIfNonEmpty(idToken, "given_name_en", u.FirstNameEn)
-			setIfNonEmpty(idToken, "family_name_en", u.LastNameEn)
-		case "email":
-			setIfNonEmpty(idToken, "email", u.Email)
-			if u.Email != "" {
-				idToken["email_verified"] = true
-			}
-		case "nationalid":
-			setIfNonEmpty(idToken, "national_id", u.NationalID)
-			setIfNonEmpty(idToken, "register_number", u.CivilID)
-		}
-	}
-	return idToken, accessToken
-}
-
-func setIfNonEmpty(m map[string]any, k, v string) {
-	if strings.TrimSpace(v) != "" {
-		m[k] = v
-	}
-}
-
-// intersect нь want доторх, allow-д мөн байгаа утгуудыг (дараалал хадгалж) буцаана.
-func intersect(allow, want []string) []string {
-	set := make(map[string]struct{}, len(allow))
-	for _, a := range allow {
-		set[a] = struct{}{}
-	}
-	out := make([]string, 0, len(want))
-	for _, w := range want {
-		if _, ok := set[w]; ok {
-			out = append(out, w)
-		}
-	}
-	return out
+	return u.oidc.AcceptLogout(ctx, challenge)
 }

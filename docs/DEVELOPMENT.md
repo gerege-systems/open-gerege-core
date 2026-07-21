@@ -2,8 +2,11 @@
 
 > 🌐 **English** · [Монгол](DEVELOPMENT_MN.md)
 
-This guide helps developers set up and work with the **Gerege Backend Template
-v27** codebase.
+This guide helps developers set up and work with the **Government Template
+Platform V3.0** (Цахим засаглалыг бүтээх суурь) codebase — a production-ready
+foundation on which any digital-government service can be built. Its flagship
+reference deployment is **Government Template Platform** (template.dgov.mn), an eID-based
+government service platform built on this stack.
 
 > **Origin.** Derived from the open-source
 > [snykk/go-rest-boilerplate](https://github.com/snykk/go-rest-boilerplate)
@@ -59,19 +62,27 @@ make test-cover         # Tests with coverage report
 ```bash
 ```
 
-Migrations are raw SQL files in `internal/datasources/migration/` (and
-`migrations/`), applied by the migration runner. To change the schema, add a
-forward SQL migration file; the migration runner applies it idempotently
-(advisory lock + per-file transaction + `schema_migrations` tracking). There
-is no ORM AutoMigrate — the record structs in `internal/datasources/records/`
-are plain structs scanned by pgx, not schema definitions.
+Migrations are raw SQL files in `backend/migrations/` (`N_name.up.sql` +
+`N_name.down.sql` pairs). The Go package `internal/datasources/migration/`
+holds only the **runner** (no SQL); the CLI entrypoint is `cmd/migration/main.go`
+(`migrationsDir = "migrations"`). To change the schema, add a forward SQL
+migration file in `backend/migrations/`; the runner applies it idempotently —
+files are ordered by their leading number, each file plus its `schema_migrations`
+row commits in one transaction, and the whole run holds a session advisory lock
+so concurrent runners serialize. There is **no ORM AutoMigrate** — the record
+structs in `internal/datasources/records/` are plain structs scanned by pgx, not
+schema definitions; the schema comes only from the `*.up.sql` files.
 
 ## Code Organization
 
 ### Adding a New Feature
 
 Follow the layers inward-out. Use the existing `users` / `auth` modules as the
-reference. Example: adding a `Product` resource.
+reference — the backend already ships ~18 usecase slices under
+`internal/business/usecases/` (`ai`, `assets`, `audit`, `auth`, `core`,
+`gateway`, `gov`, `gspace`, `integrations`, `org`, `provider`, `rbac`,
+`security`, `sign`, `site`, `sso`, `superadmin`, `users`), each following this
+same pattern. Example: adding a `Product` resource.
 
 1. **Domain Entity** — `internal/business/domain/domain.products.go`
    ```go
@@ -192,6 +203,24 @@ reference. Example: adding a `Product` resource.
    routes.NewProductsRoute(api, productsUC, authMiddleware).Routes()
    ```
 
+9. **Row-Level Security (per-user / per-tenant tables)** — if the new table
+   holds data that belongs to a specific citizen (not a public reference
+   catalogue), it **must** carry RLS policies. Follow the established pattern in
+   `migrations/14_organizations.up.sql`, `migrations/20_gov_services.up.sql`, and
+   `migrations/21_user_integrations.up.sql`: `ALTER TABLE … ENABLE ROW LEVEL
+   SECURITY` **and** `FORCE ROW LEVEL SECURITY`, then a `service` / `admin` /
+   `self` policy trio keyed on the `app.user_id` / `app.user_role` session GUCs.
+   The repository must be **RLS-aware** — open a `withRLS` transaction that emits
+   `SET LOCAL app.user_id` / `SET LOCAL app.user_role` from the request identity
+   (`internal/datasources/rls` carries it in the context; see
+   `repositories/postgres/org` / `repositories/postgres/gov` for a worked
+   example). A request with no identity sets empty GUCs, so every policy denies
+   every row (fail-closed). RLS only enforces when the api connects as a
+   non-superuser DB role — the boot guard blocks a superuser / `BYPASSRLS`
+   connection in production (see [SECURITY.md](SECURITY.md)). Public reference
+   tables (e.g. the `gov_services` catalogue) stay RLS-free and are protected by
+   table-level grants instead.
+
 ### Writing Tests
 
 #### Unit Tests (Usecase Layer)
@@ -277,8 +306,12 @@ if err != nil {
 }
 ```
 
-`RespondWithError` (in `handler.base_response.go`) maps the error type to a
-status code, logs 5xx causes, and renders a clean envelope.
+`RespondWithError` (in `handler_base_response.go`) maps the error type to a
+status code, logs 5xx causes, and renders a clean envelope. The envelope
+helpers all live in that file: `v1.DecodeBody` (size-capped,
+unknown-fields-rejecting JSON decode), `validators.ValidatePayloads` (struct-tag
+validation → 422 with per-field detail), `v1.NewSuccessResponse`,
+`v1.NewErrorResponse`, and `v1.RespondWithError`.
 
 ### Context Usage
 
@@ -329,16 +362,15 @@ per project:
 Handlers carry godoc annotations consumed by `swag`:
 
 ```go
-// @Summary      Login
-// @Description  Authenticate and issue an access + refresh token pair
+// @Summary      Start eID login
+// @Description  Begin an eID login session (returns a QR / deep-link challenge to poll)
 // @Tags         auth
 // @Accept       json
 // @Produce      json
-// @Param        body body requests.LoginRequest true "Credentials"
-// @Success      200 {object} v1.BaseResponse
-// @Failure      401 {object} v1.BaseResponse
-// @Router       /auth/login [post]
-func (h Handler) Login(w http.ResponseWriter, r *http.Request) error { /* ... */ }
+// @Success      200 {object} v1.BaseResponse{data=responses.EIDStartResponse}
+// @Failure      500 {object} v1.BaseResponse
+// @Router       /auth/eid/start [post]
+func (h Handler) EIDStart(w http.ResponseWriter, r *http.Request) error { /* ... */ }
 ```
 
 ### Regenerate Docs
@@ -386,4 +418,4 @@ Before deploying, ensure:
 
 ---
 
-**Gerege Template Version 27.0** — Co-developed by the **Gerege Systems Development Team** and **Claude AI**, 2026.
+**Government Template Platform V3.0** — Co-developed by the **Gerege Systems Development Team** and **Claude AI**, 2026.

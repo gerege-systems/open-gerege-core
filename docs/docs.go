@@ -11,7 +11,7 @@ const docTemplate = `{
         "title": "{{.Title}}",
         "termsOfService": "https://github.com/snykk/go-rest-boilerplate",
         "contact": {
-            "name": "Gerege Backend Template v27",
+            "name": "Government Template Platform V3.0",
             "url": "https://github.com/snykk/go-rest-boilerplate"
         },
         "license": {
@@ -23,6 +23,46 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/.well-known/jwks.json": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "oidc"
+                ],
+                "summary": "id_token шалгах нийтийн түлхүүрүүд (JWK Set)",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/.well-known/openid-configuration": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "oidc"
+                ],
+                "summary": "OpenID Connect discovery баримт",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
         "/admin/ai/prompts": {
             "get": {
                 "security": [
@@ -138,63 +178,6 @@ const docTemplate = `{
                     },
                     "422": {
                         "description": "Validation error",
-                        "schema": {
-                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/admin/landing/config": {
-            "put": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Нүүрний харагдацын тохиргооны баримтыг бүхэлд нь солино. Body нь бүрэн JSON объект (схемийг frontend эзэмшдэг). Хүчинтэй JSON объект + хэмжээний хязгаар (64 KiB) шалгагдаж, advanced CSS override ариутгагдана. Өөрчлөлт нэн даруй үйлчилнэ (тохиргооны кэш хүчингүй болно).",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "admin"
-                ],
-                "summary": "Нүүр хуудасны тохиргоог шинэчлэх",
-                "parameters": [
-                    {
-                        "description": "Landing config document",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "type": "object"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Updated",
-                        "schema": {
-                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Not a JSON object / too large",
-                        "schema": {
-                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
-                        }
-                    },
-                    "401": {
-                        "description": "Missing/invalid token",
-                        "schema": {
-                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
-                        }
-                    },
-                    "403": {
-                        "description": "Missing settings.manage permission",
                         "schema": {
                             "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
                         }
@@ -495,6 +478,256 @@ const docTemplate = `{
                     },
                     "429": {
                         "description": "Rate limit exceeded",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/applications": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "applications"
+                ],
+                "summary": "Application-уудыг жагсаах",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "applications"
+                ],
+                "summary": "Application (OAuth2 client) үүсгэх",
+                "parameters": [
+                    {
+                        "description": "Application",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_datatransfers_requests.ApplicationRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/applications/{id}": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "applications"
+                ],
+                "summary": "Application-ыг id-гээр авах",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Application ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "applications"
+                ],
+                "summary": "Application шинэчлэх",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Application ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Application",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_datatransfers_requests.ApplicationRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "applications"
+                ],
+                "summary": "Application устгах (Hydra client + overlay)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Application ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/applications/{id}/rotate-secret": {
+            "post": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "applications"
+                ],
+                "summary": "Application-ын client secret эргүүлэх",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Application ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/applications/{id}/secret": {
+            "put": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "applications"
+                ],
+                "summary": "Application-ын client secret-ыг гараар оноох",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Application ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Client secret",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_datatransfers_requests.ApplicationSecretRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/applications/{id}/services": {
+            "put": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "applications"
+                ],
+                "summary": "Application-д зөвшөөрсөн gateway service-үүдийг оноох",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Application ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Service IDs",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_datatransfers_requests.ApplicationServicesRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
                         }
@@ -1264,6 +1497,53 @@ const docTemplate = `{
                 }
             }
         },
+        "/catalog/life-events": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "catalog"
+                ],
+                "summary": "Нийтийн каталогийн амьдралын үйл явдлууд",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/catalog/services/{id}": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "catalog"
+                ],
+                "summary": "Нийтийн каталогийн нэг үйлчилгээ (зөвхөн нийтлэгдсэн)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Service ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/core/organizations": {
             "get": {
                 "description": "core.gerege.mn /api/organization/find — search_text (регистр г.м.). Хариуг дамжуулна.",
@@ -1320,243 +1600,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/gateway/consumers": {
-            "get": {
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "gateway"
-                ],
-                "summary": "Consumer-уудыг жагсаах",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
-                        }
-                    }
-                }
-            },
-            "post": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "gateway"
-                ],
-                "summary": "Consumer үүсгэх",
-                "parameters": [
-                    {
-                        "description": "Consumer",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/template_internal_http_datatransfers_requests.GatewayConsumerRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "description": "Created",
-                        "schema": {
-                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/gateway/consumers/{id}": {
-            "put": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "gateway"
-                ],
-                "summary": "Consumer шинэчлэх",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Consumer ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Consumer",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/template_internal_http_datatransfers_requests.GatewayConsumerRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
-                        }
-                    }
-                }
-            },
-            "delete": {
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "gateway"
-                ],
-                "summary": "Consumer устгах",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Consumer ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/gateway/consumers/{id}/keys": {
-            "get": {
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "gateway"
-                ],
-                "summary": "Consumer-ийн API key-үүдийг жагсаах",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Consumer ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
-                        }
-                    }
-                }
-            },
-            "post": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "gateway"
-                ],
-                "summary": "Consumer-д шинэ API key үүсгэх (plaintext-ийг нэг удаа буцаана)",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Consumer ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Key",
-                        "name": "body",
-                        "in": "body",
-                        "schema": {
-                            "$ref": "#/definitions/template_internal_http_datatransfers_requests.GatewayKeyRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "description": "Created",
-                        "schema": {
-                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/gateway/keys/{keyId}": {
-            "delete": {
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "gateway"
-                ],
-                "summary": "API key-г устгах",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Key ID",
-                        "name": "keyId",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/gateway/keys/{keyId}/revoke": {
-            "post": {
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "gateway"
-                ],
-                "summary": "API key-г хүчингүй болгох (revoke)",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Key ID",
-                        "name": "keyId",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
-                        }
-                    }
-                }
-            }
-        },
         "/gateway/logs": {
             "get": {
                 "produces": [
@@ -1594,238 +1637,6 @@ const docTemplate = `{
                     "gateway"
                 ],
                 "summary": "API Gateway-ийн нэгтгэсэн статистик",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/gateway/policies": {
-            "get": {
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "gateway"
-                ],
-                "summary": "Policy (plugin)-уудыг жагсаах",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
-                        }
-                    }
-                }
-            },
-            "post": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "gateway"
-                ],
-                "summary": "Policy үүсгэх",
-                "parameters": [
-                    {
-                        "description": "Policy",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/template_internal_http_datatransfers_requests.GatewayPolicyRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "description": "Created",
-                        "schema": {
-                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/gateway/policies/{id}": {
-            "put": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "gateway"
-                ],
-                "summary": "Policy шинэчлэх",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Policy ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Policy",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/template_internal_http_datatransfers_requests.GatewayPolicyRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
-                        }
-                    }
-                }
-            },
-            "delete": {
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "gateway"
-                ],
-                "summary": "Policy устгах",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Policy ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/gateway/routes": {
-            "get": {
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "gateway"
-                ],
-                "summary": "Route-уудыг жагсаах",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
-                        }
-                    }
-                }
-            },
-            "post": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "gateway"
-                ],
-                "summary": "Route үүсгэх",
-                "parameters": [
-                    {
-                        "description": "Route",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/template_internal_http_datatransfers_requests.GatewayRouteRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "description": "Created",
-                        "schema": {
-                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/gateway/routes/{id}": {
-            "put": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "gateway"
-                ],
-                "summary": "Route шинэчлэх",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Route ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Route",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/template_internal_http_datatransfers_requests.GatewayRouteRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
-                        }
-                    }
-                }
-            },
-            "delete": {
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "gateway"
-                ],
-                "summary": "Route устгах",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Route ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -2030,6 +1841,74 @@ const docTemplate = `{
                 }
             }
         },
+        "/gov/applications/{id}/provide-info": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "gov"
+                ],
+                "summary": "Нэмэлт мэдээлэл ирүүлэх (SLA цаг үргэлжилнэ)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Application ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Info",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_datatransfers_requests.GovInfoRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/gov/applications/{id}/timeline": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "gov"
+                ],
+                "summary": "Хүсэлтийн явцын түүх",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Application ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/gov/appointments": {
             "get": {
                 "produces": [
@@ -2108,6 +1987,25 @@ const docTemplate = `{
                 }
             }
         },
+        "/gov/life-events": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "gov"
+                ],
+                "summary": "Амьдралын үйл явдлын каталог (CPSV-AP Event)",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/gov/notifications": {
             "get": {
                 "produces": [
@@ -2164,6 +2062,228 @@ const docTemplate = `{
                         "required": true
                     }
                 ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/gov/officer/queue": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "gov-officer"
+                ],
+                "summary": "Хянах хүсэлтийн дараалал",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Төлөв",
+                        "name": "status",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "'me' бол зөвхөн өөрийн",
+                        "name": "assigned_to",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "Зөвхөн хугацаа хэтэрсэн",
+                        "name": "overdue",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/gov/officer/queue/{id}": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "gov-officer"
+                ],
+                "summary": "Хүсэлтийн дэлгэрэнгүй (менежер)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Application ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/gov/officer/queue/{id}/assign": {
+            "post": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "gov-officer"
+                ],
+                "summary": "Хүсэлтийг хянахаар авах",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Application ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/gov/officer/queue/{id}/complete": {
+            "post": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "gov-officer"
+                ],
+                "summary": "Биет гаралт хүргэгдсэнийг бүртгэх",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Application ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/gov/officer/queue/{id}/decide": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "gov-officer"
+                ],
+                "summary": "Хүсэлтийг зөвшөөрөх/татгалзах",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Application ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Decision",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_datatransfers_requests.GovDecideRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/gov/officer/queue/{id}/request-info": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "gov-officer"
+                ],
+                "summary": "Иргэнээс нэмэлт мэдээлэл хүсэх (SLA цаг зогсоно)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Application ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Info request",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_datatransfers_requests.GovInfoRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/gov/officer/stats": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "gov-officer"
+                ],
+                "summary": "Менежерийн дарааллын нэгтгэл",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -2514,26 +2634,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/landing/config": {
-            "get": {
-                "description": "Нүүр хуудасны (landing + auth бүрхүүл) харагдацын тохиргоог (өнгө, фонт, хэмжээ, текст mn/en, товч/цэс) буцаана. Нэвтрэлт шаардахгүй — зочид нүүрээ энэ тохиргоогоор буулгана. DB алдаа үед хоосон объект руу fail-open хийнэ.",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "public"
-                ],
-                "summary": "Нүүр хуудасны тохиргоог авах (нийтийн)",
-                "responses": {
-                    "200": {
-                        "description": "Landing config document",
-                        "schema": {
-                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
-                        }
-                    }
-                }
-            }
-        },
         "/me/latin-name": {
             "put": {
                 "security": [
@@ -2806,6 +2906,1318 @@ const docTemplate = `{
                 }
             }
         },
+        "/oauth2/auth": {
+            "get": {
+                "tags": [
+                    "oidc"
+                ],
+                "summary": "OAuth2 authorization endpoint",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Client ID",
+                        "name": "client_id",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Registered redirect URI",
+                        "name": "redirect_uri",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "code",
+                        "name": "response_type",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Space-separated scopes",
+                        "name": "scope",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Opaque RP state",
+                        "name": "state",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "302": {
+                        "description": "Found"
+                    }
+                }
+            }
+        },
+        "/oauth2/introspect": {
+            "post": {
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "oidc"
+                ],
+                "summary": "OAuth2 token introspection (RFC 7662)",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/oauth2/revoke": {
+            "post": {
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "tags": [
+                    "oidc"
+                ],
+                "summary": "OAuth2 token revocation (RFC 7009)",
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        },
+        "/oauth2/sessions/logout": {
+            "get": {
+                "tags": [
+                    "oidc"
+                ],
+                "summary": "RP-initiated logout",
+                "responses": {
+                    "302": {
+                        "description": "Found"
+                    }
+                }
+            }
+        },
+        "/oauth2/token": {
+            "post": {
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "oidc"
+                ],
+                "summary": "OAuth2 token endpoint",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "authorization_code | refresh_token | client_credentials",
+                        "name": "grant_type",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/registry/catalog": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "registry"
+                ],
+                "summary": "Нийтийн каталог (зөвхөн нийтлэгдсэн паспорт)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Нэр/код дотор хайх",
+                        "name": "q",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Эрх бүхий байгууллага",
+                        "name": "authority",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Амьдралын үйл явдал",
+                        "name": "life_event_id",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/registry/evidences": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "registry"
+                ],
+                "summary": "Нотолгооны каталог (ХУР mapping-тай)",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "registry"
+                ],
+                "summary": "Нотолгоо бүртгэх",
+                "parameters": [
+                    {
+                        "description": "Evidence",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_datatransfers_requests.RegistryEvidenceRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/registry/evidences/{id}": {
+            "put": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "registry"
+                ],
+                "summary": "Нотолгоо засах (ХУР боломж тэмдэглэх)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Evidence ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Evidence",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_datatransfers_requests.RegistryEvidenceRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "registry"
+                ],
+                "summary": "Нотолгоо устгах",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Evidence ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/registry/life-events": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "registry"
+                ],
+                "summary": "Амьдралын/бизнесийн үйл явдлууд",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "registry"
+                ],
+                "summary": "Амьдралын/бизнесийн үйл явдал үүсгэх",
+                "parameters": [
+                    {
+                        "description": "Life event",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_datatransfers_requests.RegistryLifeEventRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/registry/life-events/{id}": {
+            "delete": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "registry"
+                ],
+                "summary": "Амьдралын үйл явдал устгах",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Life event ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/registry/once-only": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "registry"
+                ],
+                "summary": "Once-only зөрчлүүд (ХУР-д байгааг иргэнээс дахин шаардаж буй)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Эрх бүхий байгууллагаар шүүх",
+                        "name": "authority",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/registry/overview": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "registry"
+                ],
+                "summary": "Регистрийн нэгтгэл (инвентар, once-only, проактив байдал)",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/registry/services": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "registry"
+                ],
+                "summary": "Үйлчилгээний паспортын жагсаалт (ноорог орно)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "draft/published/archived",
+                        "name": "status",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Эрх бүхий байгууллага",
+                        "name": "authority",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Проактив байдлын шат",
+                        "name": "proactivity",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Нэр/код дотор хайх",
+                        "name": "q",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "registry"
+                ],
+                "summary": "Үйлчилгээний паспорт үүсгэх (ноорог)",
+                "parameters": [
+                    {
+                        "description": "Service",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_datatransfers_requests.RegistryServiceRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/registry/services/{id}": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "registry"
+                ],
+                "summary": "Үйлчилгээний паспорт (нотолгоотой нь)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Service ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "registry"
+                ],
+                "summary": "Үйлчилгээний паспорт засах",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Service ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Service",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_datatransfers_requests.RegistryServiceRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "registry"
+                ],
+                "summary": "Ноорог паспорт устгах (нийтлэгдсэнийг устгахгүй — архивлана)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Service ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/registry/services/{id}/archive": {
+            "post": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "registry"
+                ],
+                "summary": "Паспортыг архивлах",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Service ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/registry/services/{id}/evidences": {
+            "put": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "registry"
+                ],
+                "summary": "Паспортын шаардах нотолгооны жагсаалтыг солих",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Service ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Evidences",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_datatransfers_requests.RegistryEvidencesRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/registry/services/{id}/once-only": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "registry"
+                ],
+                "summary": "Нэг үйлчилгээний once-only шалгалт",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Service ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/registry/services/{id}/publish": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "registry"
+                ],
+                "summary": "Паспортыг нийтлэх (шинэ хувилбар + baseline delta)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Service ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Publish",
+                        "name": "body",
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_datatransfers_requests.RegistryPublishRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/registry/services/{id}/versions": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "registry"
+                ],
+                "summary": "Паспортын хувилбарын түүх (baseline delta-тай)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Service ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/relay/assignments/{id}/respond": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "relay"
+                ],
+                "summary": "Доод platform-ын callback — даалгаврын хариу",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Assignment ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Хариу",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_datatransfers_requests.RelayRespondRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/relay/overview": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "relay"
+                ],
+                "summary": "SLA хяналтын самбарын нэгтгэл",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/template_internal_http_datatransfers_responses.RelayOverviewResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/relay/platforms": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "relay"
+                ],
+                "summary": "Доод platform-уудыг жагсаах",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "relay"
+                ],
+                "summary": "Доод platform бүртгэх",
+                "parameters": [
+                    {
+                        "description": "Platform",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_datatransfers_requests.RelayPlatformRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/relay/platforms/{id}": {
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "relay"
+                ],
+                "summary": "Доод platform устгах",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Platform ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/relay/requests": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "relay"
+                ],
+                "summary": "Хүсэлтүүдийн жагсаалт",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Max rows (default 50, max 200)",
+                        "name": "limit",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "service_code-ийн routing дүрмээр доод platform-ууд руу дамжуулж, SLA хяналтад авна.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "relay"
+                ],
+                "summary": "Дээд platform-оос хугацаатай үйлчилгээний хүсэлт хүлээж авах",
+                "parameters": [
+                    {
+                        "description": "Хүсэлт",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_datatransfers_requests.RelayIngestRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/template_internal_http_datatransfers_responses.RelayRequestResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/relay/requests/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "relay"
+                ],
+                "summary": "Хүсэлтийн дэлгэрэнгүй (assignments + timeline)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Request ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/template_internal_http_datatransfers_responses.RelayRequestDetailResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/relay/requests/{id}/forward": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "relay"
+                ],
+                "summary": "Хүсэлтийг дээд (upstream) platform руу webhook-оор дамжуулах",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Request ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Дамжуулах дээд platform",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_datatransfers_requests.RelayForwardRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/relay/routes": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "relay"
+                ],
+                "summary": "Чиглүүлэлтийн дүрмүүдийг жагсаах",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "relay"
+                ],
+                "summary": "Чиглүүлэлт үүсгэх (service_code → platform)",
+                "parameters": [
+                    {
+                        "description": "Route",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_datatransfers_requests.RelayRouteRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/relay/routes/{id}": {
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "relay"
+                ],
+                "summary": "Чиглүүлэлт устгах",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Route ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/relay/webhook": {
+            "post": {
+                "description": "X-Relay-Source (илгээгчийн code) + X-Relay-Signature (sha256=HMAC) header-аар баталгаажуулж, шинэ хүсэлт болгон ingest хийнэ. JWT шаардахгүй.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "relay"
+                ],
+                "summary": "Peer platform-оос webhook хүлээж авах (дээш/доош, HMAC гарын үсэгтэй)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Илгээгч platform-ын code",
+                        "name": "X-Relay-Source",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "sha256=\u003cHMAC-SHA256\u003e",
+                        "name": "X-Relay-Signature",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/template_internal_http_datatransfers_responses.RelayRequestResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/site/appearance": {
+            "get": {
+                "description": "Landing болон нийтийн хуудсанд хэрэглэх нийтийн харагдац (accent · font · style · theme). Нэвтрэлт шаардахгүй.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "site"
+                ],
+                "summary": "Сайтын харагдацын default-ыг унших",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/template_internal_http_datatransfers_responses.SiteAppearanceResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Админ (settings.manage) сайтын нийтийн харагдацыг өөрчилнө. accent нь preset нэр эсвэл '#rrggbb' hex.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin"
+                ],
+                "summary": "Сайтын харагдацын default-ыг шинэчлэх",
+                "parameters": [
+                    {
+                        "description": "Харагдацын шинэ утга",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_datatransfers_requests.SiteAppearanceUpdateRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Буруу утга",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "settings.manage эрх дутуу",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/sso/callback": {
             "post": {
                 "description": "authorize callback-ийн state+code-ийг шалгаж, code-ийг токен болгож солин, иргэнийг sso_sub-ээр upsert хийж, JWT хос олгоно.",
@@ -2818,7 +4230,7 @@ const docTemplate = `{
                 "tags": [
                     "sso"
                 ],
-                "summary": "Gerege SSO callback",
+                "summary": "dgov SSO callback",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -2841,7 +4253,7 @@ const docTemplate = `{
                 "tags": [
                     "sso"
                 ],
-                "summary": "Gerege SSO logout URL",
+                "summary": "dgov SSO logout URL",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -2864,7 +4276,7 @@ const docTemplate = `{
                 "tags": [
                     "sso"
                 ],
-                "summary": "Gerege SSO native (mobile PKCE) нэвтрэлт",
+                "summary": "dgov SSO native (mobile PKCE) нэвтрэлт",
                 "parameters": [
                     {
                         "description": "Native PKCE code exchange",
@@ -2900,19 +4312,310 @@ const docTemplate = `{
         },
         "/sso/start": {
             "post": {
-                "description": "sso.gerege.mn (OIDC) authorize URL-ийг state-тэй буцаана. BFF browser-ийг тийш чиглүүлнэ.",
+                "description": "sso.dgov.mn (OIDC) authorize URL-ийг state-тэй буцаана. BFF browser-ийг тийш чиглүүлнэ.",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "sso"
                 ],
-                "summary": "Gerege SSO нэвтрэлт эхлүүлэх",
+                "summary": "dgov SSO нэвтрэлт эхлүүлэх",
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/themes": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin"
+                ],
+                "summary": "Theme-үүдийг жагсаах",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/template_internal_http_datatransfers_responses.ThemeResponse"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin"
+                ],
+                "summary": "Шинэ theme үүсгэх",
+                "parameters": [
+                    {
+                        "description": "Theme",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_datatransfers_requests.ThemeUpsertRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/template_internal_http_datatransfers_responses.ThemeResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/themes/active": {
+            "get": {
+                "description": "Нэвтрээгүй зочны landing-д хэрэглэх идэвхтэй (default) theme. Нэвтрэлт шаардахгүй.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "site"
+                ],
+                "summary": "Идэвхтэй landing theme-ийг унших",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/template_internal_http_datatransfers_responses.ThemeResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/themes/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin"
+                ],
+                "summary": "Нэг theme-ийг унших",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Theme id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/template_internal_http_datatransfers_responses.ThemeResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin"
+                ],
+                "summary": "Theme-ийг шинэчлэх",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Theme id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Theme",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_datatransfers_requests.ThemeUpsertRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin"
+                ],
+                "summary": "Theme-ийг устгах",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Theme id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/themes/{id}/active": {
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin"
+                ],
+                "summary": "Theme-ийг идэвхтэй (default) болгох",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Theme id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/userinfo": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "oidc"
+                ],
+                "summary": "OIDC userinfo",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
                         }
                     }
                 }
@@ -3509,6 +5212,63 @@ const docTemplate = `{
                 }
             }
         },
+        "/v1/admin/users": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Иргэнийг регистрийн дугаараар урьдчилан бүртгэж, role ононо. Private горимд зөвхөн ингэж бүртгэсэн иргэн Government SSO-оор нэвтэрнэ. 'users.manage' эрх шаардана; admin/superadmin role-ыг зөвхөн super admin ононо.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin"
+                ],
+                "summary": "Хэрэглэгч урьдчилан бүртгэх (private платформ)",
+                "parameters": [
+                    {
+                        "description": "Register + role",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_datatransfers_requests.AdminCreateUserRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "User pre-registered",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request body",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Insufficient privilege for the role",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "Register already exists",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/v1/audit": {
             "get": {
                 "security": [
@@ -3629,6 +5389,534 @@ const docTemplate = `{
                     },
                     "403": {
                         "description": "Not an admin",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/auth/superadmin/mfa": {
+            "post": {
+                "description": "Google эсвэл eID нэвтрэлтээс авсан mfa_token-ийг TOTP код ЭСВЭЛ нөөц кодоор баталгаажуулж session олгоно. Нөөц код нэг удаагийн (хэрэглэгдмэгц идэвхгүй болно). Хэт олон буруу оролдлого → токен цуцлагдана.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "superadmin-onboard"
+                ],
+                "summary": "Super admin нэвтрэлт — 2FA (TOTP / нөөц код)",
+                "parameters": [
+                    {
+                        "description": "mfa_token + TOTP эсвэл нөөц код",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_datatransfers_requests.SuperadminMFARequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Logged in",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/template_internal_http_datatransfers_responses.SuperadminMFAResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid code",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "MFA token invalid/expired or too many attempts",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/auth/superadmin/onboard/eid/poll": {
+            "post": {
+                "description": "eID session-ийн төлвийг long-poll-оор (≤25с) асууна: RUNNING/COMPLETE/EXPIRED/REFUSED. COMPLETE үед identity нь шидтэнд БАРИГДАЖ, алхам \"email\" болно. АНХААР: энэ алхамд токен ОЛГОГДОХГҮЙ.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "superadmin-onboard"
+                ],
+                "summary": "Super admin бүртгэл — eID төлөв асуух (long-poll)",
+                "parameters": [
+                    {
+                        "description": "Onboard token + eID session id",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_datatransfers_requests.SuperadminOnboardEIDPollRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Session state",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/template_internal_http_datatransfers_responses.SuperadminOnboardEIDPollResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid body or wrong step",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Onboard session invalid or expired",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/auth/superadmin/onboard/eid/start": {
+            "post": {
+                "description": "Бүртгэлийн eID баталгаажуулах алхмыг QR/deep-link-ээр эхлүүлнэ. callbackUrl хоосон бол CROSS-DEVICE (desktop QR); хоосон биш бол SAME-DEVICE (mobile browser).",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "superadmin-onboard"
+                ],
+                "summary": "Super admin бүртгэл — eID эхлүүлэх (QR / deep-link)",
+                "parameters": [
+                    {
+                        "description": "Onboard token",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_datatransfers_requests.SuperadminOnboardEIDStartRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "eID session started",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/template_internal_http_datatransfers_responses.SuperadminOnboardEIDStartResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid body or wrong step",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Onboard session invalid or expired",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/auth/superadmin/onboard/eid/start-id": {
+            "post": {
+                "description": "Бүртгэлийн eID алхмыг иргэний РД-аар эхлүүлж, бүртгэлтэй төхөөрөмж рүү баталгаажуулах push илгээнэ (device_link шаардлагагүй).",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "superadmin-onboard"
+                ],
+                "summary": "Super admin бүртгэл — eID эхлүүлэх (РД-аар push)",
+                "parameters": [
+                    {
+                        "description": "Onboard token + иргэний РД",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_datatransfers_requests.SuperadminOnboardEIDStartIDRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "eID session started",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/template_internal_http_datatransfers_responses.SuperadminOnboardEIDStartResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid national_id or wrong step",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Onboard session invalid or expired",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/auth/superadmin/onboard/email/send": {
+            "post": {
+                "description": "Урилгын и-мэйл рүү 6 оронтой баталгаажуулах код илгээнэ (хаяг нь шидтэний session-оос авагдана — клиент өөр хаяг заах боломжгүй).",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "superadmin-onboard"
+                ],
+                "summary": "Super admin бүртгэл — и-мэйл OTP илгээх",
+                "parameters": [
+                    {
+                        "description": "Onboard token",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_datatransfers_requests.SuperadminOnboardTokenRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OTP sent",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/template_internal_http_datatransfers_responses.SuperadminOnboardStepResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Wrong step",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Onboard session invalid or expired",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/auth/superadmin/onboard/email/verify": {
+            "post": {
+                "description": "И-мэйл рүү илгээсэн кодыг шалгана. Амжилттай бол алхам \"totp\" болно. Хэт олон буруу оролдлого → 403.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "superadmin-onboard"
+                ],
+                "summary": "Super admin бүртгэл — и-мэйл OTP баталгаажуулах",
+                "parameters": [
+                    {
+                        "description": "Onboard token + код",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_datatransfers_requests.SuperadminOnboardCodeRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Email verified",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/template_internal_http_datatransfers_responses.SuperadminOnboardStepResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid or expired code",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Onboard session invalid / too many attempts",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/auth/superadmin/onboard/google": {
+            "post": {
+                "description": "Google OAuth code-ийг солиж, и-мэйлийг super admin урилгын allow-list-ийн эсрэг шалгана. Урилгагүй / аль хэдийн ашигласан урилга бол 403. Амжилттай бол шидтэний onboard_token үүсгэж, дараагийн алхмыг (eid) буцаана.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "superadmin-onboard"
+                ],
+                "summary": "Super admin бүртгэл — Google алхам",
+                "parameters": [
+                    {
+                        "description": "OAuth code + redirect_uri",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_datatransfers_requests.SuperadminOnboardGoogleRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Onboarding started",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/template_internal_http_datatransfers_responses.SuperadminOnboardStartResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid code",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Email is not invited or invite already used",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/auth/superadmin/onboard/totp/init": {
+            "post": {
+                "description": "Шинэ TOTP secret үүсгэж, authenticator app-д уншуулах otpauth:// URI-г буцаана (QR-г frontend зурна; secret нь гараар оруулах хувилбарт). Дахин дуудвал ШИНЭ secret үүснэ.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "superadmin-onboard"
+                ],
+                "summary": "Super admin бүртгэл — TOTP (2FA) тохируулга эхлүүлэх",
+                "parameters": [
+                    {
+                        "description": "Onboard token",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_datatransfers_requests.SuperadminOnboardTokenRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "TOTP secret + otpauth URI",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/template_internal_http_datatransfers_responses.SuperadminOnboardTOTPResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Wrong step",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Onboard session invalid or expired",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/auth/superadmin/onboard/totp/verify": {
+            "post": {
+                "description": "Authenticator app-ийн кодыг шалгаж, бүртгэлийг төгсгөнө: super admin хэрэглэгч үүсгэж/ахиулж, нөөц кодуудыг хадгалж, урилгыг ашигласан болгож, session (token + refresh_token) олгоно. recovery_codes нь ЗӨВХӨН ЭНЭ хариунд, ЗӨВХӨН НЭГ УДАА буцна — дахин авах боломжгүй.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "superadmin-onboard"
+                ],
+                "summary": "Super admin бүртгэл — TOTP баталгаажуулж ТӨГСГӨХ",
+                "parameters": [
+                    {
+                        "description": "Onboard token + TOTP код",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_datatransfers_requests.SuperadminOnboardCodeRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Super admin created + logged in (recovery codes shown once)",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/template_internal_http_datatransfers_responses.SuperadminOnboardDoneResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid code or incomplete steps",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Onboard session invalid or expired",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "Email or Google account already linked to another user",
                         "schema": {
                             "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
                         }
@@ -4549,6 +6837,98 @@ const docTemplate = `{
                 }
             }
         },
+        "/v1/superadmin/access-mode": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Платформын хандалтын горим (public|private)-ыг буцаана. Зөвхөн super admin хандана.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "superadmin"
+                ],
+                "summary": "Платформын хандалтын горим",
+                "responses": {
+                    "200": {
+                        "description": "Access mode fetched",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Missing or invalid token",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Not a super admin",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Платформын хандалтын горимыг тохируулна. public: хэн ч Government SSO-оор нэвтэрнэ; private: зөвхөн урьдчилан бүртгэсэн хэрэглэгч. Зөвхөн super admin хандана.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "superadmin"
+                ],
+                "summary": "Платформын хандалтын горим тохируулах",
+                "parameters": [
+                    {
+                        "description": "Access mode",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_datatransfers_requests.SuperadminAccessModeRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Access mode updated",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request body",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Missing or invalid token",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Not a super admin",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/v1/superadmin/admins": {
             "get": {
                 "security": [
@@ -4640,6 +7020,95 @@ const docTemplate = `{
                     },
                     "409": {
                         "description": "Email already in use",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/superadmin/admins/by-register": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Регистрийн дугаараар DAN-д БАЙГАА хэрэглэгчийг олж буцаана (эрх олгохгүй, зөвхөн нэр/эрхийг урьдчилан харах). Зөвхөн super admin.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "superadmin"
+                ],
+                "summary": "Регистрээр хэрэглэгч харах (preview)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Регистрийн дугаар",
+                        "name": "register",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "User found",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Register not registered in DAN",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Регистрийн дугаараар БАЙГАА хэрэглэгчийг admin болгоно (шинэ хэрэглэгч үүсгэхгүй). Зөвхөн super admin хандана.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "superadmin"
+                ],
+                "summary": "Регистрээр админ нэмэх",
+                "parameters": [
+                    {
+                        "description": "Register",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_datatransfers_requests.SuperadminAddAdminByRegisterRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Promoted to admin",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Register not registered in DAN",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "Already an admin",
                         "schema": {
                             "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
                         }
@@ -4756,6 +7225,183 @@ const docTemplate = `{
                     },
                     "409": {
                         "description": "Already an admin",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/superadmin/invites": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Super admin болох урилгуудыг (хүлээгдэж буй + ашигласан) буцаана. Зөвхөн super admin хандана.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "superadmin"
+                ],
+                "summary": "Super admin урилгуудыг жагсаах",
+                "responses": {
+                    "200": {
+                        "description": "Invites fetched",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/template_internal_http_datatransfers_responses.SuperadminInviteResponse"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "401": {
+                        "description": "Missing or invalid token",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Not a super admin",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "И-мэйлийг super admin болох allow-list-д нэмнэ. Урилга нь эрхийг ШУУД олгодоггүй — урьсан хүн /auth/superadmin/onboard шидтэнг (Google + eID + и-мэйл OTP + TOTP) бүрэн давж байж super admin болно. Зөвхөн super admin хандана.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "superadmin"
+                ],
+                "summary": "Super admin урих",
+                "parameters": [
+                    {
+                        "description": "Invite email",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_datatransfers_requests.SuperadminInviteRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Invite created",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/template_internal_http_datatransfers_responses.SuperadminInviteResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid email",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Missing or invalid token",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Not a super admin",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "Email already invited",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/superadmin/invites/{email}": {
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Урилгыг allow-list-ээс хасна — хараахан бүртгүүлээгүй бол цаашид бүртгүүлэх боломжгүй болно. Зөвхөн super admin хандана.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "superadmin"
+                ],
+                "summary": "Super admin урилгыг цуцлах",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Invited email (URL-encoded)",
+                        "name": "email",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Invite deleted",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Missing or invalid token",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Not a super admin",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Invite not found",
                         "schema": {
                             "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
                         }
@@ -4926,6 +7572,111 @@ const docTemplate = `{
                 }
             }
         },
+        "template_internal_http_datatransfers_requests.AdminCreateUserRequest": {
+            "type": "object",
+            "required": [
+                "register"
+            ],
+            "properties": {
+                "first_name": {
+                    "type": "string",
+                    "maxLength": 100
+                },
+                "first_name_en": {
+                    "type": "string",
+                    "maxLength": 100
+                },
+                "last_name": {
+                    "type": "string",
+                    "maxLength": 100
+                },
+                "last_name_en": {
+                    "type": "string",
+                    "maxLength": 100
+                },
+                "register": {
+                    "type": "string",
+                    "maxLength": 20,
+                    "minLength": 6
+                },
+                "role_id": {
+                    "type": "integer",
+                    "enum": [
+                        2,
+                        3,
+                        4
+                    ]
+                }
+            }
+        },
+        "template_internal_http_datatransfers_requests.ApplicationRequest": {
+            "type": "object",
+            "required": [
+                "app_type",
+                "name"
+            ],
+            "properties": {
+                "app_type": {
+                    "type": "string",
+                    "enum": [
+                        "web",
+                        "spa",
+                        "native",
+                        "m2m"
+                    ]
+                },
+                "enabled": {
+                    "type": "boolean"
+                },
+                "name": {
+                    "type": "string",
+                    "maxLength": 128,
+                    "minLength": 1
+                },
+                "redirect_uris": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "service_ids": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "tags": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "template_internal_http_datatransfers_requests.ApplicationSecretRequest": {
+            "type": "object",
+            "required": [
+                "secret"
+            ],
+            "properties": {
+                "secret": {
+                    "type": "string",
+                    "maxLength": 128,
+                    "minLength": 16
+                }
+            }
+        },
+        "template_internal_http_datatransfers_requests.ApplicationServicesRequest": {
+            "type": "object",
+            "properties": {
+                "service_ids": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
         "template_internal_http_datatransfers_requests.AssetURLRequest": {
             "type": "object",
             "required": [
@@ -5028,8 +7779,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "session_id": {
-                    "type": "string",
-                    "maxLength": 128
+                    "type": "string"
                 }
             }
         },
@@ -5041,12 +7791,10 @@ const docTemplate = `{
             "properties": {
                 "callbackUrl": {
                     "description": "CallbackUrl (сонголт): SAME-DEVICE (утасны browser) үед \u003corigin\u003e/auth/eid/callback; хоосон\nбол CROSS-DEVICE (desktop). Backend force-normalize хийнэ.",
-                    "type": "string",
-                    "maxLength": 1024
+                    "type": "string"
                 },
                 "national_id": {
-                    "type": "string",
-                    "maxLength": 32
+                    "type": "string"
                 }
             }
         },
@@ -5076,114 +7824,6 @@ const docTemplate = `{
                 "name": {
                     "type": "string",
                     "maxLength": 200
-                }
-            }
-        },
-        "template_internal_http_datatransfers_requests.GatewayConsumerRequest": {
-            "type": "object",
-            "required": [
-                "username"
-            ],
-            "properties": {
-                "custom_id": {
-                    "type": "string",
-                    "maxLength": 80
-                },
-                "enabled": {
-                    "type": "boolean"
-                },
-                "tags": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "username": {
-                    "type": "string",
-                    "maxLength": 80,
-                    "minLength": 2
-                }
-            }
-        },
-        "template_internal_http_datatransfers_requests.GatewayKeyRequest": {
-            "type": "object",
-            "properties": {
-                "expires_at": {
-                    "type": "string"
-                },
-                "label": {
-                    "type": "string",
-                    "maxLength": 80
-                }
-            }
-        },
-        "template_internal_http_datatransfers_requests.GatewayPolicyRequest": {
-            "type": "object",
-            "required": [
-                "type"
-            ],
-            "properties": {
-                "config": {
-                    "type": "array",
-                    "items": {
-                        "type": "integer"
-                    }
-                },
-                "enabled": {
-                    "type": "boolean"
-                },
-                "route_id": {
-                    "type": "string"
-                },
-                "type": {
-                    "type": "string",
-                    "enum": [
-                        "rate-limit",
-                        "key-auth",
-                        "cors",
-                        "ip-restriction",
-                        "request-transform"
-                    ]
-                }
-            }
-        },
-        "template_internal_http_datatransfers_requests.GatewayRouteRequest": {
-            "type": "object",
-            "required": [
-                "name",
-                "paths",
-                "service_id"
-            ],
-            "properties": {
-                "enabled": {
-                    "type": "boolean"
-                },
-                "methods": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "name": {
-                    "type": "string",
-                    "maxLength": 80,
-                    "minLength": 2
-                },
-                "paths": {
-                    "type": "array",
-                    "minItems": 1,
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "preserve_host": {
-                    "type": "boolean"
-                },
-                "service_id": {
-                    "type": "string"
-                },
-                "strip_path": {
-                    "type": "boolean"
                 }
             }
         },
@@ -5248,12 +7888,10 @@ const docTemplate = `{
             ],
             "properties": {
                 "code": {
-                    "type": "string",
-                    "maxLength": 1024
+                    "type": "string"
                 },
                 "redirect_uri": {
-                    "type": "string",
-                    "maxLength": 1024
+                    "type": "string"
                 }
             }
         },
@@ -5266,6 +7904,12 @@ const docTemplate = `{
                 "note": {
                     "type": "string",
                     "maxLength": 500
+                },
+                "payload": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
                 },
                 "service_id": {
                     "type": "string"
@@ -5291,6 +7935,40 @@ const docTemplate = `{
                 },
                 "service_id": {
                     "type": "string"
+                }
+            }
+        },
+        "template_internal_http_datatransfers_requests.GovDecideRequest": {
+            "type": "object",
+            "properties": {
+                "approve": {
+                    "type": "boolean"
+                },
+                "note": {
+                    "type": "string",
+                    "maxLength": 1000
+                },
+                "result": {
+                    "type": "string",
+                    "enum": [
+                        "granted",
+                        "refused",
+                        "withdrawn",
+                        "not_admissible",
+                        "processed"
+                    ]
+                }
+            }
+        },
+        "template_internal_http_datatransfers_requests.GovInfoRequest": {
+            "type": "object",
+            "required": [
+                "note"
+            ],
+            "properties": {
+                "note": {
+                    "type": "string",
+                    "maxLength": 1000
                 }
             }
         },
@@ -5380,12 +8058,10 @@ const docTemplate = `{
             ],
             "properties": {
                 "access_token": {
-                    "type": "string",
-                    "maxLength": 4096
+                    "type": "string"
                 },
                 "refresh_token": {
-                    "type": "string",
-                    "maxLength": 4096
+                    "type": "string"
                 }
             }
         },
@@ -5405,8 +8081,7 @@ const docTemplate = `{
             ],
             "properties": {
                 "refresh_token": {
-                    "type": "string",
-                    "maxLength": 4096
+                    "type": "string"
                 }
             }
         },
@@ -5458,6 +8133,318 @@ const docTemplate = `{
                 }
             }
         },
+        "template_internal_http_datatransfers_requests.RegistryEvidenceLink": {
+            "type": "object",
+            "required": [
+                "evidence_id"
+            ],
+            "properties": {
+                "evidence_id": {
+                    "type": "string"
+                },
+                "from_citizen": {
+                    "description": "FromCitizen — уг баримтыг иргэнээс шаардаж байгаа эсэх. ХУР-д байгаа\nбаримтыг иргэнээс шаардвал once-only зөрчил болно.",
+                    "type": "boolean"
+                },
+                "note": {
+                    "type": "string",
+                    "maxLength": 4000
+                },
+                "required": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "template_internal_http_datatransfers_requests.RegistryEvidenceRequest": {
+            "type": "object",
+            "required": [
+                "name"
+            ],
+            "properties": {
+                "code": {
+                    "type": "string",
+                    "maxLength": 64
+                },
+                "description": {
+                    "type": "string",
+                    "maxLength": 4000
+                },
+                "holder_agency": {
+                    "type": "string",
+                    "maxLength": 300
+                },
+                "in_khur": {
+                    "type": "boolean"
+                },
+                "khur_service_code": {
+                    "type": "string",
+                    "maxLength": 200
+                },
+                "name": {
+                    "type": "string",
+                    "maxLength": 300
+                },
+                "source_system": {
+                    "type": "string",
+                    "maxLength": 300
+                }
+            }
+        },
+        "template_internal_http_datatransfers_requests.RegistryEvidencesRequest": {
+            "type": "object",
+            "properties": {
+                "evidences": {
+                    "type": "array",
+                    "maxItems": 100,
+                    "items": {
+                        "$ref": "#/definitions/template_internal_http_datatransfers_requests.RegistryEvidenceLink"
+                    }
+                }
+            }
+        },
+        "template_internal_http_datatransfers_requests.RegistryLifeEventRequest": {
+            "type": "object",
+            "required": [
+                "code",
+                "name"
+            ],
+            "properties": {
+                "code": {
+                    "type": "string",
+                    "maxLength": 64
+                },
+                "description": {
+                    "type": "string",
+                    "maxLength": 4000
+                },
+                "kind": {
+                    "type": "string",
+                    "enum": [
+                        "life",
+                        "business"
+                    ]
+                },
+                "lead_agency": {
+                    "type": "string",
+                    "maxLength": 300
+                },
+                "name": {
+                    "type": "string",
+                    "maxLength": 300
+                },
+                "sort_order": {
+                    "type": "integer",
+                    "maximum": 10000,
+                    "minimum": 0
+                }
+            }
+        },
+        "template_internal_http_datatransfers_requests.RegistryPublishRequest": {
+            "type": "object",
+            "properties": {
+                "change_note": {
+                    "type": "string",
+                    "maxLength": 1000
+                }
+            }
+        },
+        "template_internal_http_datatransfers_requests.RegistryServiceRequest": {
+            "type": "object",
+            "required": [
+                "authority",
+                "name"
+            ],
+            "properties": {
+                "annual_volume": {
+                    "type": "integer",
+                    "minimum": 0
+                },
+                "authority": {
+                    "type": "string",
+                    "maxLength": 300
+                },
+                "authority_org_id": {
+                    "type": "string"
+                },
+                "channels": {
+                    "type": "array",
+                    "maxItems": 10,
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "code": {
+                    "type": "string",
+                    "maxLength": 64
+                },
+                "description": {
+                    "type": "string",
+                    "maxLength": 4000
+                },
+                "fee": {
+                    "type": "integer",
+                    "minimum": 0
+                },
+                "legal_basis": {
+                    "type": "string",
+                    "maxLength": 4000
+                },
+                "life_event_id": {
+                    "type": "string"
+                },
+                "max_days": {
+                    "type": "integer",
+                    "maximum": 3650,
+                    "minimum": 0
+                },
+                "name": {
+                    "type": "string",
+                    "maxLength": 300
+                },
+                "name_en": {
+                    "type": "string",
+                    "maxLength": 300
+                },
+                "output": {
+                    "type": "string",
+                    "maxLength": 300
+                },
+                "proactivity": {
+                    "type": "string",
+                    "enum": [
+                        "information",
+                        "online",
+                        "once_only",
+                        "proactive"
+                    ]
+                },
+                "steps_count": {
+                    "type": "integer",
+                    "maximum": 500,
+                    "minimum": 0
+                },
+                "target_group": {
+                    "type": "string",
+                    "maxLength": 300
+                }
+            }
+        },
+        "template_internal_http_datatransfers_requests.RelayForwardRequest": {
+            "type": "object",
+            "required": [
+                "platform_code"
+            ],
+            "properties": {
+                "platform_code": {
+                    "type": "string"
+                }
+            }
+        },
+        "template_internal_http_datatransfers_requests.RelayIngestRequest": {
+            "type": "object",
+            "required": [
+                "service_code"
+            ],
+            "properties": {
+                "due_at": {
+                    "type": "string"
+                },
+                "external_ref": {
+                    "type": "string"
+                },
+                "payload": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "priority": {
+                    "type": "string"
+                },
+                "service_code": {
+                    "type": "string"
+                },
+                "source_platform": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                }
+            }
+        },
+        "template_internal_http_datatransfers_requests.RelayPlatformRequest": {
+            "type": "object",
+            "required": [
+                "code",
+                "name"
+            ],
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "direction": {
+                    "type": "string",
+                    "enum": [
+                        "upstream",
+                        "downstream"
+                    ]
+                },
+                "enabled": {
+                    "type": "boolean"
+                },
+                "endpoint_url": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "supervisor_contact": {
+                    "type": "string"
+                },
+                "webhook_secret": {
+                    "type": "string"
+                }
+            }
+        },
+        "template_internal_http_datatransfers_requests.RelayRespondRequest": {
+            "type": "object",
+            "required": [
+                "status"
+            ],
+            "properties": {
+                "result": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "status": {
+                    "type": "string",
+                    "enum": [
+                        "done",
+                        "rejected"
+                    ]
+                }
+            }
+        },
+        "template_internal_http_datatransfers_requests.RelayRouteRequest": {
+            "type": "object",
+            "required": [
+                "platform_id",
+                "service_code"
+            ],
+            "properties": {
+                "platform_id": {
+                    "type": "string"
+                },
+                "service_code": {
+                    "type": "string"
+                },
+                "sla_minutes": {
+                    "type": "integer"
+                }
+            }
+        },
         "template_internal_http_datatransfers_requests.ResetPasswordRequest": {
             "type": "object",
             "required": [
@@ -5467,8 +8454,7 @@ const docTemplate = `{
             ],
             "properties": {
                 "code": {
-                    "type": "string",
-                    "maxLength": 10
+                    "type": "string"
                 },
                 "email": {
                     "type": "string",
@@ -5513,6 +8499,61 @@ const docTemplate = `{
                 }
             }
         },
+        "template_internal_http_datatransfers_requests.SiteAppearanceUpdateRequest": {
+            "type": "object",
+            "required": [
+                "accent",
+                "font",
+                "style",
+                "theme"
+            ],
+            "properties": {
+                "accent": {
+                    "type": "string",
+                    "maxLength": 32
+                },
+                "font": {
+                    "type": "string",
+                    "maxLength": 16
+                },
+                "style": {
+                    "type": "string",
+                    "maxLength": 16
+                },
+                "theme": {
+                    "type": "string",
+                    "maxLength": 16
+                }
+            }
+        },
+        "template_internal_http_datatransfers_requests.SuperadminAccessModeRequest": {
+            "type": "object",
+            "required": [
+                "mode"
+            ],
+            "properties": {
+                "mode": {
+                    "type": "string",
+                    "enum": [
+                        "public",
+                        "private"
+                    ]
+                }
+            }
+        },
+        "template_internal_http_datatransfers_requests.SuperadminAddAdminByRegisterRequest": {
+            "type": "object",
+            "required": [
+                "register"
+            ],
+            "properties": {
+                "register": {
+                    "type": "string",
+                    "maxLength": 20,
+                    "minLength": 8
+                }
+            }
+        },
         "template_internal_http_datatransfers_requests.SuperadminCreateAdminRequest": {
             "type": "object",
             "required": [
@@ -5552,6 +8593,141 @@ const docTemplate = `{
                 }
             }
         },
+        "template_internal_http_datatransfers_requests.SuperadminInviteRequest": {
+            "type": "object",
+            "required": [
+                "email"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string",
+                    "maxLength": 100
+                }
+            }
+        },
+        "template_internal_http_datatransfers_requests.SuperadminMFARequest": {
+            "type": "object",
+            "required": [
+                "code",
+                "mfa_token"
+            ],
+            "properties": {
+                "code": {
+                    "type": "string",
+                    "maxLength": 32
+                },
+                "mfa_token": {
+                    "type": "string"
+                }
+            }
+        },
+        "template_internal_http_datatransfers_requests.SuperadminOnboardCodeRequest": {
+            "type": "object",
+            "required": [
+                "code",
+                "onboard_token"
+            ],
+            "properties": {
+                "code": {
+                    "type": "string",
+                    "maxLength": 32
+                },
+                "onboard_token": {
+                    "type": "string"
+                }
+            }
+        },
+        "template_internal_http_datatransfers_requests.SuperadminOnboardEIDPollRequest": {
+            "type": "object",
+            "required": [
+                "onboard_token",
+                "session_id"
+            ],
+            "properties": {
+                "onboard_token": {
+                    "type": "string"
+                },
+                "session_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "template_internal_http_datatransfers_requests.SuperadminOnboardEIDStartIDRequest": {
+            "type": "object",
+            "required": [
+                "national_id",
+                "onboard_token"
+            ],
+            "properties": {
+                "callbackUrl": {
+                    "type": "string"
+                },
+                "national_id": {
+                    "type": "string"
+                },
+                "onboard_token": {
+                    "type": "string"
+                }
+            }
+        },
+        "template_internal_http_datatransfers_requests.SuperadminOnboardEIDStartRequest": {
+            "type": "object",
+            "required": [
+                "onboard_token"
+            ],
+            "properties": {
+                "callbackUrl": {
+                    "type": "string"
+                },
+                "onboard_token": {
+                    "type": "string"
+                }
+            }
+        },
+        "template_internal_http_datatransfers_requests.SuperadminOnboardGoogleRequest": {
+            "type": "object",
+            "required": [
+                "code",
+                "redirect_uri"
+            ],
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "redirect_uri": {
+                    "type": "string"
+                }
+            }
+        },
+        "template_internal_http_datatransfers_requests.SuperadminOnboardTokenRequest": {
+            "type": "object",
+            "required": [
+                "onboard_token"
+            ],
+            "properties": {
+                "onboard_token": {
+                    "type": "string"
+                }
+            }
+        },
+        "template_internal_http_datatransfers_requests.ThemeUpsertRequest": {
+            "type": "object",
+            "required": [
+                "name"
+            ],
+            "properties": {
+                "config": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "name": {
+                    "type": "string",
+                    "maxLength": 80
+                }
+            }
+        },
         "template_internal_http_datatransfers_requests.UpdateMemberRoleRequest": {
             "type": "object",
             "required": [
@@ -5576,8 +8752,7 @@ const docTemplate = `{
             ],
             "properties": {
                 "code": {
-                    "type": "string",
-                    "maxLength": 10
+                    "type": "string"
                 },
                 "email": {
                     "type": "string",
@@ -5728,6 +8903,11 @@ const docTemplate = `{
             "properties": {
                 "doc_text": {
                     "type": "string"
+                },
+                "extra": {
+                    "description": "activity service-ийн нэмэлт талбарууд",
+                    "type": "object",
+                    "additionalProperties": {}
                 },
                 "flow": {
                     "type": "string"
@@ -5897,6 +9077,11 @@ const docTemplate = `{
                 "enrolled_at": {
                     "type": "string"
                 },
+                "extra": {
+                    "description": "upstream-ийн нэмэлт талбарууд",
+                    "type": "object",
+                    "additionalProperties": {}
+                },
                 "platform": {
                     "type": "string"
                 }
@@ -5915,6 +9100,10 @@ const docTemplate = `{
                             "$ref": "#/definitions/template_internal_http_datatransfers_responses.EIDInfo"
                         }
                     ]
+                },
+                "eid_proxy": {
+                    "description": "EIDProxy нь SSO eID proxy идэвхтэй эсэхийг заана — идэвхтэй бол иргэн\nлокал eID linkage-гүй (SSO-ээр нэвтэрсэн) байсан ч eID PKI самбарыг SSO-\nгоор дамжуулан үзэж болно. Frontend eID хуудсуудыг үүгээр нээнэ.",
+                    "type": "boolean"
                 },
                 "email": {
                     "type": "string"
@@ -5946,6 +9135,12 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "last_name_en": {
+                    "type": "string"
+                },
+                "mfa_required": {
+                    "type": "boolean"
+                },
+                "mfa_token": {
                     "type": "string"
                 },
                 "refresh_token": {
@@ -6042,6 +9237,12 @@ const docTemplate = `{
                 },
                 "linked": {
                     "type": "boolean"
+                },
+                "mfa_required": {
+                    "type": "boolean"
+                },
+                "mfa_token": {
+                    "type": "string"
                 },
                 "user": {
                     "$ref": "#/definitions/template_internal_http_datatransfers_responses.UserResponse"
@@ -6212,6 +9413,221 @@ const docTemplate = `{
                 }
             }
         },
+        "template_internal_http_datatransfers_responses.RelayAssignmentResponse": {
+            "type": "object",
+            "properties": {
+                "dispatched_at": {
+                    "type": "string"
+                },
+                "due_at": {
+                    "type": "string"
+                },
+                "escalated": {
+                    "type": "boolean"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "platform_id": {
+                    "type": "string"
+                },
+                "platform_name": {
+                    "type": "string"
+                },
+                "reminders_sent": {
+                    "type": "integer"
+                },
+                "request_id": {
+                    "type": "string"
+                },
+                "responded_at": {
+                    "type": "string"
+                },
+                "result": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "template_internal_http_datatransfers_responses.RelayEventResponse": {
+            "type": "object",
+            "properties": {
+                "assignment_id": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "detail": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "request_id": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "template_internal_http_datatransfers_responses.RelayOverviewResponse": {
+            "type": "object",
+            "properties": {
+                "avg_fulfill_mins": {
+                    "type": "integer"
+                },
+                "fulfilled": {
+                    "type": "integer"
+                },
+                "in_progress": {
+                    "type": "integer"
+                },
+                "overdue": {
+                    "type": "integer"
+                },
+                "platforms": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/template_internal_http_datatransfers_responses.RelayPlatformStatResponse"
+                    }
+                },
+                "received_today": {
+                    "type": "integer"
+                },
+                "recent_events": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/template_internal_http_datatransfers_responses.RelayEventResponse"
+                    }
+                },
+                "sla_compliance_pct": {
+                    "type": "number"
+                },
+                "status_buckets": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/template_internal_http_datatransfers_responses.RelayStatusBucketResponse"
+                    }
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "template_internal_http_datatransfers_responses.RelayPlatformStatResponse": {
+            "type": "object",
+            "properties": {
+                "compliance_pct": {
+                    "type": "number"
+                },
+                "done": {
+                    "type": "integer"
+                },
+                "overdue": {
+                    "type": "integer"
+                },
+                "pending": {
+                    "type": "integer"
+                },
+                "platform_id": {
+                    "type": "string"
+                },
+                "platform_name": {
+                    "type": "string"
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "template_internal_http_datatransfers_responses.RelayRequestDetailResponse": {
+            "type": "object",
+            "properties": {
+                "assignments": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/template_internal_http_datatransfers_responses.RelayAssignmentResponse"
+                    }
+                },
+                "events": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/template_internal_http_datatransfers_responses.RelayEventResponse"
+                    }
+                },
+                "request": {
+                    "$ref": "#/definitions/template_internal_http_datatransfers_responses.RelayRequestResponse"
+                }
+            }
+        },
+        "template_internal_http_datatransfers_responses.RelayRequestResponse": {
+            "type": "object",
+            "properties": {
+                "breach_notified": {
+                    "type": "boolean"
+                },
+                "due_at": {
+                    "type": "string"
+                },
+                "external_ref": {
+                    "type": "string"
+                },
+                "fulfilled_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "payload": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "priority": {
+                    "type": "string"
+                },
+                "received_at": {
+                    "type": "string"
+                },
+                "result": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "service_code": {
+                    "type": "string"
+                },
+                "source_platform": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                }
+            }
+        },
+        "template_internal_http_datatransfers_responses.RelayStatusBucketResponse": {
+            "type": "object",
+            "properties": {
+                "count": {
+                    "type": "integer"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
         "template_internal_http_datatransfers_responses.SecurityEventResponse": {
             "type": "object",
             "properties": {
@@ -6245,6 +9661,287 @@ const docTemplate = `{
                 }
             }
         },
+        "template_internal_http_datatransfers_responses.SiteAppearanceResponse": {
+            "type": "object",
+            "properties": {
+                "accent": {
+                    "type": "string"
+                },
+                "font": {
+                    "type": "string"
+                },
+                "style": {
+                    "type": "string"
+                },
+                "theme": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "template_internal_http_datatransfers_responses.SuperadminInviteResponse": {
+            "type": "object",
+            "properties": {
+                "accepted_at": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "invited_by": {
+                    "type": "string"
+                },
+                "pending": {
+                    "description": "Pending нь урилга хараахан ашиглагдаагүй (бүртгэл хийгдээгүй) эсэх —\nUI-д \"хүлээгдэж буй / ашигласан\" гэж ялгахад.",
+                    "type": "boolean"
+                }
+            }
+        },
+        "template_internal_http_datatransfers_responses.SuperadminMFAResponse": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "eid": {
+                    "description": "EID нь eID-ээр нэвтэрсэн хэрэглэгчийн identity + сертификатын мэдээлэл.\nНууц үгээр бүртгүүлсэн хэрэглэгчид nil (omitempty).",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/template_internal_http_datatransfers_responses.EIDInfo"
+                        }
+                    ]
+                },
+                "eid_proxy": {
+                    "description": "EIDProxy нь SSO eID proxy идэвхтэй эсэхийг заана — идэвхтэй бол иргэн\nлокал eID linkage-гүй (SSO-ээр нэвтэрсэн) байсан ч eID PKI самбарыг SSO-\nгоор дамжуулан үзэж болно. Frontend eID хуудсуудыг үүгээр нээнэ.",
+                    "type": "boolean"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "first_name": {
+                    "type": "string"
+                },
+                "first_name_en": {
+                    "type": "string"
+                },
+                "full_name": {
+                    "type": "string"
+                },
+                "full_name_en": {
+                    "type": "string"
+                },
+                "google": {
+                    "description": "Google нь холбогдсон Google account-аас хадгалсан профайл. Google\nхолбоогүй хэрэглэгчид nil (omitempty).",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/template_internal_http_datatransfers_responses.GoogleInfo"
+                        }
+                    ]
+                },
+                "id": {
+                    "type": "string"
+                },
+                "last_name": {
+                    "type": "string"
+                },
+                "last_name_en": {
+                    "type": "string"
+                },
+                "recovery_codes_left": {
+                    "type": "integer"
+                },
+                "refresh_token": {
+                    "type": "string"
+                },
+                "role_id": {
+                    "type": "integer"
+                },
+                "token": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "used_recovery_code": {
+                    "description": "UsedRecoveryCode нь нөөц кодоор нэвтэрсэн эсэх; тийм бол\nrecovery_codes_left нь үлдсэн кодын тоо (UI сануулга харуулна).",
+                    "type": "boolean"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "template_internal_http_datatransfers_responses.SuperadminOnboardDoneResponse": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "eid": {
+                    "description": "EID нь eID-ээр нэвтэрсэн хэрэглэгчийн identity + сертификатын мэдээлэл.\nНууц үгээр бүртгүүлсэн хэрэглэгчид nil (omitempty).",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/template_internal_http_datatransfers_responses.EIDInfo"
+                        }
+                    ]
+                },
+                "eid_proxy": {
+                    "description": "EIDProxy нь SSO eID proxy идэвхтэй эсэхийг заана — идэвхтэй бол иргэн\nлокал eID linkage-гүй (SSO-ээр нэвтэрсэн) байсан ч eID PKI самбарыг SSO-\nгоор дамжуулан үзэж болно. Frontend eID хуудсуудыг үүгээр нээнэ.",
+                    "type": "boolean"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "first_name": {
+                    "type": "string"
+                },
+                "first_name_en": {
+                    "type": "string"
+                },
+                "full_name": {
+                    "type": "string"
+                },
+                "full_name_en": {
+                    "type": "string"
+                },
+                "google": {
+                    "description": "Google нь холбогдсон Google account-аас хадгалсан профайл. Google\nхолбоогүй хэрэглэгчид nil (omitempty).",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/template_internal_http_datatransfers_responses.GoogleInfo"
+                        }
+                    ]
+                },
+                "id": {
+                    "type": "string"
+                },
+                "last_name": {
+                    "type": "string"
+                },
+                "last_name_en": {
+                    "type": "string"
+                },
+                "recovery_codes": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "refresh_token": {
+                    "type": "string"
+                },
+                "role_id": {
+                    "type": "integer"
+                },
+                "step": {
+                    "type": "string"
+                },
+                "token": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "template_internal_http_datatransfers_responses.SuperadminOnboardEIDPollResponse": {
+            "type": "object",
+            "properties": {
+                "state": {
+                    "type": "string"
+                },
+                "step": {
+                    "type": "string"
+                }
+            }
+        },
+        "template_internal_http_datatransfers_responses.SuperadminOnboardEIDStartResponse": {
+            "type": "object",
+            "properties": {
+                "device_link_url": {
+                    "type": "string"
+                },
+                "expires_at": {
+                    "type": "string"
+                },
+                "session_id": {
+                    "type": "string"
+                },
+                "verification_code": {
+                    "type": "string"
+                }
+            }
+        },
+        "template_internal_http_datatransfers_responses.SuperadminOnboardStartResponse": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "onboard_token": {
+                    "type": "string"
+                },
+                "step": {
+                    "type": "string"
+                }
+            }
+        },
+        "template_internal_http_datatransfers_responses.SuperadminOnboardStepResponse": {
+            "type": "object",
+            "properties": {
+                "step": {
+                    "type": "string"
+                }
+            }
+        },
+        "template_internal_http_datatransfers_responses.SuperadminOnboardTOTPResponse": {
+            "type": "object",
+            "properties": {
+                "otpauth_url": {
+                    "type": "string"
+                },
+                "secret": {
+                    "type": "string"
+                },
+                "step": {
+                    "type": "string"
+                }
+            }
+        },
+        "template_internal_http_datatransfers_responses.ThemeResponse": {
+            "type": "object",
+            "properties": {
+                "config": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "is_active": {
+                    "type": "boolean"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
         "template_internal_http_datatransfers_responses.UserResponse": {
             "type": "object",
             "properties": {
@@ -6258,6 +9955,10 @@ const docTemplate = `{
                             "$ref": "#/definitions/template_internal_http_datatransfers_responses.EIDInfo"
                         }
                     ]
+                },
+                "eid_proxy": {
+                    "description": "EIDProxy нь SSO eID proxy идэвхтэй эсэхийг заана — идэвхтэй бол иргэн\nлокал eID linkage-гүй (SSO-ээр нэвтэрсэн) байсан ч eID PKI самбарыг SSO-\nгоор дамжуулан үзэж болно. Frontend eID хуудсуудыг үүгээр нээнэ.",
+                    "type": "boolean"
                 },
                 "email": {
                     "type": "string"
@@ -6340,7 +10041,7 @@ var SwaggerInfo = &swag.Spec{
 	Host:             "localhost:8080",
 	BasePath:         "/api/v1",
 	Schemes:          []string{"http", "https"},
-	Title:            "Gerege Backend Template v27 API",
+	Title:            "Government Template Platform V3.0 API",
 	Description:      "chi (net/http) + pgx (PostgreSQL) + Redis дээр суурилсан Clean Architecture бүхий Go backend. Нээлттэй эхийн snykk/go-rest-boilerplate (MIT, зохиогч Najib Fikri)-ээс үүсэлтэй; HTTP давхаргыг chi, өгөгдлийн давхаргыг pgx руу хөрвүүлсэн.",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,

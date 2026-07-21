@@ -2,8 +2,11 @@
 
 > 🌐 [English](DEVELOPMENT.md) · **Монгол**
 
-Энэ заавар нь хөгжүүлэгчдэд **Gerege Backend Template v27** кодын бааз дээр тохиргоо
-хийж, ажиллахад туслана.
+Энэ заавар нь хөгжүүлэгчдэд **Government Template Platform V3.0** (Цахим
+засаглалыг бүтээх суурь) кодын бааз — аливаа цахим засаглалын үйлчилгээг дээр нь
+босгох production-ready суурь — дээр тохиргоо хийж, ажиллахад туслана. Түүний
+жишиг лавлагаа deployment нь энэ стек дээр бүтээгдсэн eID-д суурилсан төрийн
+үйлчилгээний платформ буюу **Government Template Platform** (template.dgov.mn) юм.
 
 > **Эх сурвалж.** Najib Fikri-ийн нээлттэй эх
 > [snykk/go-rest-boilerplate](https://github.com/snykk/go-rest-boilerplate)
@@ -59,20 +62,28 @@ make test-cover         # Tests with coverage report
 ```bash
 ```
 
-Migration-ууд нь `internal/datasources/migration/` (болон `migrations/`) доторх
-түүхий SQL файлууд бөгөөд migration runner-аар хэрэгждэг. Schema-г өөрчлөхдөө
-урагшлах (forward) SQL migration файл нэм; migration runner үүнийг idempotent
-байдлаар хэрэгжүүлнэ (advisory lock + файл тус бүрийн transaction +
-`schema_migrations` хяналт). ORM AutoMigrate байхгүй — `internal/datasources/records/`
-доторх record struct-ууд нь schema тодорхойлолт биш, харин pgx-ээр уншигддаг
-энгийн struct-ууд юм.
+Migration-ууд нь `backend/migrations/` доторх түүхий SQL файлууд (`N_name.up.sql`
++ `N_name.down.sql` хос). Go package `internal/datasources/migration/` нь зөвхөн
+**runner**-г (SQL байхгүй) агуулна; CLI entrypoint нь `cmd/migration/main.go`
+(`migrationsDir = "migrations"`). Schema-г өөрчлөхдөө `backend/migrations/`-д
+урагшлах (forward) SQL migration файл нэм; runner үүнийг idempotent байдлаар
+хэрэгжүүлнэ — файлуудыг эхний дугаараар нь эрэмбэлж, файл тус бүр өөрийн
+`schema_migrations` мөртэй хамт нэг transaction-д commit хийж, бүх ажил session
+advisory lock барьдаг тул зэрэгцээ runner-ууд дараалалд орно. **ORM AutoMigrate
+байхгүй** — `internal/datasources/records/` доторх record struct-ууд нь schema
+тодорхойлолт биш, харин pgx-ээр уншигддаг энгийн struct-ууд юм; schema нь зөвхөн
+`*.up.sql` файлуудаас гарна.
 
 ## Кодын зохион байгуулалт (Code Organization)
 
 ### Шинэ фичер нэмэх (Adding a New Feature)
 
 Давхаргуудыг дотноос гадагшаа дагана. Лавлагаа болгож одоо байгаа `users` / `auth`
-модулиудыг ашигла. Жишээ: `Product` нөөц нэмэх.
+модулиудыг ашигла — backend-д `internal/business/usecases/` дор ~18 usecase зүсэм
+(`ai`, `assets`, `audit`, `auth`, `core`, `gateway`, `gov`, `gspace`,
+`integrations`, `org`, `provider`, `rbac`, `security`, `sign`, `site`, `sso`,
+`superadmin`, `users`) аль хэдийн ирдэг бөгөөд бүгд яг энэ загварыг дагадаг.
+Жишээ: `Product` нөөц нэмэх.
 
 1. **Domain Entity** — `internal/business/domain/domain.products.go`
    ```go
@@ -193,6 +204,23 @@ Migration-ууд нь `internal/datasources/migration/` (болон `migrations/
    routes.NewProductsRoute(api, productsUC, authMiddleware).Routes()
    ```
 
+9. **Row-Level Security (хэрэглэгч-тус-бүрийн / tenant-тус-бүрийн хүснэгт)** —
+   хэрэв шинэ хүснэгт тодорхой иргэнд харьяалагдах өгөгдөл хадгалдаг бол (нийтийн
+   лавлах каталог биш) заавал RLS бодлоготой байх ёстой. Одоо байгаа загварыг дага:
+   `migrations/14_organizations.up.sql`, `migrations/20_gov_services.up.sql`,
+   `migrations/21_user_integrations.up.sql`: `ALTER TABLE … ENABLE ROW LEVEL
+   SECURITY` **БОЛОН** `FORCE ROW LEVEL SECURITY`, дараа нь `app.user_id` /
+   `app.user_role` session GUC-д түлхүүрлэсэн `service` / `admin` / `self`
+   бодлогын гурвал. Repository нь **RLS-мэдэгддэг** байх ёстой — хүсэлтийн
+   identity-ээс `SET LOCAL app.user_id` / `SET LOCAL app.user_role`-г ялгаруулдаг
+   `withRLS` transaction нээ (`internal/datasources/rls` нь үүнийг context-д
+   зөөвөрлөнө; жишээг `repositories/postgres/org` / `repositories/postgres/gov`-ээс
+   үз). Identity байхгүй хүсэлт хоосон GUC тавьдаг тул бодлого бүр мөр бүрийг хаана
+   (fail-closed). RLS нь api non-superuser DB role-оор холбогдох үед л хүчинтэй —
+   boot guard нь production-д superuser / `BYPASSRLS` холболтыг хаана (see
+   [SECURITY.md](SECURITY.md)). Нийтийн лавлах хүснэгтүүд (жишээ нь `gov_services`
+   каталог) RLS-гүй хэвээр үлдэж, оронд нь table-level grant-аар хамгаалагдана.
+
 ### Тест бичих (Writing Tests)
 
 #### Unit тестүүд (Usecase давхарга)
@@ -278,8 +306,12 @@ if err != nil {
 }
 ```
 
-`RespondWithError` (`handler.base_response.go` дотор) нь алдааны төрлийг статус
+`RespondWithError` (`handler_base_response.go` дотор) нь алдааны төрлийг статус
 кодод буулгаж, 5xx-ийн шалтгаанг log-д бичиж, цэвэр envelope-ийг render хийнэ.
+Envelope туслахууд бүгд тэр файлд байрлана: `v1.DecodeBody` (хэмжээ хязгаарласан,
+танихгүй талбарыг татгалздаг JSON decode), `validators.ValidatePayloads`
+(struct-tag баталгаажуулалт → талбар тус бүрийн дэлгэрэнгүйтэй 422),
+`v1.NewSuccessResponse`, `v1.NewErrorResponse`, `v1.RespondWithError`.
 
 ### Контекст ашиглах (Context Usage)
 
@@ -327,16 +359,15 @@ Gemini pipeline (`internal/business/usecases/ai`) нь проект бүрд ө�
 Handler-ууд нь `swag`-ийн ашигладаг godoc annotation-уудыг агуулна:
 
 ```go
-// @Summary      Login
-// @Description  Authenticate and issue an access + refresh token pair
+// @Summary      Start eID login
+// @Description  Begin an eID login session (returns a QR / deep-link challenge to poll)
 // @Tags         auth
 // @Accept       json
 // @Produce      json
-// @Param        body body requests.LoginRequest true "Credentials"
-// @Success      200 {object} v1.BaseResponse
-// @Failure      401 {object} v1.BaseResponse
-// @Router       /auth/login [post]
-func (h Handler) Login(w http.ResponseWriter, r *http.Request) error { /* ... */ }
+// @Success      200 {object} v1.BaseResponse{data=responses.EIDStartResponse}
+// @Failure      500 {object} v1.BaseResponse
+// @Router       /auth/eid/start [post]
+func (h Handler) EIDStart(w http.ResponseWriter, r *http.Request) error { /* ... */ }
 ```
 
 ### Баримтжуулалтыг дахин үүсгэх (Regenerate Docs)
@@ -384,4 +415,4 @@ Deploy хийхээс өмнө дараахыг баталгаажуул:
 
 ---
 
-**Gerege Template Version 27.0** — **Gerege Systems Development Team** болон **Claude AI** хамтран бүтээв, 2026.
+**Government Template Platform V3.0** — **Gerege Systems Development Team** болон **Claude AI** хамтран бүтээв, 2026.

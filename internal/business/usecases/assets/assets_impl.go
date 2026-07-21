@@ -1,4 +1,4 @@
-// Gerege Template Version 27.0
+// Government Template Platform V3.0
 // Gerege Systems Development Team болон Claude AI хамтран бүтээв, 2026.
 
 package assets
@@ -11,7 +11,6 @@ import (
 	"template/internal/apperror"
 	"template/internal/business/usecases/users"
 	repointerface "template/internal/datasources/repositories/interface"
-	"template/pkg/asseturl"
 	"template/pkg/eid"
 )
 
@@ -37,11 +36,6 @@ func (uc *usecase) SetSignature(ctx context.Context, userID, url string) error {
 	if url == "" {
 		return apperror.BadRequest("Зургийн URL шаардлагатай")
 	}
-	// SSRF/XSS хамгаалалт: зургийн URL зөвхөн найдвартай Google Drive (https) host
-	// байх ёстой — сервер энэ URL-ийг гарын үсэг давхарлахдаа өөрөө татдаг.
-	if err := asseturl.Validate(url); err != nil {
-		return apperror.BadRequest("Зургийн URL зөвхөн Google Drive (https) байх ёстой")
-	}
 	return uc.userRepo.SetSignature(ctx, userID, url)
 }
 
@@ -52,9 +46,9 @@ func (uc *usecase) DeleteSignature(ctx context.Context, userID string) error {
 // ── Байгууллагын тамга ──
 
 func (uc *usecase) GetStamp(ctx context.Context, userID, orgRegister string) (string, error) {
-	// IDOR хамгаалалт: байгууллагын албан ёсны тамгыг ЗӨВХӨН тухайн байгууллагыг
-	// төлөөлдөг хүн харна — эс бөгөөс дурын хэрэглэгч РД-г тоочиж бусад
-	// байгууллагын тамгыг цуглуулж хуурамч баримт үйлдэх боломжтой болно.
+	// Байгууллагын тамга бол баримтад тавигдах албан ёсны тэмдэг тул зөвхөн
+	// тухайн байгууллагыг төлөөлдөг хүн үзэж чадна (IDOR-аас хамгаална). Бичих
+	// (Set/Delete) нь ADMIN шаарддаг; унших нь дурын төлөөлөгчид хангалттай.
 	if err := uc.requireOrgRepresentative(ctx, userID, orgRegister); err != nil {
 		return "", err
 	}
@@ -65,9 +59,6 @@ func (uc *usecase) SetStamp(ctx context.Context, userID, orgRegister, url string
 	url = strings.TrimSpace(url)
 	if url == "" {
 		return apperror.BadRequest("Зургийн URL шаардлагатай")
-	}
-	if err := asseturl.Validate(url); err != nil {
-		return apperror.BadRequest("Зургийн URL зөвхөн Google Drive (https) байх ёстой")
 	}
 	if err := uc.requireOrgAdmin(ctx, userID, orgRegister); err != nil {
 		return err
@@ -137,9 +128,9 @@ func (uc *usecase) requireOrgAdmin(ctx context.Context, userID, orgRegister stri
 	return apperror.Forbidden("Зөвхөн ADMIN эрхтэй хүн тамга тавьж чадна")
 }
 
-// requireOrgRepresentative нь нэвтэрсэн хэрэглэгч тухайн байгууллагын төлөөлөгч
-// (ямар нэг эрхтэй) мөн эсэхийг eID-ээр шалгана. Тамгыг УНШИХ (Get) үед хангалттай
-// — бичих/устгахад requireOrgAdmin шаардана.
+// requireOrgRepresentative нь нэвтэрсэн хэрэглэгч тухайн байгууллагын аль нэг
+// эрхийн (ADMIN шаардлагагүй) төлөөлөгч мөн эсэхийг eID-ээр шалгана — тамга
+// унших зэрэг эрхэд.
 func (uc *usecase) requireOrgRepresentative(ctx context.Context, userID, orgRegister string) error {
 	etsi, err := uc.actingEtsi(ctx, userID)
 	if err != nil {

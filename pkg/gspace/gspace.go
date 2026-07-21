@@ -1,4 +1,4 @@
-// Gerege Template Version 27.0
+// Government Template Platform V3.0
 // Gerege Systems Development Team болон Claude AI хамтран бүтээв, 2026.
 
 // Package gspace нь "Gerege Space" — апп-ын өөрийн SFTP хадгалалтын client.
@@ -10,7 +10,6 @@ package gspace
 import (
 	"bytes"
 	"errors"
-	"fmt"
 	"io"
 	"net"
 	"path"
@@ -39,10 +38,12 @@ type Config struct {
 	User     string
 	Password string
 	BasePath string // home-оос харьцангуй үндсэн хавтас (ж: "gerege-space")
-	// HostKey (сонголт): серверийн SSH нийтийн түлхүүр (authorized_keys мөр, ж:
-	// "ssh-ed25519 AAAA..."). Өгвөл host key-г ПИН хийж MITM-аас хамгаална; хоосон
-	// бол шалгахгүй (dev). Production-д GSPACE_HOST_KEY-ээр тохируулахыг зөвлөнө.
+	// HostKey — host-ийн хүлээгдэж буй нийтийн түлхүүр (authorized_keys/known_hosts
+	// мөрийн формат). Тохируулбал host key-г ЗААВАЛ баталгаажуулна.
 	HostKey string
+	// AllowInsecureHostKey — HostKey хоосон үед host key-г шалгахгүй байхыг зөвшөөрнө.
+	// Зөвхөн development-д true; production-д false тул HostKey заавал шаардлагатай.
+	AllowInsecureHostKey bool
 }
 
 // Client нь SFTP хадгалалтын client. Дуудлага бүрд шинэ холболт үүсгэнэ (файлын
@@ -70,18 +71,21 @@ func (c *Client) userDir(userID string) string {
 	return path.Join(c.cfg.BasePath, "users", safeSegment(userID))
 }
 
-// hostKeyCallback нь GSPACE_HOST_KEY тохируулсан бол host key-г ПИН хийнэ
-// (ssh.FixedHostKey), эс бөгөөс шалгахгүй (dev/өөрийн storage).
+// hostKeyCallback нь тохиргооноос host key баталгаажуулалтыг бүрдүүлнэ.
+// HostKey өгсөн бол FixedHostKey (MITM-аас хамгаална); хоосон бөгөөд
+// AllowInsecureHostKey=true (зөвхөн dev) бол шалгахгүй; аль нь ч биш бол алдаа.
 func (c *Client) hostKeyCallback() (ssh.HostKeyCallback, error) {
-	line := strings.TrimSpace(c.cfg.HostKey)
-	if line == "" {
-		return ssh.InsecureIgnoreHostKey(), nil //nolint:gosec // GSPACE_HOST_KEY хоосон үед л (dev)
+	if hk := strings.TrimSpace(c.cfg.HostKey); hk != "" {
+		pub, _, _, _, err := ssh.ParseAuthorizedKey([]byte(hk))
+		if err != nil {
+			return nil, errors.New("gspace: GSPACE_HOST_KEY-г задлаж чадсангүй (authorized_keys формат байх ёстой)")
+		}
+		return ssh.FixedHostKey(pub), nil
 	}
-	pk, _, _, _, err := ssh.ParseAuthorizedKey([]byte(line))
-	if err != nil {
-		return nil, fmt.Errorf("gspace: invalid GSPACE_HOST_KEY: %w", err)
+	if c.cfg.AllowInsecureHostKey {
+		return ssh.InsecureIgnoreHostKey(), nil //nolint:gosec // зөвхөн development; production-д HostKey заавал
 	}
-	return ssh.FixedHostKey(pk), nil
+	return nil, errors.New("gspace: GSPACE_HOST_KEY тохируулаагүй — production-д SFTP host key заавал шаардлагатай (MITM-аас хамгаалах)")
 }
 
 // withSFTP нь SSH+SFTP холболт үүсгэж, fn-д client дамжуулаад хаана.
@@ -121,7 +125,7 @@ func (c *Client) List(userID string) ([]FileInfo, error) {
 		entries, rdErr := sc.ReadDir(dir)
 		if rdErr != nil {
 			// Хавтас хараахан үүсээгүй бол хоосон жагсаалт (алдаа биш).
-			return nil //nolint:nilerr
+			return nil //nolint:nilerr // missing user dir = empty list, not a failure; rdErr intentionally dropped
 		}
 		for _, e := range entries {
 			if e.IsDir() {

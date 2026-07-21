@@ -1,4 +1,4 @@
-// Gerege Template Version 27.0
+// Government Template Platform V3.0
 // Gerege Systems Development Team болон Claude AI хамтран бүтээв, 2026.
 
 package audit_test
@@ -90,4 +90,44 @@ func TestChain_TamperPropagates(t *testing.T) {
 	require.NotEqual(t, h1, h1New)
 	h2New, _ := audit.ComputeChainHash(h1New, e2)
 	assert.NotEqual(t, h2, h2New, "эхний мөрийн засвар хожуу мөрийн hash руу тархах ёстой")
+}
+
+// TestChainHash_IgnoresSubMicrosecond нь Postgres-ийн timestamptz нь
+// МИКРОСЕКУНД нарийвчлалтай учир наносекундын үлдэгдэл hash-д нөлөөлөх
+// ЁСГҮЙ гэдгийг батална.
+//
+// Эс бөгөөс: Append нь ns-ээр hash хийж, DB нь µs болгож таслаад хадгална;
+// VerifyChain буцааж уншаад ӨӨР hash тооцоолох тул гэмтээгүй гинж "эвдэрсэн"
+// гэж гарна. Энэ нь Linux дээр л илэрдэг байсан (тэнд time.Now() ns
+// нарийвчлалтай), macOS дээр ихэвчлэн µs-т тэгширсэн байдаг тул нуугдаж байв.
+func TestChainHash_IgnoresSubMicrosecond(t *testing.T) {
+	base := time.Date(2026, 7, 19, 10, 30, 0, 123_456_000, time.UTC) // яг µs
+	entry := func(ts time.Time) audit.ChainEntry {
+		return audit.ChainEntry{
+			OccurredAt: ts, ActorUserID: "u-1", Action: "auth.login", Category: "auth",
+		}
+	}
+
+	want, err := audit.ComputeChainHash("", entry(base))
+	require.NoError(t, err)
+	got, err := audit.ComputeChainHash("", entry(base.Add(789*time.Nanosecond)))
+	require.NoError(t, err)
+
+	assert.Equal(t, want, got, "µs-ээс доош нарийвчлал chain hash-г өөрчилж болохгүй")
+}
+
+// TestChainHash_DistinguishesMicroseconds нь таслалт хэт бүдүүн болоогүйг
+// шалгана — 1µs зөрүүтэй бичлэгүүд ижил hash авах ёсгүй.
+func TestChainHash_DistinguishesMicroseconds(t *testing.T) {
+	base := time.Date(2026, 7, 19, 10, 30, 0, 123_456_000, time.UTC)
+	entry := func(ts time.Time) audit.ChainEntry {
+		return audit.ChainEntry{OccurredAt: ts, Action: "auth.login", Category: "auth"}
+	}
+
+	a, err := audit.ComputeChainHash("", entry(base))
+	require.NoError(t, err)
+	b, err := audit.ComputeChainHash("", entry(base.Add(time.Microsecond)))
+	require.NoError(t, err)
+
+	assert.NotEqual(t, a, b, "1µs зөрүүтэй бичлэгүүд ижил hash авчээ")
 }

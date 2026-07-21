@@ -1,4 +1,4 @@
-// Gerege Template Version 27.0
+// Government Template Platform V3.0
 // Gerege Systems Development Team болон Claude AI хамтран бүтээв, 2026.
 
 // Package users нь хэрэглэгчийн identity-ийн CRUD-ийг хариуцдаг: үүсгэх, хайх,
@@ -52,6 +52,11 @@ type Usecase interface {
 	SetActive(ctx context.Context, req SetActiveRequest) error
 	// Delete нь хэрэглэгчийг зөөлөн устгана (admin удирдлага).
 	Delete(ctx context.Context, req DeleteRequest) error
+	// CreatePreRegistered нь админ иргэнийг регистрийн дугаараар урьдчилан
+	// бүртгэнэ (private платформын хандалт) — role оноож, идэвхтэй мөр үүсгэнэ.
+	// Иргэн хожим Government SSO-оор эхэлж нэвтэрхэд энэ мөр нь civil_id/sso_sub-
+	// оор холбогдоно.
+	CreatePreRegistered(ctx context.Context, req CreatePreRegisterRequest) (domain.User, error)
 }
 
 // Usecase-ийн хилд зориулсан Request / Response төрлүүд. Struct-д талбар нэмэх
@@ -116,6 +121,9 @@ type (
 	UpdateRoleRequest struct {
 		UserID string
 		RoleID int
+		// CallerRoleID нь үйлдлийг хийж буй хэрэглэгчийн эрх — admin эрх
+		// олгох/хасахыг зөвхөн super admin хийнэ (handler claims-ээс дамжуулна).
+		CallerRoleID int
 	}
 
 	SetActiveRequest struct {
@@ -125,5 +133,19 @@ type (
 
 	DeleteRequest struct {
 		UserID string
+	}
+
+	// CreatePreRegisterRequest нь private платформд иргэнийг регистрийн дугаараар
+	// (national_id) урьдчилан бүртгэх хүсэлт.
+	CreatePreRegisterRequest struct {
+		Register    string // регистрийн дугаар → national_id (жижиг үсгээр)
+		FirstName   string
+		LastName    string
+		FirstNameEn string
+		LastNameEn  string
+		RoleID      int
+		// CallerRoleID нь үйлдлийг хийж буй хэрэглэгчийн эрх — admin/superadmin
+		// эрхийг оноохыг зөвхөн super admin хийнэ (handler claims-ээс дамжуулна).
+		CallerRoleID int
 	}
 )

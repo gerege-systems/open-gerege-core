@@ -1,4 +1,4 @@
-// Gerege Template Version 27.0
+// Government Template Platform V3.0
 // Gerege Systems Development Team болон Claude AI хамтран бүтээв, 2026.
 
 package routes
@@ -49,27 +49,5 @@ func (rt *gatewayRoute) Routes() {
 		r.Post("/services", v1.Wrap(rt.handler.CreateService))
 		r.Put("/services/{id}", v1.Wrap(rt.handler.UpdateService))
 		r.Delete("/services/{id}", v1.Wrap(rt.handler.DeleteService))
-
-		// Routes
-		r.Get("/routes", v1.Wrap(rt.handler.ListRoutes))
-		r.Post("/routes", v1.Wrap(rt.handler.CreateRoute))
-		r.Put("/routes/{id}", v1.Wrap(rt.handler.UpdateRoute))
-		r.Delete("/routes/{id}", v1.Wrap(rt.handler.DeleteRoute))
-
-		// Consumers + keys
-		r.Get("/consumers", v1.Wrap(rt.handler.ListConsumers))
-		r.Post("/consumers", v1.Wrap(rt.handler.CreateConsumer))
-		r.Put("/consumers/{id}", v1.Wrap(rt.handler.UpdateConsumer))
-		r.Delete("/consumers/{id}", v1.Wrap(rt.handler.DeleteConsumer))
-		r.Get("/consumers/{id}/keys", v1.Wrap(rt.handler.ListKeys))
-		r.Post("/consumers/{id}/keys", v1.Wrap(rt.handler.CreateKey))
-		r.Post("/keys/{keyId}/revoke", v1.Wrap(rt.handler.RevokeKey))
-		r.Delete("/keys/{keyId}", v1.Wrap(rt.handler.DeleteKey))
-
-		// Policies
-		r.Get("/policies", v1.Wrap(rt.handler.ListPolicies))
-		r.Post("/policies", v1.Wrap(rt.handler.CreatePolicy))
-		r.Put("/policies/{id}", v1.Wrap(rt.handler.UpdatePolicy))
-		r.Delete("/policies/{id}", v1.Wrap(rt.handler.DeletePolicy))
 	})
 }

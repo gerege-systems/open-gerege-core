@@ -1,4 +1,4 @@
--- Gerege Template Version 27.0
+-- Government Template Platform V3.0
 -- "Login with eID" — энэ template нь Relying Party. eID хэрэглэгчид нууц
 -- үггүй, email-гүй; давтагдашгүй байдлыг national_id-ээр хангана. Бүх багана
 -- nullable / хоосон default тул одоо байгаа мөрүүд эвдрэхгүй (backward compatible).

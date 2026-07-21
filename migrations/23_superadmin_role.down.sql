@@ -1,4 +1,4 @@
--- Gerege Template Version 27.0
+-- Government Template Platform V3.0
 -- Reverse 23_superadmin_role: restore the original scheme (admin=1, user=2,
 -- manager=3) and drop the superadmin role. Any super admins are demoted to admin
 -- first so the users.role_id → roles(id) foreign key does not block the change.

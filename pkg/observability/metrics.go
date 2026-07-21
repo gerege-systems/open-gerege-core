@@ -1,4 +1,4 @@
-// Gerege Template Version 27.0
+// Government Template Platform V3.0
 // Gerege Systems Development Team болон Claude AI хамтран бүтээв, 2026.
 
 // Package observability нь бизнес package-ууд болон collector бүртгэдэг HTTP
@@ -84,11 +84,7 @@ func currentDBStats() dbStatsSnapshot {
 		return dbStatsSnapshot{}
 	}
 	s := dbStatsProvider()
-	return dbStatsSnapshot{
-		OpenConnections: s.OpenConnections,
-		InUse:           s.InUse,
-		WaitCount:       s.WaitCount,
-	}
+	return dbStatsSnapshot(s)
 }
 
 // RegisterDBStatsProvider-г эхлэх үед pgxpool.Stat()-аас снапшот гаргаж

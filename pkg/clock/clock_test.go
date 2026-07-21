@@ -1,4 +1,4 @@
-// Gerege Template Version 27.0
+// Government Template Platform V3.0
 // Gerege Systems Development Team болон Claude AI хамтран бүтээв, 2026.
 
 package clock_test
@@ -7,8 +7,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/stretchr/testify/assert"
 	"template/pkg/clock"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestRealClock_NowIsRecent(t *testing.T) {

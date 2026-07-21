@@ -1,4 +1,4 @@
-// Gerege Template Version 27.0
+// Government Template Platform V3.0
 // Gerege Systems Development Team болон Claude AI хамтран бүтээв, 2026.
 
 package records
@@ -45,10 +45,12 @@ type Users struct {
 	GoogleName          *string    `db:"google_name"`
 	GooglePicture       *string    `db:"google_picture"`
 	GoogleLinkedAt      *time.Time `db:"google_linked_at"`
-	CreatedAt           time.Time  `db:"created_at"`
-	UpdatedAt           *time.Time `db:"updated_at"`
-	DeletedAt           *time.Time `db:"deleted_at"`
-	PasswordChangedAt   *time.Time `db:"password_changed_at"`
+	// email_verified / mfa_enabled / totp_secret нь super admin-ы бүртгэлийн дата
+	// тул superadmin_accounts хүснэгтэд шилжсэн (migration 37) — энд байхгүй.
+	CreatedAt         time.Time  `db:"created_at"`
+	UpdatedAt         *time.Time `db:"updated_at"`
+	DeletedAt         *time.Time `db:"deleted_at"`
+	PasswordChangedAt *time.Time `db:"password_changed_at"`
 }
 
 // UserColumns нь SELECT/RETURNING-д ашиглах баганануудын жагсаалт —

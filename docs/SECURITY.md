@@ -1,4 +1,4 @@
-# Security Posture — Gerege Backend Template v27
+# Security Posture — Government Template Platform V3.0
 
 > 🌐 **English** · Монгол тайлбарыг кодын комментуудаас үзнэ үү. Эмзэг байдлыг
 > мэдээлэх журмыг [`/SECURITY.md`](../../SECURITY.md)-аас үз.
@@ -9,26 +9,36 @@ CIS Controls**. It records what is enforced in code, what was hardened, and
 what remains for later phases. To report a vulnerability, see the repository
 [security policy](../../SECURITY.md).
 
+> **Auth model.** The only interactive login is **eID (eID Mongolia Relying
+> Party)** — device-link / QR + national-ID push with a long-poll session —
+> plus **Google OAuth** account-linking. There
+> is **no password / email-OTP login path wired** to any route; the legacy
+> `Login` / `Register` / OTP / password-reset usecases exist in the tree but are
+> not exposed by `route_auth.go` (which registers only eID / Google / refresh /
+> logout). Controls below reflect the live surface.
+
 ## Implemented controls (in code)
 
 | Area | Control | Where | Guide § |
 |------|---------|-------|---------|
 | Auth | JWT access+refresh, rotation, `kind`-claim guard | `pkg/jwt`, `usecases/auth` | §1.3–1.4 |
-| Auth | bcrypt (cost ≥12), password ≥12 + `strongpassword` | `domain.users.go`, `pkg/validators` | §1.1 |
-| Auth | OTP-verified registration | `usecases/auth` (send/verify) | §1.5 |
-| Auth | Login lockout + per-account rate limit | `usecases/auth`, `middleware.ratelimit` | §1.5 |
-| Auth | Enumeration mitigation (timing-safe, generic msgs) | `usecases/auth.login`, `forgot_password` | §1.5 |
-| Crypto | `crypto/rand` everywhere; OTP rejection-sampled (no modulo bias) | `pkg/helpers/helper.otp_code_generator.go` | §13.2 |
-| AuthZ | Role check in domain (`IsAdmin`), per-request `CurrentUser`, `RequireAdmin` route middleware | `domain.users.go`, `http/auth`, `middleware_rbac.go` | §2 |
+| Auth | eID login (Mongolia RP) — device-link / QR + national-ID push, long-poll session; the **only** interactive login | `usecases/auth/auth_eid.go`, `pkg/eid`, `routes/route_auth.go` | §1 |
+| Auth | eID citizen certificate (PKI) — login COMPLETE returns the citizen cert (DER); parsed with `crypto/x509`, and serial / validity window / issuer / public-key type persisted | `pkg/eid`, `migrations/16_users_eid_certificate.up.sql` | §1 |
+| Auth | Federated identity — Google OAuth account-linking, keyed on a stable subject column | `usecases/auth`, `migrations/18_users_google_sub` | §1 |
+| Crypto | `crypto/rand` for token / session identifiers; rejection sampling avoids modulo bias | `pkg/helpers` | §13.2 |
+| Crypto | Integration tokens encrypted at rest — third-party OAuth tokens sealed with **AES-256-GCM** before storage; key from `INTEGRATION_ENC_KEY` | `usecases/integrations/integrations_crypto.go`, `migrations/21_user_integrations` | §7.3 |
+| Audit | Hash-chained, append-only audit log — `chain_hash = SHA-256(prev_hash ‖ canonical-json(entry))`, writers serialized by `pg_advisory_xact_lock`; tamper-evident `VerifyChain` | `pkg/audit/chain.go`, `usecases/audit`, `migrations/15_audit_log` | §9 |
+| AuthZ | Dynamic RBAC (roles + permissions), SuperAdmin/Admin/Manager/User; `RequirePermission` / `RequireAdmin` route middleware; admin auto-resolves the full permission catalogue | `middleware_rbac.go`, `domain_users.go`, `migrations/8_rbac_roles_permissions`, `migrations/23_superadmin_role` | §2 |
+| AuthZ | OIDC **provider** surface — the platform is its own OIDC provider (login / consent / logout core, built-in Go provider); consent gates which citizen claims each scope releases; the `developer_apps` RP registry is the client-ownership authority | `usecases/provider`, `usecases/oidc`, `postgres/oauth`, `migrations/42_oauth_provider` | §2 |
 | DB | Parameterized queries only (pgx) | `datasources/repositories/postgres` | §3.1 |
 | DB | `INSERT … RETURNING` single round-trip; pgconn 23505 → Conflict | `repositories/postgres/users`, `driver_pgx.go` | §3 |
-| DB | Row-Level Security on `users` (ENABLE + **FORCE**): self/admin/service policies driven by `app.user_id`/`app.user_role` GUCs set per-transaction with `SET LOCAL` | `migrations/7_enable_rls_users.up.sql`, `datasources/rls`, `repositories/postgres/users` | §2.4/§3.3 |
+| DB | Row-Level Security on every per-user table (ENABLE + **FORCE**): `users` plus `organizations` / `organization_memberships`, the `gov_*` citizen tables, and `user_integrations` — self/admin/service policies driven by `app.user_id`/`app.user_role` GUCs set per-transaction with `SET LOCAL` inside `withRLS`; no identity ⇒ zero rows (fail-closed) | `migrations/7_enable_rls_users`, `migrations/14`, `migrations/20`, `migrations/21`, `datasources/rls`, `repositories/postgres/*` | §2.4/§3.3 |
 | API | Mass-assignment safe (explicit request DTOs) | `http/datatransfers/requests` | API3 §5.1 |
 | API | Body size limit (global + 4 KiB on `/auth`) | `middleware.bodysizelimit`, `routes` | §5.3 |
 | Web | Security headers: CSP `default-src 'none'`, HSTS (prod), nosniff, X-Frame DENY, Referrer-Policy, Permissions-Policy, COOP/CORP/COEP | `middleware_security.go` | §4.7 |
 | Web | CORS strict origin list, never `*`+credentials | `middleware.cors.go` | §4.8 |
 | Ops | Operator endpoints (`/metrics`, `/swagger/doc.json`) gated in prod: bearer token (constant-time) + 404 on miss | `middleware_observability_gate.go`, `cmd/api/server` | §4.7/§9 |
-| Obs | Structured Zap logs w/ request-id; no secrets logged | `pkg/logger`, `handler.base_response.go` | §9.1–9.2 |
+| Obs | Structured Zap logs w/ request-id; no secrets logged | `pkg/logger`, `handler_base_response.go` | §9.1–9.2 |
 | Obs | OpenTelemetry tracing + Prometheus metrics | `pkg/observability`, `driver_pgx.go` | §9.4 |
 | Ops | Graceful shutdown (drain HTTP, rate-limiters, pgx pool, Redis, tracer) | `cmd/api/server` | §7 |
 | Net | Full HTTP server timeouts (`ReadHeader` 10s, `Read` 30s, `Write` 60s, `Idle` 120s) + `MaxHeaderBytes` 16 KiB — slowloris / oversized-header defense | `cmd/api/server` | §5.3 / API4 |
@@ -85,27 +95,34 @@ what remains for later phases. To report a vulnerability, see the repository
 
 ## ASVS roadmap status (guide §14)
 
-- **Phase 1 (ASVS L1):** ✅ HTTPS-ready + HSTS, bcrypt, parameterized queries,
-  security headers, strict CORS, input validation, structured logging, `.gitignore`
-  + no committed secrets. ⏳ container scan / `govulncheck` wired in CI (`.github/`).
-- **Phase 2 (ASVS L2):** ✅ rate limiting, refresh-token rotation, OTP MFA-style
-  verification, request timeout. ⏳ leaked-password (HIBP k-anonymity, §1.1),
-  WAF, centralized SIEM, encrypted-backup restore test, IR plan.
-- **Phase 3 (ASVS L3):** ◻ WebAuthn/passkeys, field-level PII encryption (KMS),
-  mTLS, SLSA L3 provenance, external pentest. (Out of template scope.)
+- **Phase 1 (ASVS L1):** ✅ HTTPS-ready + HSTS, eID-only login (no password
+  surface), parameterized queries, security headers, strict CORS, input
+  validation, structured logging, `.gitignore` + no committed secrets. ⏳
+  container scan / `govulncheck` wired in CI (`.github/`).
+- **Phase 2 (ASVS L2):** ✅ rate limiting, refresh-token rotation, eID
+  device-link auth (phishing-resistant, hardware-backed identity), request
+  timeout, encrypted integration tokens, hash-chained audit log. ⏳ WAF,
+  centralized SIEM, encrypted-backup restore test, IR plan.
+- **Phase 3 (ASVS L3):** ◻ field-level PII encryption (KMS), mTLS, SLSA L3
+  provenance, external pentest. (Out of template scope.)
 
 ## Known gaps / follow-ups
 
 - **Interactive Swagger UI** — currently serves the raw spec at `/swagger/doc.json`
   (load it in Swagger Editor / Postman, or point a static Swagger UI at it).
-- **Leaked-password check (HIBP)** — guide §1.1; not yet wired (needs outbound
-  call, config-gated, fail-open). Password story already meets the OWASP baseline
-  (bcrypt cost 12 + ≥12 chars + complexity).
-- **Postgres RLS** (guide §2.4/§3.3) — ✅ enabled **and FORCED** on `users` with
-  self/admin/service policies driven by the `app.user_id`/`app.user_role` session
-  GUCs (`SET LOCAL` in `repositories/postgres/users.withRLS`). Defense-in-depth on
-  top of the `deleted_at IS NULL` / WHERE clauses the repository already writes; a
-  request with no identity is fail-closed. To go **multi-tenant**, add a
+- **Password controls (HIBP / bcrypt / leaked-password)** — **not applicable to
+  the live surface**: there is no password login path wired (auth is eID + Google
+  OAuth). The legacy password/OTP usecases remain in the tree but are
+  unreachable; if a password path is ever re-exposed, wire the leaked-password
+  (HIBP k-anonymity, §1.1) check before shipping it.
+- **Postgres RLS** (guide §2.4/§3.3) — ✅ enabled **and FORCED** on every
+  per-user table (`users`, `organizations` / `organization_memberships`, the
+  `gov_*` citizen tables, `user_integrations`) with self/admin/service policies
+  driven by the `app.user_id`/`app.user_role` session GUCs (`SET LOCAL` in each
+  repository's `withRLS`). Defense-in-depth on top of the `deleted_at IS NULL` /
+  WHERE clauses the repositories already write; a request with no identity is
+  fail-closed. Public reference tables (e.g. the `gov_services` catalogue) stay
+  RLS-free and rely on table-level grants. To go **multi-tenant**, add a
   `tenant_id` column + tenant policy to each table and carry the tenant in
   `rls.Identity`.
 - **Secrets manager / KMS** (guide §7.3) — use a real secret store in production;
@@ -126,5 +143,5 @@ what remains for later phases. To report a vulnerability, see the repository
 
 ---
 
-**Gerege Template Version 27.0** — Co-developed by the **Gerege Systems
+**Government Template Platform V3.0** — Co-developed by the **Gerege Systems
 Development Team** and **Claude AI**, 2026.

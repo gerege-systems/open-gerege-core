@@ -1,4 +1,4 @@
--- Gerege Template Version 27.0
+-- Government Template Platform V3.0
 -- Хэрэглэгчийн овог (last_name) + нэр (first_name). Хоосон default тул одоо
 -- байгаа мөрүүд эвдрэхгүй (backward compatible).
 

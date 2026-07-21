@@ -1,4 +1,4 @@
-// Gerege Template Version 27.0
+// Government Template Platform V3.0
 // Gerege Systems Development Team болон Claude AI хамтран бүтээв, 2026.
 
 package middlewares
@@ -8,8 +8,9 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/go-chi/chi/v5/middleware"
 	"template/pkg/logger"
+
+	"github.com/go-chi/chi/v5/middleware"
 )
 
 // access-log өнгөний кодууд (xterm SGR background).

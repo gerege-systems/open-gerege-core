@@ -1,4 +1,4 @@
-// Gerege Template Version 27.0
+// Government Template Platform V3.0
 // Gerege Systems Development Team болон Claude AI хамтран бүтээв, 2026.
 
 package v1
@@ -56,12 +56,20 @@ func requestID(r *http.Request) string {
 }
 
 // DecodeBody нь хүсэлтийн JSON body-г dst руу задлана. Танихгүй талбарыг
-// татгалзаж, body-ийн хэмжээг хязгаарлана.
+// татгалзаж, body-ийн хэмжээг 1 MiB-д хязгаарлана.
 func DecodeBody(r *http.Request, dst any) error {
+	return DecodeBodyLimit(r, dst, maxBodyBytes)
+}
+
+// DecodeBodyLimit нь DecodeBody-ийн адил боловч body-ийн дээд хэмжээг тодорхой
+// зааж өгнө. base64 payload (жишээ нь gspace upload) 1 MiB-ийн default-аас том
+// байх шаардлагатай route-ууд ашиглана; эс бөгөөс body таслагдаж JSON задлалт
+// төөрөгдөлтэй алдаа өгнө.
+func DecodeBodyLimit(r *http.Request, dst any, maxBytes int64) error {
 	if r.Body == nil {
 		return errors.New("empty request body")
 	}
-	dec := json.NewDecoder(io.LimitReader(r.Body, maxBodyBytes))
+	dec := json.NewDecoder(io.LimitReader(r.Body, maxBytes))
 	dec.DisallowUnknownFields()
 	if err := dec.Decode(dst); err != nil {
 		return err

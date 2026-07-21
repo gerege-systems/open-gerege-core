@@ -1,4 +1,4 @@
-// Gerege Template Version 27.0
+// Government Template Platform V3.0
 // Gerege Systems Development Team болон Claude AI хамтран бүтээв, 2026.
 
 // Package users нь /users/* HTTP endpoint-уудыг үйлчилдэг —
@@ -22,10 +22,13 @@ import (
 // руу шууд дууддаггүй.
 type Handler struct {
 	usecase users.Usecase
+	// eidProxyEnabled нь SSO eID proxy тохируулагдсан эсэх — /me хариунд
+	// eid_proxy болгон буцаж, frontend eID хуудсуудыг SSO хэрэглэгчид нээнэ.
+	eidProxyEnabled bool
 }
 
-func NewHandler(usecase users.Usecase) Handler {
-	return Handler{usecase: usecase}
+func NewHandler(usecase users.Usecase, eidProxyEnabled bool) Handler {
+	return Handler{usecase: usecase, eidProxyEnabled: eidProxyEnabled}
 }
 
 // GetUserData godoc
@@ -71,7 +74,9 @@ func (h Handler) GetUserData(w http.ResponseWriter, r *http.Request) error {
 		return v1.RespondWithError(w, r, err)
 	}
 
+	userResp := responses.FromV1Domain(resp.User)
+	userResp.EIDProxy = h.eidProxyEnabled
 	return v1.NewSuccessResponse(w, r, http.StatusOK, "user data fetched successfully", map[string]interface{}{
-		"user": responses.FromV1Domain(resp.User),
+		"user": userResp,
 	})
 }

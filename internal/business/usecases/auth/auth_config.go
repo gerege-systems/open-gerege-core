@@ -1,4 +1,4 @@
-// Gerege Template Version 27.0
+// Government Template Platform V3.0
 // Gerege Systems Development Team болон Claude AI хамтран бүтээв, 2026.
 
 package auth
@@ -48,4 +48,11 @@ type Config struct {
 	EIDCallbackURL string
 	// EIDDisplayText нь IdP/гар утсан дээр харагдах RP-ийн нэр/тайлбар.
 	EIDDisplayText string
+
+	// SSOEidProxy + SSOTokens нь SSO-ий eID proxy-гоор PKI самбар унших сонголттой
+	// зам. Хоёулаа inject хийгдсэн (SSO_EID_PROXY_BASE_URL тохируулсан) үед PKI
+	// GET-үүд (summary/certificates/devices/activity) шууд eidmongolia-ий оронд
+	// SSO proxy-гоор дамжина — энэ RP-д PKI_READ эрх шаардахгүй. nil бол шууд зам.
+	SSOEidProxy SSOEidProxy
+	SSOTokens   SSOTokenService
 }

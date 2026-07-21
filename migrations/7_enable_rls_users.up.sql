@@ -1,4 +1,4 @@
--- Gerege Template Version 27.0
+-- Government Template Platform V3.0
 -- Row-Level Security on the users table: defense-in-depth on top of the
 -- deleted_at / WHERE clauses the repository already writes. Per-request identity
 -- arrives as the app.user_id / app.user_role GUCs, set with SET LOCAL inside the

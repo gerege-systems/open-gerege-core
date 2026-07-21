@@ -1,4 +1,4 @@
-// Gerege Template Version 27.0
+// Government Template Platform V3.0
 // Gerege Systems Development Team болон Claude AI хамтран бүтээв, 2026.
 
 // Package security нь RASP-style security_events хүснэгтийн Postgres gateway юм.
@@ -37,7 +37,7 @@ func (r *securityRepository) withRLS(ctx context.Context, fn func(tx pgx.Tx) err
 	if err != nil {
 		return err
 	}
-	defer tx.Rollback(ctx) //nolint:errcheck
+	defer tx.Rollback(ctx) //nolint:errcheck // rollback after a successful commit returns ErrTxClosed — expected, nothing to handle
 	if _, err := tx.Exec(ctx,
 		`SELECT set_config('app.user_id',$1,true), set_config('app.user_role',$2,true)`,
 		id.UserID, string(id.Role),
@@ -80,7 +80,7 @@ func (r *securityRepository) List(ctx context.Context, limit, offset int) ([]rep
 	if err != nil {
 		return nil, err
 	}
-	defer tx.Rollback(ctx) //nolint:errcheck
+	defer tx.Rollback(ctx) //nolint:errcheck // rollback after a successful commit returns ErrTxClosed — expected, nothing to handle
 	if _, err := tx.Exec(ctx, `SELECT set_config('app.user_role','admin',true)`); err != nil {
 		return nil, fmt.Errorf("set security rls role: %w", err)
 	}

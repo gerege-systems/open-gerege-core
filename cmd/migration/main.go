@@ -1,4 +1,4 @@
-// Gerege Template Version 27.0
+// Government Template Platform V3.0
 // Gerege Systems Development Team болон Claude AI хамтран бүтээв, 2026.
 
 package main
@@ -6,12 +6,26 @@ package main
 import (
 	"context"
 	"flag"
+	"fmt"
+	"time"
+
+	"github.com/jackc/pgx/v5/pgxpool"
 
 	"template/internal/config"
 	"template/internal/constants"
 	"template/internal/datasources/drivers"
 	"template/internal/datasources/migration"
 	"template/pkg/logger"
+)
+
+// dbConnectAttempts / dbConnectDelay нь эхний DB холболтыг дахин оролдох
+// бодлого. Хоосон volume дээр эхлэхэд compose-ийн db healthcheck нь postgres
+// TCP-ээ нээхээс өмнөхөн "healthy" гэж мэдээлж болзошгүй (initdb цонх) тул
+// migrate нь бүх deploy-г нэг refused холболтоор унагахгүйн тулд хэсэг хугацаанд
+// дахин оролдоно. ~6×2s = ~10s буфер; TCP healthcheck-ийн зэрэгцээ давхар хамгаалалт.
+const (
+	dbConnectAttempts = 6
+	dbConnectDelay    = 2 * time.Second
 )
 
 // migrationsDir нь модулийн root-оос харьцангуй (make mig-up нь backend/-ээс
@@ -36,7 +50,7 @@ func main() {
 	flag.Parse()
 
 	ctx := context.Background()
-	pool, err := drivers.SetupPgxPostgres(ctx)
+	pool, err := connectWithRetry(ctx)
 	if err != nil {
 		logger.Panic(err.Error(), logger.Fields{constants.LoggerCategory: constants.LoggerCategoryMigration})
 	}
@@ -57,4 +71,26 @@ func main() {
 			logger.Fatal(err.Error(), logger.Fields{constants.LoggerCategory: constants.LoggerCategoryMigration})
 		}
 	}
+}
+
+// connectWithRetry нь SetupPgxPostgres-г dbConnectAttempts удаа, хооронд нь
+// dbConnectDelay хүлээж дахин оролдоно. Эхний амжилттай холболтыг буцаана;
+// бүх оролдлого бүтэлгүйтвэл сүүлийн алдааг агуулсан error буцаана.
+func connectWithRetry(ctx context.Context) (*pgxpool.Pool, error) {
+	var lastErr error
+	for attempt := 1; attempt <= dbConnectAttempts; attempt++ {
+		pool, err := drivers.SetupPgxPostgres(ctx)
+		if err == nil {
+			return pool, nil
+		}
+		lastErr = err
+		logger.Warn(
+			fmt.Sprintf("db connection attempt %d/%d failed: %v", attempt, dbConnectAttempts, err),
+			logger.Fields{constants.LoggerCategory: constants.LoggerCategoryDatabase},
+		)
+		if attempt < dbConnectAttempts {
+			time.Sleep(dbConnectDelay)
+		}
+	}
+	return nil, fmt.Errorf("database unreachable after %d attempts: %w", dbConnectAttempts, lastErr)
 }

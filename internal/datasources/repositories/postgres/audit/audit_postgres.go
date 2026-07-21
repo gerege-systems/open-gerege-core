@@ -1,4 +1,4 @@
-// Gerege Template Version 27.0
+// Government Template Platform V3.0
 // Gerege Systems Development Team болон Claude AI хамтран бүтээв, 2026.
 
 // Package audit нь hash-chained, append-only audit_log хүснэгтийн Postgres
@@ -59,7 +59,7 @@ func (r *auditRepository) Append(ctx context.Context, e pkgaudit.ChainEntry) (st
 	if err != nil {
 		return "", err
 	}
-	defer tx.Rollback(ctx) //nolint:errcheck
+	defer tx.Rollback(ctx) //nolint:errcheck // rollback after a successful commit returns ErrTxClosed — expected, nothing to handle
 
 	if err := setRole(ctx, tx, "service"); err != nil {
 		return "", err
@@ -122,7 +122,7 @@ func (r *auditRepository) List(ctx context.Context, filter repointerface.AuditLi
 	if err != nil {
 		return nil, err
 	}
-	defer tx.Rollback(ctx) //nolint:errcheck
+	defer tx.Rollback(ctx) //nolint:errcheck // rollback after a successful commit returns ErrTxClosed — expected, nothing to handle
 	if err := setRole(ctx, tx, "admin"); err != nil {
 		return nil, err
 	}
@@ -175,12 +175,12 @@ func (r *auditRepository) List(ctx context.Context, filter repointerface.AuditLi
 // VerifyChain нь гинжийг admin GUC дор genesis-ээс эхлэн дахин тооцоолно. Мөр
 // бүрийн хадгалагдсан prev_hash болон chain_hash-г шинээр тооцоолсонтой
 // харьцуулна; эхний зөрчилтэй мөрийн id-г буцаана.
-func (r *auditRepository) VerifyChain(ctx context.Context) (bool, int64, error) {
+func (r *auditRepository) VerifyChain(ctx context.Context) (valid bool, checked int64, err error) {
 	tx, err := r.pool.Begin(ctx)
 	if err != nil {
 		return false, 0, err
 	}
-	defer tx.Rollback(ctx) //nolint:errcheck
+	defer tx.Rollback(ctx) //nolint:errcheck // rollback after a successful commit returns ErrTxClosed — expected, nothing to handle
 	if err := setRole(ctx, tx, "admin"); err != nil {
 		return false, 0, err
 	}

@@ -1,4 +1,4 @@
--- Gerege Template Version 27.0
+-- Government Template Platform V3.0
 -- Reverse 20_gov_services.up.sql (RLS бодлого + хүснэгтүүд).
 
 DROP POLICY IF EXISTS gov_appointments_self    ON gov_appointments;

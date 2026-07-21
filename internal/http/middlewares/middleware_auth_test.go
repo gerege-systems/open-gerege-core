@@ -1,4 +1,4 @@
-// Gerege Template Version 27.0
+// Government Template Platform V3.0
 // Gerege Systems Development Team болон Claude AI хамтран бүтээв, 2026.
 
 package middlewares_test
@@ -11,13 +11,14 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/redis/go-redis/v9"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/mock"
 	"template/internal/constants"
 	"template/internal/http/middlewares"
 	"template/internal/test/mocks"
 	"template/pkg/jwt"
+
+	"github.com/redis/go-redis/v9"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 )
 
 var (

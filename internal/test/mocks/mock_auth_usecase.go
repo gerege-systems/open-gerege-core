@@ -1,4 +1,4 @@
-// Gerege Template Version 27.0
+// Government Template Platform V3.0
 // Gerege Systems Development Team болон Claude AI хамтран бүтээв, 2026.
 
 // auth.Usecase-д зориулсан гараар бичсэн mock бөгөөд төслийн бусад
@@ -11,9 +11,10 @@ package mocks
 import (
 	"context"
 
-	mock "github.com/stretchr/testify/mock"
 	"template/internal/business/usecases/auth"
 	"template/pkg/eid"
+
+	mock "github.com/stretchr/testify/mock"
 )
 
 type AuthUsecase struct {

@@ -1,4 +1,4 @@
-// Gerege Template Version 27.0
+// Government Template Platform V3.0
 // Gerege Systems Development Team болон Claude AI хамтран бүтээв, 2026.
 
 // eid.Client-д зориулсан гараар бичсэн mock бөгөөд төслийн бусад хэсгийн
@@ -11,8 +11,9 @@ package mocks
 import (
 	"context"
 
-	mock "github.com/stretchr/testify/mock"
 	"template/pkg/eid"
+
+	mock "github.com/stretchr/testify/mock"
 )
 
 // EIDClient нь eid.Client-ийн mock юм.

@@ -1,4 +1,4 @@
-// Gerege Template Version 27.0
+// Government Template Platform V3.0
 // Gerege Systems Development Team болон Claude AI хамтран бүтээв, 2026.
 
 package auth_test
@@ -9,13 +9,14 @@ import (
 	"testing"
 	"time"
 
+	"template/internal/apperror"
+	"template/internal/business/usecases/auth"
+	"template/pkg/jwt"
+
 	golangJWT "github.com/golang-jwt/jwt/v5"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
-	"template/internal/apperror"
-	"template/internal/business/usecases/auth"
-	"template/pkg/jwt"
 )
 
 func TestLogout(t *testing.T) {

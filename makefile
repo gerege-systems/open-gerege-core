@@ -1,7 +1,7 @@
 MOCKERY_BIN := $(GOPATH)/bin/mockery
 
 # Local-dev targets устгасан: код local-д ажилладаггүй, бүгд server деер
-# тестлэгддэг. Migration нь auth.gerege.mn-ийн migrator service-ээр төвлөрсөн
+# тестлэгддэг. Migration нь auth.dgov.mn-ийн migrator service-ээр төвлөрсөн
 # (`make migrate` repo root-оос). Энэ Makefile-н үлдсэн зорилго:
 #   - Code quality + CI gate-уудыг local mirror хийх (lint, test, swag drift)
 #   - Swagger spec regenerate хийх (handler annotation өөрчилсний дараа)

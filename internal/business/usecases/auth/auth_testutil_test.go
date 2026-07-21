@@ -1,4 +1,4 @@
-// Gerege Template Version 27.0
+// Government Template Platform V3.0
 // Gerege Systems Development Team болон Claude AI хамтран бүтээв, 2026.
 
 package auth_test
@@ -8,12 +8,13 @@ import (
 	"testing"
 	"time"
 
-	"golang.org/x/crypto/bcrypt"
 	"template/internal/business/domain"
 	"template/internal/business/usecases/auth"
 	"template/internal/test/mocks"
 	"template/pkg/google"
 	"template/pkg/helpers"
+
+	"golang.org/x/crypto/bcrypt"
 )
 
 // fixture нь auth багцын тест тус бүрийн холболт юм. Тест бүр newFixture()-ээр
@@ -58,8 +59,8 @@ func newFixture(t *testing.T) *fixture {
 			LoginLockoutTTL:   15 * time.Minute,
 			ForgotMaxAttempts: 3,
 			ForgotLockoutTTL:  15 * time.Minute,
-			EIDCallbackURL:    "https://template.gerege.mn/login/verify",
-			EIDDisplayText:    "template.gerege.mn",
+			EIDCallbackURL:    "https://template.dgov.mn/login/verify",
+			EIDDisplayText:    "template.dgov.mn",
 		}),
 		users:    usersUC,
 		jwt:      jwtSvc,

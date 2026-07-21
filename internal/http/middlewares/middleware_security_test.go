@@ -1,4 +1,4 @@
-// Gerege Template Version 27.0
+// Government Template Platform V3.0
 // Gerege Systems Development Team болон Claude AI хамтран бүтээв, 2026.
 
 package middlewares_test
@@ -8,10 +8,11 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
 	"template/internal/config"
 	"template/internal/constants"
 	"template/internal/http/middlewares"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func serveSec(t *testing.T) *httptest.ResponseRecorder {

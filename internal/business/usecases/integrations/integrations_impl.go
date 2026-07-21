@@ -1,4 +1,4 @@
-// Gerege Template Version 27.0
+// Government Template Platform V3.0
 // Gerege Systems Development Team болон Claude AI хамтран бүтээв, 2026.
 
 package integrations
@@ -27,8 +27,14 @@ type usecase struct {
 }
 
 // NewUsecase нь интеграцийн usecase-г үүсгэнэ. encKey нь токеныг шифрлэх нууц
-// (INTEGRATION_ENC_KEY) — хоосон бол сул default түлхүүр ашиглагдана.
-func NewUsecase(repo repointerface.UserIntegrationRepository, encKey string) (Usecase, error) {
+// (INTEGRATION_ENC_KEY). Production-д энэ түлхүүр ЗААВАЛ шаардлагатай: хоосон
+// бол key нь sha256("") — нийтэд мэдэгдэх тогтмол утга болж, хадгалагдсан OAuth
+// токенууд үнэндээ ил текстээр хадгалагдана. Тиймээс requireKey=true үед хоосон
+// түлхүүрийг fail-closed-оор татгалзана (resolveSigner-тэй ижил зан төлөв).
+func NewUsecase(repo repointerface.UserIntegrationRepository, encKey string, requireKey bool) (Usecase, error) {
+	if requireKey && strings.TrimSpace(encKey) == "" {
+		return nil, fmt.Errorf("integrations: INTEGRATION_ENC_KEY is required in production (refusing to encrypt OAuth tokens with a publicly-known default key)")
+	}
 	c, err := newTokenCipher(encKey)
 	if err != nil {
 		return nil, fmt.Errorf("integrations: init cipher: %w", err)

@@ -1,18 +1,26 @@
-// Gerege Template Version 27.0
+// eID based AI enabled Government Template Platform V3.0
 // Gerege Systems Development Team болон Claude AI хамтран бүтээв, 2026.
 
 // Package adminapi нь dan-ийг OIDC provider болгосон /admin оператор гадаргуу:
 // admin API key-ээр баталгаажиж, платформын АЛИВАА OAuth2 client (RP)-ыг
-// бүртгэх/удирдах, admin key-үүдийг minted/цуцлах. Ory Hydra admin API (pkg/
-// hydra) дээр суурилна; эзэмшлийн мэдээллийг devapps бүртгэлээс нэгтгэнэ.
+// бүртгэх/удирдах, admin key-үүдийг minted/цуцлах. Бүртгэл нь өөрийн
+// oauth_clients хадгалалтад амьдарна (өмнө нь Ory Hydra admin API байсан);
+// эзэмшлийн мэдээллийг devapps бүртгэлээс нэгтгэнэ.
 // Дэлхийн стандарт "management API + secret key" загвар (Stripe/Auth0/Okta).
 // sso-dgov-mn-ий internal/web/admin_handlers.go-оос шилжүүлэв.
+//
+// ДЭМЖИГДЭХЭЭ БОЛЬСОН талбарууд: Hydra-д байсан ч бидний client бүртгэлд багана
+// байхгүй тохиргоог (backchannel/frontchannel logout URI, DPoP, jwks/jwks_uri,
+// audience, sector_identifier_uri, pairwise subject_type) чимээгүй хаяхын оронд
+// хүсэлтэд ирвэл 400-аар шууд татгалзана — оператор "тохируулсан" гэж эндүүрч,
+// бодит байдалд идэвхгүй үлдэхээс сэргийлнэ.
 //
 // Router()-ийг dan-ийн chi router-т `Mount("/admin", ...)`-оор холбоно (chi нь
 // "/admin" угтварыг хасдаг тул доорх pattern-ууд түүнгүй).
 package adminapi
 
 import (
+	"context"
 	"crypto/rand"
 	"encoding/hex"
 	"encoding/json"
@@ -22,21 +30,36 @@ import (
 	"net/url"
 	"regexp"
 	"strings"
+	"time"
 
+	"template/internal/apperror"
+	"template/internal/business/domain"
 	"template/internal/provider/adminkeys"
 	"template/internal/provider/devapps"
-	"template/pkg/hydra"
+	"template/pkg/secrethash"
 )
+
+// clientStore нь OAuth2 client (RP) бүртгэлийн хадгалалт — oauth_clients
+// хүснэгтийн postgres gateway-г энд шууд импортлохгүйгээр (Clean Architecture)
+// хэрэглэнэ. usecases/applications-ийн адил интерфэйс.
+type clientStore interface {
+	List(ctx context.Context) ([]domain.OAuthClient, error)
+	Get(ctx context.Context, clientID string) (domain.OAuthClient, error)
+	Create(ctx context.Context, c domain.OAuthClient) (domain.OAuthClient, error)
+	Update(ctx context.Context, c domain.OAuthClient) (domain.OAuthClient, error)
+	SetSecretHash(ctx context.Context, clientID, hash string) error
+	Delete(ctx context.Context, clientID string) error
+}
 
 // Handler нь /admin гадаргуугийн хараат байдлуудыг агуулна.
 type Handler struct {
-	hydra     *hydra.Admin
+	clients   clientStore
 	devApps   *devapps.Store
 	adminKeys *adminkeys.Store
 }
 
-func New(h *hydra.Admin, d *devapps.Store, a *adminkeys.Store) *Handler {
-	return &Handler{hydra: h, devApps: d, adminKeys: a}
+func New(c clientStore, d *devapps.Store, a *adminkeys.Store) *Handler {
+	return &Handler{clients: c, devApps: d, adminKeys: a}
 }
 
 // Router нь /admin доорх зам (chi Mount-ийн дараах) бүхий stdlib mux-ийг буцаана.
@@ -99,30 +122,47 @@ type ClientView struct {
 	ClientSecret string `json:"client_secret,omitempty"`
 }
 
-func clientViewFromHydra(c *hydra.ClientListEntry) ClientView {
-	return ClientView{
+// subjectTypePublic — бидний provider ЗӨВХӨН public subject identifier гаргана
+// (pairwise хэрэгжээгүй, хадгалах багана ч байхгүй).
+const subjectTypePublic = "public"
+
+// clientViewFrom нь хадгалагдсан client-ыг оператор API-ийн JSON төлөөлөл болгоно.
+// JSON талбарын нэрс гадаад гэрээ тул ӨӨРЧЛӨХГҮЙ; дэмжигдэхээ больсон талбарууд
+// (backchannel/frontchannel logout, DPoP) үргэлж хоосон → omitempty-ээр гарахгүй.
+func clientViewFrom(c domain.OAuthClient) ClientView {
+	v := ClientView{
 		ClientID:                c.ClientID,
 		Name:                    c.ClientName,
 		RedirectURIs:            c.RedirectURIs,
 		PostLogoutRedirectURIs:  c.PostLogoutRedirectURIs,
-		Scopes:                  strings.Fields(c.Scope),
+		Scopes:                  c.Scopes,
 		GrantTypes:              c.GrantTypes,
 		ResponseTypes:           c.ResponseTypes,
-		SubjectType:             c.SubjectType,
+		SubjectType:             subjectTypePublic,
 		TokenEndpointAuthMethod: c.TokenEndpointAuthMethod,
-		CreatedAt:               c.CreatedAt,
-		UpdatedAt:               c.UpdatedAt,
+		CreatedAt:               formatTime(c.CreatedAt),
 	}
+	if c.UpdatedAt != nil {
+		v.UpdatedAt = formatTime(*c.UpdatedAt)
+	}
+	return v
+}
+
+func formatTime(t time.Time) string {
+	if t.IsZero() {
+		return ""
+	}
+	return t.UTC().Format(time.RFC3339)
 }
 
 func (h *Handler) listClients(w http.ResponseWriter, r *http.Request) {
 	if _, ok := h.requireAdminKey(w, r); !ok {
 		return
 	}
-	clients, err := h.hydra.ListClients(r.Context())
+	clients, err := h.clients.List(r.Context())
 	if err != nil {
-		log.Printf("admin: hydra list clients: %v", err)
-		writeAPIError(w, http.StatusBadGateway, "hydra list failed")
+		log.Printf("admin: list clients: %v", err)
+		writeAPIError(w, http.StatusInternalServerError, "client store list failed")
 		return
 	}
 	owners := map[string]string{}
@@ -131,7 +171,7 @@ func (h *Handler) listClients(w http.ResponseWriter, r *http.Request) {
 	}
 	out := make([]ClientView, 0, len(clients))
 	for i := range clients {
-		v := clientViewFromHydra(&clients[i])
+		v := clientViewFrom(clients[i])
 		v.OwnerEIDSub = owners[clients[i].ClientID]
 		out = append(out, v)
 	}
@@ -148,14 +188,21 @@ type adminClientBody struct {
 	SubjectType            string   `json:"subject_type,omitempty"`
 	// Public нь PKCE-enforced public client бүртгэнэ (RFC 9700): secret байхгүй,
 	// token_endpoint_auth_method=none. Mobile/SPA RP-д.
-	Public                bool   `json:"public,omitempty"`
-	BackchannelLogoutURI  string `json:"backchannel_logout_uri,omitempty"`
-	FrontchannelLogoutURI string `json:"frontchannel_logout_uri,omitempty"`
-	DPoP                  bool   `json:"dpop_bound_access_tokens,omitempty"`
+	Public bool `json:"public,omitempty"`
+	// Дараах талбарууд Hydra-д байсан ч бидний бүртгэлд БАЙХГҮЙ. Хүлээж авбал
+	// чимээгүй хаягдах тул validateAdminClient тэднийг 400-аар татгалзана.
+	BackchannelLogoutURI  string          `json:"backchannel_logout_uri,omitempty"`
+	FrontchannelLogoutURI string          `json:"frontchannel_logout_uri,omitempty"`
+	DPoP                  bool            `json:"dpop_bound_access_tokens,omitempty"`
+	JWKS                  json.RawMessage `json:"jwks,omitempty"`
+	JWKSURI               string          `json:"jwks_uri,omitempty"`
+	Audience              []string        `json:"audience,omitempty"`
+	SectorIdentifierURI   string          `json:"sector_identifier_uri,omitempty"`
 }
 
 func (h *Handler) createClient(w http.ResponseWriter, r *http.Request) {
-	if _, ok := h.requireAdminKey(w, r); !ok {
+	key, ok := h.requireAdminKey(w, r)
+	if !ok {
 		return
 	}
 	var body adminClientBody
@@ -171,7 +218,7 @@ func (h *Handler) createClient(w http.ResponseWriter, r *http.Request) {
 	clientID := strings.TrimSpace(body.ClientID)
 	if clientID == "" {
 		clientID = "app-" + randomHex(8)
-	} else if _, err := h.hydra.GetClient(r.Context(), clientID); err == nil {
+	} else if _, err := h.clients.Get(r.Context(), clientID); err == nil {
 		writeAPIError(w, http.StatusConflict, "client_id already exists: "+clientID)
 		return
 	}
@@ -182,64 +229,57 @@ func (h *Handler) createClient(w http.ResponseWriter, r *http.Request) {
 	}
 	grants := body.GrantTypes
 	if len(grants) == 0 {
-		grants = []string{"authorization_code", "refresh_token"}
-	}
-	subjectType := body.SubjectType
-	if subjectType == "" {
-		subjectType = "public"
+		grants = []string{domain.GrantAuthorizationCode, domain.GrantRefreshToken}
 	}
 	postLogout := body.PostLogoutRedirectURIs
 	if postLogout == nil {
 		postLogout = postLogoutFromRedirects(body.RedirectURIs)
 	}
-	// Public (PKCE) vs confidential. Public client-д secret байхгүй, Hydra PKCE
-	// шаардана (RFC 9700).
-	authMethod := "client_secret_basic"
+	// Public (PKCE) vs confidential. Public client-д secret байхгүй — authorize
+	// урсгал PKCE шаардана (RFC 9700).
+	authMethod := domain.AuthMethodBasic
 	clientSecret := randomURL(40)
 	if body.Public {
-		authMethod = "none"
+		authMethod = domain.AuthMethodNone
 		clientSecret = ""
 	}
+	// Түүхий secret нь ХЭЗЭЭ Ч хадгалагдахгүй — зөвхөн hash.
+	secretHash := ""
+	if clientSecret != "" {
+		var err error
+		if secretHash, err = secrethash.Hash(clientSecret); err != nil {
+			log.Printf("admin: hash client secret: %v", err)
+			writeAPIError(w, http.StatusInternalServerError, "client secret hashing failed")
+			return
+		}
+	}
 
-	hc := hydra.ClientCreate{
+	created, err := h.clients.Create(r.Context(), domain.OAuthClient{
 		ClientID:                clientID,
 		ClientName:              body.Name,
-		ClientSecret:            clientSecret,
+		SecretHash:              secretHash,
+		TokenEndpointAuthMethod: authMethod,
+		AppType:                 appTypeFor(grants, body.Public, body.RedirectURIs),
 		GrantTypes:              grants,
 		ResponseTypes:           responseTypesFor(grants),
-		Scope:                   strings.Join(scopes, " "),
+		Scopes:                  scopes,
 		RedirectURIs:            body.RedirectURIs,
 		PostLogoutRedirectURIs:  postLogout,
-		TokenEndpointAuthMethod: authMethod,
-		SubjectType:             subjectType,
-		BackchannelLogoutURI:    body.BackchannelLogoutURI,
-		FrontchannelLogoutURI:   body.FrontchannelLogoutURI,
-		DPoPBoundAccessTokens:   body.DPoP,
-	}
-	if body.BackchannelLogoutURI != "" {
-		hc.BackchannelLogoutSessionRequired = true
-	}
-	if _, err := h.hydra.CreateClient(r.Context(), hc); err != nil {
-		log.Printf("admin: hydra create client: %v", err)
-		writeAPIError(w, http.StatusBadGateway, "hydra client create failed: "+err.Error())
+		Enabled:                 true,
+		CreatedBy:               key.Name,
+	})
+	if err != nil {
+		if apperror.Is(err, apperror.ErrTypeConflict) {
+			writeAPIError(w, http.StatusConflict, "client_id already exists: "+clientID)
+			return
+		}
+		log.Printf("admin: create client: %v", err)
+		writeAPIError(w, http.StatusInternalServerError, "client create failed: "+err.Error())
 		return
 	}
 
-	view := ClientView{
-		ClientID:                clientID,
-		Name:                    body.Name,
-		RedirectURIs:            body.RedirectURIs,
-		PostLogoutRedirectURIs:  postLogout,
-		Scopes:                  scopes,
-		GrantTypes:              grants,
-		ResponseTypes:           responseTypesFor(grants),
-		SubjectType:             subjectType,
-		TokenEndpointAuthMethod: authMethod,
-		BackchannelLogoutURI:    body.BackchannelLogoutURI,
-		FrontchannelLogoutURI:   body.FrontchannelLogoutURI,
-		DPoPBoundAccessTokens:   body.DPoP,
-		ClientSecret:            clientSecret, // нэг удаа (public-д хоосон)
-	}
+	view := clientViewFrom(created)
+	view.ClientSecret = clientSecret // нэг удаа (public-д хоосон)
 	writeJSON(w, http.StatusCreated, view)
 }
 
@@ -248,26 +288,26 @@ func (h *Handler) getClient(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	id := r.PathValue("client_id")
-	c, err := h.hydra.GetClient(r.Context(), id)
+	c, err := h.clients.Get(r.Context(), id)
 	if err != nil {
 		writeAPIError(w, http.StatusNotFound, "client not found")
 		return
 	}
-	v := clientViewFromHydra(c)
+	v := clientViewFrom(c)
 	if a, ok := h.devApps.Get(r.Context(), id); ok {
 		v.OwnerEIDSub = a.OwnerEIDSub
 	}
 	writeJSON(w, http.StatusOK, v)
 }
 
-// PATCH — өгсөн талбаруудыг одоогийн record дээр давхарлаж бүрэн PUT хийнэ
-// (Hydra-ийн PUT нь replace-style).
+// PATCH — өгсөн талбаруудыг одоогийн record дээр давхарлаж бүрэн бичнэ (store-ийн
+// Update нь replace-style; secret_hash-д хүрэхгүй).
 func (h *Handler) updateClient(w http.ResponseWriter, r *http.Request) {
 	if _, ok := h.requireAdminKey(w, r); !ok {
 		return
 	}
 	id := r.PathValue("client_id")
-	current, err := h.hydra.GetClient(r.Context(), id)
+	current, err := h.clients.Get(r.Context(), id)
 	if err != nil {
 		writeAPIError(w, http.StatusNotFound, "client not found")
 		return
@@ -290,40 +330,45 @@ func (h *Handler) updateClient(w http.ResponseWriter, r *http.Request) {
 	if body.RedirectURIs != nil {
 		redirects = body.RedirectURIs
 	}
-	scope := current.Scope
+	scopes := current.Scopes
 	if len(body.Scopes) > 0 {
-		scope = strings.Join(body.Scopes, " ")
+		scopes = body.Scopes
 	}
-	grants := defaultIfEmpty(current.GrantTypes, []string{"authorization_code", "refresh_token"})
+	grants := defaultIfEmpty(current.GrantTypes, []string{domain.GrantAuthorizationCode, domain.GrantRefreshToken})
 	if len(body.GrantTypes) > 0 {
 		grants = body.GrantTypes
-	}
-	subjectType := current.SubjectType
-	if subjectType == "" {
-		subjectType = "public"
-	}
-	if body.SubjectType != "" {
-		subjectType = body.SubjectType
 	}
 	postLogout := defaultIfEmpty(current.PostLogoutRedirectURIs, postLogoutFromRedirects(redirects))
 	if body.PostLogoutRedirectURIs != nil {
 		postLogout = body.PostLogoutRedirectURIs
 	}
+	// Client-ийн нууц/нээлттэй шинжийг PATCH-аар СОЛИХГҮЙ: одоогийн auth method
+	// хэвээр (public client-ыг санамсаргүй confidential болгож эвдэхээс сэргийлнэ).
+	authMethod := current.TokenEndpointAuthMethod
+	if authMethod == "" {
+		authMethod = domain.AuthMethodBasic
+	}
 
-	hu := hydra.ClientUpdate{
+	updated, err := h.clients.Update(r.Context(), domain.OAuthClient{
 		ClientID:                id,
 		ClientName:              name,
+		TokenEndpointAuthMethod: authMethod,
+		AppType:                 current.AppType,
 		GrantTypes:              grants,
 		ResponseTypes:           responseTypesFor(grants),
-		Scope:                   scope,
+		Scopes:                  scopes,
 		RedirectURIs:            redirects,
 		PostLogoutRedirectURIs:  postLogout,
-		TokenEndpointAuthMethod: "client_secret_basic",
-		SubjectType:             subjectType,
-	}
-	if _, err := h.hydra.UpdateClient(r.Context(), id, hu); err != nil {
-		log.Printf("admin: hydra update client: %v", err)
-		writeAPIError(w, http.StatusBadGateway, "hydra update failed: "+err.Error())
+		Tags:                    current.Tags,
+		Enabled:                 current.Enabled,
+	})
+	if err != nil {
+		if apperror.IsNotFound(err) {
+			writeAPIError(w, http.StatusNotFound, "client not found")
+			return
+		}
+		log.Printf("admin: update client: %v", err)
+		writeAPIError(w, http.StatusInternalServerError, "client update failed: "+err.Error())
 		return
 	}
 	if _, ok := h.devApps.Get(r.Context(), id); ok {
@@ -331,8 +376,7 @@ func (h *Handler) updateClient(w http.ResponseWriter, r *http.Request) {
 			log.Printf("admin: devapps sync update failed: %v", err)
 		}
 	}
-	updated, _ := h.hydra.GetClient(r.Context(), id)
-	writeJSON(w, http.StatusOK, clientViewFromHydra(updated))
+	writeJSON(w, http.StatusOK, clientViewFrom(updated))
 }
 
 func (h *Handler) deleteClient(w http.ResponseWriter, r *http.Request) {
@@ -340,14 +384,18 @@ func (h *Handler) deleteClient(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	id := r.PathValue("client_id")
-	if err := h.hydra.DeleteClient(r.Context(), id); err != nil {
-		log.Printf("admin: hydra delete client: %v", err)
-		writeAPIError(w, http.StatusBadGateway, "hydra delete failed: "+err.Error())
+	if err := h.clients.Delete(r.Context(), id); err != nil {
+		if apperror.IsNotFound(err) {
+			writeAPIError(w, http.StatusNotFound, "client not found")
+			return
+		}
+		log.Printf("admin: delete client: %v", err)
+		writeAPIError(w, http.StatusInternalServerError, "client delete failed: "+err.Error())
 		return
 	}
 	if _, ok := h.devApps.Get(r.Context(), id); ok {
 		if err := h.devApps.Delete(r.Context(), id); err != nil {
-			log.Printf("admin: devapps delete after hydra delete: %v — possible orphan row", err)
+			log.Printf("admin: devapps delete after client delete: %v — possible orphan row", err)
 		}
 	}
 	w.WriteHeader(http.StatusNoContent)
@@ -358,34 +406,34 @@ func (h *Handler) rotateClientSecret(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	id := r.PathValue("client_id")
-	current, err := h.hydra.GetClient(r.Context(), id)
+	current, err := h.clients.Get(r.Context(), id)
 	if err != nil {
 		writeAPIError(w, http.StatusNotFound, "client not found")
 		return
 	}
-	newSecret := randomURL(40)
-	subjectType := current.SubjectType
-	if subjectType == "" {
-		subjectType = "public"
-	}
-	hu := hydra.ClientUpdate{
-		ClientID:                id,
-		ClientName:              current.ClientName,
-		ClientSecret:            newSecret,
-		GrantTypes:              defaultIfEmpty(current.GrantTypes, []string{"authorization_code", "refresh_token"}),
-		ResponseTypes:           defaultIfEmpty(current.ResponseTypes, responseTypesFor(current.GrantTypes)),
-		Scope:                   current.Scope,
-		RedirectURIs:            current.RedirectURIs,
-		PostLogoutRedirectURIs:  defaultIfEmpty(current.PostLogoutRedirectURIs, postLogoutFromRedirects(current.RedirectURIs)),
-		TokenEndpointAuthMethod: "client_secret_basic",
-		SubjectType:             subjectType,
-	}
-	if _, err := h.hydra.UpdateClient(r.Context(), id, hu); err != nil {
-		log.Printf("admin: hydra rotate secret: %v", err)
-		writeAPIError(w, http.StatusBadGateway, "hydra rotate failed: "+err.Error())
+	// Public (PKCE) client-д secret байхгүй — эргүүлэх зүйл алга. Өмнө нь Hydra
+	// руу бичихдээ client-ыг чимээгүй confidential болгодог байсан нь RP-г эвддэг.
+	if current.IsPublic() {
+		writeAPIError(w, http.StatusBadRequest, "public client (token_endpoint_auth_method=none) has no secret to rotate")
 		return
 	}
-	v := clientViewFromHydra(current)
+	newSecret := randomURL(40)
+	hash, err := secrethash.Hash(newSecret)
+	if err != nil {
+		log.Printf("admin: hash client secret: %v", err)
+		writeAPIError(w, http.StatusInternalServerError, "client secret hashing failed")
+		return
+	}
+	if err := h.clients.SetSecretHash(r.Context(), id, hash); err != nil {
+		if apperror.IsNotFound(err) {
+			writeAPIError(w, http.StatusNotFound, "client not found")
+			return
+		}
+		log.Printf("admin: rotate client secret: %v", err)
+		writeAPIError(w, http.StatusInternalServerError, "client secret rotate failed: "+err.Error())
+		return
+	}
+	v := clientViewFrom(current)
 	v.ClientSecret = newSecret // нэг удаа
 	writeJSON(w, http.StatusOK, v)
 }
@@ -538,20 +586,50 @@ func validateAdminClient(b adminClientBody, create bool) error {
 			return errors.New("grant_type not supported: " + g)
 		}
 	}
-	if b.SubjectType != "" && b.SubjectType != "public" && b.SubjectType != "pairwise" {
-		return errors.New("subject_type must be public or pairwise")
+	if b.SubjectType != "" && b.SubjectType != subjectTypePublic {
+		// pairwise нь Hydra-д байсан ч энэ provider-т хэрэгжээгүй (хадгалах багана
+		// ч байхгүй) — чимээгүй "public" болгохын оронд татгалзана.
+		return errors.New("subject_type: only \"public\" is supported (pairwise subject identifiers are not implemented)")
 	}
-	if b.BackchannelLogoutURI != "" {
-		if err := validateRedirectURI(b.BackchannelLogoutURI, false); err != nil {
-			return errors.New("backchannel_logout_uri: " + err.Error())
-		}
-	}
-	if b.FrontchannelLogoutURI != "" {
-		if err := validateRedirectURI(b.FrontchannelLogoutURI, false); err != nil {
-			return errors.New("frontchannel_logout_uri: " + err.Error())
-		}
+	return validateUnsupported(b)
+}
+
+// validateUnsupported нь Hydra-д байсан боловч бидний client бүртгэлд БАГАНАГҮЙ
+// тохиргоог татгалзана. Чимээгүй хаявал оператор идэвхтэй гэж эндүүрнэ.
+func validateUnsupported(b adminClientBody) error {
+	switch {
+	case b.BackchannelLogoutURI != "":
+		return errors.New("backchannel_logout_uri is no longer supported (back-channel logout is not implemented)")
+	case b.FrontchannelLogoutURI != "":
+		return errors.New("frontchannel_logout_uri is no longer supported (front-channel logout is not implemented)")
+	case b.DPoP:
+		return errors.New("dpop_bound_access_tokens is no longer supported (DPoP is not implemented)")
+	case len(b.JWKS) > 0 || b.JWKSURI != "":
+		return errors.New("jwks / jwks_uri are no longer supported (private_key_jwt client auth is not implemented)")
+	case len(b.Audience) > 0:
+		return errors.New("audience is no longer supported")
+	case b.SectorIdentifierURI != "":
+		return errors.New("sector_identifier_uri is no longer supported (pairwise subject identifiers are not implemented)")
 	}
 	return nil
+}
+
+// appTypeFor нь oauth_clients.app_type баганын утгыг хүсэлтээс гаргана (Hydra-д
+// байгаагүй ойлголт): public + private-use scheme callback = native, public =
+// spa, redirect ашигладаг confidential = web, бусад (client_credentials) = m2m.
+func appTypeFor(grants []string, public bool, redirects []string) string {
+	if public {
+		for _, u := range redirects {
+			if pu, err := url.Parse(u); err == nil && isPrivateUseScheme(pu.Scheme) {
+				return "native"
+			}
+		}
+		return "spa"
+	}
+	if containsStr(grants, domain.GrantAuthorizationCode) {
+		return "web"
+	}
+	return "m2m"
 }
 
 // validateRedirectURI нь parse хийгдэх absolute URL шаардана; web client-д https
@@ -609,7 +687,7 @@ func containsStr(list []string, want string) bool {
 	return false
 }
 
-// responseTypesFor нь grant-аас Hydra-д хэрэгтэй response_types-г гаргана.
+// responseTypesFor нь grant-аас бүртгэлд хадгалах response_types-г гаргана.
 func responseTypesFor(grants []string) []string {
 	for _, g := range grants {
 		if g == "authorization_code" {

@@ -1,4 +1,4 @@
-// Gerege Template Version 27.0
+// Government Template Platform V3.0
 // Gerege Systems Development Team болон Claude AI хамтран бүтээв, 2026.
 
 package routes
@@ -12,7 +12,7 @@ import (
 	"template/internal/http/middlewares"
 )
 
-// ssoRoute нь /sso/* бүлгийг холбоно — Gerege SSO (OIDC) нэвтрэлтийн 2 дахи
+// ssoRoute нь /sso/* бүлгийг холбоно — dgov SSO (OIDC) нэвтрэлтийн 2 дахи
 // урсгал. Нэвтрэхээс өмнөх тул ServiceRLSContext (callback-ийн upsert users
 // хүснэгтэд хандана) + body хязгаар авна; auth middleware байхгүй.
 type ssoRoute struct {

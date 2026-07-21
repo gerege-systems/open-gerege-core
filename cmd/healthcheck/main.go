@@ -1,4 +1,4 @@
-// Gerege Template Version 27.0
+// Government Template Platform V3.0
 // Gerege Systems Development Team болон Claude AI хамтран бүтээв, 2026.
 
 // Package main нь distroless image-д зориулсан хамгийн жижиг health-probe
@@ -19,7 +19,7 @@ func main() {
 		port = "8080"
 	}
 	client := &http.Client{Timeout: 3 * time.Second}
-	resp, err := client.Get("http://127.0.0.1:" + port + "/health")
+	resp, err := client.Get("http://127.0.0.1:" + port + "/health") //nolint:gosec // fixed 127.0.0.1 loopback probe; port from this container's own env
 	if err != nil {
 		os.Exit(1)
 	}

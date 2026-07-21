@@ -1,4 +1,4 @@
-// Gerege Template Version 27.0
+// Government Template Platform V3.0
 // Gerege Systems Development Team болон Claude AI хамтран бүтээв, 2026.
 
 // CurrentUserFromContext-ийн unit тест: claim байхгүй / буруу төрөл үед
@@ -18,7 +18,7 @@ import (
 )
 
 func reqWith(ctxVal any) *http.Request {
-	r := httptest.NewRequest(http.MethodGet, "/", nil)
+	r := httptest.NewRequest(http.MethodGet, "/", http.NoBody)
 	if ctxVal != nil {
 		r = r.WithContext(context.WithValue(r.Context(), constants.CtxAuthenticatedUserKey, ctxVal))
 	}

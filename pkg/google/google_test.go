@@ -1,4 +1,4 @@
-// Gerege Template Version 27.0
+// Government Template Platform V3.0
 // Gerege Systems Development Team болон Claude AI хамтран бүтээв, 2026.
 
 // Google OAuth client-ийн unit тест: consent URL-ийн бүтэц, id_token payload-оос

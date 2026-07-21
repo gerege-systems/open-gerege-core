@@ -1,4 +1,4 @@
-// Gerege Template Version 27.0
+// Government Template Platform V3.0
 // Gerege Systems Development Team болон Claude AI хамтран бүтээв, 2026.
 
 // Package verify нь GeregeCloud Verify API (verify.gecloud.mn)-ийн client юм.
@@ -117,7 +117,7 @@ func (c *Client) Check(ctx context.Context, requestID, code string) error {
 	return ErrNotApproved
 }
 
-func (c *Client) post(ctx context.Context, path string, body any) ([]byte, int, error) {
+func (c *Client) post(ctx context.Context, path string, body any) (respBody []byte, status int, err error) {
 	buf, _ := json.Marshal(body)
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, c.base+path, bytes.NewReader(buf))
 	if err != nil {

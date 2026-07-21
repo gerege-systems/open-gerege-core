@@ -1,7 +1,7 @@
-// Gerege Template Version 27.0
+// Government Template Platform V3.0
 // Gerege Systems Development Team болон Claude AI хамтран бүтээв, 2026.
 
-// Package xyp нь Gerege Verify (xyp.gerege.mn) байгууллагын лавлагаа API-гийн client.
+// Package xyp нь Gerege Verify (xyp.dgov.mn) байгууллагын лавлагаа API-гийн client.
 // Улсын бүртгэлээс (ХУР) байгууллагын мэдээллийг реал-тайм авдаг — RP нь HTTP Basic
 // Auth-аар (client_id:client_secret) хандана. Энэ үйлчилгээ зөвхөн эрх бүхий client-д л
 // мэдээлэл өгдөг тул креденшлийг зөвхөн серверийн тал (BFF/backend) хадгална.
@@ -29,7 +29,7 @@ var ErrNotConfigured = errors.New("xyp: client credentials not configured (XYP_C
 var ErrNotFound = errors.New("xyp: organization not found")
 
 const (
-	defaultBase  = "https://xyp.gerege.mn"
+	defaultBase  = "https://xyp.dgov.mn"
 	maxRespBytes = 128 << 10
 )
 
@@ -70,7 +70,7 @@ type Lookuper interface {
 	Lookup(ctx context.Context, regNo string) (*Organization, error)
 }
 
-// Client нь xyp.gerege.mn руу залгадаг HTTP client.
+// Client нь xyp.dgov.mn руу залгадаг HTTP client.
 type Client struct {
 	base         string
 	clientID     string
@@ -78,7 +78,7 @@ type Client struct {
 	http         *http.Client
 }
 
-// NewClient нь XYP client үүсгэнэ. base хоосон бол өгөгдмөл (https://xyp.gerege.mn).
+// NewClient нь XYP client үүсгэнэ. base хоосон бол өгөгдмөл (https://xyp.dgov.mn).
 // creds хоосон бол Lookup нь ErrNotConfigured буцаана (boot-ыг эвдэхгүй).
 func NewClient(base, clientID, clientSecret string) *Client {
 	if base == "" {
@@ -124,7 +124,7 @@ func (c *Client) Lookup(ctx context.Context, regNo string) (*Organization, error
 	return out.Organization, nil
 }
 
-func (c *Client) post(ctx context.Context, path string, body any) ([]byte, int, error) {
+func (c *Client) post(ctx context.Context, path string, body any) (respBody []byte, status int, err error) {
 	buf, _ := json.Marshal(body)
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, c.base+path, bytes.NewReader(buf))
 	if err != nil {

@@ -1,4 +1,4 @@
-// Gerege Template Version 27.0
+// Government Template Platform V3.0
 // Gerege Systems Development Team болон Claude AI хамтран бүтээв, 2026.
 
 package gemini
@@ -42,18 +42,18 @@ func PCMToWAV(pcm []byte, sampleRate int) []byte {
 	u16 := func(v uint16) []byte { b := make([]byte, 2); binary.LittleEndian.PutUint16(b, v); return b }
 
 	buf = append(buf, []byte("RIFF")...)
-	buf = append(buf, u32(uint32(36+len(pcm)))...)
+	buf = append(buf, u32(uint32(36+len(pcm)))...) //nolint:gosec // WAV RIFF size; pcm length is bounded, no overflow
 	buf = append(buf, []byte("WAVE")...)
 	buf = append(buf, []byte("fmt ")...)
 	buf = append(buf, u32(16)...) // fmt chunk хэмжээ
 	buf = append(buf, u16(1)...)  // PCM формат
 	buf = append(buf, u16(channels)...)
-	buf = append(buf, u32(uint32(sampleRate))...)
-	buf = append(buf, u32(uint32(byteRate))...)
+	buf = append(buf, u32(uint32(sampleRate))...) //nolint:gosec // WAV sample rate; small positive audio constant
+	buf = append(buf, u32(uint32(byteRate))...)   //nolint:gosec // WAV byte rate; derived from bounded audio params
 	buf = append(buf, u16(uint16(blockAlign))...)
 	buf = append(buf, u16(bitsPerSample)...)
 	buf = append(buf, []byte("data")...)
-	buf = append(buf, u32(uint32(len(pcm)))...)
+	buf = append(buf, u32(uint32(len(pcm)))...) //nolint:gosec // WAV data-chunk size; pcm length is bounded, no overflow
 	buf = append(buf, pcm...)
 	return buf
 }

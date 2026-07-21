@@ -1,4 +1,4 @@
-// Gerege Template Version 27.0
+// Government Template Platform V3.0
 // Gerege Systems Development Team болон Claude AI хамтран бүтээв, 2026.
 
 // Package rls нь Postgres-ийн Row-Level Security (RLS)-д зориулсан "хэн энэ
@@ -38,6 +38,14 @@ const (
 	RoleAdmin Role = "admin"
 	// RoleUser нь зөвхөн өөрийн (app.user_id-тэй таарах) мөрд хандана.
 	RoleUser Role = "user"
+	// RoleOfficer нь төрийн үйлчилгээний хүсэлт хянадаг менежер (officer) юм.
+	// Иргэний ХҮСЭЛТ, ЛАВЛАГАА, МЭДЭГДЭЛ болон хүсэлтийн TIMELINE-д бүх мөрөөр
+	// хандана — эс тэгвэл өөрт нь хамаарахгүй хүсэлтийг шийдвэрлэж чадахгүй.
+	//
+	// Гэхдээ энэ нь admin БИШ: RLS бодлого нь permissive (OR) тул officer-т
+	// бодлого олгоогүй хүснэгтэд (users, gov_payments, gov_appointments г.м.)
+	// тэг мөр харагдана — least-privilege, fail-closed (migration 44).
+	RoleOfficer Role = "officer"
 )
 
 // Identity нь нэг хүсэлтийн RLS контекст юм: ямар хэрэглэгчийн нэрийн өмнөөс,
@@ -72,6 +80,12 @@ func WithUser(ctx context.Context, userID string) context.Context {
 // WithAdmin нь context-г RoleAdmin үүргээр тэмдэглэнэ (бүх мөрд хандана).
 func WithAdmin(ctx context.Context, userID string) context.Context {
 	return With(ctx, Identity{UserID: userID, Role: RoleAdmin})
+}
+
+// WithOfficer нь context-г RoleOfficer үүргээр тэмдэглэнэ — иргэний хүсэлт
+// хянадаг менежерт зориулсан, gov хүснэгтүүдээр хязгаарлагдсан өргөтгөл.
+func WithOfficer(ctx context.Context, userID string) context.Context {
+	return With(ctx, Identity{UserID: userID, Role: RoleOfficer})
 }
 
 // FromContext нь суулгасан Identity-г гаргаж авна. Хоёр дахь утга нь Identity

@@ -1,4 +1,4 @@
-// Gerege Template Version 27.0
+// Government Template Platform V3.0
 // Gerege Systems Development Team болон Claude AI хамтран бүтээв, 2026.
 
 package caches
@@ -9,10 +9,11 @@ import (
 	"errors"
 	"time"
 
-	"github.com/redis/go-redis/extra/redisotel/v9"
-	"github.com/redis/go-redis/v9"
 	"template/internal/constants"
 	"template/pkg/logger"
+
+	"github.com/redis/go-redis/extra/redisotel/v9"
+	"github.com/redis/go-redis/v9"
 )
 
 // IsCacheMiss нь алдаа нь "key байхгүй" (redis.Nil) эсэхийг заана — Redis-ийн

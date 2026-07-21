@@ -1,4 +1,4 @@
-// Gerege Template Version 27.0
+// Government Template Platform V3.0
 // Gerege Systems Development Team болон Claude AI хамтран бүтээв, 2026.
 
 // repointerface.AuditRepository-д зориулсан гараар бичсэн mock бөгөөд төслийн
@@ -36,7 +36,7 @@ func (_m *AuditRepository) List(ctx context.Context, filter repointerface.AuditL
 	return r0, ret.Error(1)
 }
 
-func (_m *AuditRepository) VerifyChain(ctx context.Context) (bool, int64, error) {
+func (_m *AuditRepository) VerifyChain(ctx context.Context) (valid bool, checked int64, err error) {
 	ret := _m.Called(ctx)
 	return ret.Get(0).(bool), ret.Get(1).(int64), ret.Error(2)
 }
@@ -50,7 +50,7 @@ type mockConstructorTestingTNewAuditRepository interface {
 // interface болон cleanup-ийг бүртгэнэ (хүлээлтийг батална).
 func NewAuditRepository(t mockConstructorTestingTNewAuditRepository) *AuditRepository {
 	m := &AuditRepository{}
-	m.Mock.Test(t)
+	m.Test(t)
 	t.Cleanup(func() { m.AssertExpectations(t) })
 	return m
 }

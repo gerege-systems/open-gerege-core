@@ -1,4 +1,4 @@
--- Gerege Template Version 27.0
+-- Government Template Platform V3.0
 -- Introduce a 'superadmin' tier ABOVE 'admin' and renumber the system roles so
 -- ids reflect the privilege ladder (1 = highest):
 --     superadmin=1, admin=2, manager=3, user=4

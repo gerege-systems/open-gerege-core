@@ -1,4 +1,4 @@
-// Gerege Template Version 27.0
+// Government Template Platform V3.0
 // Gerege Systems Development Team болон Claude AI хамтран бүтээв, 2026.
 
 // users.Usecase-д зориулсан гараар бичсэн mock бөгөөд төслийн бусад
@@ -12,9 +12,10 @@ package mocks
 import (
 	"context"
 
-	mock "github.com/stretchr/testify/mock"
 	"template/internal/business/domain"
 	"template/internal/business/usecases/users"
+
+	mock "github.com/stretchr/testify/mock"
 )
 
 // UsersUsecase нь users.Usecase-ийн mock юм.
@@ -100,4 +101,9 @@ func NewUsersUsecase(t mockConstructorTestingTNewUsersUsecase) *UsersUsecase {
 	m.Test(t)
 	t.Cleanup(func() { m.AssertExpectations(t) })
 	return m
+}
+
+func (_m *UsersUsecase) CreatePreRegistered(ctx context.Context, req users.CreatePreRegisterRequest) (domain.User, error) {
+	ret := _m.Called(ctx, req)
+	return ret.Get(0).(domain.User), ret.Error(1)
 }

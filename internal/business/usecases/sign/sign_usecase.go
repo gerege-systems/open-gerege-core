@@ -1,4 +1,4 @@
-// Gerege Template Version 27.0
+// Government Template Platform V3.0
 // Gerege Systems Development Team болон Claude AI хамтран бүтээв, 2026.
 
 // Package sign — PDF гарын үсэг (PAdES) eidmongolia.mn /v3-ээр. Хувь хүн, эсвэл
@@ -35,6 +35,7 @@ import (
 	"fmt"
 	"io"
 	"math/big"
+	"net"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -48,7 +49,6 @@ import (
 	pdfcputypes "github.com/pdfcpu/pdfcpu/pkg/pdfcpu/types"
 
 	"template/internal/apperror"
-	"template/pkg/asseturl"
 	"template/pkg/logger"
 )
 
@@ -63,7 +63,7 @@ type cache interface {
 type Config struct {
 	V3BaseURL string // .well-known rp_api_base: https://eidmongolia.mn
 	RPUUID    string // gerege RP UUID
-	RPName    string // "gerege.mn"
+	RPName    string // "dgov.mn"
 	APISecret string // Bearer <api_secret> (хоосон бол илгээхгүй; registry унтраалттай үед хэрэггүй)
 
 	// SignerCertPEM / SignerKeyPEM — серверийн БАЙНГЫН Document-Signer-ийн
@@ -77,10 +77,15 @@ type Config struct {
 }
 
 type usecase struct {
-	cache  cache
-	cfg    Config
+	cache cache
+	cfg   Config
+	// client — eidmongolia /v3 гэх мэт ДОТООД, тохируулсан endpoint-уудад.
 	client *http.Client
-	signer signerIdentity // серверийн Document-Signer (process-д нэг удаа үүснэ)
+	// assetClient — хэрэглэгчийн өгсөн тамга/гарын үсгийн зургийн URL-ийг татахад
+	// зориулсан SSRF-аас хамгаалагдсан client (private/loopback IP-д холбогдохгүй,
+	// redirect дагахгүй). client-ээс ТУСАД байх ёстой: user-controlled URL.
+	assetClient *http.Client
+	signer      signerIdentity // серверийн Document-Signer (process-д нэг удаа үүснэ)
 }
 
 // Usecase — нийтийн интерфэйс.
@@ -153,11 +158,54 @@ func NewUsecase(c cache, cfg Config) (Usecase, error) {
 		return nil, fmt.Errorf("sign: signer init: %w", err)
 	}
 	return &usecase{
-		cache:  c,
-		cfg:    cfg,
-		client: &http.Client{Timeout: 15 * time.Second},
-		signer: id,
+		cache:       c,
+		cfg:         cfg,
+		client:      &http.Client{Timeout: 15 * time.Second},
+		assetClient: newAssetFetchClient(15 * time.Second),
+		signer:      id,
 	}, nil
+}
+
+// newAssetFetchClient нь хэрэглэгчийн өгсөн зургийн URL-ийг татах SSRF-аас
+// хамгаалагдсан http.Client үүсгэнэ. Хамгаалалт:
+//   - dial түвшинд шийдэгдсэн IP-г шалгаж private/loopback/link-local/unspecified
+//     хаяг руу холбогдохгүй (DNS rebinding-ийг ч хаана — шалгалт бодит IP дээр).
+//   - redirect дагахгүй (redirect-ээр дотоод хаяг руу үсрэхээс сэргийлнэ).
+func newAssetFetchClient(timeout time.Duration) *http.Client {
+	dialer := &net.Dialer{Timeout: 10 * time.Second}
+	safeDial := func(ctx context.Context, network, address string) (net.Conn, error) {
+		host, _, err := net.SplitHostPort(address)
+		if err != nil {
+			return nil, err
+		}
+		if ip := net.ParseIP(host); ip != nil && isDisallowedFetchIP(ip) {
+			return nil, fmt.Errorf("ssrf: disallowed address %s", address)
+		}
+		conn, err := dialer.DialContext(ctx, network, address)
+		if err != nil {
+			return nil, err
+		}
+		// Холбогдсоны дараа бодит алсын IP-г дахин шалгана (rebinding хамгаалалт).
+		if tcp, ok := conn.RemoteAddr().(*net.TCPAddr); ok && isDisallowedFetchIP(tcp.IP) {
+			_ = conn.Close()
+			return nil, fmt.Errorf("ssrf: disallowed remote %s", tcp.IP)
+		}
+		return conn, nil
+	}
+	return &http.Client{
+		Timeout:   timeout,
+		Transport: &http.Transport{DialContext: safeDial},
+		CheckRedirect: func(*http.Request, []*http.Request) error {
+			return http.ErrUseLastResponse
+		},
+	}
+}
+
+// isDisallowedFetchIP нь дотоод/тусгай зориулалтын IP мужуудыг хориглоно.
+func isDisallowedFetchIP(ip net.IP) bool {
+	return ip.IsLoopback() || ip.IsPrivate() || ip.IsLinkLocalUnicast() ||
+		ip.IsLinkLocalMulticast() || ip.IsInterfaceLocalMulticast() ||
+		ip.IsMulticast() || ip.IsUnspecified()
 }
 
 // resolveSigner — байнгын signer байвал түүнийг ачаална; эс бөгөөс production-д
@@ -312,17 +360,18 @@ func (u *usecase) fetchAssetImage(ctx context.Context, imgURL string) []byte {
 	if imgURL == "" {
 		return nil
 	}
-	// SSRF хамгаалалт: зөвхөн найдвартай Google host руу (redirect бүрийг дахин
-	// шалгаж) татна — дотоод сүлжээ/metadata руу хандах боломжгүй.
-	if err := asseturl.Validate(imgURL); err != nil {
-		logger.WarnWithContext(ctx, "sign: зургийн URL найдваргүй (алгасав)", logger.Fields{"usecase": "sign", "error": err.Error()})
+	// Зөвхөн https URL зөвшөөрнө (file://, http://, gopher:// зэргийг хаана).
+	if parsed, perr := url.Parse(imgURL); perr != nil || parsed.Scheme != "https" || parsed.Host == "" {
+		logger.WarnWithContext(ctx, "sign: зургийн URL зөвшөөрөгдөөгүй схем (алгасав)", logger.Fields{"usecase": "sign"})
 		return nil
 	}
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, imgURL, nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, imgURL, http.NoBody)
 	if err != nil {
 		return nil
 	}
-	res, err := asseturl.SafeClient(15 * time.Second).Do(req)
+	// SSRF-аас хамгаалагдсан client: user-controlled URL тул дотоод хаяг руу
+	// холбогдохгүй, redirect дагахгүй.
+	res, err := u.assetClient.Do(req)
 	if err != nil {
 		return nil
 	}
@@ -448,14 +497,14 @@ func (u *usecase) Download(ctx context.Context, ownerRegNo, sessionID string) (D
 // stampV3 — дууссан /v3 session-ий эх PDF-ийг eidmongolia-д stamp хийлгэж, албан
 // ёсны PAdES-T (timestamp + verify хуудас) шингээсэн PDF-ийг буцаана.
 // POST /v3/signature/stamp/<sessionID>?fileName=<name>, body = эх PDF, Bearer = RP secret.
-func (u *usecase) stampV3(ctx context.Context, v3SessionID, filename string, pdf []byte) ([]byte, error) {
+func (u *usecase) stampV3(ctx context.Context, v3SessionID, filename string, pdfBytes []byte) ([]byte, error) {
 	if v3SessionID == "" {
 		return nil, fmt.Errorf("v3 session id хоосон")
 	}
 	q := url.Values{}
 	q.Set("fileName", filename)
 	reqURL := strings.TrimRight(u.cfg.V3BaseURL, "/") + "/v3/signature/stamp/" + url.PathEscape(v3SessionID) + "?" + q.Encode()
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, reqURL, bytes.NewReader(pdf))
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, reqURL, bytes.NewReader(pdfBytes))
 	if err != nil {
 		return nil, err
 	}

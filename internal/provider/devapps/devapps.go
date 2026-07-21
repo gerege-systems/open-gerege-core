@@ -1,10 +1,10 @@
-// Gerege Template Version 27.0
+// eID based AI enabled Government Template Platform V3.0
 // Gerege Systems Development Team болон Claude AI хамтран бүтээв, 2026.
 
 // Package devapps нь developer.dgov.mn-ээр үүсгэсэн OAuth2 апп (RP)-уудын
-// байнгын бүртгэл (PostgreSQL). Мөр бүр нь Hydra client_id-г эзэмшигч иргэний
-// eid_sub-тай холбоно — Hydra-д "owner" гэдэг ойлголт байхгүй тул энэ мөр нь
-// эрх мэдлийн эх сурвалж (устгахдаа Hydra client-тэй хамт устгана). sso-dgov-mn-
+// байнгын бүртгэл (PostgreSQL). Мөр бүр нь client_id-г эзэмшигч иргэний
+// eid_sub-тай холбоно — OAuth2 client бүртгэлд "owner" гэдэг ойлголт байхгүй тул
+// энэ мөр нь эрх мэдлийн эх сурвалж (устгахдаа client-тэй хамт устгана). sso-dgov-mn-
 // ий internal/devapps-аас шилжүүлэв.
 package devapps
 
@@ -18,7 +18,7 @@ import (
 )
 
 type App struct {
-	// ClientID нь Hydra client_id (мөн developer-т харагдах public апп таних).
+	// ClientID нь OAuth2 client_id (мөн developer-т харагдах public апп таних).
 	// Формат: "app-<16-hex>".
 	ClientID string
 
@@ -53,8 +53,8 @@ func scanApp(row pgx.Row) (*App, error) {
 	return &a, nil
 }
 
-// Create нь шинэ апп мөр оруулна. Дуудагч эхлээд харгалзах Hydra client-ыг
-// үүсгэсэн байх ёстой; энэ бичилт амжилтгүй бол Hydra талыг буцаана.
+// Create нь шинэ апп мөр оруулна. Дуудагч эхлээд харгалзах OAuth2 client-ыг
+// үүсгэсэн байх ёстой; энэ бичилт амжилтгүй бол client-ыг буцаана.
 func (s *Store) Create(ctx context.Context, a App) (*App, error) {
 	if a.RedirectURIs == nil {
 		a.RedirectURIs = []string{}

@@ -1,4 +1,4 @@
-// Gerege Template Version 27.0
+// Government Template Platform V3.0
 // Gerege Systems Development Team болон Claude AI хамтран бүтээв, 2026.
 
 package server
@@ -21,6 +21,7 @@ import (
 	docs "template/docs" // swagger тодорхойлолт, swaggo-оор init үед бүртгэгддэг
 	"template/internal/business/domain"
 	"template/internal/business/usecases/ai"
+	applicationsuc "template/internal/business/usecases/applications"
 	"template/internal/business/usecases/assets"
 	"template/internal/business/usecases/audit"
 	"template/internal/business/usecases/auth"
@@ -29,14 +30,20 @@ import (
 	"template/internal/business/usecases/gov"
 	"template/internal/business/usecases/gspace"
 	"template/internal/business/usecases/integrations"
-	"template/internal/business/usecases/landing"
+	oidcuc "template/internal/business/usecases/oidc"
 	"template/internal/business/usecases/org"
 	provideruc "template/internal/business/usecases/provider"
 	"template/internal/business/usecases/rbac"
+	"template/internal/business/usecases/registry"
+	relayuc "template/internal/business/usecases/relay"
 	"template/internal/business/usecases/security"
 	"template/internal/business/usecases/sign"
+	siteuc "template/internal/business/usecases/site"
 	"template/internal/business/usecases/sso"
+	"template/internal/business/usecases/ssotoken"
 	"template/internal/business/usecases/superadmin"
+	onboarding "template/internal/business/usecases/superadmin_onboarding"
+	themeuc "template/internal/business/usecases/theme"
 	"template/internal/business/usecases/users"
 	"template/internal/config"
 	"template/internal/constants"
@@ -44,15 +51,25 @@ import (
 	"template/internal/datasources/drivers"
 	repointerface "template/internal/datasources/repositories/interface"
 	aipostgres "template/internal/datasources/repositories/postgres/ai"
+	applicationspostgres "template/internal/datasources/repositories/postgres/applications"
 	auditpostgres "template/internal/datasources/repositories/postgres/audit"
 	gatewaypostgres "template/internal/datasources/repositories/postgres/gateway"
 	govpostgres "template/internal/datasources/repositories/postgres/gov"
-	landingpostgres "template/internal/datasources/repositories/postgres/landing"
+	oauthpostgres "template/internal/datasources/repositories/postgres/oauth"
 	orgpostgres "template/internal/datasources/repositories/postgres/org"
 	orgstamppostgres "template/internal/datasources/repositories/postgres/orgstamp"
+	platformsettings "template/internal/datasources/repositories/postgres/platformsettings"
 	rbacpostgres "template/internal/datasources/repositories/postgres/rbac"
+	recoverypostgres "template/internal/datasources/repositories/postgres/recovery"
+	registrypostgres "template/internal/datasources/repositories/postgres/registry"
+	relaypostgres "template/internal/datasources/repositories/postgres/relay"
 	securitypostgres "template/internal/datasources/repositories/postgres/security"
+	sitepostgres "template/internal/datasources/repositories/postgres/site"
+	ssotokenpostgres "template/internal/datasources/repositories/postgres/ssotoken"
 	ssouserpostgres "template/internal/datasources/repositories/postgres/ssouser"
+	superadminaccountpostgres "template/internal/datasources/repositories/postgres/superadminaccount"
+	superadmininvitepostgres "template/internal/datasources/repositories/postgres/superadmininvite"
+	themepostgres "template/internal/datasources/repositories/postgres/theme"
 	userintegrationspostgres "template/internal/datasources/repositories/postgres/userintegrations"
 	userspostgres "template/internal/datasources/repositories/postgres/users"
 	"template/internal/datasources/rls"
@@ -62,15 +79,17 @@ import (
 	"template/internal/provider/adminapi"
 	"template/internal/provider/adminkeys"
 	"template/internal/provider/devapps"
+	"template/internal/provider/signrelay"
+	"template/pkg/crypto"
 	"template/pkg/eid"
 	"template/pkg/gemini"
 	"template/pkg/google"
 	gspaceclient "template/pkg/gspace"
-	"template/pkg/hydra"
 	"template/pkg/jwt"
 	"template/pkg/logger"
 	"template/pkg/observability"
 	"template/pkg/oidc"
+	"template/pkg/ssoeidproxy"
 	"template/pkg/verify"
 	"template/pkg/xyp"
 
@@ -88,6 +107,9 @@ type App struct {
 	aiRateLimiter       *middlewares.RateLimiter
 	pollRateLimiter     *middlewares.RateLimiter
 	govWriteRateLimiter *middlewares.RateLimiter
+	relayUC             relayuc.Usecase // SLA worker + demo simulator (background)
+	relayDemo           bool
+	govUC               gov.Usecase // gov SLA sweep (background)
 }
 
 func NewApp() (*App, error) {
@@ -147,7 +169,12 @@ func NewApp() (*App, error) {
 	r.Use(middlewares.MetricsMiddleware())
 	r.Use(middlewares.SecurityHeadersMiddleware())
 	r.Use(middlewares.CORSMiddleware())
-	r.Use(middlewares.BodySizeLimitMiddleware(middlewares.DefaultBodyMaxBytes))
+	// Глобал net нь upload-ийн дээд хязгаар (26 MiB) — файл байршуулдаг sign
+	// route-ууд үүнийг шаарддаг. Эцгийн middleware нь дэд route-ийг зөвхөн
+	// чангалж чаддаг тул энд 1 MiB тавибал sign upload эцэгтээ 413 болно.
+	// Ердийн JSON route-уудыг DecodeBody-ийн 1 MiB cap + auth-ийн 4 KiB
+	// route-cap хамгаална.
+	r.Use(middlewares.BodySizeLimitMiddleware(middlewares.UploadBodyMaxBytes))
 	r.Use(middlewares.AccessLogMiddleware())
 	r.Use(middlewares.TimeoutMiddleware(middlewares.DefaultRequestTimeout))
 
@@ -185,6 +212,33 @@ func NewApp() (*App, error) {
 	googleClient := google.NewClient(config.AppConfig.GoogleClientID, config.AppConfig.GoogleClientSecret)
 	// Gerege Verify / XYP — улсын бүртгэлээс байгууллагын мэдээлэл (eID байгууллага холбох).
 	xypClient := xyp.NewClient(config.AppConfig.XYPAPIBase, config.AppConfig.XYPClientID, config.AppConfig.XYPClientSecret)
+
+	// Government SSO (sso.dgov.mn, OIDC) client — RP нэвтрэлт (ssoUC доор) болон
+	// eID proxy-д хуваалцана.
+	ssoClient := oidc.NewClient(config.AppConfig.SSOIssuer, config.AppConfig.SSOClientID, config.AppConfig.SSOClientSecret, config.AppConfig.SSORedirectURI, config.AppConfig.SSOScope)
+
+	// SSO eID proxy (сонголттой) — SSO_EID_PROXY_BASE_URL + INTEGRATION_ENC_KEY
+	// хоёулаа тохируулсан бол иргэний PKI самбар (summary/certificates/devices/
+	// activity) нь шууд eidmongolia-ий оронд sso.dgov.mn/rp/eid-ээр дамжина.
+	// Токенуудыг шифрлэн (sso_tokens) хадгалж, хугацаа дуусахад refresh хийнэ.
+	// Хоосон бол шууд eidmongolia зам (өөрчлөлтгүй).
+	var (
+		ssoEidProxy    auth.SSOEidProxy
+		ssoTokens      auth.SSOTokenService
+		ssoTokenStorer sso.TokenStorer
+	)
+	if config.AppConfig.SSOEidProxyBaseURL != "" && config.AppConfig.IntegrationEncKey != "" {
+		tokenCipher, cErr := crypto.New(config.AppConfig.IntegrationEncKey)
+		if cErr != nil {
+			return nil, fmt.Errorf("init sso token cipher: %w", cErr)
+		}
+		tokenSvc := ssotoken.New(ssotokenpostgres.NewSSOTokenRepository(pool, tokenCipher), ssoClient)
+		ssoTokens = tokenSvc
+		ssoTokenStorer = tokenSvc
+		ssoEidProxy = ssoeidproxy.New(config.AppConfig.SSOEidProxyBaseURL)
+		logger.Info("SSO eID proxy enabled — PKI dashboard reads proxied via SSO", logger.Fields{"base": config.AppConfig.SSOEidProxyBaseURL})
+	}
+
 	authUC := auth.NewUsecase(usersUC, jwtService, verifier, eidClient, xypClient, googleClient, redisCache, auth.Config{
 		OTPMaxAttempts:    config.AppConfig.OTPMaxAttempts,
 		OTPTTL:            time.Duration(config.AppConfig.REDISExpired) * time.Minute,
@@ -196,6 +250,8 @@ func NewApp() (*App, error) {
 		ForgotLockoutTTL:  15 * time.Minute,
 		EIDCallbackURL:    config.AppConfig.EIDCallbackURL,
 		EIDDisplayText:    config.AppConfig.EIDDisplayText,
+		SSOEidProxy:       ssoEidProxy,
+		SSOTokens:         ssoTokens,
 	})
 
 	// RBAC — динамик role/permission удирдлага + enforcement.
@@ -215,13 +271,26 @@ func NewApp() (*App, error) {
 	gatewayRepo := gatewaypostgres.NewGatewayRepository(pool)
 	gatewayUC := gateway.NewUsecase(gatewayRepo)
 
+	// Platform-хоорондын хүсэлт дамжуулах + SLA хяналт (relay).
+	relayUC := relayuc.NewUsecase(relaypostgres.NewRelayRepository(pool))
+
+	// Үйлчилгээний нэгдсэн регистр (CPSV-AP паспорт + нотолгооны каталог) —
+	// мастер өгөгдөл тул RLS-гүй; хамгаалалт нь registry.view/manage эрхээр.
+	registryUC := registry.NewUsecase(registrypostgres.NewRegistryRepository(pool))
+
 	// Gerege Core (core.gerege.mn) — USER FIND / ORG FIND хайлтын wrap.
 	coreUC := core.NewUsecase(config.AppConfig.CoreAPIBase, config.AppConfig.CoreAPIToken)
 
-	// Gerege SSO (sso.gerege.mn, OIDC) — eID-ийн зэрэгцээ 2 дахь нэвтрэлт.
-	ssoClient := oidc.NewClient(config.AppConfig.SSOIssuer, config.AppConfig.SSOClientID, config.AppConfig.SSOClientSecret, config.AppConfig.SSORedirectURI, config.AppConfig.SSOScope)
+	// Government SSO (sso.dgov.mn, OIDC) — гадаад SSO provider-т нэвтрэх RP урсгал.
+	// Энэ апп нь sso.dgov.mn-ий relying party: нэвтрэлтийг тийш даатгаж, буцаж
+	// ирсэн code-ийг токен болгож солин, хэрэглэгчийг sso_sub-ээр upsert хийнэ.
+	// ssoClient дээр (eID proxy-тай хамт) угсарсан. ssoTokenStorer нь SSO eID
+	// proxy идэвхтэй үед нэвтрэлтийн дараа токенуудыг хадгална (nil бол алгасна).
 	ssoRepo := ssouserpostgres.NewSSOUserRepository(pool)
-	ssoUC := sso.NewUsecase(ssoClient, ssoRepo, jwtService, redisCache, config.AppConfig.SSONativeClientID)
+	// Платформын хандалтын горим (public|private) — SSO нэвтрэлтийн gate болон
+	// superadmin тохиргоонд хэрэглэнэ.
+	platformSettingsRepo := platformsettings.NewRepository(pool)
+	ssoUC := sso.NewUsecase(ssoClient, ssoRepo, jwtService, redisCache, config.AppConfig.SSONativeClientID, ssoTokenStorer, platformSettingsRepo)
 
 	// Хэрэглэгчийн гуравдагч этгээдийн интеграци (Google Drive/Meet, Dropbox) —
 	// OAuth токеныг шифрлэн хадгална (RLS-тэй per-user хүснэгт).
@@ -229,7 +298,7 @@ func NewApp() (*App, error) {
 	// Гарын үсэг (хувь хүн) + байгууллагын тамга (ADMIN) — зураг Google Drive-д, URL DB-д.
 	orgStampRepo := orgstamppostgres.NewOrgStampRepository(pool)
 	assetsUC := assets.NewUsecase(usersUC, userRepo, orgStampRepo, eidClient)
-	integrationsUC, err := integrations.NewUsecase(userIntegrationsRepo, config.AppConfig.IntegrationEncKey)
+	integrationsUC, err := integrations.NewUsecase(userIntegrationsRepo, config.AppConfig.IntegrationEncKey, isProduction)
 	if err != nil {
 		return nil, fmt.Errorf("init integrations usecase: %w", err)
 	}
@@ -244,6 +313,9 @@ func NewApp() (*App, error) {
 		Password: config.AppConfig.GSpacePassword,
 		BasePath: config.AppConfig.GSpaceBasePath,
 		HostKey:  config.AppConfig.GSpaceHostKey,
+		// Production-д host key заавал (MITM-аас хамгаална); development-д
+		// тохируулаагүй бол шалгахгүйгээр зөвшөөрнө.
+		AllowInsecureHostKey: !isProduction,
 	})
 	gspaceUC := gspace.NewUsecase(gspaceClient, config.AppConfig.GSpaceQuota)
 
@@ -253,19 +325,63 @@ func NewApp() (*App, error) {
 	auditRepo := auditpostgres.NewAuditRepository(pool)
 	auditUC := audit.NewUsecase(auditRepo)
 
-	// Super admin — админ хэрэглэгчдийг удирдах (үүсгэх/эрх олгох/хасах). users
-	// давхаргаар (кэш-зөв мутациуд) ажиллаж, мутаци бүрийг audit log-д бичнэ.
-	superadminUC := superadmin.NewUsecase(usersUC, auditUC)
+	// Super admin — админ хэрэглэгчдийг удирдах (үүсгэх/эрх олгох/хасах) +
+	// super admin урилга (allow-list). users давхаргаар (кэш-зөв мутациуд)
+	// ажиллаж, мутаци бүрийг audit log-д бичнэ.
+	superadminInviteRepo := superadmininvitepostgres.NewSuperadminInviteRepository(pool)
+	superadminUC := superadmin.NewUsecase(usersUC, auditUC, superadminInviteRepo, platformSettingsRepo)
+
+	// Super admin бүртгэлийн шидтэн (урилга → Google → eID → и-мэйл OTP →
+	// TOTP) + MFA-тай super admin нэвтрэлтийн 2 дахь шат. TOTP secret-ийг
+	// storage-д AES-GCM-ээр шифрлэх түлхүүр хэрэгтэй. INTEGRATION_ENC_KEY
+	// тохируулсан бол түүнийг ашиглана; тохируулаагүй бол JWT_SECRET-ээс
+	// domain-separated тогтвортой түлхүүр гаргаж авна (репод ил биш,
+	// restart-д тогтвортой) — ингэснээр superadmin MFA-г нэмэлт env
+	// тохируулахгүйгээр асаана. crypto.New утгыг SHA-256-аар 32 байт болгодог
+	// тул урт ямар ч байсан ажиллана. АНХААР: энэ түлхүүр (эсвэл JWT_SECRET)-ийг
+	// нэгэнт superadmin MFA идэвхжсэн хойно солиход өмнөх TOTP secret задрахаа
+	// болино — тиймээс тогтвортой байлгана.
+	totpEncKey := config.AppConfig.IntegrationEncKey
+	if totpEncKey == "" {
+		totpEncKey = config.AppConfig.JWTSecret + "|superadmin-mfa-v1"
+		logger.Warn("superadmin MFA: INTEGRATION_ENC_KEY not set — deriving TOTP encryption key from JWT_SECRET (set INTEGRATION_ENC_KEY for a dedicated key)", logger.Fields{})
+	}
+	var onboardingUC onboarding.Usecase
+	{
+		recoveryRepo := recoverypostgres.NewRecoveryCodeRepository(pool)
+		superadminAcctRepo := superadminaccountpostgres.NewSuperadminAccountRepository(pool)
+		uc, ucErr := onboarding.NewUsecase(
+			googleClient, eidClient, verifier,
+			userRepo, recoveryRepo, superadminAcctRepo, superadminInviteRepo,
+			jwtService, redisCache, totpEncKey,
+			onboarding.Config{
+				Issuer:         config.AppConfig.JWTIssuer,
+				PendingTTL:     30 * time.Minute,
+				OTPTTL:         time.Duration(config.AppConfig.REDISExpired) * time.Minute,
+				OTPMaxAttempts: config.AppConfig.OTPMaxAttempts,
+				MFAMaxAttempts: 5,
+				EIDDisplayText: config.AppConfig.EIDDisplayText,
+			},
+		)
+		if ucErr != nil {
+			return nil, fmt.Errorf("init superadmin onboarding usecase: %w", ucErr)
+		}
+		onboardingUC = uc
+	}
 
 	// Security events — RASP-style ingest (нэвтэрсэн хэрэглэгч бичнэ, admin унших).
 	securityRepo := securitypostgres.NewSecurityEventRepository(pool)
 	securityUC := security.NewUsecase(securityRepo)
 
-	// Landing — нүүр хуудасны ажиллаж байх үед тохируулдаг харагдац (өнгө/фонт/
-	// текст mn+en/товч/цэс). Уншилт нийтийн (зочид), бичилт settings.manage.
-	// ai_prompts-тай адил глобал тохиргоо тул RLS-гүй.
-	landingRepo := landingpostgres.NewLandingConfigRepository(pool)
-	landingUC := landing.NewUsecase(landingRepo)
+	// Site appearance — сайтын нийтийн харагдацын default (landing уншина,
+	// admin 'settings.manage'-ээр өөрчилнө). Нийтийн config тул RLS-гүй plain pool.
+	siteRepo := sitepostgres.NewSiteRepository(pool)
+	siteUC := siteuc.NewUsecase(siteRepo)
+
+	// Landing themes — нэрлэсэн бүрэн загварууд (харагдац + текст/цэс). Идэвхтэйг
+	// нэвтрээгүй зочны landing уншина; админ CRUD/идэвхжүүлнэ. Нийтийн config, RLS-гүй.
+	themeRepo := themepostgres.NewThemeRepository(pool)
+	themeUC := themeuc.NewUsecase(themeRepo)
 
 	// AI pipeline — Gemini REST client + function-calling tools. TTS нь
 	// audio гаргадаг тусдаа model тул өөр client-ээр явна. Repo нь DB-ээс
@@ -330,47 +446,113 @@ func NewApp() (*App, error) {
 	// Уншилтад хамаарахгүй; ~30/мин (burst 15) нь энгийн хэрэглээнд элбэг зайтай.
 	govWriteRateLimiter := middlewares.NewRateLimiter(rate.Limit(30.0/60.0), 15)
 
-	// OIDC provider (энэ апп-ыг Hydra урдаа тавьж SSO болгоно) — login/consent/
-	// logout цөм. Зөвхөн Hydra тохируулагдсан (ProviderConfigured) үед идэвхжинэ;
-	// эс бөгөөс providerUC == nil тул route бүртгэгдэхгүй (inert).
-	var providerUC provideruc.Usecase
-	var hydraAdmin *hydra.Admin
-	if config.AppConfig.ProviderConfigured() {
-		hydraAdmin = hydra.NewAdmin(config.AppConfig.HydraAdminURL)
-		providerUC = provideruc.NewUsecase(hydraAdmin, usersUC, config.AppConfig.SSOFirstPartyClientsList())
+	// OIDC provider — өөрийн login/consent/logout цөм. Өмнө нь Ory Hydra
+	// эзэмшдэг байсан challenge/client бүртгэлийг одоо усгэсэн usecases/oidc +
+	// oauth_clients хүснэгт эзэмшинэ (Hydra-аас хамаарахаа больсон).
+	oauthClients := oauthpostgres.NewClientRepository(pool)
+	oidcSvc := oidcuc.NewService(oauthClients, oauthpostgres.NewFlowRepository(pool), config.AppConfig.Issuer())
+	providerUC := provideruc.NewUsecase(oidcSvc, oauthClients, usersUC,
+		config.AppConfig.SSOFirstPartyClientsList(), config.AppConfig.Issuer())
+
+	// Нэгдсэн Applications (Gateway consumer + SSO RP). Client бүртгэл нь одоо
+	// өөрийн DB-д (oauth_clients) амьдардаг тул Hydra-аас хамаарахаа больсон.
+	applicationsUC := applicationsuc.NewUsecase(
+		applicationspostgres.NewApplicationRepository(pool),
+		oauthClients,
+	)
+
+	// Өөрийн OIDC provider-ийн гарын үсгийн түлхүүр. Эхний ажиллагаанд RSA
+	// түлхүүр үүсгэж, INTEGRATION_ENC_KEY-ээр шифрлэн хадгална. Түлхүүр бэлэн
+	// биш бол id_token гаргах боломжгүй тул boot зогсоно (fail-closed).
+	oidcKeys, err := oidcuc.NewKeyManager(oauthpostgres.NewKeyRepository(pool), config.AppConfig.IntegrationEncKey)
+	if err != nil {
+		return nil, fmt.Errorf("oidc signing keys: %w", err)
 	}
+	if err := oidcKeys.EnsureKey(ctx); err != nil {
+		return nil, fmt.Errorf("oidc: ensure signing key: %w", err)
+	}
+	// Түлхүүр болон иргэний бүртгэл бэлэн болсны дараа token гаргах чадварыг
+	// залгана (id_token-ий гарын үсэг + claims).
+	oidcSvc.WithTokenIssuing(oidcKeys, usersUC)
+
+	// Гуравдагч талын RP-ийн gateway хүсэлтийг (/rp/sign, /api/v1/provider) API
+	// Gateway-ийн лог руу async бичих middleware (detached ctx тул хоцролтгүй;
+	// best-effort). DAN-ий өөрийн first-party API трафикийг лог-лохгүй —
+	// шүүлтүүр middleware дотор (isRPGatewayPath).
+	//
+	// Хүсэлт бүрт хязгааргүй goroutine салгахын оронд буфертэй queue + цөөн
+	// тогтмол worker ашиглана: DB удаашрах/ханах үед goroutine хуримтлагдахгүй,
+	// queue дүүрвэл лог-ийг чимээгүй хаяна (best-effort). Бичилт бүр богино
+	// timeout-той тул ханасан DB нэг ч worker-ийг мөнхөд түгжихгүй.
+	gwLogQueue := make(chan gateway.RequestLogInput, 512)
+	for i := 0; i < 4; i++ {
+		go func() {
+			for in := range gwLogQueue {
+				writeCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+				gatewayUC.RecordRequest(writeCtx, in)
+				cancel()
+			}
+		}()
+	}
+	gwLogMW := middlewares.GatewayRequestLogMiddleware(func(method, path, ip string, status, latencyMS int) {
+		select {
+		case gwLogQueue <- gateway.RequestLogInput{
+			Method: method, Path: path, ClientIP: ip, Status: status, LatencyMS: latencyMS,
+		}:
+		default:
+			// Queue дүүрсэн — энэ нэг лог мөрийг хаяна (edge трафикийг блоклохгүй).
+		}
+	})
 
 	// API Route-ууд
+	// Өөрийн OIDC provider-ийн НИЙТИЙН endpoint-ууд. /api бүлгээс ГАДУУР, үндэс
+	// дээр — замыг нь OIDC стандарт (/.well-known/*) болон nginx-ийн одоо байгаа
+	// дүрмүүд (/oauth2/*, /userinfo) тогтоосон.
+	routes.NewOIDCRoute(r, oidcKeys, oidcSvc, config.AppConfig.Issuer()).Routes()
+
 	r.Route("/api", func(api chi.Router) {
+		api.Use(gwLogMW)
+
 		api.Get("/", routes.RootHandler)
 		routes.NewAuthRoute(api, authUC, auditUC, authMiddleware, authRateLimiter, pollRateLimiter).Routes()
-		routes.NewUsersRoute(api, usersUC, authMiddleware).Routes()
+		routes.NewUsersRoute(api, usersUC, authMiddleware, ssoEidProxy != nil).Routes()
 		routes.NewEIDProfileRoute(api, authUC, authMiddleware, govWriteRateLimiter).Routes()
 		routes.NewRBACRoute(api, rbacUC, auditUC, authMiddleware).Routes()
 		routes.NewOrgRoute(api, orgUC, auditUC, authMiddleware).Routes()
-		routes.NewGovRoute(api, govUC, authMiddleware, govWriteRateLimiter).Routes()
+		routes.NewGovRoute(api, govUC, rbacUC, authMiddleware, govWriteRateLimiter).Routes()
 		routes.NewIntegrationsRoute(api, integrationsUC, authMiddleware).Routes()
 		routes.NewAssetsRoute(api, assetsUC, authMiddleware, govWriteRateLimiter).Routes()
 		routes.NewGSpaceRoute(api, gspaceUC, authMiddleware, govWriteRateLimiter).Routes()
 		routes.NewGatewayRoute(api, gatewayUC, rbacUC, authMiddleware).Routes()
-		routes.NewCoreRoute(api, coreUC, authMiddleware).Routes()
+		// Хүсэлт дамжуулах + SLA хяналт (JWT + relay эрх). SLA sweep + demo
+		// simulator/generator нь App.Run-д background-аар ажиллана.
+		routes.NewRelayRoute(api, relayUC, rbacUC, authMiddleware).Routes()
+		// Үйлчилгээний нэгдсэн регистр — админ бүртгэл (registry.view/manage) +
+		// нийтийн каталог (нэвтэрсэн дурын иргэн).
+		routes.NewRegistryRoute(api, registryUC, rbacUC, authMiddleware).Routes()
+		routes.NewCatalogRoute(api, registryUC, authMiddleware).Routes()
+		routes.NewApplicationsRoute(api, applicationsUC, rbacUC, authMiddleware).Routes()
+		routes.NewCoreRoute(api, coreUC, rbacUC, authMiddleware).Routes()
 		routes.NewSSORoute(api, ssoUC).Routes()
-		// Нүүр хуудасны тохиргоо — нийтийн уншилт (нэвтрэлтгүй зочид).
-		routes.NewLandingRoute(api, landingUC).Routes()
-		// OIDC provider login/consent/logout (Hydra тохируулагдсан үед).
-		if providerUC != nil {
-			routes.NewProviderRoute(api, providerUC, authMiddleware).Routes()
-		}
-		routes.NewAdminRoute(api, usersUC, rbacUC, aiUC, landingUC, authMiddleware).Routes()
+		routes.NewAdminRoute(api, usersUC, rbacUC, aiUC, authMiddleware).Routes()
 		routes.NewSuperAdminRoute(api, superadminUC, authMiddleware).Routes()
+		// Super admin бүртгэл + MFA — нэвтрээгүй гадаргуу (rate limit + service RLS).
+		// Зөвхөн INTEGRATION_ENC_KEY тохируулагдсан үед идэвхжинэ (эс бөгөөс inert).
+		if onboardingUC != nil {
+			routes.NewSuperAdminOnboardRoute(api, onboardingUC, authRateLimiter, pollRateLimiter).Routes()
+		}
 		routes.NewAIRoute(api, aiUC, authMiddleware, aiRateLimiter).Routes()
 		routes.NewAuditRoute(api, auditUC, authMiddleware).Routes()
 		routes.NewSecurityRoute(api, securityUC, authMiddleware).Routes()
+		routes.NewSiteRoute(api, siteUC, rbacUC, authMiddleware).Routes()
+		routes.NewThemeRoute(api, themeUC, rbacUC, authMiddleware).Routes()
 		routes.NewSignRoute(api, signUC, usersUC, assetsUC, authMiddleware).Routes()
+		// OIDC provider login/consent/logout.
+		routes.NewProviderRoute(api, providerUC, authMiddleware).Routes()
 	})
 
 	// OIDC provider — /admin оператор гадаргуу (RP OAuth2 client бүртгэл/удирдлага
-	// + admin API key). Энэ апп-ыг Ory Hydra-г урдаа тавьж SSO болгоно. Зөвхөн
+	// + admin API key). sso.dgov.mn нь Ory Hydra-г урдаа тавьж SSO болно. Зөвхөн
 	// Hydra тохируулагдсан (ProviderConfigured) үед идэвхжинэ; эс бөгөөс inert.
 	if config.AppConfig.ProviderConfigured() {
 		devAppsStore := devapps.New(pool)
@@ -378,10 +560,23 @@ func NewApp() (*App, error) {
 		// chi.Mount нь plain http.Handler-ийн r.URL.Path-аас prefix-ыг хасдаггүй
 		// тул StripPrefix-ээр хасна — ингэснээр доторх ServeMux нь /api/v1/...
 		// pattern-тэй таарна.
-		r.Mount("/admin", http.StripPrefix("/admin", adminapi.New(hydraAdmin, devAppsStore, adminKeyStore).Router()))
+		r.Mount("/admin", http.StripPrefix("/admin", adminapi.New(oauthClients, devAppsStore, adminKeyStore).Router()))
 		logger.Info("OIDC provider admin surface mounted at /admin", logger.Fields{
-			"hydra_admin": config.AppConfig.HydraAdminURL,
+			"issuer": config.AppConfig.Issuer(),
 		})
+	}
+
+	// Sign relay — 3 дагч RP (template.dgov.mn гэх мэт) dan-аар ДАМЖИН eID гарын
+	// үсэг зурах reverse-proxy (/rp/sign/*). dan-ий eidmongolia RP creds шаардана.
+	if config.AppConfig.SignRelayToken != "" && config.AppConfig.EIDRPSecret != "" {
+		if relay, rerr := signrelay.New(config.AppConfig.EIDBaseURL, config.AppConfig.EIDRPSecret, config.AppConfig.SignRelayToken); rerr != nil {
+			logger.Warn("sign relay init failed", logger.Fields{"error": rerr.Error()})
+		} else {
+			// RP-ийн gateway хүсэлт тул лог middleware-ээр ороож бичнэ.
+			r.Handle("/rp/sign/*", gwLogMW(relay))
+			r.Handle("/rp/sign", gwLogMW(relay))
+			logger.Info("sign relay mounted at /rp/sign (RP eID signing via dan)", logger.Fields{})
+		}
 	}
 
 	// Серверийн түвшний timeout-ууд (slowloris / удаан client-ийн эсрэг):
@@ -410,11 +605,57 @@ func NewApp() (*App, error) {
 		aiRateLimiter:       aiRateLimiter,
 		pollRateLimiter:     pollRateLimiter,
 		govWriteRateLimiter: govWriteRateLimiter,
+		relayUC:             relayUC,
+		relayDemo:           config.AppConfig.RelayDemoMode,
+		govUC:               govUC,
 	}, nil
+}
+
+// startBackgroundWorkers нь SLA хяналтын background goroutine-уудыг эхлүүлнэ:
+//   - relay sweep (reminder/overdue/breach/escalate) 20с тутам
+//   - gov sweep (иргэний хүсэлтийн хугацаа хэтрэлт + чимээгүй зөвшөөрөл) 60с тутам
+//   - relay demo simulator (RELAY_DEMO_MODE) 10/25с тутам
+//
+// Модуль тус бүр ТУСДАА шалгагдана — нэг нь холбогдоогүй байхад нөгөө нь
+// зогсох ёсгүй. ctx cancel болоход бүгд зогсоно.
+func (a *App) startBackgroundWorkers(ctx context.Context) {
+	tick := func(every time.Duration, fn func(context.Context)) {
+		t := time.NewTicker(every)
+		defer t.Stop()
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			case <-t.C:
+				// Алхмын context-ыг worker context-оос гаргана — shutdown үед
+				// явж буй алхам ч цуцлагдана.
+				stepCtx, cancel := context.WithTimeout(ctx, 20*time.Second)
+				fn(stepCtx)
+				cancel()
+			}
+		}
+	}
+	if a.relayUC != nil {
+		go tick(20*time.Second, func(c context.Context) { _ = a.relayUC.SLASweep(c) })
+		if a.relayDemo {
+			go tick(10*time.Second, a.relayUC.SimulateStep)   // доод platform-уудын хариу дуурайх
+			go tick(25*time.Second, a.relayUC.SimulateIngest) // шинэ демо хүсэлт үүсгэх
+		}
+	}
+	// Иргэний хүсэлтийн SLA — хугацаа хэтрэлт тэмдэглэх + чимээгүй зөвшөөрөл
+	// хэрэгжүүлэх. Relay-ээс сийрэг (60с): хүний хугацаа цаг/хоногоор хэмжигддэг
+	// тул илүү нягт шалгах нь ачааллаас өөр үр дүн авчрахгүй.
+	if a.govUC != nil {
+		go tick(60*time.Second, func(c context.Context) { _ = a.govUC.SLASweep(c) })
+	}
 }
 
 func (a *App) Run() (err error) {
 	srvLog := logger.WithFields(logger.Fields{constants.LoggerCategory: constants.LoggerCategoryServer})
+
+	// SLA хяналтын background worker-ууд — shutdown үед workerCtx cancel болж зогсоно.
+	workerCtx, stopWorkers := context.WithCancel(context.Background())
+	a.startBackgroundWorkers(workerCtx)
 
 	go func() {
 		srvLog.Infof("success to listen and serve on %s", a.server.Addr)
@@ -428,6 +669,7 @@ func (a *App) Run() (err error) {
 
 	<-quit
 	srvLog.Info("shutdown server ...")
+	stopWorkers()
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()

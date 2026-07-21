@@ -1,4 +1,4 @@
-// Gerege Template Version 27.0
+// Government Template Platform V3.0
 // Gerege Systems Development Team болон Claude AI хамтран бүтээв, 2026.
 
 package users
@@ -6,10 +6,11 @@ package users
 import (
 	"fmt"
 
-	"golang.org/x/sync/singleflight"
 	"template/internal/apperror"
 	"template/internal/datasources/caches"
 	repointerface "template/internal/datasources/repositories/interface"
+
+	"golang.org/x/sync/singleflight"
 )
 
 // Config нь usecase-ийн domain давхарга руу дамжуулдаг тохируулах боломжтой

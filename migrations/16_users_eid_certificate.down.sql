@@ -1,4 +1,4 @@
--- Gerege Template Version 27.0
+-- Government Template Platform V3.0
 -- 16_users_eid_certificate.up.sql-ийг буцаана.
 
 ALTER TABLE users DROP COLUMN IF EXISTS document_number;

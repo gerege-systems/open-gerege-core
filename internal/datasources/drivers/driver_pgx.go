@@ -1,4 +1,4 @@
-// Gerege Template Version 27.0
+// Government Template Platform V3.0
 // Gerege Systems Development Team болон Claude AI хамтран бүтээв, 2026.
 
 // Package drivers нь config утгуудыг холбогдсон өгөгдлийн сангийн
@@ -122,8 +122,8 @@ func SetupPgxPostgres(ctx context.Context) (*pgxpool.Pool, error) {
 
 	cfg := PgxConfig{
 		DataSourceName: dsn,
-		MaxConns:       int32(config.AppConfig.DBMaxOpenConns),
-		MinConns:       int32(config.AppConfig.DBMaxIdleConns),
+		MaxConns:       int32(config.AppConfig.DBMaxOpenConns), //nolint:gosec // pool size from config; small positive int, no overflow
+		MinConns:       int32(config.AppConfig.DBMaxIdleConns), //nolint:gosec // pool size from config; small positive int, no overflow
 		MaxLifetime:    time.Duration(config.AppConfig.DBConnMaxLifeMins) * time.Minute,
 		MaxIdleTime:    5 * time.Minute,
 	}

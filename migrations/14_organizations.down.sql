@@ -1,4 +1,4 @@
--- Gerege Template Version 27.0
+-- Government Template Platform V3.0
 -- Revert the organizations + membership feature (RLS policies, tables, indexes).
 
 DROP POLICY IF EXISTS org_memberships_member_select ON organization_memberships;

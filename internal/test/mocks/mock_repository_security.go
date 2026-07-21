@@ -1,4 +1,4 @@
-// Gerege Template Version 27.0
+// Government Template Platform V3.0
 // Gerege Systems Development Team болон Claude AI хамтран бүтээв, 2026.
 
 // repointerface.SecurityEventRepository-д зориулсан гараар бичсэн mock бөгөөд
@@ -41,7 +41,7 @@ type mockConstructorTestingTNewSecurityEventRepository interface {
 // үүсгэж, testing interface болон cleanup-ийг бүртгэнэ.
 func NewSecurityEventRepository(t mockConstructorTestingTNewSecurityEventRepository) *SecurityEventRepository {
 	m := &SecurityEventRepository{}
-	m.Mock.Test(t)
+	m.Test(t)
 	t.Cleanup(func() { m.AssertExpectations(t) })
 	return m
 }

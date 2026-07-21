@@ -256,6 +256,27 @@ func (_m *UserRepository) UpsertFromEID(ctx context.Context, in *domain.User) (d
 	return r0, r1
 }
 
+// UpsertSuperAdmin provides a mock function with given fields: ctx, in, account
+func (_m *UserRepository) UpsertSuperAdmin(ctx context.Context, in *domain.User, account *domain.SuperadminAccount) (domain.User, error) {
+	ret := _m.Called(ctx, in, account)
+
+	var r0 domain.User
+	if rf, ok := ret.Get(0).(func(context.Context, *domain.User, *domain.SuperadminAccount) domain.User); ok {
+		r0 = rf(ctx, in, account)
+	} else {
+		r0 = ret.Get(0).(domain.User)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, *domain.User, *domain.SuperadminAccount) error); ok {
+		r1 = rf(ctx, in, account)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 type mockConstructorTestingTNewUserRepository interface {
 	mock.TestingT
 	Cleanup(func())
@@ -269,4 +290,21 @@ func NewUserRepository(t mockConstructorTestingTNewUserRepository) *UserReposito
 	t.Cleanup(func() { mock.AssertExpectations(t) })
 
 	return mock
+}
+
+func (_m *UserRepository) CreatePreRegistered(ctx context.Context, in *domain.User) (domain.User, error) {
+	ret := _m.Called(ctx, in)
+	var r0 domain.User
+	if rf, ok := ret.Get(0).(func(context.Context, *domain.User) domain.User); ok {
+		r0 = rf(ctx, in)
+	} else {
+		r0 = ret.Get(0).(domain.User)
+	}
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, *domain.User) error); ok {
+		r1 = rf(ctx, in)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
 }

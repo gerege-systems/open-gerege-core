@@ -1,4 +1,4 @@
-// Gerege Template Version 27.0
+// Government Template Platform V3.0
 // Gerege Systems Development Team болон Claude AI хамтран бүтээв, 2026.
 
 package integrations_test
@@ -21,9 +21,21 @@ import (
 func newUC(t *testing.T) (integrations.Usecase, *mocks.UserIntegrationRepository) {
 	t.Helper()
 	repo := mocks.NewUserIntegrationRepository(t)
-	uc, err := integrations.NewUsecase(repo, "test-enc-key")
+	uc, err := integrations.NewUsecase(repo, "test-enc-key", false)
 	require.NoError(t, err)
 	return uc, repo
+}
+
+func TestNewUsecase_RequiresKeyInProduction(t *testing.T) {
+	repo := mocks.NewUserIntegrationRepository(t)
+	// Production (requireKey=true) + хоосон түлхүүр → fail-closed.
+	_, err := integrations.NewUsecase(repo, "", true)
+	require.Error(t, err)
+	// Түлхүүр өгвөл эсвэл production биш бол зөвшөөрнө.
+	_, err = integrations.NewUsecase(repo, "some-key", true)
+	require.NoError(t, err)
+	_, err = integrations.NewUsecase(repo, "", false)
+	require.NoError(t, err)
 }
 
 func TestConnect_EncryptsAndUpserts(t *testing.T) {

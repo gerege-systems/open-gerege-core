@@ -1,4 +1,4 @@
-// Gerege Template Version 27.0
+// Government Template Platform V3.0
 // Gerege Systems Development Team болон Claude AI хамтран бүтээв, 2026.
 
 package domain
@@ -16,6 +16,12 @@ const (
 	PermPersonalView   = "personal.view"   // энгийн хэрэглэгчийн өөрийн хэсэг
 	PermManagerView    = "manager.view"    // manager-ийн хэсэг
 	PermGatewayManage  = "gateway.manage"  // API Gateway (services/routes/consumers/policies) удирдах
+	PermRelayView      = "relay.view"      // Хүсэлт дамжуулах / SLA хяналтын самбар үзэх
+	PermRelayManage    = "relay.manage"    // Relay platform/route чиглүүлэлт удирдах
+	PermGovReview      = "gov.review"      // Иргэний үйлчилгээний хүсэлт хянаж шийдвэрлэх (менежер)
+	PermGovCatalog     = "gov.catalog"     // Төрийн үйлчилгээний каталог удирдах (админ)
+	PermRegistryView   = "registry.view"   // Үйлчилгээний нэгдсэн регистр, once-only самбар үзэх
+	PermRegistryManage = "registry.manage" // Үйлчилгээний паспорт/нотолгоо/хувилбар удирдах
 )
 
 // AllPermissions нь эрхийн каталог (seed + ListPermissions-д ашиглана). Label/
@@ -28,6 +34,12 @@ var AllPermissions = []Permission{
 	{Key: PermManagerView, Label: "Менежерийн хэсэг", Category: "management"},
 	{Key: PermPersonalView, Label: "Хувийн хэсэг", Category: "personal"},
 	{Key: PermGatewayManage, Label: "API Gateway удирдах", Category: "administration"},
+	{Key: PermRelayView, Label: "SLA хяналтын самбар үзэх", Category: "administration"},
+	{Key: PermRelayManage, Label: "Хүсэлт дамжуулах чиглүүлэлт удирдах", Category: "administration"},
+	{Key: PermGovReview, Label: "Иргэний хүсэлт хянах", Category: "management"},
+	{Key: PermGovCatalog, Label: "Үйлчилгээний каталог удирдах", Category: "administration"},
+	{Key: PermRegistryView, Label: "Үйлчилгээний регистр үзэх", Category: "administration"},
+	{Key: PermRegistryManage, Label: "Үйлчилгээний регистр удирдах", Category: "administration"},
 }
 
 // Role нь динамик эрх (RBAC). IsSystem эрхүүдийг (admin/manager/user) устгаж/

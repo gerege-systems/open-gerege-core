@@ -1,4 +1,4 @@
-// Gerege Template Version 27.0
+// Government Template Platform V3.0
 // Gerege Systems Development Team болон Claude AI хамтран бүтээв, 2026.
 
 package config
@@ -9,8 +9,9 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/spf13/viper"
 	"template/internal/constants"
+
+	"github.com/spf13/viper"
 )
 
 var AppConfig Config
@@ -42,7 +43,7 @@ type Config struct {
 	VerifyAPIKey  string `mapstructure:"VERIFY_API_KEY"`
 	VerifyChannel string `mapstructure:"VERIFY_CHANNEL"`
 
-	// Gerege Verify / XYP (xyp.gerege.mn) — улсын бүртгэлээс байгууллагын мэдээлэл
+	// Gerege Verify / XYP (xyp.dgov.mn) — улсын бүртгэлээс байгууллагын мэдээлэл
 	// авах лавлагаа API. HTTP Basic Auth (client_id:client_secret). Креденшлгүй бол
 	// eID байгууллага холбох функц идэвхгүй болно (boot-ыг эвдэхгүй; сонголттой).
 	XYPAPIBase      string `mapstructure:"XYP_API_BASE"`
@@ -57,7 +58,10 @@ type Config struct {
 	GSpacePassword string `mapstructure:"GSPACE_PASSWORD"`
 	GSpaceBasePath string `mapstructure:"GSPACE_BASE_PATH"`
 	GSpaceQuota    int64  `mapstructure:"GSPACE_QUOTA_BYTES"`
-	GSpaceHostKey  string `mapstructure:"GSPACE_HOST_KEY"` // SFTP host key pin (authorized_keys мөр)
+	// GSpaceHostKey — SFTP host-ийн хүлээгдэж буй нийтийн түлхүүр (known_hosts /
+	// authorized_keys мөрийн формат, ж: "ssh-ed25519 AAAA..."). Тохируулбал host
+	// key-г баталгаажуулна (MITM-аас хамгаална); production-д ЗААВАЛ шаардлагатай.
+	GSpaceHostKey string `mapstructure:"GSPACE_HOST_KEY"`
 
 	// eID identity provider (RP contract) — энэ template нь Relying Party.
 	// "Login with eID" нь цорын ганц нэвтрэх арга тул эдгээр нь сонголттой
@@ -71,6 +75,12 @@ type Config struct {
 	EIDCertLevel   string `mapstructure:"EID_CERT_LEVEL"`
 	EIDCallbackURL string `mapstructure:"EID_CALLBACK_URL"`
 	EIDDisplayText string `mapstructure:"EID_DISPLAY_TEXT"`
+	// SignRelayToken — 3 дагч RP (жишээ template.dgov.mn) dan-аар ДАМЖИН eID
+	// гарын үсэг зурахад ашиглах shared token. dan нь /rp/sign/* дор eidmongolia-
+	// ий signature API-г урдаа тавьж, өөрийн EID_RP_SECRET-ыг нэмж дамжуулна.
+	// Хоосон бол relay идэвхгүй. RP нь энэ token-ыг EID_RP_SECRET болгож,
+	// EID_BASE_URL-аа https://sso.dgov.mn/rp/sign/v3 руу заана (RPUUID нь dan-ийх).
+	SignRelayToken string `mapstructure:"SIGN_RELAY_TOKEN"`
 
 	// PDF гарын үсгийн (PAdES) серверийн БАЙНГЫН Document-Signer гэрчилгээ +
 	// ECDSA түлхүүрийн PEM файлын зам. Production-д ЗААВАЛ (fail-closed):
@@ -142,35 +152,41 @@ type Config struct {
 	// томилно (API-аар үүсгэдэггүй). Хэрэглэгч эхлээд бүртгүүлсэн байх ёстой.
 	SuperAdminEmail string `mapstructure:"SUPERADMIN_EMAIL"`
 
-	// Gerege SSO (sso.gerege.mn, OIDC) — eID-ийн зэрэгцээ 2 дахь нэвтрэлт.
-	// ClientID/Secret хоосон бол SSO урсгал inert (Landing дээр товч харагдахгүй).
-	// RedirectURI нь SSO client-д бүртгэгдсэн callback (жишээ
-	// https://template.gerege.mn/sso/callback) байх ёстой.
+	// Government SSO (sso.dgov.mn, OIDC) — гадаад SSO provider-т нэвтрэх RP (consumer).
+	// ClientID/Secret хоосон бол SSO урсгал inert. RedirectURI нь SSO client-д
+	// бүртгэгдсэн callback (жишээ https://template.dgov.mn/sso/callback) байх ёстой.
 	SSOIssuer       string `mapstructure:"SSO_ISSUER"`
 	SSOClientID     string `mapstructure:"SSO_CLIENT_ID"`
 	SSOClientSecret string `mapstructure:"SSO_CLIENT_SECRET"`
 	SSORedirectURI  string `mapstructure:"SSO_REDIRECT_URI"`
 	SSOScope        string `mapstructure:"SSO_SCOPE"`
-	// SSONativeClientID нь mobile (PKCE, public) урсгалын Hydra client_id —
-	// iOS/Android ASWebAuthenticationSession-ийн code-ийг public client-ээр
-	// солиход хэрэглэгдэнэ (хоосон бол default template-gerege-mn-ios).
+	// SSONativeClientID нь mobile (PKCE, public) урсгалын client_id (хоосон бол
+	// default template-dgov-mn-ios).
 	SSONativeClientID string `mapstructure:"SSO_NATIVE_CLIENT_ID"`
+	// SSOEidProxyBaseURL нь SSO-ий eID proxy-ийн суурь URL (жишээ
+	// https://sso.dgov.mn/rp/eid). Тохируулсан бол иргэний PKI самбар
+	// (summary/certificates/devices/activity) нь шууд eidmongolia-ий оронд SSO
+	// proxy-гоор дамжина — энэ апп-д eID RP creds/PKI_READ шаардахгүй. Хоосон бол
+	// шууд eidmongolia (EID_BASE_URL) зам. offline_access scope + хадгалагдсан
+	// SSO refresh token шаардана.
+	SSOEidProxyBaseURL string `mapstructure:"SSO_EID_PROXY_BASE_URL"`
 
-	// --- OIDC PROVIDER тал (энэ апп-ыг Ory Hydra-г урдаа тавьж SSO provider
-	// болгоно). Дээрх SSO_* нь RP (нэвтрэгч) тал; доорхи HYDRA_*/SSO_ADMIN_* нь
-	// PROVIDER (issuer) тал. Зөвхөн Hydra тохируулагдсан (ProviderConfigured)
-	// үед идэвхжинэ; эс бөгөөс provider урсгал бүхэлдээ inert. ---
-	// HydraAdminURL нь Hydra admin API (client CRUD + login/consent/logout
-	// challenge). Compose дотор http://hydra:4445. Public-д ХЭЗЭЭ Ч гаргаж болохгүй.
-	HydraAdminURL string `mapstructure:"HYDRA_ADMIN_URL"`
-	// HydraPublicURL нь issuer (жишээ https://template.gerege.mn) — login/consent
-	// redirect байгуулахад ашиглана. Хоосон бол provider урсгал inert.
-	HydraPublicURL string `mapstructure:"HYDRA_PUBLIC_URL"`
+	// RelayDemoMode нь platform-хоорондын хүсэлт дамжуулах feature-ийн demo
+	// simulator-ыг идэвхжүүлнэ — доод platform-уудын нэрийн өмнөөс хариу үүсгэж,
+	// SLA dashboard-ыг өөрөө хөдөлгөнө. Production-д бодит доод platform-ууд
+	// callback хийдэг тул унтраана (false).
+	RelayDemoMode bool `mapstructure:"RELAY_DEMO_MODE"`
+
+	// --- OIDC PROVIDER тал (энэ платформ нь ӨӨРӨӨ SSO provider). Дээрх SSO_* нь
+	// RP (нэвтрэгч) тал; доорхи OAUTH_*/SSO_ADMIN_* нь PROVIDER (issuer) тал. ---
+	// OAuthIssuer нь OIDC issuer (жишээ https://template.dgov.mn). Discovery,
+	// id_token-ий `iss` болон бүх endpoint URL үүнээс гарна.
+	OAuthIssuer string `mapstructure:"OAUTH_ISSUER"`
 	// SSOStateKey нь login/consent урсгалын transient state cookie HMAC түлхүүр
 	// (>=32 bytes).
 	SSOStateKey string `mapstructure:"SSO_STATE_KEY"`
 	// SSOFirstPartyClients нь consent UI-г алгасах client_id-уудын CSV (эхний
-	// талын апп-ууд).
+	// талын төрийн апп-ууд).
 	SSOFirstPartyClients string `mapstructure:"SSO_FIRSTPARTY_CLIENTS"`
 	// SSOAdminAPIKeys нь /admin гадаргууг баталгаажуулах bootstrap key-үүдийн CSV
 	// (SHA-256 hash-аар тааруулна; хадгалагдахгүй).
@@ -188,10 +204,16 @@ func (c *Config) SSOAdminAPIKeysList() []string { return splitCSVConfig(c.SSOAdm
 // SSOAdminSubsList нь SSO_ADMIN_SUBS-г таслалаар салгаж slice болгоно.
 func (c *Config) SSOAdminSubsList() []string { return splitCSVConfig(c.SSOAdminSubs) }
 
-// ProviderConfigured нь энэ апп-ыг OIDC provider болгох гол тохиргоо (Hydra)
-// бүрдсэн эсэхийг мэдээлнэ.
+// Issuer нь OIDC issuer-ийг буцаана. Сүүлийн slash-ыг ХАСНА — issuer нь
+// id_token-ий `iss`-тэй ЯГ таарах ёстой тул "https://template.dgov.mn/" ба
+// "https://template.dgov.mn" хоёр өөр утга болно.
+func (c *Config) Issuer() string {
+	return strings.TrimRight(strings.TrimSpace(c.OAuthIssuer), "/")
+}
+
+// ProviderConfigured нь OIDC provider-ийн гол тохиргоо бүрдсэн эсэхийг мэдээлнэ.
 func (c *Config) ProviderConfigured() bool {
-	return c.HydraAdminURL != "" && c.HydraPublicURL != "" && len(c.SSOStateKey) >= 32
+	return c.Issuer() != "" && len(c.SSOStateKey) >= 32
 }
 
 // splitCSVConfig нь таслалаар салгаж, хоосон/зайг арилгаж slice болгоно.
@@ -268,14 +290,16 @@ func InitializeAppConfig() error {
 	_ = viper.BindEnv("GSPACE_BASE_PATH")
 	_ = viper.BindEnv("GSPACE_QUOTA_BYTES")
 	_ = viper.BindEnv("GSPACE_HOST_KEY")
-	// OIDC PROVIDER тал (энэ апп-ыг Hydra-г урдаа тавьж SSO болгоно) — нууц/
+	// OIDC PROVIDER тал (sso.dgov.mn нь Hydra-г урдаа тавьж SSO болно) — нууц/
 	// орчин-тусгай тул ил bind хийнэ.
-	_ = viper.BindEnv("HYDRA_ADMIN_URL")
-	_ = viper.BindEnv("HYDRA_PUBLIC_URL")
+	_ = viper.BindEnv("OAUTH_ISSUER")
 	_ = viper.BindEnv("SSO_STATE_KEY")
 	_ = viper.BindEnv("SSO_FIRSTPARTY_CLIENTS")
 	_ = viper.BindEnv("SSO_ADMIN_API_KEYS")
 	_ = viper.BindEnv("SSO_ADMIN_SUBS")
+	_ = viper.BindEnv("SIGN_RELAY_TOKEN")
+	_ = viper.BindEnv("SSO_EID_PROXY_BASE_URL")
+	_ = viper.BindEnv("RELAY_DEMO_MODE")
 	// .env файл байхгүй байх нь алдаа БИШ — контейнер / 12-factor орчинд
 	// тохиргоог зөвхөн environment-ээс уншина. Зөвхөн жинхэнэ задлан унших
 	// (parse) алдааг л буцаана.
@@ -355,12 +379,6 @@ func InitializeAppConfig() error {
 		if AppConfig.VerifyAPIKey == "" {
 			return fmt.Errorf("VERIFY_API_KEY must be set in production (GeregeCloud Verify OTP)")
 		}
-		// INTEGRATION_ENC_KEY хоосон бол OAuth токены шифрлэлтийн түлхүүр sha256("")
-		// буюу нийтэд мэдэгдэх тогтмол болно — DB задарвал бүх хэрэглэгчийн гуравдагч
-		// этгээдийн токен ил гарна. Production-д заавал (хангалттай урттай) тохируулна.
-		if len(AppConfig.IntegrationEncKey) < 16 {
-			return fmt.Errorf("INTEGRATION_ENC_KEY must be set in production and at least 16 characters (OAuth token encryption)")
-		}
 	default:
 		return fmt.Errorf("ENVIRONMENT must be 'development' or 'production', got %q", AppConfig.Environment)
 	}
@@ -387,6 +405,11 @@ func sslModeOf(conn string) string {
 
 // applyDefaults нь сонголттой config утгуудад зохистой анхдагч утгуудыг олгоно.
 func applyDefaults() {
+	// RELAY_DEMO_MODE default = true (template scaffold): тодорхой унтраагаагүй
+	// бол demo simulator идэвхтэй.
+	if !viper.IsSet("RELAY_DEMO_MODE") {
+		AppConfig.RelayDemoMode = true
+	}
 	if AppConfig.DBMaxOpenConns == 0 {
 		AppConfig.DBMaxOpenConns = 25
 	}
@@ -427,16 +450,16 @@ func applyDefaults() {
 		AppConfig.EIDCertLevel = "ADVANCED"
 	}
 	if AppConfig.EIDCallbackURL == "" {
-		AppConfig.EIDCallbackURL = "https://template.gerege.mn/login/verify"
+		AppConfig.EIDCallbackURL = "https://template.dgov.mn/login/verify"
 	}
 	if AppConfig.EIDDisplayText == "" {
-		AppConfig.EIDDisplayText = "template.gerege.mn"
+		AppConfig.EIDDisplayText = "template.dgov.mn"
 	}
 	if AppConfig.CoreAPIBase == "" {
 		AppConfig.CoreAPIBase = "https://core.gerege.mn"
 	}
 	if AppConfig.XYPAPIBase == "" {
-		AppConfig.XYPAPIBase = "https://xyp.gerege.mn"
+		AppConfig.XYPAPIBase = "https://xyp.dgov.mn"
 	}
 	if AppConfig.GSpacePort == 0 {
 		AppConfig.GSpacePort = 22
@@ -447,18 +470,15 @@ func applyDefaults() {
 	if AppConfig.GSpaceQuota == 0 {
 		AppConfig.GSpaceQuota = 2 << 20 // 2 MB
 	}
+	// Government SSO (RP/consumer) default-ууд.
 	if AppConfig.SSOIssuer == "" {
-		AppConfig.SSOIssuer = "https://sso.gerege.mn"
+		AppConfig.SSOIssuer = "https://sso.dgov.mn"
 	}
 	if AppConfig.SSOScope == "" {
 		AppConfig.SSOScope = "openid profile email"
 	}
 	if AppConfig.SSONativeClientID == "" {
-		AppConfig.SSONativeClientID = "template-gerege-mn-ios"
-	}
-	// OIDC provider тал: Hydra admin URL default нь compose доторх hydra:4445.
-	if AppConfig.HydraAdminURL == "" {
-		AppConfig.HydraAdminURL = "http://hydra:4445"
+		AppConfig.SSONativeClientID = "template-dgov-mn-ios"
 	}
 	// OTel-ийн sample ratio нь зөвхөн exporter тохируулагдсан БА оператор
 	// ratio-г тодорхой зааж өгөөгүй үед 1.0 утгыг анхдагчаар авна. Exporter

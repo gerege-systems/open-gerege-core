@@ -1,4 +1,4 @@
-// Gerege Template Version 27.0
+// Government Template Platform V3.0
 // Gerege Systems Development Team болон Claude AI хамтран бүтээв, 2026.
 
 // Package superadmin нь /v1/superadmin/* endpoint-уудыг үйлчилнэ — админ
@@ -81,6 +81,51 @@ func (h Handler) CreateAdmin(w http.ResponseWriter, r *http.Request) error {
 		return v1.RespondWithError(w, r, err)
 	}
 	return v1.NewSuccessResponse(w, r, http.StatusCreated, "admin created successfully", responses.FromAdminUser(res.User))
+}
+
+// AddAdminByRegister godoc
+// @Summary      Регистрээр админ нэмэх
+// @Description  Регистрийн дугаараар БАЙГАА хэрэглэгчийг admin болгоно (шинэ хэрэглэгч үүсгэхгүй). Зөвхөн super admin хандана.
+// @Tags         superadmin
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        payload  body      requests.SuperadminAddAdminByRegisterRequest  true  "Register"
+// @Success      200  {object}  v1.BaseResponse  "Promoted to admin"
+// @Failure      404  {object}  v1.BaseResponse  "Register not registered in DAN"
+// @Failure      409  {object}  v1.BaseResponse  "Already an admin"
+// @Router       /v1/superadmin/admins/by-register [post]
+func (h Handler) AddAdminByRegister(w http.ResponseWriter, r *http.Request) error {
+	var req requests.SuperadminAddAdminByRegisterRequest
+	if err := v1.DecodeBody(r, &req); err != nil {
+		return v1.NewErrorResponse(w, r, http.StatusBadRequest, "invalid request body")
+	}
+	if err := validators.ValidatePayloads(req); err != nil {
+		return v1.RespondWithError(w, r, err)
+	}
+	res, err := h.usecase.AddAdminByRegister(r.Context(), superadminuc.AddAdminByRegisterRequest{Register: req.Register})
+	if err != nil {
+		return v1.RespondWithError(w, r, err)
+	}
+	return v1.NewSuccessResponse(w, r, http.StatusOK, "admin added successfully", responses.FromAdminUser(res.User))
+}
+
+// LookupByRegister godoc
+// @Summary      Регистрээр хэрэглэгч харах (preview)
+// @Description  Регистрийн дугаараар DAN-д БАЙГАА хэрэглэгчийг олж буцаана (эрх олгохгүй, зөвхөн нэр/эрхийг урьдчилан харах). Зөвхөн super admin.
+// @Tags         superadmin
+// @Produce      json
+// @Security     BearerAuth
+// @Param        register  query  string  true  "Регистрийн дугаар"
+// @Success      200  {object}  v1.BaseResponse  "User found"
+// @Failure      404  {object}  v1.BaseResponse  "Register not registered in DAN"
+// @Router       /v1/superadmin/admins/by-register [get]
+func (h Handler) LookupByRegister(w http.ResponseWriter, r *http.Request) error {
+	res, err := h.usecase.LookupByRegister(r.Context(), r.URL.Query().Get("register"))
+	if err != nil {
+		return v1.RespondWithError(w, r, err)
+	}
+	return v1.NewSuccessResponse(w, r, http.StatusOK, "user found", responses.FromAdminUser(res.User))
 }
 
 // GrantAdmin godoc

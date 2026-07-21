@@ -1,4 +1,4 @@
-// Gerege Template Version 27.0
+// Government Template Platform V3.0
 // Gerege Systems Development Team болон Claude AI хамтран бүтээв, 2026.
 
 package logger_test
@@ -151,7 +151,7 @@ func ExampleLogger() {
 		"amount":  99.99,
 	})
 
-	// Гинжлэх (chaining)
+	// Гинжилсэн хэлбэрээр ашиглах жишээ
 	log := logger.WithContext(ctx).WithFields(logger.Fields{
 		"component": "payment",
 	})

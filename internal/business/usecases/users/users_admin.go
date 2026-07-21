@@ -1,4 +1,4 @@
-// Gerege Template Version 27.0
+// Government Template Platform V3.0
 // Gerege Systems Development Team болон Claude AI хамтран бүтээв, 2026.
 
 package users
@@ -6,6 +6,7 @@ package users
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"template/internal/apperror"
 	"template/internal/business/domain"
@@ -43,14 +44,13 @@ func (uc *usecase) ListAdmins(ctx context.Context) (ListResponse, error) {
 // оноож болохгүй (зөвхөн bootstrap/DB), мөн super admin бүртгэлийг энэ замаар
 // өөрчилж болохгүй — эс бөгөөс users.manage эрхтэй энгийн admin өөр бүртгэлийг
 // super admin болгож эрх нэмэгдүүлэх, эсвэл super admin-г буулгах боломжтой болно.
+//
+// Мөн ADMIN эрхийг зөвхөн super admin олгож/хасна: энгийн admin нь зөвхөн
+// manager ↔ user хооронд л сольж чадна (admin өөртэйгөө тэнцүү эрх тараахаас
+// сэргийлнэ). Super admin нь admin-ыг superadmin usecase-ээр удирдана.
 func (uc *usecase) UpdateRole(ctx context.Context, req UpdateRoleRequest) error {
-	// Admin түвшний (super admin + admin) зэрэглэлийг энэ ерөнхий users.manage
-	// замаар ХЭЗЭЭ Ч оноож болохгүй — эс бөгөөс users.manage эрхтэй энгийн (custom)
-	// role өөрийгөө admin болгож бүх эрхийг булаах privilege-escalation боломжтой.
-	// Admin олгох/хасах нь зөвхөн super-admin-ий тусгай урсгалаар (GrantAdmin/
-	// RevokeAdmin) явна.
-	if req.RoleID == domain.RoleSuperAdmin || req.RoleID == domain.RoleAdmin {
-		return apperror.Forbidden("cannot assign an admin-level role via this endpoint; use the super-admin admin-management flow")
+	if req.RoleID == domain.RoleSuperAdmin {
+		return apperror.Forbidden("cannot assign the super admin role")
 	}
 	existing, err := uc.repo.GetByID(ctx, req.UserID)
 	if err != nil {
@@ -59,11 +59,57 @@ func (uc *usecase) UpdateRole(ctx context.Context, req UpdateRoleRequest) error 
 	if existing.IsSuperAdmin() {
 		return apperror.Forbidden("cannot modify a super admin account")
 	}
+	if req.CallerRoleID != domain.RoleSuperAdmin {
+		if req.RoleID == domain.RoleAdmin {
+			return apperror.Forbidden("only a super admin can grant the admin role")
+		}
+		if existing.RoleID == domain.RoleAdmin {
+			return apperror.Forbidden("only a super admin can change an admin account")
+		}
+	}
 	if err := uc.repo.UpdateRole(ctx, req.UserID, req.RoleID); err != nil {
 		return mapRepoError(err, "update role")
 	}
 	uc.ristrettoCache.Del(fmt.Sprintf("user/%s", existing.Email))
 	return nil
+}
+
+// CreatePreRegistered нь private платформд иргэнийг регистрийн дугаараар
+// урьдчилан бүртгэнэ. Эрхийн хамгаалалт нь UpdateRole-той ижил: super admin
+// эрхийг ХЭЗЭЭ Ч энэ замаар оноож болохгүй; ADMIN эрхийг зөвхөн super admin
+// оноож чадна (энгийн admin нь зөвхөн user/manager бүртгэнэ).
+func (uc *usecase) CreatePreRegistered(ctx context.Context, req CreatePreRegisterRequest) (domain.User, error) {
+	if req.RoleID == domain.RoleSuperAdmin {
+		return domain.User{}, apperror.Forbidden("cannot assign the super admin role")
+	}
+	if req.CallerRoleID != domain.RoleSuperAdmin && req.RoleID == domain.RoleAdmin {
+		return domain.User{}, apperror.Forbidden("only a super admin can grant the admin role")
+	}
+	roleID := req.RoleID
+	if roleID == 0 {
+		roleID = domain.RoleUser
+	}
+	// Регистрийн дугаарыг eID-ийн адил жижиг үсгээр — ssouser upsert нь
+	// lower(national_id)-аар тааруулдаг тул тохирно.
+	natID := strings.ToLower(strings.TrimSpace(req.Register))
+	if natID == "" {
+		return domain.User{}, apperror.BadRequest("регистрийн дугаар шаардлагатай")
+	}
+	user := &domain.User{
+		Username:    "reg_" + natID,
+		FirstName:   strings.TrimSpace(req.FirstName),
+		LastName:    strings.TrimSpace(req.LastName),
+		FirstNameEn: strings.TrimSpace(req.FirstNameEn),
+		LastNameEn:  strings.TrimSpace(req.LastNameEn),
+		NationalID:  natID,
+		RoleID:      roleID,
+		Active:      true,
+	}
+	stored, err := uc.repo.CreatePreRegistered(ctx, user)
+	if err != nil {
+		return domain.User{}, mapRepoError(err, "pre-register user")
+	}
+	return stored, nil
 }
 
 // SetActive нь хэрэглэгчийг идэвхжүүлэх/идэвхгүй болгоно. Super admin бүртгэлийг

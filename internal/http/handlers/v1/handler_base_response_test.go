@@ -1,4 +1,4 @@
-// Gerege Template Version 27.0
+// Government Template Platform V3.0
 // Gerege Systems Development Team болон Claude AI хамтран бүтээв, 2026.
 
 // Хариу дугтуй + алдаа→HTTP статус буулгалтын unit тест. Энэ давхарга нь бүх
@@ -44,7 +44,7 @@ func TestRespondWithErrorStatusMapping(t *testing.T) {
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			rec := httptest.NewRecorder()
-			r := httptest.NewRequest(http.MethodGet, "/", nil)
+			r := httptest.NewRequest(http.MethodGet, "/", http.NoBody)
 			_ = v1.RespondWithError(rec, r, tc.err)
 			if rec.Code != tc.status {
 				t.Fatalf("status = %d, want %d", rec.Code, tc.status)
@@ -60,7 +60,7 @@ func TestRespondWithErrorStatusMapping(t *testing.T) {
 func TestRespondWithErrorHidesInternalCause(t *testing.T) {
 	secret := errAny("pq: password=hunter2 host=10.0.0.5")
 	rec := httptest.NewRecorder()
-	r := httptest.NewRequest(http.MethodGet, "/", nil)
+	r := httptest.NewRequest(http.MethodGet, "/", http.NoBody)
 	_ = v1.RespondWithError(rec, r, apperror.InternalCause(secret))
 
 	body := decodeBody(t, rec)
@@ -78,7 +78,7 @@ func TestRespondWithValidationErrors(t *testing.T) {
 		{Field: "email", Tag: "email", Message: "invalid email"},
 	}}
 	rec := httptest.NewRecorder()
-	r := httptest.NewRequest(http.MethodPost, "/", nil)
+	r := httptest.NewRequest(http.MethodPost, "/", http.NoBody)
 	_ = v1.RespondWithError(rec, r, ve)
 
 	if rec.Code != http.StatusUnprocessableEntity {
@@ -93,7 +93,7 @@ func TestRespondWithValidationErrors(t *testing.T) {
 
 func TestSuccessResponseEnvelope(t *testing.T) {
 	rec := httptest.NewRecorder()
-	r := httptest.NewRequest(http.MethodGet, "/", nil)
+	r := httptest.NewRequest(http.MethodGet, "/", http.NoBody)
 	_ = v1.NewSuccessResponse(rec, r, http.StatusOK, "ok", map[string]string{"k": "v"})
 
 	if rec.Code != http.StatusOK {

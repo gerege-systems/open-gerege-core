@@ -1,4 +1,4 @@
-// Gerege Template Version 27.0
+// Government Template Platform V3.0
 // Gerege Systems Development Team болон Claude AI хамтран бүтээв, 2026.
 
 package domain_test
@@ -7,10 +7,11 @@ import (
 	"errors"
 	"testing"
 
+	"template/internal/business/domain"
+
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"golang.org/x/crypto/bcrypt"
-	"template/internal/business/domain"
 )
 
 func TestNewUser(t *testing.T) {

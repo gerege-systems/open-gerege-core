@@ -1,4 +1,4 @@
-// Gerege Template Version 27.0
+// Government Template Platform V3.0
 // Gerege Systems Development Team болон Claude AI хамтран бүтээв, 2026.
 
 // RequirePermission-ийн бүрэн matrix тест: admin bypass, эрхтэй/эрхгүй role,
@@ -100,7 +100,7 @@ func TestRequirePermission(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			req := httptest.NewRequest(http.MethodGet, "/protected", nil)
+			req := httptest.NewRequest(http.MethodGet, "/protected", http.NoBody)
 			if tc.setClaim {
 				req = withClaim(req, tc.claim)
 			}

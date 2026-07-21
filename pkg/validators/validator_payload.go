@@ -1,4 +1,4 @@
-// Gerege Template Version 27.0
+// Government Template Platform V3.0
 // Gerege Systems Development Team болон Claude AI хамтран бүтээв, 2026.
 
 package validators
@@ -10,8 +10,9 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/go-playground/validator/v10"
 	"template/pkg/helpers"
+
+	"github.com/go-playground/validator/v10"
 )
 
 // FieldError нь бүтэлгүй болсон нэг баталгаажуулалтын дүрмийг тодорхойлно. API

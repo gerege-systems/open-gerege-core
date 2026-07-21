@@ -1,4 +1,4 @@
-// Gerege Template Version 27.0
+// Government Template Platform V3.0
 // Gerege Systems Development Team болон Claude AI хамтран бүтээв, 2026.
 
 // Security handler-ийн туслах логикийн white-box тест: clientIP нь
@@ -7,27 +7,28 @@
 package security
 
 import (
+	"net/http"
 	"net/http/httptest"
 	"testing"
 )
 
 func TestClientIP(t *testing.T) {
 	t.Run("X-Forwarded-For эхний хаяг", func(t *testing.T) {
-		r := httptest.NewRequest("POST", "/", nil)
+		r := httptest.NewRequest("POST", "/", http.NoBody)
 		r.Header.Set("X-Forwarded-For", "203.0.113.7, 10.0.0.1, 172.16.0.2")
 		if got := clientIP(r); got != "203.0.113.7" {
 			t.Errorf("clientIP = %q, want 203.0.113.7", got)
 		}
 	})
 	t.Run("XFF ганц хаяг", func(t *testing.T) {
-		r := httptest.NewRequest("POST", "/", nil)
+		r := httptest.NewRequest("POST", "/", http.NoBody)
 		r.Header.Set("X-Forwarded-For", " 198.51.100.9 ")
 		if got := clientIP(r); got != "198.51.100.9" {
 			t.Errorf("clientIP = %q", got)
 		}
 	})
 	t.Run("XFF байхгүй → RemoteAddr host", func(t *testing.T) {
-		r := httptest.NewRequest("POST", "/", nil)
+		r := httptest.NewRequest("POST", "/", http.NoBody)
 		r.RemoteAddr = "192.0.2.44:54321"
 		if got := clientIP(r); got != "192.0.2.44" {
 			t.Errorf("clientIP = %q, want 192.0.2.44", got)

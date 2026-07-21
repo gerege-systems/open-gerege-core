@@ -1,4 +1,4 @@
-// Gerege Template Version 27.0
+// Government Template Platform V3.0
 // Gerege Systems Development Team болон Claude AI хамтран бүтээв, 2026.
 
 package middlewares_test
@@ -8,9 +8,10 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
 	"template/internal/http/middlewares"
 	"template/pkg/logger"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestRequestIDMiddleware_BridgesIDsToContext(t *testing.T) {

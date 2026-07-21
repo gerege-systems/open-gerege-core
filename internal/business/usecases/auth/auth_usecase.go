@@ -1,4 +1,4 @@
-// Gerege Template Version 27.0
+// Government Template Platform V3.0
 // Gerege Systems Development Team болон Claude AI хамтран бүтээв, 2026.
 
 // Package auth нь credential баталгаажуулалт, session-ийн амьдралын мөчлөг
@@ -167,9 +167,17 @@ type (
 	// GoogleLoginResponse нь Google callback-ийн үр дүн. Linked=true бол шууд
 	// нэвтэрсэн (Login дүүрэн); false бол эхний удаа тул eID-ээр баталгаажуулах
 	// шаардлагатай (LinkToken-ийг eID poll руу дамжуулна).
+	//
+	// MFARequired=true (зөвхөн MFA идэвхтэй super admin-д) бол Google
+	// баталгаажсан ч session ОЛГОГДООГҮЙ: клиент MFAToken + TOTP/нөөц кодыг
+	// POST /auth/superadmin/mfa руу илгээж session авна. Энэ үед Login хоосон.
 	GoogleLoginResponse struct {
-		Linked    bool
-		Login     LoginResponse
+		Linked bool
+		Login  LoginResponse
+		// MFARequired нь super admin-ийн 2FA шат шаардагдаж буйг илэрхийлнэ.
+		MFARequired bool
+		// MFAToken нь /auth/superadmin/mfa-д дамжуулах богино хугацааны (5 мин) токен.
+		MFAToken  string
 		LinkToken string
 		Email     string
 	}
@@ -177,9 +185,17 @@ type (
 	// EIDPollResponse нь /eid/poll-ийн үр дүн. State нь IdP-ийн session төлөв
 	// (RUNNING / COMPLETE / EXPIRED / REFUSED). COMPLETE үед User + токенууд
 	// дүүрэн байна (Login-той ижил хэлбэрээр клиентэд буудаг).
+	//
+	// COMPLETE + MFARequired=true (зөвхөн MFA идэвхтэй super admin-д) бол eID
+	// баталгаажсан ч session ОЛГОГДООГҮЙ: клиент MFAToken-оор
+	// /auth/superadmin/mfa-г дуудна. Энэ үед User/токенууд хоосон.
 	EIDPollResponse struct {
-		State        string
-		User         domain.User
+		State string
+		User  domain.User
+		// MFARequired нь super admin-ийн 2FA шат шаардагдаж буйг илэрхийлнэ.
+		MFARequired bool
+		// MFAToken нь /auth/superadmin/mfa-д дамжуулах богино хугацааны (5 мин) токен.
+		MFAToken     string
 		AccessToken  string
 		RefreshToken string
 	}

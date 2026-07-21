@@ -1,4 +1,4 @@
--- Gerege Template Version 27.0
+-- Government Template Platform V3.0
 -- Reverses 15_audit_log.up.sql — drops both event-store tables (policies are
 -- dropped implicitly with the tables).
 

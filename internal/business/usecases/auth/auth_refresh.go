@@ -1,4 +1,4 @@
-// Gerege Template Version 27.0
+// Government Template Platform V3.0
 // Gerege Systems Development Team болон Claude AI хамтран бүтээв, 2026.
 
 package auth
@@ -87,17 +87,20 @@ func (uc *usecase) Refresh(ctx context.Context, req RefreshRequest) (resp LoginR
 	}
 
 	// Хүчингүй болгосон / идэвхгүйжүүлсэн бүртгэлүүд refresh нь амьд байсан ч
-	// шинэ access токен авахаа болихын тулд identity-г шинээр хайна.
-	lookupResp, lookupErr := uc.users.GetByEmail(ctx, users.GetByEmailRequest{Email: claims.Email})
+	// шинэ access токен авахаа болихын тулд identity-г шинээр хайна. Токенд
+	// хадгалагдсан тогтвортой UserID-аар хайна — email-ээр НЭ хайна: eID
+	// хэрэглэгчид email = NULL (зөвхөн superadmin email-тэй) тул тэдгээрийн
+	// хувьд email хоосон бөгөөд GetByEmail хэзээ ч олдохгүй.
+	lookupResp, lookupErr := uc.users.GetByID(ctx, users.GetByIDRequest{ID: claims.UserID})
 	if lookupErr != nil {
 		err = apperror.Unauthorized("user no longer exists")
 		logger.ErrorWithContext(ctx, "Refresh failed: user lookup error", logger.Fields{
 			"usecase": usecaseName,
 			"method":  funcName,
 			"file":    fileName,
-			"step":    "get_user_by_email",
+			"step":    "get_user_by_id",
 			"error":   lookupErr.Error(),
-			"email":   claims.Email,
+			"user_id": claims.UserID,
 		})
 		return LoginResponse{}, err
 	}

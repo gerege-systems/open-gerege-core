@@ -1,10 +1,12 @@
--- Gerege Template Version 27.0
--- API Gateway: upstream services, routes, consumers + API keys, per-route
--- policies (rate-limit / auth / cors …) and a request-log table for the admin
--- "API Gateway" system. These are gateway CONFIG/telemetry tables — not
--- per-user data — so they are NOT under RLS (same class as roles/permissions).
+-- Government Template Platform V3.0
+-- API Gateway (нэгдсэн, эцсийн хэлбэр): upstream service-үүд + нэгдсэн
+-- 'applications' бүртгэл (gateway consumer + SSO RP-г НЭГ загварт нэгтгэсэн) +
+-- request-log telemetry. Application бүр = Hydra OAuth2 client; аппад зөвшөөрсөн
+-- service-үүдийг application_services-ээр (OAuth scope) оноодог. Эдгээр нь
+-- gateway CONFIG/telemetry хүснэгтүүд — per-user өгөгдөл БИШ — тул RLS-гүй
+-- (roles/permissions-тэй ижил ангилал); app бүрэн CRUD хийдэг.
 
--- Upstream backend services that routes proxy to.
+-- Upstream backend service-үүд. scope нь аппад олгох OAuth scope нэр.
 CREATE TABLE IF NOT EXISTS gateway_services (
     id                 uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
     name               TEXT UNIQUE NOT NULL,
@@ -17,70 +19,40 @@ CREATE TABLE IF NOT EXISTS gateway_services (
     tags               TEXT[] NOT NULL DEFAULT '{}',
     enabled            BOOLEAN NOT NULL DEFAULT true,
     created_at         TIMESTAMPTZ NOT NULL DEFAULT now(),
-    updated_at         TIMESTAMPTZ
+    updated_at         TIMESTAMPTZ,
+    scope              TEXT NOT NULL DEFAULT ''
 );
 
--- Routes: which (methods, paths) map to which upstream service.
-CREATE TABLE IF NOT EXISTS gateway_routes (
+-- Нэгдсэн бүртгэл: gateway consumer + SSO RP (developer_apps) → applications.
+-- Application бүр = Hydra OAuth2 client (RP = authorization_code, m2m =
+-- client_credentials). redirect_uris нь Hydra-гийн толин тусгал (display).
+CREATE TABLE IF NOT EXISTS applications (
     id            uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
-    service_id    uuid NOT NULL REFERENCES gateway_services(id) ON DELETE CASCADE,
-    name          TEXT NOT NULL,
-    methods       TEXT[] NOT NULL DEFAULT '{GET}',
-    paths         TEXT[] NOT NULL DEFAULT '{}',
-    strip_path    BOOLEAN NOT NULL DEFAULT true,
-    preserve_host BOOLEAN NOT NULL DEFAULT false,
-    enabled       BOOLEAN NOT NULL DEFAULT true,
-    created_at    TIMESTAMPTZ NOT NULL DEFAULT now(),
-    updated_at    TIMESTAMPTZ
-);
-CREATE INDEX IF NOT EXISTS idx_gateway_routes_service ON gateway_routes (service_id);
-
--- Consumers: registered API clients.
-CREATE TABLE IF NOT EXISTS gateway_consumers (
-    id         uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
-    username   TEXT UNIQUE NOT NULL,
-    custom_id  TEXT NOT NULL DEFAULT '',
-    tags       TEXT[] NOT NULL DEFAULT '{}',
-    enabled    BOOLEAN NOT NULL DEFAULT true,
-    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-    updated_at TIMESTAMPTZ
+    client_id     text UNIQUE NOT NULL,           -- Hydra OAuth2 client_id
+    name          text NOT NULL,
+    app_type      text NOT NULL DEFAULT 'm2m',    -- web | spa | native | m2m
+    tags          text[] NOT NULL DEFAULT '{}',
+    redirect_uris text[] NOT NULL DEFAULT '{}',
+    enabled       boolean NOT NULL DEFAULT true,
+    created_by    text NOT NULL DEFAULT '',
+    created_at    timestamptz NOT NULL DEFAULT now(),
+    updated_at    timestamptz
 );
 
--- API keys belonging to a consumer. Only the SHA-256 hash is stored; the
--- prefix is kept for display ("gk_live_ab12…"). The plaintext key is shown
--- to the operator exactly once at creation time.
-CREATE TABLE IF NOT EXISTS gateway_api_keys (
-    id           uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
-    consumer_id  uuid NOT NULL REFERENCES gateway_consumers(id) ON DELETE CASCADE,
-    label        TEXT NOT NULL DEFAULT '',
-    key_prefix   TEXT NOT NULL,
-    key_hash     TEXT NOT NULL,
-    last_used_at TIMESTAMPTZ,
-    expires_at   TIMESTAMPTZ,
-    revoked      BOOLEAN NOT NULL DEFAULT false,
-    created_at   TIMESTAMPTZ NOT NULL DEFAULT now()
+-- Аппад зөвшөөрсөн service-үүд (байгаа мөр = зөвшөөрөгдсөн). App-ийн Hydra
+-- client-ийн scope нь эдгээр service-ийн scope-уудаас бүрдэнэ.
+CREATE TABLE IF NOT EXISTS application_services (
+    application_id uuid NOT NULL REFERENCES applications(id) ON DELETE CASCADE,
+    service_id     uuid NOT NULL REFERENCES gateway_services(id) ON DELETE CASCADE,
+    PRIMARY KEY (application_id, service_id)
 );
-CREATE INDEX IF NOT EXISTS idx_gateway_api_keys_consumer ON gateway_api_keys (consumer_id);
-CREATE UNIQUE INDEX IF NOT EXISTS idx_gateway_api_keys_hash ON gateway_api_keys (key_hash);
+CREATE INDEX IF NOT EXISTS idx_application_services_service ON application_services (service_id);
 
--- Policies (plugins): rate-limit, key-auth, cors, … applied to a route, or
--- global when route_id IS NULL. config is plugin-specific JSON.
-CREATE TABLE IF NOT EXISTS gateway_policies (
-    id         uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
-    route_id   uuid REFERENCES gateway_routes(id) ON DELETE CASCADE,
-    type       TEXT NOT NULL,
-    config     JSONB NOT NULL DEFAULT '{}',
-    enabled    BOOLEAN NOT NULL DEFAULT true,
-    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-    updated_at TIMESTAMPTZ
-);
-CREATE INDEX IF NOT EXISTS idx_gateway_policies_route ON gateway_policies (route_id);
-
--- Request log / telemetry feeding the overview dashboard.
+-- Request log / telemetry — middleware нь бодит /api хүсэлтүүдийг (method/path/
+-- status/latency/ip) бичдэг. Route/consumer холбоосгүй (тэдгээр gateway concept
+-- хасагдсан).
 CREATE TABLE IF NOT EXISTS gateway_request_logs (
     id          uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
-    route_id    uuid REFERENCES gateway_routes(id) ON DELETE SET NULL,
-    consumer_id uuid REFERENCES gateway_consumers(id) ON DELETE SET NULL,
     method      TEXT NOT NULL,
     path        TEXT NOT NULL,
     status      INT  NOT NULL,
@@ -90,74 +62,36 @@ CREATE TABLE IF NOT EXISTS gateway_request_logs (
 );
 CREATE INDEX IF NOT EXISTS idx_gateway_request_logs_created ON gateway_request_logs (created_at DESC);
 
--- New permission for the API Gateway admin surface (matches
--- domain.PermGatewayManage). 'admin' auto-resolves to the full catalogue, so
--- no explicit role_permissions row is needed for it.
+-- API Gateway admin surface-ийн permission (domain.PermGatewayManage-тэй
+-- тохирно). 'admin' нь бүх каталогид авто-resolve хийдэг тул role_permissions
+-- мөр шаардлагагүй.
 INSERT INTO permissions(key, label, category) VALUES
     ('gateway.manage', 'API Gateway удирдах', 'administration')
 ON CONFLICT (key) DO NOTHING;
 
--- ── Demo seed (only when empty) so the admin screens render meaningfully.
-INSERT INTO gateway_services(name, protocol, host, port, path, tags)
+-- ── Бодит seed (хоосон үед) — DAN-ий гуравдагч талд өгдөг service/RP-үүд.
+-- Тэмдэглэл: SQL нь Hydra client үүсгэхгүй; OAuth-ыг бүрэн идэвхжүүлэхийн тулд
+-- админ UI-аас secret эргүүлж/дахин үүсгэнэ.
+INSERT INTO gateway_services (name, protocol, host, port, path, tags, scope)
 SELECT * FROM (VALUES
-    ('eid-core',   'https', 'api.eidgerege.mn', 443, '/gerege/v1', ARRAY['eid','core']),
-    ('payments',   'https', 'pay.gerege.mn',    443, '/v2',         ARRAY['billing']),
-    ('ai-gateway', 'https', 'ai.gerege.mn',     443, '/v1',         ARRAY['ai'])
-) AS v(name, protocol, host, port, path, tags)
+    ('dan-sso',  'https', 'sso.dgov.mn', 443, '/oauth2',  ARRAY['sso', 'oidc']::text[], 'svc:dan-sso'),
+    ('eid-sign', 'https', 'sso.dgov.mn', 443, '/rp/sign', ARRAY['eid', 'sign']::text[], 'svc:eid-sign')
+) AS v(name, protocol, host, port, path, tags, scope)
 WHERE NOT EXISTS (SELECT 1 FROM gateway_services);
 
-INSERT INTO gateway_routes(service_id, name, methods, paths, strip_path)
-SELECT s.id, r.name, r.methods, r.paths, true
-FROM (VALUES
-    ('eid-core',   'eid-me',       ARRAY['GET'],         ARRAY['/eid/me']),
-    ('eid-core',   'eid-sign',     ARRAY['POST'],        ARRAY['/eid/sign']),
-    ('payments',   'pay-charge',   ARRAY['POST'],        ARRAY['/pay/charge']),
-    ('ai-gateway', 'ai-chat',      ARRAY['POST','GET'],  ARRAY['/ai/chat'])
-) AS r(svc, name, methods, paths)
-JOIN gateway_services s ON s.name = r.svc
-WHERE NOT EXISTS (SELECT 1 FROM gateway_routes);
-
-INSERT INTO gateway_consumers(username, custom_id, tags)
+INSERT INTO applications (client_id, name, app_type, tags, redirect_uris, enabled, created_by)
 SELECT * FROM (VALUES
-    ('mobile-app', 'app-001', ARRAY['internal']),
-    ('partner-bank', 'bank-77', ARRAY['partner']),
-    ('analytics-job', 'job-12', ARRAY['internal','batch'])
-) AS v(username, custom_id, tags)
-WHERE NOT EXISTS (SELECT 1 FROM gateway_consumers);
+    ('template-dgov-mn',  'template.dgov.mn',  'web', ARRAY['rp']::text[],
+        ARRAY['https://template.dgov.mn/auth/callback']::text[], true, 'seed-rp'),
+    ('developer-dgov-mn', 'developer.dgov.mn', 'web', ARRAY['rp', 'developer']::text[],
+        ARRAY['https://developer.dgov.mn/auth/callback']::text[], true, 'seed-rp')
+) AS v(client_id, name, app_type, tags, redirect_uris, enabled, created_by)
+WHERE NOT EXISTS (SELECT 1 FROM applications);
 
--- Demo keys: hashes are sha-256 of throwaway demo strings (display prefix only).
-INSERT INTO gateway_api_keys(consumer_id, label, key_prefix, key_hash)
-SELECT c.id, k.label, k.prefix, k.hash
-FROM (VALUES
-    ('mobile-app',    'production',  'gk_live_a1b2', encode(sha256('demo-mobile-app'::bytea), 'hex')),
-    ('partner-bank',  'production',  'gk_live_c3d4', encode(sha256('demo-partner-bank'::bytea), 'hex')),
-    ('analytics-job', 'read-only',   'gk_live_e5f6', encode(sha256('demo-analytics-job'::bytea), 'hex'))
-) AS k(username, label, prefix, hash)
-JOIN gateway_consumers c ON c.username = k.username
-WHERE NOT EXISTS (SELECT 1 FROM gateway_api_keys);
-
-INSERT INTO gateway_policies(route_id, type, config)
-SELECT r.id, p.type, p.config::jsonb
-FROM (VALUES
-    ('eid-me',     'rate-limit', '{"limit":60,"window":"minute"}'),
-    ('eid-sign',   'key-auth',   '{"key_in":"header","header_name":"x-api-key"}'),
-    ('pay-charge', 'rate-limit', '{"limit":30,"window":"minute"}'),
-    ('ai-chat',    'cors',       '{"origins":["https://web.gerege.mn"],"methods":["GET","POST"]}')
-) AS p(route, type, config)
-JOIN gateway_routes r ON r.name = p.route
-WHERE NOT EXISTS (SELECT 1 FROM gateway_policies);
-
-INSERT INTO gateway_request_logs(route_id, consumer_id, method, path, status, latency_ms, client_ip, created_at)
-SELECT r.id, c.id, l.method, l.path, l.status, l.latency, l.ip, now() - (l.mins || ' minutes')::interval
-FROM (VALUES
-    ('eid-me',     'mobile-app',    'GET',  '/eid/me',      200, 42,  '202.131.0.10', 2),
-    ('eid-sign',   'mobile-app',    'POST', '/eid/sign',    200, 318, '202.131.0.10', 5),
-    ('pay-charge', 'partner-bank',  'POST', '/pay/charge',  201, 121, '203.91.4.7',   9),
-    ('ai-chat',    'mobile-app',    'POST', '/ai/chat',     200, 880, '202.131.0.10', 12),
-    ('pay-charge', 'partner-bank',  'POST', '/pay/charge',  402, 64,  '203.91.4.7',   17),
-    ('eid-me',     'analytics-job', 'GET',  '/eid/me',      429, 8,   '10.0.0.4',     21),
-    ('ai-chat',    'partner-bank',  'POST', '/ai/chat',     500, 1503,'203.91.4.7',   33)
-) AS l(route, consumer, method, path, status, latency, ip, mins)
-JOIN gateway_routes r ON r.name = l.route
-JOIN gateway_consumers c ON c.username = l.consumer
-WHERE NOT EXISTS (SELECT 1 FROM gateway_request_logs);
+-- Бодит RP-үүдэд eID гарын үсэг (eid-sign) service-ийн хандалт олгоно.
+INSERT INTO application_services (application_id, service_id)
+SELECT a.id, s.id
+FROM applications a
+JOIN gateway_services s ON s.name = 'eid-sign'
+WHERE a.created_by = 'seed-rp'
+ON CONFLICT DO NOTHING;

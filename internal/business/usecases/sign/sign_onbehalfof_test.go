@@ -1,4 +1,4 @@
-// Gerege Template Version 27.0
+// Government Template Platform V3.0
 // Gerege Systems Development Team болон Claude AI хамтран бүтээв, 2026.
 
 package sign
@@ -49,7 +49,7 @@ func newTestUsecase(t *testing.T, baseURL string) *usecase {
 	}
 	return &usecase{
 		cache:  newMemCache(),
-		cfg:    Config{V3BaseURL: baseURL, RPUUID: "rp-uuid", RPName: "gerege.mn", APISecret: "rp_sk_test"},
+		cfg:    Config{V3BaseURL: baseURL, RPUUID: "rp-uuid", RPName: "dgov.mn", APISecret: "rp_sk_test"},
 		client: http.DefaultClient,
 		signer: id,
 	}

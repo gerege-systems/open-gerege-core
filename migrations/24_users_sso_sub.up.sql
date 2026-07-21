@@ -1,6 +1,6 @@
--- Gerege Template Version 27.0
--- Gerege SSO (sso.gerege.mn, OIDC) нэвтрэлт — pairwise subject (sub)-ээр
--- хэрэглэгчийг таньж холбоно. sso.gerege.mn нь scope "openid profile email"
+-- Government Template Platform V3.0
+-- dgov SSO (sso.dgov.mn, OIDC) нэвтрэлт — pairwise subject (sub)-ээр
+-- хэрэглэгчийг таньж холбоно. sso.dgov.mn нь scope "openid profile email"
 -- дор national_id/civil_id буцаадаггүй (pairwise sub) тул eID хэрэглэгчтэй
 -- регистрээр нэгтгэх боломжгүй — SSO нэвтрэлт нь sso_sub-ээр түлхүүрлэгдсэн
 -- тусдаа identity. Хожим eID-ээр баталгаажуулж нэгтгэх боломжийг үлдээв.

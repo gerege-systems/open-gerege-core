@@ -1,4 +1,4 @@
-// Gerege Template Version 27.0
+// Government Template Platform V3.0
 // Gerege Systems Development Team болон Claude AI хамтран бүтээв, 2026.
 
 package superadmin_test
@@ -22,7 +22,9 @@ func newUC(t *testing.T) (superadmin.Usecase, *mocks.UsersUsecase, *mocks.AuditU
 	t.Helper()
 	usersUC := mocks.NewUsersUsecase(t)
 	auditUC := mocks.NewAuditUsecase(t)
-	return superadmin.NewUsecase(usersUC, auditUC), usersUC, auditUC
+	// Урилгын repo болон platform access-mode store нь эдгээр тестүүдэд
+	// хэрэглэгддэггүй (админ удирдлагын урсгал) тул nil.
+	return superadmin.NewUsecase(usersUC, auditUC, nil, nil), usersUC, auditUC
 }
 
 func TestCreateAdmin_ActivatesAndAudits(t *testing.T) {
@@ -55,7 +57,7 @@ func TestGrantAdmin_Success(t *testing.T) {
 	uc, usersUC, auditUC := newUC(t)
 	usersUC.On("GetByID", mock.Anything, users.GetByIDRequest{ID: "u2"}).
 		Return(users.GetByIDResponse{User: domain.User{ID: "u2", Email: "x@y.mn", RoleID: domain.RoleUser}}, nil)
-	usersUC.On("UpdateRole", mock.Anything, users.UpdateRoleRequest{UserID: "u2", RoleID: domain.RoleAdmin}).Return(nil)
+	usersUC.On("UpdateRole", mock.Anything, users.UpdateRoleRequest{UserID: "u2", RoleID: domain.RoleAdmin, CallerRoleID: domain.RoleSuperAdmin}).Return(nil)
 	auditUC.On("RecordEvent", mock.Anything, "superadmin.grant_admin", "superadmin", "u2", mock.Anything).Return(nil)
 
 	require.NoError(t, uc.GrantAdmin(context.Background(), superadmin.GrantAdminRequest{UserID: "u2"}))
@@ -98,8 +100,36 @@ func TestRevokeAdmin_Success(t *testing.T) {
 	uc, usersUC, auditUC := newUC(t)
 	usersUC.On("GetByID", mock.Anything, users.GetByIDRequest{ID: "u3"}).
 		Return(users.GetByIDResponse{User: domain.User{ID: "u3", Email: "z@y.mn", RoleID: domain.RoleAdmin}}, nil)
-	usersUC.On("UpdateRole", mock.Anything, users.UpdateRoleRequest{UserID: "u3", RoleID: domain.RoleUser}).Return(nil)
+	usersUC.On("UpdateRole", mock.Anything, users.UpdateRoleRequest{UserID: "u3", RoleID: domain.RoleUser, CallerRoleID: domain.RoleSuperAdmin}).Return(nil)
 	auditUC.On("RecordEvent", mock.Anything, "superadmin.revoke_admin", "superadmin", "u3", mock.Anything).Return(nil)
 
 	require.NoError(t, uc.RevokeAdmin(context.Background(), superadmin.RevokeAdminRequest{UserID: "u3", ActorID: "root"}))
+}
+
+func TestAddAdminByRegister_NotRegistered_NotFound(t *testing.T) {
+	uc, usersUC, _ := newUC(t)
+	usersUC.On("GetByNationalID", mock.Anything, users.GetByNationalIDRequest{NationalID: "УБ99887766"}).
+		Return(users.GetByNationalIDResponse{}, apperror.NotFound("user not found"))
+
+	_, err := uc.AddAdminByRegister(context.Background(), superadmin.AddAdminByRegisterRequest{Register: "уб99887766"})
+	require.Error(t, err)
+	de, ok := err.(*apperror.DomainError)
+	require.True(t, ok)
+	assert.Equal(t, apperror.ErrTypeNotFound, de.Type)
+}
+
+func TestAddAdminByRegister_PromotesExistingUser(t *testing.T) {
+	uc, usersUC, auditUC := newUC(t)
+	target := domain.User{ID: "u9", Email: "e@dgov.mn", NationalID: "УБ99887766", RoleID: domain.RoleUser}
+	usersUC.On("GetByNationalID", mock.Anything, users.GetByNationalIDRequest{NationalID: "УБ99887766"}).
+		Return(users.GetByNationalIDResponse{User: target}, nil)
+	// GrantAdmin дотор GetByID + UpdateRole дуудагдана.
+	usersUC.On("GetByID", mock.Anything, users.GetByIDRequest{ID: "u9"}).
+		Return(users.GetByIDResponse{User: target}, nil)
+	usersUC.On("UpdateRole", mock.Anything, users.UpdateRoleRequest{UserID: "u9", RoleID: domain.RoleAdmin, CallerRoleID: domain.RoleSuperAdmin}).Return(nil)
+	auditUC.On("RecordEvent", mock.Anything, "superadmin.grant_admin", "superadmin", "u9", mock.Anything).Return(nil)
+
+	res, err := uc.AddAdminByRegister(context.Background(), superadmin.AddAdminByRegisterRequest{Register: "УБ99887766"})
+	require.NoError(t, err)
+	assert.Equal(t, domain.RoleAdmin, res.User.RoleID)
 }

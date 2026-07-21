@@ -1,4 +1,4 @@
-// Gerege Template Version 27.0
+// Government Template Platform V3.0
 // Gerege Systems Development Team болон Claude AI хамтран бүтээв, 2026.
 
 package responses
@@ -131,11 +131,12 @@ type EIDCertificatesResponse struct {
 }
 
 type EIDPersonDevice struct {
-	DocumentNumber string     `json:"document_number"`
-	Platform       string     `json:"platform,omitempty"`
-	EnrolledAt     *time.Time `json:"enrolled_at,omitempty"`
-	Active         bool       `json:"active"`
-	DeactivatedAt  *time.Time `json:"deactivated_at,omitempty"`
+	DocumentNumber string         `json:"document_number"`
+	Platform       string         `json:"platform,omitempty"`
+	EnrolledAt     *time.Time     `json:"enrolled_at,omitempty"`
+	Active         bool           `json:"active"`
+	DeactivatedAt  *time.Time     `json:"deactivated_at,omitempty"`
+	Extra          map[string]any `json:"extra,omitempty"` // upstream-ийн нэмэлт талбарууд
 }
 
 type EIDDevicesResponse struct {
@@ -145,11 +146,12 @@ type EIDDevicesResponse struct {
 }
 
 type EIDActivityItem struct {
-	SessionID string     `json:"session_id,omitempty"`
-	Flow      string     `json:"flow"`
-	Outcome   string     `json:"outcome"`
-	DocText   string     `json:"doc_text,omitempty"`
-	Timestamp *time.Time `json:"timestamp,omitempty"`
+	SessionID string         `json:"session_id,omitempty"`
+	Flow      string         `json:"flow"`
+	Outcome   string         `json:"outcome"`
+	DocText   string         `json:"doc_text,omitempty"`
+	Timestamp *time.Time     `json:"timestamp,omitempty"`
+	Extra     map[string]any `json:"extra,omitempty"` // activity service-ийн нэмэлт талбарууд
 }
 
 type EIDActivityResponse struct {
@@ -205,6 +207,7 @@ func FromEIDDevices(d *eid.PersonDevices) EIDDevicesResponse {
 		devs = append(devs, EIDPersonDevice{
 			DocumentNumber: x.DocumentNumber, Platform: x.Platform,
 			EnrolledAt: tptr(x.EnrolledAt), Active: x.Active, DeactivatedAt: x.DeactivatedAt,
+			Extra: x.Extra,
 		})
 	}
 	return EIDDevicesResponse{Devices: devs, ActiveCount: d.ActiveCount, Total: d.Total}
@@ -218,7 +221,8 @@ func FromEIDActivity(a *eid.PersonActivity) EIDActivityResponse {
 	items := make([]EIDActivityItem, 0, len(a.Sessions))
 	for _, x := range a.Sessions {
 		items = append(items, EIDActivityItem{
-			SessionID: x.SessionID, Flow: x.Flow, Outcome: x.Outcome, DocText: x.DocText, Timestamp: tptr(x.Timestamp),
+			SessionID: x.SessionID, Flow: x.Flow, Outcome: x.Outcome, DocText: x.DocText,
+			Timestamp: tptr(x.Timestamp), Extra: x.Extra,
 		})
 	}
 	return EIDActivityResponse{

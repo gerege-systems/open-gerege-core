@@ -1,4 +1,4 @@
-// Gerege Template Version 27.0
+// Government Template Platform V3.0
 // Gerege Systems Development Team болон Claude AI хамтран бүтээв, 2026.
 
 package routes
@@ -6,10 +6,11 @@ package routes
 import (
 	"net/http"
 
-	"github.com/go-chi/chi/v5"
 	"template/internal/business/usecases/users"
 	v1 "template/internal/http/handlers/v1"
 	usershandler "template/internal/http/handlers/v1/users"
+
+	"github.com/go-chi/chi/v5"
 )
 
 // usersRoute нь /users/* бүлгийг холбоно — хэрэглэгчийн өөрийнх нь
@@ -24,9 +25,9 @@ type usersRoute struct {
 // NewUsersRoute нь route модулийг бүтээдэг. Auth middleware-г дамжуулдаг
 // тул ижил JWT баталгаажуулдаг middleware нь хамгаалагдсан route бүлэг
 // бүрд хуваалцагддаг.
-func NewUsersRoute(router chi.Router, usersUC users.Usecase, authMiddleware func(http.Handler) http.Handler) *usersRoute {
+func NewUsersRoute(router chi.Router, usersUC users.Usecase, authMiddleware func(http.Handler) http.Handler, eidProxyEnabled bool) *usersRoute {
 	return &usersRoute{
-		handler:        usershandler.NewHandler(usersUC),
+		handler:        usershandler.NewHandler(usersUC, eidProxyEnabled),
 		router:         router,
 		authMiddleware: authMiddleware,
 	}

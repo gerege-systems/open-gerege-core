@@ -1,4 +1,4 @@
-// Gerege Template Version 27.0
+// Government Template Platform V3.0
 // Gerege Systems Development Team болон Claude AI хамтран бүтээв, 2026.
 
 package middlewares
@@ -14,8 +14,19 @@ import (
 // өгөгдмөл (DefaultBodyMaxBytes) нь өөрийн хязгаар тогтоогоогүй аль ч
 // route-ийн сүүлчийн хамгаалалтын шугам юм.
 const (
-	// DefaultBodyMaxBytes нь бүх зүйлийг барих глобал дээд хязгаар — 1 MiB.
+	// DefaultBodyMaxBytes нь ердийн JSON API route-уудын дээд хязгаар — 1 MiB.
+	// (DecodeBody мөн үүнтэй ижил 1 MiB-ийн гүний cap тавьдаг тул body уншилт
+	// route-ийн хязгаараас үл хамааран 1 MiB-ээр хязгаарлагдана.)
 	DefaultBodyMaxBytes int64 = 1 << 20
+
+	// UploadBodyMaxBytes нь глобал root-ийн туйлын дээд хязгаар (hard ceiling).
+	// Файл байршуулдаг цорын ганц route (/api/v1/sign/init multipart PDF ≤25 MB,
+	// + /rp/sign relay) энэ хэмжээг шаарддаг тул глобал net-ийг үүгээр тавина;
+	// ердийн JSON route-уудыг DecodeBody (1 MiB) + auth-ийн route-түвшний 4 KiB
+	// cap нарийн хамгаална. Chi-д эцгийн middleware нь дэд route-ийн хязгаарыг
+	// зөвхөн ЧАНГАЛЖ (tighten) чадна — СУЛРУУЛЖ чаддаггүй тул глобал 1 MiB нь
+	// sign-ийн upload-ийг эцэгтээ 413-аар таслаж байсныг энэ засна.
+	UploadBodyMaxBytes int64 = 26 << 20 // 25 MB + overhead (sign PDF)
 
 	// AuthBodyMaxBytes нь register / login / refresh / logout payload-уудыг
 	// хамардаг. Эдгээрийн аль нь ч хэдэн зуун байтаас илүү JSON авч

@@ -1,7 +1,7 @@
-// Gerege Template Version 27.0
+// eID based AI enabled Government Template Platform V3.0
 // Gerege Systems Development Team болон Claude AI хамтран бүтээв, 2026.
 
-// Package provider нь OIDC provider (dan.dgov.mn = SSO) login/consent/logout-ийн
+// Package provider нь OIDC provider (sso.dgov.mn = SSO) login/consent/logout-ийн
 // HTTP давхарга. Next.js BFF-ийн /login, /consent, /logout хуудсууд эдгээр
 // endpoint-ыг дуудаж, Hydra challenge-ыг зохицуулна. Accept endpoint-ууд нь
 // нэвтэрсэн иргэнийг (session) шаардана; subject нь dan-ийн user ID.

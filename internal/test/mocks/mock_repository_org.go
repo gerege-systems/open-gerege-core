@@ -1,4 +1,4 @@
-// Gerege Template Version 27.0
+// Government Template Platform V3.0
 // Gerege Systems Development Team болон Claude AI хамтран бүтээв, 2026.
 
 // repointerface.OrgRepository-д зориулсан гараар бичсэн mock бөгөөд төслийн
@@ -11,8 +11,9 @@ package mocks
 import (
 	context "context"
 
-	mock "github.com/stretchr/testify/mock"
 	"template/internal/business/domain"
+
+	mock "github.com/stretchr/testify/mock"
 )
 
 // OrgRepository нь repointerface.OrgRepository-ийн mock юм.
@@ -80,7 +81,7 @@ type mockConstructorTestingTNewOrgRepository interface {
 // interface болон cleanup-ийг бүртгэнэ (хүлээлтийг батална).
 func NewOrgRepository(t mockConstructorTestingTNewOrgRepository) *OrgRepository {
 	m := &OrgRepository{}
-	m.Mock.Test(t)
+	m.Test(t)
 	t.Cleanup(func() { m.AssertExpectations(t) })
 	return m
 }

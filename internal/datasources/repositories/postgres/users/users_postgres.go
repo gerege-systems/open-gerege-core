@@ -1,4 +1,4 @@
-// Gerege Template Version 27.0
+// Government Template Platform V3.0
 // Gerege Systems Development Team болон Claude AI хамтран бүтээв, 2026.
 
 package postgres
@@ -51,7 +51,7 @@ func (r *postgreUserRepository) withRLS(ctx context.Context, fn func(tx pgx.Tx) 
 	if err != nil {
 		return err
 	}
-	defer tx.Rollback(ctx) //nolint:errcheck
+	defer tx.Rollback(ctx) //nolint:errcheck // rollback after a successful commit returns ErrTxClosed — expected, nothing to handle
 
 	if _, err := tx.Exec(ctx,
 		`SELECT set_config('app.user_id',$1,true), set_config('app.user_role',$2,true)`,

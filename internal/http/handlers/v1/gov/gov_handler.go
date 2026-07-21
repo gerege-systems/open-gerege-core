@@ -1,4 +1,4 @@
-// Gerege Template Version 27.0
+// Government Template Platform V3.0
 // Gerege Systems Development Team болон Claude AI хамтран бүтээв, 2026.
 
 // Package gov нь иргэний "Төрийн үйлчилгээ" порталын /gov/* endpoint-уудыг
@@ -8,7 +8,9 @@ package gov
 
 import (
 	"net/http"
+	"strconv"
 
+	"template/internal/business/domain"
 	govuc "template/internal/business/usecases/gov"
 	httpauth "template/internal/http/auth"
 	"template/internal/http/datatransfers/requests"
@@ -84,6 +86,217 @@ func (h Handler) Overview(w http.ResponseWriter, r *http.Request) error {
 	return v1.NewSuccessResponse(w, r, http.StatusOK, "overview fetched successfully", responses.FromGovOverview(o))
 }
 
+// ListLifeEvents godoc
+// @Summary      Амьдралын үйл явдлын каталог (CPSV-AP Event)
+// @Tags         gov
+// @Produce      json
+// @Success      200  {object}  v1.BaseResponse
+// @Router       /gov/life-events [get]
+func (h Handler) ListLifeEvents(w http.ResponseWriter, r *http.Request) error {
+	list, err := h.usecase.ListLifeEvents(r.Context())
+	if err != nil {
+		return v1.RespondWithError(w, r, err)
+	}
+	return v1.NewSuccessResponse(w, r, http.StatusOK, "life events fetched successfully", responses.ToGovLifeEventList(list))
+}
+
+// ── Officer queue (gov.review эрхтэй менежер) ─────────────────────────────—
+
+// QueueStats godoc
+// @Summary      Менежерийн дарааллын нэгтгэл
+// @Tags         gov-officer
+// @Produce      json
+// @Success      200  {object}  v1.BaseResponse
+// @Router       /gov/officer/stats [get]
+func (h Handler) QueueStats(w http.ResponseWriter, r *http.Request) error {
+	id, ok := uid(r)
+	if !ok {
+		return v1.NewAbortResponse(w, r, "invalid token")
+	}
+	s, err := h.usecase.QueueStats(r.Context(), id)
+	if err != nil {
+		return v1.RespondWithError(w, r, err)
+	}
+	return v1.NewSuccessResponse(w, r, http.StatusOK, "queue stats fetched successfully", responses.FromGovQueueStats(s))
+}
+
+// ListQueue godoc
+// @Summary      Хянах хүсэлтийн дараалал
+// @Tags         gov-officer
+// @Produce      json
+// @Param        status       query  string  false  "Төлөв"
+// @Param        assigned_to  query  string  false  "'me' бол зөвхөн өөрийн"
+// @Param        overdue      query  bool    false  "Зөвхөн хугацаа хэтэрсэн"
+// @Success      200  {object}  v1.BaseResponse
+// @Router       /gov/officer/queue [get]
+func (h Handler) ListQueue(w http.ResponseWriter, r *http.Request) error {
+	id, ok := uid(r)
+	if !ok {
+		return v1.NewAbortResponse(w, r, "invalid token")
+	}
+	q := r.URL.Query()
+	f := domain.GovQueueFilter{
+		Status:     q.Get("status"),
+		AssignedTo: q.Get("assigned_to"),
+		Overdue:    q.Get("overdue") == "true",
+		Limit:      atoiDefault(q.Get("limit"), 50),
+		Offset:     atoiDefault(q.Get("offset"), 0),
+	}
+	list, err := h.usecase.ListQueue(r.Context(), id, f)
+	if err != nil {
+		return v1.RespondWithError(w, r, err)
+	}
+	return v1.NewSuccessResponse(w, r, http.StatusOK, "queue fetched successfully", responses.ToGovQueueList(list))
+}
+
+// QueueItem godoc
+// @Summary      Хүсэлтийн дэлгэрэнгүй (менежер)
+// @Tags         gov-officer
+// @Produce      json
+// @Param        id  path  string  true  "Application ID"
+// @Success      200  {object}  v1.BaseResponse
+// @Router       /gov/officer/queue/{id} [get]
+func (h Handler) QueueItem(w http.ResponseWriter, r *http.Request) error {
+	id, ok := pathID(w, r)
+	if !ok {
+		return nil
+	}
+	d, err := h.usecase.QueueItem(r.Context(), id)
+	if err != nil {
+		return v1.RespondWithError(w, r, err)
+	}
+	out := responses.GovQueueDetailResponse{
+		Application: responses.FromGovQueueItem(d.Application),
+		Events:      responses.ToGovApplicationEventList(d.Events),
+	}
+	if d.Service != nil {
+		svc := responses.FromGovService(*d.Service)
+		out.Service = &svc
+	}
+	return v1.NewSuccessResponse(w, r, http.StatusOK, "application fetched successfully", out)
+}
+
+// Assign godoc
+// @Summary      Хүсэлтийг хянахаар авах
+// @Tags         gov-officer
+// @Produce      json
+// @Param        id  path  string  true  "Application ID"
+// @Success      200  {object}  v1.BaseResponse
+// @Router       /gov/officer/queue/{id}/assign [post]
+func (h Handler) Assign(w http.ResponseWriter, r *http.Request) error {
+	officerID, ok := uid(r)
+	if !ok {
+		return v1.NewAbortResponse(w, r, "invalid token")
+	}
+	id, ok := pathID(w, r)
+	if !ok {
+		return nil
+	}
+	app, err := h.usecase.Assign(r.Context(), officerID, id)
+	if err != nil {
+		return v1.RespondWithError(w, r, err)
+	}
+	return v1.NewSuccessResponse(w, r, http.StatusOK, "application assigned successfully", responses.FromGovQueueItem(app))
+}
+
+// Decide godoc
+// @Summary      Хүсэлтийг зөвшөөрөх/татгалзах
+// @Tags         gov-officer
+// @Accept       json
+// @Produce      json
+// @Param        id    path  string                    true  "Application ID"
+// @Param        body  body  requests.GovDecideRequest true  "Decision"
+// @Success      200  {object}  v1.BaseResponse
+// @Router       /gov/officer/queue/{id}/decide [post]
+func (h Handler) Decide(w http.ResponseWriter, r *http.Request) error {
+	officerID, ok := uid(r)
+	if !ok {
+		return v1.NewAbortResponse(w, r, "invalid token")
+	}
+	id, ok := pathID(w, r)
+	if !ok {
+		return nil
+	}
+	var req requests.GovDecideRequest
+	if err := v1.DecodeBody(r, &req); err != nil {
+		return v1.NewErrorResponse(w, r, http.StatusBadRequest, "invalid request body")
+	}
+	if err := validators.ValidatePayloads(req); err != nil {
+		return v1.RespondWithError(w, r, err)
+	}
+	app, err := h.usecase.Decide(r.Context(), officerID, id, govuc.DecideRequest{
+		Approve: req.Approve, Note: req.Note, Result: req.Result,
+	})
+	if err != nil {
+		return v1.RespondWithError(w, r, err)
+	}
+	return v1.NewSuccessResponse(w, r, http.StatusOK, "decision recorded successfully", responses.FromGovQueueItem(app))
+}
+
+// Complete godoc
+// @Summary      Биет гаралт хүргэгдсэнийг бүртгэх
+// @Tags         gov-officer
+// @Produce      json
+// @Param        id  path  string  true  "Application ID"
+// @Success      200  {object}  v1.BaseResponse
+// @Router       /gov/officer/queue/{id}/complete [post]
+func (h Handler) Complete(w http.ResponseWriter, r *http.Request) error {
+	officerID, ok := uid(r)
+	if !ok {
+		return v1.NewAbortResponse(w, r, "invalid token")
+	}
+	id, ok := pathID(w, r)
+	if !ok {
+		return nil
+	}
+	app, err := h.usecase.Complete(r.Context(), officerID, id)
+	if err != nil {
+		return v1.RespondWithError(w, r, err)
+	}
+	return v1.NewSuccessResponse(w, r, http.StatusOK, "application completed successfully", responses.FromGovQueueItem(app))
+}
+
+// RequestInfo godoc
+// @Summary      Иргэнээс нэмэлт мэдээлэл хүсэх (SLA цаг зогсоно)
+// @Tags         gov-officer
+// @Accept       json
+// @Produce      json
+// @Param        id    path  string                  true  "Application ID"
+// @Param        body  body  requests.GovInfoRequest true  "Info request"
+// @Success      200  {object}  v1.BaseResponse
+// @Router       /gov/officer/queue/{id}/request-info [post]
+func (h Handler) RequestInfo(w http.ResponseWriter, r *http.Request) error {
+	officerID, ok := uid(r)
+	if !ok {
+		return v1.NewAbortResponse(w, r, "invalid token")
+	}
+	id, ok := pathID(w, r)
+	if !ok {
+		return nil
+	}
+	var req requests.GovInfoRequest
+	if err := v1.DecodeBody(r, &req); err != nil {
+		return v1.NewErrorResponse(w, r, http.StatusBadRequest, "invalid request body")
+	}
+	if err := validators.ValidatePayloads(req); err != nil {
+		return v1.RespondWithError(w, r, err)
+	}
+	app, err := h.usecase.RequestInfo(r.Context(), officerID, id, req.Note)
+	if err != nil {
+		return v1.RespondWithError(w, r, err)
+	}
+	return v1.NewSuccessResponse(w, r, http.StatusOK, "information requested successfully", responses.FromGovQueueItem(app))
+}
+
+// atoiDefault нь query параметрийг тоо болгоно; буруу/хоосон бол өгөгдмөл.
+func atoiDefault(s string, def int) int {
+	n, err := strconv.Atoi(s)
+	if err != nil || n < 0 {
+		return def
+	}
+	return n
+}
+
 // ── Applications ──────────────────────────────────────────────────────────—
 
 // ListApplications godoc
@@ -124,11 +337,28 @@ func (h Handler) Apply(w http.ResponseWriter, r *http.Request) error {
 	if err := validators.ValidatePayloads(req); err != nil {
 		return v1.RespondWithError(w, r, err)
 	}
-	app, err := h.usecase.Apply(r.Context(), id, govuc.ApplyRequest{ServiceID: req.ServiceID, Note: req.Note})
+	res, err := h.usecase.Apply(r.Context(), id, govuc.ApplyRequest{
+		ServiceID: req.ServiceID, Note: req.Note, Payload: req.Payload,
+	})
 	if err != nil {
 		return v1.RespondWithError(w, r, err)
 	}
-	return v1.NewSuccessResponse(w, r, http.StatusCreated, "application submitted successfully", responses.FromGovApplication(app))
+
+	out := responses.GovApplyResponse{
+		Application: responses.FromGovApplication(res.Application),
+		AutoIssued:  res.AutoIssued,
+	}
+	if res.Reference != nil {
+		ref := responses.FromGovReference(*res.Reference)
+		out.Reference = &ref
+	}
+	// Шууд биелсэн үйлчилгээ нь "үүсгэсэн" биш "гүйцэтгэсэн" тул 200; хянагдах
+	// хүсэлт нь дараалалд шинээр үүссэн тул 201.
+	msg, code := "application submitted successfully", http.StatusCreated
+	if res.AutoIssued {
+		msg, code = "service fulfilled successfully", http.StatusOK
+	}
+	return v1.NewSuccessResponse(w, r, code, msg, out)
 }
 
 // CancelApplication godoc
@@ -151,6 +381,61 @@ func (h Handler) CancelApplication(w http.ResponseWriter, r *http.Request) error
 		return v1.RespondWithError(w, r, err)
 	}
 	return v1.NewSuccessResponse(w, r, http.StatusOK, "application cancelled successfully", nil)
+}
+
+// ApplicationTimeline godoc
+// @Summary      Хүсэлтийн явцын түүх
+// @Tags         gov
+// @Produce      json
+// @Param        id  path  string  true  "Application ID"
+// @Success      200  {object}  v1.BaseResponse
+// @Router       /gov/applications/{id}/timeline [get]
+func (h Handler) ApplicationTimeline(w http.ResponseWriter, r *http.Request) error {
+	userID, ok := uid(r)
+	if !ok {
+		return v1.NewAbortResponse(w, r, "invalid token")
+	}
+	id, ok := pathID(w, r)
+	if !ok {
+		return nil
+	}
+	events, err := h.usecase.ApplicationTimeline(r.Context(), userID, id)
+	if err != nil {
+		return v1.RespondWithError(w, r, err)
+	}
+	return v1.NewSuccessResponse(w, r, http.StatusOK, "timeline fetched successfully", responses.ToGovApplicationEventList(events))
+}
+
+// ProvideInfo godoc
+// @Summary      Нэмэлт мэдээлэл ирүүлэх (SLA цаг үргэлжилнэ)
+// @Tags         gov
+// @Accept       json
+// @Produce      json
+// @Param        id    path  string                  true  "Application ID"
+// @Param        body  body  requests.GovInfoRequest true  "Info"
+// @Success      200  {object}  v1.BaseResponse
+// @Router       /gov/applications/{id}/provide-info [post]
+func (h Handler) ProvideInfo(w http.ResponseWriter, r *http.Request) error {
+	userID, ok := uid(r)
+	if !ok {
+		return v1.NewAbortResponse(w, r, "invalid token")
+	}
+	id, ok := pathID(w, r)
+	if !ok {
+		return nil
+	}
+	var req requests.GovInfoRequest
+	if err := v1.DecodeBody(r, &req); err != nil {
+		return v1.NewErrorResponse(w, r, http.StatusBadRequest, "invalid request body")
+	}
+	if err := validators.ValidatePayloads(req); err != nil {
+		return v1.RespondWithError(w, r, err)
+	}
+	app, err := h.usecase.ProvideInfo(r.Context(), userID, id, req.Note)
+	if err != nil {
+		return v1.RespondWithError(w, r, err)
+	}
+	return v1.NewSuccessResponse(w, r, http.StatusOK, "information submitted successfully", responses.FromGovApplication(app))
 }
 
 // ── References ────────────────────────────────────────────────────────────—

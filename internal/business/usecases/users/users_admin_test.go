@@ -1,4 +1,4 @@
-// Gerege Template Version 27.0
+// Government Template Platform V3.0
 // Gerege Systems Development Team болон Claude AI хамтран бүтээв, 2026.
 
 // Super admin хамгаалалтын тестүүд: users.manage эрхтэй энгийн admin (энэ
@@ -67,4 +67,63 @@ func TestDelete_RejectsSuperAdmin(t *testing.T) {
 	var de *apperror.DomainError
 	require.True(t, errors.As(err, &de))
 	assert.Equal(t, apperror.ErrTypeForbidden, de.Type)
+}
+
+// ── Admin эрх олгох хязгаарлалт ──────────────────────────────────────────—
+// Энгийн admin (users.manage) нь бусдад ADMIN эрх өгч, эсвэл admin бүртгэлийг
+// өөрчилж чадахгүй — зөвхөн super admin. Admin нь manager ↔ user л сольж болно.
+
+func TestUpdateRole_AdminCannotGrantAdmin(t *testing.T) {
+	f := newFixture(t)
+	target := sampleUser() // энгийн хэрэглэгч
+	f.repo.On("GetByID", context.Background(), target.ID).Return(target, nil).Once()
+
+	err := f.usecase.UpdateRole(context.Background(), users.UpdateRoleRequest{
+		UserID: target.ID, RoleID: domain.RoleAdmin, CallerRoleID: domain.RoleAdmin,
+	})
+	require.Error(t, err)
+	var de *apperror.DomainError
+	require.True(t, errors.As(err, &de))
+	assert.Equal(t, apperror.ErrTypeForbidden, de.Type)
+}
+
+func TestUpdateRole_AdminCannotChangeAdminAccount(t *testing.T) {
+	f := newFixture(t)
+	target := sampleUser()
+	target.RoleID = domain.RoleAdmin // зорилтот нь admin
+	f.repo.On("GetByID", context.Background(), target.ID).Return(target, nil).Once()
+
+	err := f.usecase.UpdateRole(context.Background(), users.UpdateRoleRequest{
+		UserID: target.ID, RoleID: domain.RoleUser, CallerRoleID: domain.RoleAdmin,
+	})
+	require.Error(t, err)
+	var de *apperror.DomainError
+	require.True(t, errors.As(err, &de))
+	assert.Equal(t, apperror.ErrTypeForbidden, de.Type)
+}
+
+func TestUpdateRole_AdminCanSetManager(t *testing.T) {
+	f := newFixture(t)
+	target := sampleUser()
+	f.repo.On("GetByID", context.Background(), target.ID).Return(target, nil).Once()
+	f.repo.On("UpdateRole", context.Background(), target.ID, domain.RoleManager).Return(nil).Once()
+	f.rc.On("Del", "user/"+target.Email).Once()
+
+	err := f.usecase.UpdateRole(context.Background(), users.UpdateRoleRequest{
+		UserID: target.ID, RoleID: domain.RoleManager, CallerRoleID: domain.RoleAdmin,
+	})
+	require.NoError(t, err)
+}
+
+func TestUpdateRole_SuperAdminCanGrantAdmin(t *testing.T) {
+	f := newFixture(t)
+	target := sampleUser()
+	f.repo.On("GetByID", context.Background(), target.ID).Return(target, nil).Once()
+	f.repo.On("UpdateRole", context.Background(), target.ID, domain.RoleAdmin).Return(nil).Once()
+	f.rc.On("Del", "user/"+target.Email).Once()
+
+	err := f.usecase.UpdateRole(context.Background(), users.UpdateRoleRequest{
+		UserID: target.ID, RoleID: domain.RoleAdmin, CallerRoleID: domain.RoleSuperAdmin,
+	})
+	require.NoError(t, err)
 }

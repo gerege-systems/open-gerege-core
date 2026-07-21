@@ -1,4 +1,4 @@
-// Gerege Template Version 27.0
+// Government Template Platform V3.0
 // Gerege Systems Development Team болон Claude AI хамтран бүтээв, 2026.
 
 // Package _interface нь repositories давхарга дахь домэйн бүрийн
@@ -71,6 +71,11 @@ type UserRepository interface {
 	// буцаана; эс бөгөөс шинэ идэвхтэй мөр оруулна. Бүгд нэг round-trip
 	// (INSERT … ON CONFLICT … RETURNING).
 	UpsertFromEID(ctx context.Context, in *domain.User) (domain.User, error)
+	// CreatePreRegistered нь админ иргэнийг РЕГИСТРИЙН ДУГААР (national_id)-аар
+	// урьдчилан бүртгэнэ (private платформ): national_id + нэр + role-той идэвхтэй
+	// мөр (password/email/civil_id/sso_sub-гүй). Давхардсан national_id →
+	// apperror.Conflict.
+	CreatePreRegistered(ctx context.Context, in *domain.User) (domain.User, error)
 	// List нь filter-т тохирох хэрэглэгчдийг offset/limit-ээр хуудаслан
 	// буцаана. Limit нь сервер талд хатуу хязгаарлагдсан тул буруу
 	// ажиллаж буй дуудагч бүх хүснэгтийг татаж чадахгүй.
@@ -102,6 +107,63 @@ type UserRepository interface {
 	SetSignature(ctx context.Context, userID, img string) error
 	// SetLatinName нь хэрэглэгчийн латин нэрийг (first_name_en/last_name_en) гараар засна.
 	SetLatinName(ctx context.Context, userID, firstEn, lastEn string) error
+	// UpsertSuperAdmin нь superadmin onboarding-ийн ТӨГСГӨЛД (Google + eID +
+	// email OTP + TOTP бүгд баталгаажсаны дараа) super admin хэрэглэгчийг НЭГ
+	// ТРАНЗАКЦИД үүсгэх/ахиулна: users мөр (google_sub-аар түлхүүрлэсэн, role_id=1,
+	// civil_id/MFA НЭ) + superadmin_accounts satellite мөр (civil_id/national_id,
+	// email_verified, mfa_enabled, шифрлэгдсэн totp_secret, invited_by, onboarded_at).
+	// civil_id-г users-д ТАВИХГҮЙ тул нэг хүн eID-ээр admin, Google-оор super admin
+	// байж чадна (civil_id partial unique index зөрчихгүй). totp_secret нь usecase
+	// давхаргад AES-GCM-ээр шифрлэгдсэн ирнэ. Давхардсан email/google_sub нь
+	// apperror.Conflict болно. Буцаах user нь account-ийн MFA утгуудаар hydrate хийгдсэн.
+	UpsertSuperAdmin(ctx context.Context, in *domain.User, account *domain.SuperadminAccount) (domain.User, error)
+}
+
+// SuperadminAccountRepository нь super admin-ы satellite бүртгэлийн (superadmin_accounts)
+// READ gateway юм. Хүснэгт нь эмзэг тул RLS-тэй (service/admin). Бичилтийг
+// UserRepository.UpsertSuperAdmin нь users мөртэй нэг транзакцид хийдэг.
+type SuperadminAccountRepository interface {
+	// Get нь user_id-аар super admin бүртгэлийг буцаана (MFA challenge-д TOTP
+	// secret-ыг авах). Байхгүй бол apperror.NotFound.
+	Get(ctx context.Context, userID string) (domain.SuperadminAccount, error)
+}
+
+// RecoveryCodeRepository нь 2FA нөөц кодуудын (user_recovery_codes) gateway юм.
+// Кодууд нь per-user тул хүснэгт RLS-тэй (repo нь withRLS транзакцид
+// app.user_id/app.user_role GUC тавьдаг — migration 35). DB-д зөвхөн SHA-256
+// hash хадгалагдана; энгийн текст код энэ давхаргад хэзээ ч хүрэхгүй.
+type RecoveryCodeRepository interface {
+	// Replace нь тухайн хэрэглэгчийн ӨМНӨХ бүх кодыг устгаад, шинэ hash-уудыг
+	// нэг транзакцид оруулна (нөөц кодыг дахин үүсгэх нь хуучныг хүчингүй
+	// болгоно).
+	Replace(ctx context.Context, userID string, hashes []string) error
+	// ListActive нь хэрэглэгчийн хэрэглэгдээгүй (used_at IS NULL) кодуудыг
+	// буцаана — үлдсэн кодын тоог харуулахад.
+	ListActive(ctx context.Context, userID string) ([]domain.RecoveryCode, error)
+	// Consume нь өгсөн hash-тай, хэрэглэгдээгүй НЭГ кодыг атомаар "хэрэглэсэн"
+	// болгож тэмдэглэнэ (used_at = now()). Тохирох идэвхтэй код байхгүй
+	// (буруу код эсвэл аль хэдийн хэрэглэсэн) бол apperror.NotFound — иймээс
+	// код нэг л удаа ажиллана.
+	Consume(ctx context.Context, userID, hash string) error
+}
+
+// SuperadminInviteRepository нь superadmin урилгын allow-list
+// (superadmin_invites) gateway юм. Хэрэглэгч-тус-бүрийн биш, админаар
+// удирдагддаг нийтийн config хүснэгт тул RLS-гүй (plain pool query).
+type SuperadminInviteRepository interface {
+	// Create нь урилга үүсгэнэ (email нь нормчлогдсон ирнэ). Аль хэдийн
+	// урьсан и-мэйл дээр apperror.Conflict.
+	Create(ctx context.Context, email, invitedBy string) (domain.SuperadminInvite, error)
+	// List нь бүх урилгыг (шинэ нь эхэндээ) буцаана.
+	List(ctx context.Context) ([]domain.SuperadminInvite, error)
+	// GetByEmail нь и-мэйлээр урилгыг олно; байхгүй бол apperror.NotFound
+	// (onboarding-ийн Google алхам үүгээр гатлана).
+	GetByEmail(ctx context.Context, email string) (domain.SuperadminInvite, error)
+	// Delete нь урилгыг цуцална. Байхгүй бол apperror.NotFound.
+	Delete(ctx context.Context, email string) error
+	// MarkAccepted нь урилгыг ашигласан гэж тэмдэглэнэ (accepted_at = now())
+	// — onboarding төгсөхөд дуудагдана. Дахин ашиглах боломжгүй болно.
+	MarkAccepted(ctx context.Context, email string) error
 }
 
 // RBACRepository нь динамик role-ууд болон тэдгээрийн эрхийг (role↔permission)
@@ -132,36 +194,29 @@ type GatewayRepository interface {
 	UpdateService(ctx context.Context, in *domain.GatewayService) (domain.GatewayService, error)
 	DeleteService(ctx context.Context, id string) error
 
-	// Routes — (methods, paths) → service.
-	ListRoutes(ctx context.Context) ([]domain.GatewayRoute, error)
-	GetRoute(ctx context.Context, id string) (domain.GatewayRoute, error)
-	CreateRoute(ctx context.Context, in *domain.GatewayRoute) (domain.GatewayRoute, error)
-	UpdateRoute(ctx context.Context, in *domain.GatewayRoute) (domain.GatewayRoute, error)
-	DeleteRoute(ctx context.Context, id string) error
-
-	// Consumers — API client + (тоологдсон) key тоо.
-	ListConsumers(ctx context.Context) ([]domain.GatewayConsumer, error)
-	GetConsumer(ctx context.Context, id string) (domain.GatewayConsumer, error)
-	CreateConsumer(ctx context.Context, in *domain.GatewayConsumer) (domain.GatewayConsumer, error)
-	UpdateConsumer(ctx context.Context, in *domain.GatewayConsumer) (domain.GatewayConsumer, error)
-	DeleteConsumer(ctx context.Context, id string) error
-
-	// API keys — hash нь usecase-д урьдчилан тооцоологдоно.
-	ListKeys(ctx context.Context, consumerID string) ([]domain.GatewayAPIKey, error)
-	CreateKey(ctx context.Context, in *domain.GatewayAPIKey) (domain.GatewayAPIKey, error)
-	RevokeKey(ctx context.Context, id string) error
-	DeleteKey(ctx context.Context, id string) error
-
-	// Policies — route-д (эсвэл global) хавсаргасан plugin.
-	ListPolicies(ctx context.Context) ([]domain.GatewayPolicy, error)
-	GetPolicy(ctx context.Context, id string) (domain.GatewayPolicy, error)
-	CreatePolicy(ctx context.Context, in *domain.GatewayPolicy) (domain.GatewayPolicy, error)
-	UpdatePolicy(ctx context.Context, in *domain.GatewayPolicy) (domain.GatewayPolicy, error)
-	DeletePolicy(ctx context.Context, id string) error
-
-	// Telemetry — сүүлийн log-ууд + dashboard-ийн нэгтгэл.
+	// Telemetry — сүүлийн log-ууд + dashboard-ийн нэгтгэл + бодит хүсэлт бичих.
 	ListRequestLogs(ctx context.Context, limit int) ([]domain.GatewayRequestLog, error)
+	CreateRequestLog(ctx context.Context, l *domain.GatewayRequestLog) error
 	Overview(ctx context.Context) (domain.GatewayOverview, error)
+}
+
+// ApplicationRepository нь нэгдсэн Applications (Gateway consumer + SSO RP)
+// overlay-г хадгална: applications мөр + зөвшөөрсөн gateway service-үүд
+// (application_services). OAuth2 client өөрөө oauth_clients-д амьдардаг тул энд зөвхөн
+// client_id болон overlay талбарууд. RLS-гүй нийтийн config.
+type ApplicationRepository interface {
+	List(ctx context.Context) ([]domain.Application, error)
+	Get(ctx context.Context, id string) (domain.Application, error)
+	Create(ctx context.Context, a *domain.Application) (domain.Application, error)
+	Update(ctx context.Context, a *domain.Application) (domain.Application, error)
+	Delete(ctx context.Context, id string) error
+	// SetServices нь апп-ын зөвшөөрсөн service-ийн жагсаалтыг бүхэлд нь орлуулна.
+	SetServices(ctx context.Context, appID string, serviceIDs []string) error
+	// ServiceScopes нь өгсөн service id-уудын OAuth scope нэрсийг буцаана.
+	ServiceScopes(ctx context.Context, serviceIDs []string) ([]string, error)
+	// ServiceIDsForScopes нь OAuth scope нэрсэд харгалзах gateway service id-
+	// уудыг буцаана (ServiceScopes-ийн урвуу — client scope → service id).
+	ServiceIDsForScopes(ctx context.Context, scopes []string) ([]string, error)
 }
 
 // OrgRepository нь байгууллага болон гишүүнчлэлийг (organization_memberships)
@@ -197,6 +252,23 @@ type OrgRepository interface {
 	RemoveMember(ctx context.Context, orgID, userID string) error
 }
 
+// GovDecisionInput нь менежерийн approve/reject шийдвэрийн параметрүүд.
+// OutputRef нь зөвшөөрөгдсөн тохиолдолд олгогдох лавлагаа (байхгүй байж болно —
+// жишээ нь биет үнэмлэх захиалахад лавлагаа үүсэхгүй).
+type GovDecisionInput struct {
+	ApplicationID string
+	OfficerID     string
+	Approve       bool
+	// Target нь шилжих ЭЦСИЙН төлөв. Зөвшөөрсөн үед гаралт тэр дороо
+	// олгогдож байвал 'completed', биет зүйл хүргэгдэх шаардлагатай бол
+	// 'approved' (домэйн давхарга шийднэ).
+	Target    string
+	Note      string
+	Result    string
+	OutputRef *domain.GovReference
+	Notify    *domain.GovNotification
+}
+
 // GovRepository нь иргэний "Төрийн үйлчилгээ" порталын өгөгдлийг хариуцна.
 // Каталог (ListServices) нь нийтийн; бусад нь хэрэглэгч-тус-бүрийн тул query
 // бүр userID-гаар scope хийгдэхээс гадна per-user хүснэгтүүд RLS-тэй (repo нь
@@ -205,17 +277,60 @@ type GovRepository interface {
 	// Каталог
 	ListServices(ctx context.Context) ([]domain.GovService, error)
 	GetService(ctx context.Context, id string) (domain.GovService, error)
+	// ListLifeEvents нь CPSV-AP Event каталогийг буцаана.
+	ListLifeEvents(ctx context.Context) ([]domain.GovLifeEvent, error)
 
-	// Хүсэлт
+	// Хүсэлт (иргэн)
 	ListApplications(ctx context.Context, userID string) ([]domain.GovApplication, error)
+	GetApplication(ctx context.Context, userID, id string) (domain.GovApplication, error)
 	CreateApplication(ctx context.Context, in *domain.GovApplication) (domain.GovApplication, error)
 	SetApplicationStatus(ctx context.Context, userID, id, status string) error
+
+	// CreateApplicationWithOutput нь AUTO горимын үйлчилгээг НЭГ ТРАНЗАКЦИД
+	// биелүүлнэ: хүсэлт (completed) + лавлагаа + мэдэгдэл + timeline. Аль нэг нь
+	// бүтэлгүйтвэл бүгд буцна — иргэнд "олгогдсон" гэж харагдаад лавлагаа нь
+	// байхгүй байх завсрын төлөв үүсэхээс сэргийлнэ.
+	CreateApplicationWithOutput(ctx context.Context, app *domain.GovApplication, ref *domain.GovReference, notify *domain.GovNotification) (domain.GovApplication, domain.GovReference, error)
+
+	// Хүсэлт (менежер — officer RLS үүргээр)
+	QueueStats(ctx context.Context, officerID string) (domain.GovQueueStats, error)
+	ListQueue(ctx context.Context, f domain.GovQueueFilter) ([]domain.GovApplication, error)
+	GetApplicationAny(ctx context.Context, id string) (domain.GovApplication, error)
+	// AssignApplication нь хүсэлтийг менежерт оноож in_review болгоно. Зэрэг
+	// ирсэн хоёр дахь оролдлого 0 мөр хөндөнө → apperror.Conflict.
+	AssignApplication(ctx context.Context, id, officerID string) (domain.GovApplication, error)
+	// DecideApplication нь approve/reject шийдвэрийг бичнэ (SQL WHERE guard-аар
+	// зөвшөөрөгдсөн эх төлвөөс л шилжинэ).
+	DecideApplication(ctx context.Context, in GovDecisionInput) (domain.GovApplication, error)
+	// CompleteApplication нь 'approved' (биет гаралт хүлээгдэж буй) хүсэлтийг
+	// хүргэгдсэн гэж хааж 'completed' болгоно.
+	CompleteApplication(ctx context.Context, id, officerID string, notify *domain.GovNotification) (domain.GovApplication, error)
+	// RequestMoreInfo нь info_required руу шилжүүлж SLA цагийг ЗОГСООНО.
+	RequestMoreInfo(ctx context.Context, id, officerID, note string) (domain.GovApplication, error)
+	// ResumeFromInfo нь иргэн баримт нэмсний дараа цагийг ҮРГЭЛЖЛҮҮЛЖ, due_at-г
+	// зогссон хугацаагаар хойшлуулна.
+	ResumeFromInfo(ctx context.Context, userID, id string) (domain.GovApplication, error)
+
+	// Timeline
+	AppendApplicationEvent(ctx context.Context, in *domain.GovApplicationEvent) error
+	ListApplicationEvents(ctx context.Context, applicationID string) ([]domain.GovApplicationEvent, error)
+
+	// SLA sweep (background worker)
+	// SLAOverdue нь хугацаа хэтэрсэн ч хараахан тэмдэглэгдээгүй хүсэлтүүдийг
+	// буцаана (breach_notified маягийн latch — нэг хүсэлтэд нэг л удаа).
+	MarkSLABreached(ctx context.Context) ([]domain.GovApplication, error)
+	// TacitApprovals нь чимээгүй зөвшөөрөл идэвхтэй үйлчилгээний хугацаа
+	// хэтэрсэн хүсэлтүүдийг зөвшөөрөгдсөн төлөвт шилжүүлнэ.
+	TacitApprovals(ctx context.Context) ([]domain.GovApplication, error)
 
 	// Лавлагаа
 	ListReferences(ctx context.Context, userID string) ([]domain.GovReference, error)
 	CreateReference(ctx context.Context, in *domain.GovReference) (domain.GovReference, error)
 
 	// Мэдэгдэл
+	// CreateNotification нь иргэнд мэдэгдэл бичнэ. Менежер өөрийнх нь биш
+	// хэрэглэгчид бичих тул officer/service RLS үүрэг шаардана.
+	CreateNotification(ctx context.Context, in *domain.GovNotification) error
 	ListNotifications(ctx context.Context, userID string) ([]domain.GovNotification, error)
 	MarkNotificationRead(ctx context.Context, userID, id string) error
 	MarkAllNotificationsRead(ctx context.Context, userID string) error
@@ -249,18 +364,6 @@ type AIRepository interface {
 	// буцаана (title/content ILIKE + tag тэнцэл). AI-ийн search_knowledge
 	// tool үүгээр ажилладаг.
 	SearchKnowledge(ctx context.Context, query string, limit int) ([]domain.AIKnowledge, error)
-}
-
-// LandingConfigRepository нь нүүр хуудасны тохируулдаг харагдацын ганц JSON
-// баримтыг (landing_config, id=1) хадгалах/уншихыг хариуцна. ai_prompts-той
-// адил хэрэглэгч-тус-бүрийн биш глобал тохиргоо тул RLS-гүй (plain pool query);
-// апп-ын урсгал зөвхөн UPDATE (мөр migration-д seed хийгддэг).
-type LandingConfigRepository interface {
-	// GetConfig нь одоогийн тохиргооны JSON баримтыг буцаана. Мөр байхгүй
-	// (seed хийгдээгүй) бол apperror.NotFound.
-	GetConfig(ctx context.Context) (domain.LandingConfig, error)
-	// SetConfig нь тохиргооны баримтыг бүхэлд нь солино (UPDATE-only).
-	SetConfig(ctx context.Context, config json.RawMessage) error
 }
 
 // AuditLogRow нь hash-chained audit_log хүснэгтийн нэг мөрийн уншсан хэлбэр —
@@ -325,4 +428,33 @@ type SecurityEventRepository interface {
 	Ingest(ctx context.Context, e SecurityEventRecord) error
 	// List нь event-үүдийг received_at буурахаар хуудаслан буцаана (admin).
 	List(ctx context.Context, limit, offset int) ([]SecurityEventRecord, error)
+}
+
+// SiteRepository нь сайтын нийтийн харагдацын default (site_appearance) ганц
+// мөрийг унших/шинэчлэхийг хариуцна. Per-user биш нийтийн config тул RLS-гүй;
+// app зөвхөн UPDATE хийдэг (мөр migration-д seed хийгддэг).
+type SiteRepository interface {
+	// GetAppearance нь одоогийн харагдацын default-ыг буцаана.
+	GetAppearance(ctx context.Context) (domain.SiteAppearance, error)
+	// SetAppearance нь харагдацын default-ыг шинэчилнэ (UPDATE-only).
+	SetAppearance(ctx context.Context, a domain.SiteAppearance) error
+}
+
+// ThemeRepository нь landing-ийн нэрлэсэн theme-үүдийг (themes хүснэгт) удирдана.
+// Нийтийн config тул RLS-гүй; app бүрэн CRUD хийдэг (админ theme үүсгэж/устгана).
+type ThemeRepository interface {
+	// ListThemes нь бүх theme-ийг (config-той) буцаана.
+	ListThemes(ctx context.Context) ([]domain.Theme, error)
+	// GetTheme нь id-аар нэг theme буцаана; олдохгүй бол apperror.NotFound.
+	GetTheme(ctx context.Context, id string) (domain.Theme, error)
+	// GetActiveTheme нь идэвхтэй theme-ийг буцаана; байхгүй бол apperror.NotFound.
+	GetActiveTheme(ctx context.Context) (domain.Theme, error)
+	// CreateTheme нь шинэ theme үүсгэж, үүсгэсэн мөрийг буцаана.
+	CreateTheme(ctx context.Context, name string, config json.RawMessage) (domain.Theme, error)
+	// UpdateTheme нь theme-ийн нэр/config-ыг шинэчилнэ.
+	UpdateTheme(ctx context.Context, id, name string, config json.RawMessage) error
+	// DeleteTheme нь theme-ийг устгана (идэвхтэйг устгаж болохгүй — usecase шалгана).
+	DeleteTheme(ctx context.Context, id string) error
+	// SetActive нь нэг theme-ийг идэвхтэй болгож бусдыг идэвхгүй болгоно (tx).
+	SetActive(ctx context.Context, id string) error
 }

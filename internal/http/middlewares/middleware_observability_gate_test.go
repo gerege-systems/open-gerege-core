@@ -1,4 +1,4 @@
-// Gerege Template Version 27.0
+// Government Template Platform V3.0
 // Gerege Systems Development Team болон Claude AI хамтран бүтээв, 2026.
 
 package middlewares
@@ -39,7 +39,7 @@ func TestObservabilityGate(t *testing.T) {
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			gate := ObservabilityGate(tc.isProduction, tc.token)
-			req := httptest.NewRequest(http.MethodGet, "/metrics", nil)
+			req := httptest.NewRequest(http.MethodGet, "/metrics", http.NoBody)
 			if tc.authHeader != "" {
 				req.Header.Set("Authorization", tc.authHeader)
 			}

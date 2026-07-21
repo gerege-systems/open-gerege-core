@@ -1,4 +1,4 @@
-// Gerege Template Version 27.0
+// Government Template Platform V3.0
 // Gerege Systems Development Team болон Claude AI хамтран бүтээв, 2026.
 
 // Package rbac нь /rbac/* endpoint-уудыг үйлчилнэ — эрх (roles) CRUD, эрхийн
@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"template/internal/business/domain"
 	audituc "template/internal/business/usecases/audit"
 	rbacuc "template/internal/business/usecases/rbac"
 	httpauth "template/internal/http/auth"
@@ -70,16 +71,20 @@ func (h Handler) MyPermissions(w http.ResponseWriter, r *http.Request) error {
 	return v1.NewSuccessResponse(w, r, http.StatusOK, "permissions fetched successfully", perms)
 }
 
-// effectiveRoleID нь токенд RoleID байхгүй (хуучин токен) бол IsAdmin-аас
-// гаргана (admin=1, бусад=2).
+// effectiveRoleID нь токенд RoleID байхгүй (хуучин токен, RoleID=0) бол
+// IsAdmin-аас гаргана. RequirePermission middleware-тэй адил хамгийн бага эрхийн
+// (least-privilege) конвенцийг баримтална: RoleID=0-г админ биш бол RoleUser
+// (хамгийн бага эрх) рүү буулгана — эсрэгээр НЭ буулгана, эс бөгөөс Resolve нь
+// 'admin' key-тэй role-д бүх эрхийг олгодог тул энгийн хэрэглэгчид бүх эрхийн
+// каталог задарна.
 func effectiveRoleID(user httpauth.CurrentUser) int {
 	if user.RoleID != 0 {
 		return user.RoleID
 	}
 	if user.IsAdmin {
-		return 1
+		return domain.RoleAdmin
 	}
-	return 2
+	return domain.RoleUser
 }
 
 // ListRoles нь эрх бүрийг permission-уудтай нь жагсаана (RBAC matrix).

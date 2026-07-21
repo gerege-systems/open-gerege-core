@@ -113,6 +113,80 @@ definitions:
     required:
     - user_id
     type: object
+  template_internal_http_datatransfers_requests.AdminCreateUserRequest:
+    properties:
+      first_name:
+        maxLength: 100
+        type: string
+      first_name_en:
+        maxLength: 100
+        type: string
+      last_name:
+        maxLength: 100
+        type: string
+      last_name_en:
+        maxLength: 100
+        type: string
+      register:
+        maxLength: 20
+        minLength: 6
+        type: string
+      role_id:
+        enum:
+        - 2
+        - 3
+        - 4
+        type: integer
+    required:
+    - register
+    type: object
+  template_internal_http_datatransfers_requests.ApplicationRequest:
+    properties:
+      app_type:
+        enum:
+        - web
+        - spa
+        - native
+        - m2m
+        type: string
+      enabled:
+        type: boolean
+      name:
+        maxLength: 128
+        minLength: 1
+        type: string
+      redirect_uris:
+        items:
+          type: string
+        type: array
+      service_ids:
+        items:
+          type: string
+        type: array
+      tags:
+        items:
+          type: string
+        type: array
+    required:
+    - app_type
+    - name
+    type: object
+  template_internal_http_datatransfers_requests.ApplicationSecretRequest:
+    properties:
+      secret:
+        maxLength: 128
+        minLength: 16
+        type: string
+    required:
+    - secret
+    type: object
+  template_internal_http_datatransfers_requests.ApplicationServicesRequest:
+    properties:
+      service_ids:
+        items:
+          type: string
+        type: array
+    type: object
   template_internal_http_datatransfers_requests.AssetURLRequest:
     properties:
       url:
@@ -186,7 +260,6 @@ definitions:
           баталгаажуулж байгаа үед л ирнэ (сонголттой).
         type: string
       session_id:
-        maxLength: 128
         type: string
     required:
     - session_id
@@ -197,10 +270,8 @@ definitions:
         description: |-
           CallbackUrl (сонголт): SAME-DEVICE (утасны browser) үед <origin>/auth/eid/callback; хоосон
           бол CROSS-DEVICE (desktop). Backend force-normalize хийнэ.
-        maxLength: 1024
         type: string
       national_id:
-        maxLength: 32
         type: string
     required:
     - national_id
@@ -224,81 +295,6 @@ definitions:
     required:
     - data
     - name
-    type: object
-  template_internal_http_datatransfers_requests.GatewayConsumerRequest:
-    properties:
-      custom_id:
-        maxLength: 80
-        type: string
-      enabled:
-        type: boolean
-      tags:
-        items:
-          type: string
-        type: array
-      username:
-        maxLength: 80
-        minLength: 2
-        type: string
-    required:
-    - username
-    type: object
-  template_internal_http_datatransfers_requests.GatewayKeyRequest:
-    properties:
-      expires_at:
-        type: string
-      label:
-        maxLength: 80
-        type: string
-    type: object
-  template_internal_http_datatransfers_requests.GatewayPolicyRequest:
-    properties:
-      config:
-        items:
-          type: integer
-        type: array
-      enabled:
-        type: boolean
-      route_id:
-        type: string
-      type:
-        enum:
-        - rate-limit
-        - key-auth
-        - cors
-        - ip-restriction
-        - request-transform
-        type: string
-    required:
-    - type
-    type: object
-  template_internal_http_datatransfers_requests.GatewayRouteRequest:
-    properties:
-      enabled:
-        type: boolean
-      methods:
-        items:
-          type: string
-        type: array
-      name:
-        maxLength: 80
-        minLength: 2
-        type: string
-      paths:
-        items:
-          type: string
-        minItems: 1
-        type: array
-      preserve_host:
-        type: boolean
-      service_id:
-        type: string
-      strip_path:
-        type: boolean
-    required:
-    - name
-    - paths
-    - service_id
     type: object
   template_internal_http_datatransfers_requests.GatewayServiceRequest:
     properties:
@@ -342,10 +338,8 @@ definitions:
   template_internal_http_datatransfers_requests.GoogleLoginRequest:
     properties:
       code:
-        maxLength: 1024
         type: string
       redirect_uri:
-        maxLength: 1024
         type: string
     required:
     - code
@@ -356,6 +350,10 @@ definitions:
       note:
         maxLength: 500
         type: string
+      payload:
+        items:
+          type: integer
+        type: array
       service_id:
         type: string
     required:
@@ -375,6 +373,30 @@ definitions:
         type: string
     required:
     - scheduled_at
+    type: object
+  template_internal_http_datatransfers_requests.GovDecideRequest:
+    properties:
+      approve:
+        type: boolean
+      note:
+        maxLength: 1000
+        type: string
+      result:
+        enum:
+        - granted
+        - refused
+        - withdrawn
+        - not_admissible
+        - processed
+        type: string
+    type: object
+  template_internal_http_datatransfers_requests.GovInfoRequest:
+    properties:
+      note:
+        maxLength: 1000
+        type: string
+    required:
+    - note
     type: object
   template_internal_http_datatransfers_requests.GovReferenceRequest:
     properties:
@@ -436,10 +458,8 @@ definitions:
   template_internal_http_datatransfers_requests.LogoutRequest:
     properties:
       access_token:
-        maxLength: 4096
         type: string
       refresh_token:
-        maxLength: 4096
         type: string
     required:
     - refresh_token
@@ -453,7 +473,6 @@ definitions:
   template_internal_http_datatransfers_requests.RefreshRequest:
     properties:
       refresh_token:
-        maxLength: 4096
         type: string
     required:
     - refresh_token
@@ -496,10 +515,229 @@ definitions:
     - password
     - username
     type: object
+  template_internal_http_datatransfers_requests.RegistryEvidenceLink:
+    properties:
+      evidence_id:
+        type: string
+      from_citizen:
+        description: |-
+          FromCitizen — уг баримтыг иргэнээс шаардаж байгаа эсэх. ХУР-д байгаа
+          баримтыг иргэнээс шаардвал once-only зөрчил болно.
+        type: boolean
+      note:
+        maxLength: 4000
+        type: string
+      required:
+        type: boolean
+    required:
+    - evidence_id
+    type: object
+  template_internal_http_datatransfers_requests.RegistryEvidenceRequest:
+    properties:
+      code:
+        maxLength: 64
+        type: string
+      description:
+        maxLength: 4000
+        type: string
+      holder_agency:
+        maxLength: 300
+        type: string
+      in_khur:
+        type: boolean
+      khur_service_code:
+        maxLength: 200
+        type: string
+      name:
+        maxLength: 300
+        type: string
+      source_system:
+        maxLength: 300
+        type: string
+    required:
+    - name
+    type: object
+  template_internal_http_datatransfers_requests.RegistryEvidencesRequest:
+    properties:
+      evidences:
+        items:
+          $ref: '#/definitions/template_internal_http_datatransfers_requests.RegistryEvidenceLink'
+        maxItems: 100
+        type: array
+    type: object
+  template_internal_http_datatransfers_requests.RegistryLifeEventRequest:
+    properties:
+      code:
+        maxLength: 64
+        type: string
+      description:
+        maxLength: 4000
+        type: string
+      kind:
+        enum:
+        - life
+        - business
+        type: string
+      lead_agency:
+        maxLength: 300
+        type: string
+      name:
+        maxLength: 300
+        type: string
+      sort_order:
+        maximum: 10000
+        minimum: 0
+        type: integer
+    required:
+    - code
+    - name
+    type: object
+  template_internal_http_datatransfers_requests.RegistryPublishRequest:
+    properties:
+      change_note:
+        maxLength: 1000
+        type: string
+    type: object
+  template_internal_http_datatransfers_requests.RegistryServiceRequest:
+    properties:
+      annual_volume:
+        minimum: 0
+        type: integer
+      authority:
+        maxLength: 300
+        type: string
+      authority_org_id:
+        type: string
+      channels:
+        items:
+          type: string
+        maxItems: 10
+        type: array
+      code:
+        maxLength: 64
+        type: string
+      description:
+        maxLength: 4000
+        type: string
+      fee:
+        minimum: 0
+        type: integer
+      legal_basis:
+        maxLength: 4000
+        type: string
+      life_event_id:
+        type: string
+      max_days:
+        maximum: 3650
+        minimum: 0
+        type: integer
+      name:
+        maxLength: 300
+        type: string
+      name_en:
+        maxLength: 300
+        type: string
+      output:
+        maxLength: 300
+        type: string
+      proactivity:
+        enum:
+        - information
+        - online
+        - once_only
+        - proactive
+        type: string
+      steps_count:
+        maximum: 500
+        minimum: 0
+        type: integer
+      target_group:
+        maxLength: 300
+        type: string
+    required:
+    - authority
+    - name
+    type: object
+  template_internal_http_datatransfers_requests.RelayForwardRequest:
+    properties:
+      platform_code:
+        type: string
+    required:
+    - platform_code
+    type: object
+  template_internal_http_datatransfers_requests.RelayIngestRequest:
+    properties:
+      due_at:
+        type: string
+      external_ref:
+        type: string
+      payload:
+        items:
+          type: integer
+        type: array
+      priority:
+        type: string
+      service_code:
+        type: string
+      source_platform:
+        type: string
+      title:
+        type: string
+    required:
+    - service_code
+    type: object
+  template_internal_http_datatransfers_requests.RelayPlatformRequest:
+    properties:
+      code:
+        type: string
+      direction:
+        enum:
+        - upstream
+        - downstream
+        type: string
+      enabled:
+        type: boolean
+      endpoint_url:
+        type: string
+      name:
+        type: string
+      supervisor_contact:
+        type: string
+      webhook_secret:
+        type: string
+    required:
+    - code
+    - name
+    type: object
+  template_internal_http_datatransfers_requests.RelayRespondRequest:
+    properties:
+      result:
+        items:
+          type: integer
+        type: array
+      status:
+        enum:
+        - done
+        - rejected
+        type: string
+    required:
+    - status
+    type: object
+  template_internal_http_datatransfers_requests.RelayRouteRequest:
+    properties:
+      platform_id:
+        type: string
+      service_code:
+        type: string
+      sla_minutes:
+        type: integer
+    required:
+    - platform_id
+    - service_code
+    type: object
   template_internal_http_datatransfers_requests.ResetPasswordRequest:
     properties:
       code:
-        maxLength: 10
         type: string
       email:
         maxLength: 50
@@ -537,6 +775,45 @@ definitions:
     required:
     - email
     type: object
+  template_internal_http_datatransfers_requests.SiteAppearanceUpdateRequest:
+    properties:
+      accent:
+        maxLength: 32
+        type: string
+      font:
+        maxLength: 16
+        type: string
+      style:
+        maxLength: 16
+        type: string
+      theme:
+        maxLength: 16
+        type: string
+    required:
+    - accent
+    - font
+    - style
+    - theme
+    type: object
+  template_internal_http_datatransfers_requests.SuperadminAccessModeRequest:
+    properties:
+      mode:
+        enum:
+        - public
+        - private
+        type: string
+    required:
+    - mode
+    type: object
+  template_internal_http_datatransfers_requests.SuperadminAddAdminByRegisterRequest:
+    properties:
+      register:
+        maxLength: 20
+        minLength: 8
+        type: string
+    required:
+    - register
+    type: object
   template_internal_http_datatransfers_requests.SuperadminCreateAdminRequest:
     properties:
       email:
@@ -566,6 +843,96 @@ definitions:
     - password
     - username
     type: object
+  template_internal_http_datatransfers_requests.SuperadminInviteRequest:
+    properties:
+      email:
+        maxLength: 100
+        type: string
+    required:
+    - email
+    type: object
+  template_internal_http_datatransfers_requests.SuperadminMFARequest:
+    properties:
+      code:
+        maxLength: 32
+        type: string
+      mfa_token:
+        type: string
+    required:
+    - code
+    - mfa_token
+    type: object
+  template_internal_http_datatransfers_requests.SuperadminOnboardCodeRequest:
+    properties:
+      code:
+        maxLength: 32
+        type: string
+      onboard_token:
+        type: string
+    required:
+    - code
+    - onboard_token
+    type: object
+  template_internal_http_datatransfers_requests.SuperadminOnboardEIDPollRequest:
+    properties:
+      onboard_token:
+        type: string
+      session_id:
+        type: string
+    required:
+    - onboard_token
+    - session_id
+    type: object
+  template_internal_http_datatransfers_requests.SuperadminOnboardEIDStartIDRequest:
+    properties:
+      callbackUrl:
+        type: string
+      national_id:
+        type: string
+      onboard_token:
+        type: string
+    required:
+    - national_id
+    - onboard_token
+    type: object
+  template_internal_http_datatransfers_requests.SuperadminOnboardEIDStartRequest:
+    properties:
+      callbackUrl:
+        type: string
+      onboard_token:
+        type: string
+    required:
+    - onboard_token
+    type: object
+  template_internal_http_datatransfers_requests.SuperadminOnboardGoogleRequest:
+    properties:
+      code:
+        type: string
+      redirect_uri:
+        type: string
+    required:
+    - code
+    - redirect_uri
+    type: object
+  template_internal_http_datatransfers_requests.SuperadminOnboardTokenRequest:
+    properties:
+      onboard_token:
+        type: string
+    required:
+    - onboard_token
+    type: object
+  template_internal_http_datatransfers_requests.ThemeUpsertRequest:
+    properties:
+      config:
+        items:
+          type: integer
+        type: array
+      name:
+        maxLength: 80
+        type: string
+    required:
+    - name
+    type: object
   template_internal_http_datatransfers_requests.UpdateMemberRoleRequest:
     properties:
       role:
@@ -580,7 +947,6 @@ definitions:
   template_internal_http_datatransfers_requests.VerifyOTPRequest:
     properties:
       code:
-        maxLength: 10
         type: string
       email:
         maxLength: 50
@@ -683,6 +1049,10 @@ definitions:
     properties:
       doc_text:
         type: string
+      extra:
+        additionalProperties: {}
+        description: activity service-ийн нэмэлт талбарууд
+        type: object
       flow:
         type: string
       outcome:
@@ -793,6 +1163,10 @@ definitions:
         type: string
       enrolled_at:
         type: string
+      extra:
+        additionalProperties: {}
+        description: upstream-ийн нэмэлт талбарууд
+        type: object
       platform:
         type: string
     type: object
@@ -806,6 +1180,12 @@ definitions:
         description: |-
           EID нь eID-ээр нэвтэрсэн хэрэглэгчийн identity + сертификатын мэдээлэл.
           Нууц үгээр бүртгүүлсэн хэрэглэгчид nil (omitempty).
+      eid_proxy:
+        description: |-
+          EIDProxy нь SSO eID proxy идэвхтэй эсэхийг заана — идэвхтэй бол иргэн
+          локал eID linkage-гүй (SSO-ээр нэвтэрсэн) байсан ч eID PKI самбарыг SSO-
+          гоор дамжуулан үзэж болно. Frontend eID хуудсуудыг үүгээр нээнэ.
+        type: boolean
       email:
         type: string
       first_name:
@@ -827,6 +1207,10 @@ definitions:
       last_name:
         type: string
       last_name_en:
+        type: string
+      mfa_required:
+        type: boolean
+      mfa_token:
         type: string
       refresh_token:
         type: string
@@ -890,6 +1274,10 @@ definitions:
         type: string
       linked:
         type: boolean
+      mfa_required:
+        type: boolean
+      mfa_token:
+        type: string
       user:
         $ref: '#/definitions/template_internal_http_datatransfers_responses.UserResponse'
     type: object
@@ -1000,6 +1388,147 @@ definitions:
           $ref: '#/definitions/template_internal_http_datatransfers_responses.OrgSignerResponse'
         type: array
     type: object
+  template_internal_http_datatransfers_responses.RelayAssignmentResponse:
+    properties:
+      dispatched_at:
+        type: string
+      due_at:
+        type: string
+      escalated:
+        type: boolean
+      id:
+        type: string
+      platform_id:
+        type: string
+      platform_name:
+        type: string
+      reminders_sent:
+        type: integer
+      request_id:
+        type: string
+      responded_at:
+        type: string
+      result:
+        items:
+          type: integer
+        type: array
+      status:
+        type: string
+    type: object
+  template_internal_http_datatransfers_responses.RelayEventResponse:
+    properties:
+      assignment_id:
+        type: string
+      created_at:
+        type: string
+      detail:
+        type: string
+      id:
+        type: string
+      request_id:
+        type: string
+      type:
+        type: string
+    type: object
+  template_internal_http_datatransfers_responses.RelayOverviewResponse:
+    properties:
+      avg_fulfill_mins:
+        type: integer
+      fulfilled:
+        type: integer
+      in_progress:
+        type: integer
+      overdue:
+        type: integer
+      platforms:
+        items:
+          $ref: '#/definitions/template_internal_http_datatransfers_responses.RelayPlatformStatResponse'
+        type: array
+      received_today:
+        type: integer
+      recent_events:
+        items:
+          $ref: '#/definitions/template_internal_http_datatransfers_responses.RelayEventResponse'
+        type: array
+      sla_compliance_pct:
+        type: number
+      status_buckets:
+        items:
+          $ref: '#/definitions/template_internal_http_datatransfers_responses.RelayStatusBucketResponse'
+        type: array
+      total:
+        type: integer
+    type: object
+  template_internal_http_datatransfers_responses.RelayPlatformStatResponse:
+    properties:
+      compliance_pct:
+        type: number
+      done:
+        type: integer
+      overdue:
+        type: integer
+      pending:
+        type: integer
+      platform_id:
+        type: string
+      platform_name:
+        type: string
+      total:
+        type: integer
+    type: object
+  template_internal_http_datatransfers_responses.RelayRequestDetailResponse:
+    properties:
+      assignments:
+        items:
+          $ref: '#/definitions/template_internal_http_datatransfers_responses.RelayAssignmentResponse'
+        type: array
+      events:
+        items:
+          $ref: '#/definitions/template_internal_http_datatransfers_responses.RelayEventResponse'
+        type: array
+      request:
+        $ref: '#/definitions/template_internal_http_datatransfers_responses.RelayRequestResponse'
+    type: object
+  template_internal_http_datatransfers_responses.RelayRequestResponse:
+    properties:
+      breach_notified:
+        type: boolean
+      due_at:
+        type: string
+      external_ref:
+        type: string
+      fulfilled_at:
+        type: string
+      id:
+        type: string
+      payload:
+        items:
+          type: integer
+        type: array
+      priority:
+        type: string
+      received_at:
+        type: string
+      result:
+        items:
+          type: integer
+        type: array
+      service_code:
+        type: string
+      source_platform:
+        type: string
+      status:
+        type: string
+      title:
+        type: string
+    type: object
+  template_internal_http_datatransfers_responses.RelayStatusBucketResponse:
+    properties:
+      count:
+        type: integer
+      status:
+        type: string
+    type: object
   template_internal_http_datatransfers_responses.SecurityEventResponse:
     properties:
       detail:
@@ -1022,6 +1551,204 @@ definitions:
       user_id:
         type: string
     type: object
+  template_internal_http_datatransfers_responses.SiteAppearanceResponse:
+    properties:
+      accent:
+        type: string
+      font:
+        type: string
+      style:
+        type: string
+      theme:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  template_internal_http_datatransfers_responses.SuperadminInviteResponse:
+    properties:
+      accepted_at:
+        type: string
+      created_at:
+        type: string
+      email:
+        type: string
+      invited_by:
+        type: string
+      pending:
+        description: |-
+          Pending нь урилга хараахан ашиглагдаагүй (бүртгэл хийгдээгүй) эсэх —
+          UI-д "хүлээгдэж буй / ашигласан" гэж ялгахад.
+        type: boolean
+    type: object
+  template_internal_http_datatransfers_responses.SuperadminMFAResponse:
+    properties:
+      created_at:
+        type: string
+      eid:
+        allOf:
+        - $ref: '#/definitions/template_internal_http_datatransfers_responses.EIDInfo'
+        description: |-
+          EID нь eID-ээр нэвтэрсэн хэрэглэгчийн identity + сертификатын мэдээлэл.
+          Нууц үгээр бүртгүүлсэн хэрэглэгчид nil (omitempty).
+      eid_proxy:
+        description: |-
+          EIDProxy нь SSO eID proxy идэвхтэй эсэхийг заана — идэвхтэй бол иргэн
+          локал eID linkage-гүй (SSO-ээр нэвтэрсэн) байсан ч eID PKI самбарыг SSO-
+          гоор дамжуулан үзэж болно. Frontend eID хуудсуудыг үүгээр нээнэ.
+        type: boolean
+      email:
+        type: string
+      first_name:
+        type: string
+      first_name_en:
+        type: string
+      full_name:
+        type: string
+      full_name_en:
+        type: string
+      google:
+        allOf:
+        - $ref: '#/definitions/template_internal_http_datatransfers_responses.GoogleInfo'
+        description: |-
+          Google нь холбогдсон Google account-аас хадгалсан профайл. Google
+          холбоогүй хэрэглэгчид nil (omitempty).
+      id:
+        type: string
+      last_name:
+        type: string
+      last_name_en:
+        type: string
+      recovery_codes_left:
+        type: integer
+      refresh_token:
+        type: string
+      role_id:
+        type: integer
+      token:
+        type: string
+      updated_at:
+        type: string
+      used_recovery_code:
+        description: |-
+          UsedRecoveryCode нь нөөц кодоор нэвтэрсэн эсэх; тийм бол
+          recovery_codes_left нь үлдсэн кодын тоо (UI сануулга харуулна).
+        type: boolean
+      username:
+        type: string
+    type: object
+  template_internal_http_datatransfers_responses.SuperadminOnboardDoneResponse:
+    properties:
+      created_at:
+        type: string
+      eid:
+        allOf:
+        - $ref: '#/definitions/template_internal_http_datatransfers_responses.EIDInfo'
+        description: |-
+          EID нь eID-ээр нэвтэрсэн хэрэглэгчийн identity + сертификатын мэдээлэл.
+          Нууц үгээр бүртгүүлсэн хэрэглэгчид nil (omitempty).
+      eid_proxy:
+        description: |-
+          EIDProxy нь SSO eID proxy идэвхтэй эсэхийг заана — идэвхтэй бол иргэн
+          локал eID linkage-гүй (SSO-ээр нэвтэрсэн) байсан ч eID PKI самбарыг SSO-
+          гоор дамжуулан үзэж болно. Frontend eID хуудсуудыг үүгээр нээнэ.
+        type: boolean
+      email:
+        type: string
+      first_name:
+        type: string
+      first_name_en:
+        type: string
+      full_name:
+        type: string
+      full_name_en:
+        type: string
+      google:
+        allOf:
+        - $ref: '#/definitions/template_internal_http_datatransfers_responses.GoogleInfo'
+        description: |-
+          Google нь холбогдсон Google account-аас хадгалсан профайл. Google
+          холбоогүй хэрэглэгчид nil (omitempty).
+      id:
+        type: string
+      last_name:
+        type: string
+      last_name_en:
+        type: string
+      recovery_codes:
+        items:
+          type: string
+        type: array
+      refresh_token:
+        type: string
+      role_id:
+        type: integer
+      step:
+        type: string
+      token:
+        type: string
+      updated_at:
+        type: string
+      username:
+        type: string
+    type: object
+  template_internal_http_datatransfers_responses.SuperadminOnboardEIDPollResponse:
+    properties:
+      state:
+        type: string
+      step:
+        type: string
+    type: object
+  template_internal_http_datatransfers_responses.SuperadminOnboardEIDStartResponse:
+    properties:
+      device_link_url:
+        type: string
+      expires_at:
+        type: string
+      session_id:
+        type: string
+      verification_code:
+        type: string
+    type: object
+  template_internal_http_datatransfers_responses.SuperadminOnboardStartResponse:
+    properties:
+      email:
+        type: string
+      onboard_token:
+        type: string
+      step:
+        type: string
+    type: object
+  template_internal_http_datatransfers_responses.SuperadminOnboardStepResponse:
+    properties:
+      step:
+        type: string
+    type: object
+  template_internal_http_datatransfers_responses.SuperadminOnboardTOTPResponse:
+    properties:
+      otpauth_url:
+        type: string
+      secret:
+        type: string
+      step:
+        type: string
+    type: object
+  template_internal_http_datatransfers_responses.ThemeResponse:
+    properties:
+      config:
+        items:
+          type: integer
+        type: array
+      created_at:
+        type: string
+      id:
+        type: string
+      is_active:
+        type: boolean
+      name:
+        type: string
+      updated_at:
+        type: string
+    type: object
   template_internal_http_datatransfers_responses.UserResponse:
     properties:
       created_at:
@@ -1032,6 +1759,12 @@ definitions:
         description: |-
           EID нь eID-ээр нэвтэрсэн хэрэглэгчийн identity + сертификатын мэдээлэл.
           Нууц үгээр бүртгүүлсэн хэрэглэгчид nil (omitempty).
+      eid_proxy:
+        description: |-
+          EIDProxy нь SSO eID proxy идэвхтэй эсэхийг заана — идэвхтэй бол иргэн
+          локал eID linkage-гүй (SSO-ээр нэвтэрсэн) байсан ч eID PKI самбарыг SSO-
+          гоор дамжуулан үзэж болно. Frontend eID хуудсуудыг үүгээр нээнэ.
+        type: boolean
       email:
         type: string
       first_name:
@@ -1078,7 +1811,7 @@ definitions:
 host: localhost:8080
 info:
   contact:
-    name: Gerege Backend Template v27
+    name: Government Template Platform V3.0
     url: https://github.com/snykk/go-rest-boilerplate
   description: chi (net/http) + pgx (PostgreSQL) + Redis дээр суурилсан Clean Architecture
     бүхий Go backend. Нээлттэй эхийн snykk/go-rest-boilerplate (MIT, зохиогч Najib
@@ -1087,9 +1820,35 @@ info:
     name: MIT
     url: https://opensource.org/licenses/MIT
   termsOfService: https://github.com/snykk/go-rest-boilerplate
-  title: Gerege Backend Template v27 API
+  title: Government Template Platform V3.0 API
   version: "1.0"
 paths:
+  /.well-known/jwks.json:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: id_token шалгах нийтийн түлхүүрүүд (JWK Set)
+      tags:
+      - oidc
+  /.well-known/openid-configuration:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: OpenID Connect discovery баримт
+      tags:
+      - oidc
   /admin/ai/prompts:
     get:
       description: Тохируулдаг prompt давхаргуудыг (scope — хамрах хүрээ, instructions
@@ -1167,45 +1926,6 @@ paths:
       security:
       - BearerAuth: []
       summary: AI prompt давхаргыг шинэчлэх
-      tags:
-      - admin
-  /admin/landing/config:
-    put:
-      consumes:
-      - application/json
-      description: Нүүрний харагдацын тохиргооны баримтыг бүхэлд нь солино. Body нь
-        бүрэн JSON объект (схемийг frontend эзэмшдэг). Хүчинтэй JSON объект + хэмжээний
-        хязгаар (64 KiB) шалгагдаж, advanced CSS override ариутгагдана. Өөрчлөлт нэн
-        даруй үйлчилнэ (тохиргооны кэш хүчингүй болно).
-      parameters:
-      - description: Landing config document
-        in: body
-        name: request
-        required: true
-        schema:
-          type: object
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Updated
-          schema:
-            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
-        "400":
-          description: Not a JSON object / too large
-          schema:
-            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
-        "401":
-          description: Missing/invalid token
-          schema:
-            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
-        "403":
-          description: Missing settings.manage permission
-          schema:
-            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
-      security:
-      - BearerAuth: []
-      summary: Нүүр хуудасны тохиргоог шинэчлэх
       tags:
       - admin
   /ai/chat:
@@ -1397,6 +2117,168 @@ paths:
       summary: Текстийг яриа болгох (TTS)
       tags:
       - ai
+  /applications:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      summary: Application-уудыг жагсаах
+      tags:
+      - applications
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Application
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/template_internal_http_datatransfers_requests.ApplicationRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      summary: Application (OAuth2 client) үүсгэх
+      tags:
+      - applications
+  /applications/{id}:
+    delete:
+      parameters:
+      - description: Application ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      summary: Application устгах (Hydra client + overlay)
+      tags:
+      - applications
+    get:
+      parameters:
+      - description: Application ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      summary: Application-ыг id-гээр авах
+      tags:
+      - applications
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: Application ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Application
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/template_internal_http_datatransfers_requests.ApplicationRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      summary: Application шинэчлэх
+      tags:
+      - applications
+  /applications/{id}/rotate-secret:
+    post:
+      parameters:
+      - description: Application ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      summary: Application-ын client secret эргүүлэх
+      tags:
+      - applications
+  /applications/{id}/secret:
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: Application ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Client secret
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/template_internal_http_datatransfers_requests.ApplicationSecretRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      summary: Application-ын client secret-ыг гараар оноох
+      tags:
+      - applications
+  /applications/{id}/services:
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: Application ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Service IDs
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/template_internal_http_datatransfers_requests.ApplicationServicesRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      summary: Application-д зөвшөөрсөн gateway service-үүдийг оноох
+      tags:
+      - applications
   /auth/eid/poll:
     post:
       consumes:
@@ -1900,6 +2782,36 @@ paths:
       summary: OTP кодыг шалгаж бүртгэлийг идэвхжүүлэх
       tags:
       - auth
+  /catalog/life-events:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      summary: Нийтийн каталогийн амьдралын үйл явдлууд
+      tags:
+      - catalog
+  /catalog/services/{id}:
+    get:
+      parameters:
+      - description: Service ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      summary: Нийтийн каталогийн нэг үйлчилгээ (зөвхөн нийтлэгдсэн)
+      tags:
+      - catalog
   /core/organizations:
     get:
       description: core.gerege.mn /api/organization/find — search_text (регистр г.м.).
@@ -1938,159 +2850,6 @@ paths:
       summary: Gerege Core хэрэглэгч хайх
       tags:
       - core
-  /gateway/consumers:
-    get:
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
-      summary: Consumer-уудыг жагсаах
-      tags:
-      - gateway
-    post:
-      consumes:
-      - application/json
-      parameters:
-      - description: Consumer
-        in: body
-        name: body
-        required: true
-        schema:
-          $ref: '#/definitions/template_internal_http_datatransfers_requests.GatewayConsumerRequest'
-      produces:
-      - application/json
-      responses:
-        "201":
-          description: Created
-          schema:
-            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
-      summary: Consumer үүсгэх
-      tags:
-      - gateway
-  /gateway/consumers/{id}:
-    delete:
-      parameters:
-      - description: Consumer ID
-        in: path
-        name: id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
-      summary: Consumer устгах
-      tags:
-      - gateway
-    put:
-      consumes:
-      - application/json
-      parameters:
-      - description: Consumer ID
-        in: path
-        name: id
-        required: true
-        type: string
-      - description: Consumer
-        in: body
-        name: body
-        required: true
-        schema:
-          $ref: '#/definitions/template_internal_http_datatransfers_requests.GatewayConsumerRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
-      summary: Consumer шинэчлэх
-      tags:
-      - gateway
-  /gateway/consumers/{id}/keys:
-    get:
-      parameters:
-      - description: Consumer ID
-        in: path
-        name: id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
-      summary: Consumer-ийн API key-үүдийг жагсаах
-      tags:
-      - gateway
-    post:
-      consumes:
-      - application/json
-      parameters:
-      - description: Consumer ID
-        in: path
-        name: id
-        required: true
-        type: string
-      - description: Key
-        in: body
-        name: body
-        schema:
-          $ref: '#/definitions/template_internal_http_datatransfers_requests.GatewayKeyRequest'
-      produces:
-      - application/json
-      responses:
-        "201":
-          description: Created
-          schema:
-            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
-      summary: Consumer-д шинэ API key үүсгэх (plaintext-ийг нэг удаа буцаана)
-      tags:
-      - gateway
-  /gateway/keys/{keyId}:
-    delete:
-      parameters:
-      - description: Key ID
-        in: path
-        name: keyId
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
-      summary: API key-г устгах
-      tags:
-      - gateway
-  /gateway/keys/{keyId}/revoke:
-    post:
-      parameters:
-      - description: Key ID
-        in: path
-        name: keyId
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
-      summary: API key-г хүчингүй болгох (revoke)
-      tags:
-      - gateway
   /gateway/logs:
     get:
       parameters:
@@ -2120,156 +2879,6 @@ paths:
           schema:
             $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
       summary: API Gateway-ийн нэгтгэсэн статистик
-      tags:
-      - gateway
-  /gateway/policies:
-    get:
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
-      summary: Policy (plugin)-уудыг жагсаах
-      tags:
-      - gateway
-    post:
-      consumes:
-      - application/json
-      parameters:
-      - description: Policy
-        in: body
-        name: body
-        required: true
-        schema:
-          $ref: '#/definitions/template_internal_http_datatransfers_requests.GatewayPolicyRequest'
-      produces:
-      - application/json
-      responses:
-        "201":
-          description: Created
-          schema:
-            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
-      summary: Policy үүсгэх
-      tags:
-      - gateway
-  /gateway/policies/{id}:
-    delete:
-      parameters:
-      - description: Policy ID
-        in: path
-        name: id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
-      summary: Policy устгах
-      tags:
-      - gateway
-    put:
-      consumes:
-      - application/json
-      parameters:
-      - description: Policy ID
-        in: path
-        name: id
-        required: true
-        type: string
-      - description: Policy
-        in: body
-        name: body
-        required: true
-        schema:
-          $ref: '#/definitions/template_internal_http_datatransfers_requests.GatewayPolicyRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
-      summary: Policy шинэчлэх
-      tags:
-      - gateway
-  /gateway/routes:
-    get:
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
-      summary: Route-уудыг жагсаах
-      tags:
-      - gateway
-    post:
-      consumes:
-      - application/json
-      parameters:
-      - description: Route
-        in: body
-        name: body
-        required: true
-        schema:
-          $ref: '#/definitions/template_internal_http_datatransfers_requests.GatewayRouteRequest'
-      produces:
-      - application/json
-      responses:
-        "201":
-          description: Created
-          schema:
-            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
-      summary: Route үүсгэх
-      tags:
-      - gateway
-  /gateway/routes/{id}:
-    delete:
-      parameters:
-      - description: Route ID
-        in: path
-        name: id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
-      summary: Route устгах
-      tags:
-      - gateway
-    put:
-      consumes:
-      - application/json
-      parameters:
-      - description: Route ID
-        in: path
-        name: id
-        required: true
-        type: string
-      - description: Route
-        in: body
-        name: body
-        required: true
-        schema:
-          $ref: '#/definitions/template_internal_http_datatransfers_requests.GatewayRouteRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
-      summary: Route шинэчлэх
       tags:
       - gateway
   /gateway/services:
@@ -2397,6 +3006,50 @@ paths:
       summary: Хүсэлт цуцлах
       tags:
       - gov
+  /gov/applications/{id}/provide-info:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Application ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Info
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/template_internal_http_datatransfers_requests.GovInfoRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      summary: Нэмэлт мэдээлэл ирүүлэх (SLA цаг үргэлжилнэ)
+      tags:
+      - gov
+  /gov/applications/{id}/timeline:
+    get:
+      parameters:
+      - description: Application ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      summary: Хүсэлтийн явцын түүх
+      tags:
+      - gov
   /gov/appointments:
     get:
       produces:
@@ -2447,6 +3100,18 @@ paths:
       summary: Цаг захиалга цуцлах
       tags:
       - gov
+  /gov/life-events:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      summary: Амьдралын үйл явдлын каталог (CPSV-AP Event)
+      tags:
+      - gov
   /gov/notifications:
     get:
       produces:
@@ -2489,6 +3154,149 @@ paths:
       summary: Бүх мэдэгдлийг уншсан болгох
       tags:
       - gov
+  /gov/officer/queue:
+    get:
+      parameters:
+      - description: Төлөв
+        in: query
+        name: status
+        type: string
+      - description: '''me'' бол зөвхөн өөрийн'
+        in: query
+        name: assigned_to
+        type: string
+      - description: Зөвхөн хугацаа хэтэрсэн
+        in: query
+        name: overdue
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      summary: Хянах хүсэлтийн дараалал
+      tags:
+      - gov-officer
+  /gov/officer/queue/{id}:
+    get:
+      parameters:
+      - description: Application ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      summary: Хүсэлтийн дэлгэрэнгүй (менежер)
+      tags:
+      - gov-officer
+  /gov/officer/queue/{id}/assign:
+    post:
+      parameters:
+      - description: Application ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      summary: Хүсэлтийг хянахаар авах
+      tags:
+      - gov-officer
+  /gov/officer/queue/{id}/complete:
+    post:
+      parameters:
+      - description: Application ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      summary: Биет гаралт хүргэгдсэнийг бүртгэх
+      tags:
+      - gov-officer
+  /gov/officer/queue/{id}/decide:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Application ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Decision
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/template_internal_http_datatransfers_requests.GovDecideRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      summary: Хүсэлтийг зөвшөөрөх/татгалзах
+      tags:
+      - gov-officer
+  /gov/officer/queue/{id}/request-info:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Application ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Info request
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/template_internal_http_datatransfers_requests.GovInfoRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      summary: Иргэнээс нэмэлт мэдээлэл хүсэх (SLA цаг зогсоно)
+      tags:
+      - gov-officer
+  /gov/officer/stats:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      summary: Менежерийн дарааллын нэгтгэл
+      tags:
+      - gov-officer
   /gov/overview:
     get:
       produces:
@@ -2703,22 +3511,6 @@ paths:
       summary: Провайдерын токеныг авах (server-тал, BFF)
       tags:
       - integrations
-  /landing/config:
-    get:
-      description: Нүүр хуудасны (landing + auth бүрхүүл) харагдацын тохиргоог (өнгө,
-        фонт, хэмжээ, текст mn/en, товч/цэс) буцаана. Нэвтрэлт шаардахгүй — зочид
-        нүүрээ энэ тохиргоогоор буулгана. DB алдаа үед хоосон объект руу fail-open
-        хийнэ.
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Landing config document
-          schema:
-            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
-      summary: Нүүр хуудасны тохиргоог авах (нийтийн)
-      tags:
-      - public
   /me/latin-name:
     put:
       consumes:
@@ -2885,6 +3677,828 @@ paths:
       summary: Гарын үсэг (eID) хадгалах
       tags:
       - users
+  /oauth2/auth:
+    get:
+      parameters:
+      - description: Client ID
+        in: query
+        name: client_id
+        required: true
+        type: string
+      - description: Registered redirect URI
+        in: query
+        name: redirect_uri
+        required: true
+        type: string
+      - description: code
+        in: query
+        name: response_type
+        required: true
+        type: string
+      - description: Space-separated scopes
+        in: query
+        name: scope
+        type: string
+      - description: Opaque RP state
+        in: query
+        name: state
+        type: string
+      responses:
+        "302":
+          description: Found
+      summary: OAuth2 authorization endpoint
+      tags:
+      - oidc
+  /oauth2/introspect:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: OAuth2 token introspection (RFC 7662)
+      tags:
+      - oidc
+  /oauth2/revoke:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      responses:
+        "200":
+          description: OK
+      summary: OAuth2 token revocation (RFC 7009)
+      tags:
+      - oidc
+  /oauth2/sessions/logout:
+    get:
+      responses:
+        "302":
+          description: Found
+      summary: RP-initiated logout
+      tags:
+      - oidc
+  /oauth2/token:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      parameters:
+      - description: authorization_code | refresh_token | client_credentials
+        in: formData
+        name: grant_type
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: OAuth2 token endpoint
+      tags:
+      - oidc
+  /registry/catalog:
+    get:
+      parameters:
+      - description: Нэр/код дотор хайх
+        in: query
+        name: q
+        type: string
+      - description: Эрх бүхий байгууллага
+        in: query
+        name: authority
+        type: string
+      - description: Амьдралын үйл явдал
+        in: query
+        name: life_event_id
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      summary: Нийтийн каталог (зөвхөн нийтлэгдсэн паспорт)
+      tags:
+      - registry
+  /registry/evidences:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      summary: Нотолгооны каталог (ХУР mapping-тай)
+      tags:
+      - registry
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Evidence
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/template_internal_http_datatransfers_requests.RegistryEvidenceRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      summary: Нотолгоо бүртгэх
+      tags:
+      - registry
+  /registry/evidences/{id}:
+    delete:
+      parameters:
+      - description: Evidence ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      summary: Нотолгоо устгах
+      tags:
+      - registry
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: Evidence ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Evidence
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/template_internal_http_datatransfers_requests.RegistryEvidenceRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      summary: Нотолгоо засах (ХУР боломж тэмдэглэх)
+      tags:
+      - registry
+  /registry/life-events:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      summary: Амьдралын/бизнесийн үйл явдлууд
+      tags:
+      - registry
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Life event
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/template_internal_http_datatransfers_requests.RegistryLifeEventRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      summary: Амьдралын/бизнесийн үйл явдал үүсгэх
+      tags:
+      - registry
+  /registry/life-events/{id}:
+    delete:
+      parameters:
+      - description: Life event ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      summary: Амьдралын үйл явдал устгах
+      tags:
+      - registry
+  /registry/once-only:
+    get:
+      parameters:
+      - description: Эрх бүхий байгууллагаар шүүх
+        in: query
+        name: authority
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      summary: Once-only зөрчлүүд (ХУР-д байгааг иргэнээс дахин шаардаж буй)
+      tags:
+      - registry
+  /registry/overview:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      summary: Регистрийн нэгтгэл (инвентар, once-only, проактив байдал)
+      tags:
+      - registry
+  /registry/services:
+    get:
+      parameters:
+      - description: draft/published/archived
+        in: query
+        name: status
+        type: string
+      - description: Эрх бүхий байгууллага
+        in: query
+        name: authority
+        type: string
+      - description: Проактив байдлын шат
+        in: query
+        name: proactivity
+        type: string
+      - description: Нэр/код дотор хайх
+        in: query
+        name: q
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      summary: Үйлчилгээний паспортын жагсаалт (ноорог орно)
+      tags:
+      - registry
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Service
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/template_internal_http_datatransfers_requests.RegistryServiceRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      summary: Үйлчилгээний паспорт үүсгэх (ноорог)
+      tags:
+      - registry
+  /registry/services/{id}:
+    delete:
+      parameters:
+      - description: Service ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      summary: Ноорог паспорт устгах (нийтлэгдсэнийг устгахгүй — архивлана)
+      tags:
+      - registry
+    get:
+      parameters:
+      - description: Service ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      summary: Үйлчилгээний паспорт (нотолгоотой нь)
+      tags:
+      - registry
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: Service ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Service
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/template_internal_http_datatransfers_requests.RegistryServiceRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      summary: Үйлчилгээний паспорт засах
+      tags:
+      - registry
+  /registry/services/{id}/archive:
+    post:
+      parameters:
+      - description: Service ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      summary: Паспортыг архивлах
+      tags:
+      - registry
+  /registry/services/{id}/evidences:
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: Service ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Evidences
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/template_internal_http_datatransfers_requests.RegistryEvidencesRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      summary: Паспортын шаардах нотолгооны жагсаалтыг солих
+      tags:
+      - registry
+  /registry/services/{id}/once-only:
+    get:
+      parameters:
+      - description: Service ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      summary: Нэг үйлчилгээний once-only шалгалт
+      tags:
+      - registry
+  /registry/services/{id}/publish:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Service ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Publish
+        in: body
+        name: body
+        schema:
+          $ref: '#/definitions/template_internal_http_datatransfers_requests.RegistryPublishRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      summary: Паспортыг нийтлэх (шинэ хувилбар + baseline delta)
+      tags:
+      - registry
+  /registry/services/{id}/versions:
+    get:
+      parameters:
+      - description: Service ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      summary: Паспортын хувилбарын түүх (baseline delta-тай)
+      tags:
+      - registry
+  /relay/assignments/{id}/respond:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Assignment ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Хариу
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/template_internal_http_datatransfers_requests.RelayRespondRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      security:
+      - BearerAuth: []
+      summary: Доод platform-ын callback — даалгаврын хариу
+      tags:
+      - relay
+  /relay/overview:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/template_internal_http_datatransfers_responses.RelayOverviewResponse'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: SLA хяналтын самбарын нэгтгэл
+      tags:
+      - relay
+  /relay/platforms:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      security:
+      - BearerAuth: []
+      summary: Доод platform-уудыг жагсаах
+      tags:
+      - relay
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Platform
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/template_internal_http_datatransfers_requests.RelayPlatformRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      security:
+      - BearerAuth: []
+      summary: Доод platform бүртгэх
+      tags:
+      - relay
+  /relay/platforms/{id}:
+    delete:
+      parameters:
+      - description: Platform ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      security:
+      - BearerAuth: []
+      summary: Доод platform устгах
+      tags:
+      - relay
+  /relay/requests:
+    get:
+      parameters:
+      - description: Max rows (default 50, max 200)
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      security:
+      - BearerAuth: []
+      summary: Хүсэлтүүдийн жагсаалт
+      tags:
+      - relay
+    post:
+      consumes:
+      - application/json
+      description: service_code-ийн routing дүрмээр доод platform-ууд руу дамжуулж,
+        SLA хяналтад авна.
+      parameters:
+      - description: Хүсэлт
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/template_internal_http_datatransfers_requests.RelayIngestRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/template_internal_http_datatransfers_responses.RelayRequestResponse'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Дээд platform-оос хугацаатай үйлчилгээний хүсэлт хүлээж авах
+      tags:
+      - relay
+  /relay/requests/{id}:
+    get:
+      parameters:
+      - description: Request ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/template_internal_http_datatransfers_responses.RelayRequestDetailResponse'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Хүсэлтийн дэлгэрэнгүй (assignments + timeline)
+      tags:
+      - relay
+  /relay/requests/{id}/forward:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Request ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Дамжуулах дээд platform
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/template_internal_http_datatransfers_requests.RelayForwardRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      security:
+      - BearerAuth: []
+      summary: Хүсэлтийг дээд (upstream) platform руу webhook-оор дамжуулах
+      tags:
+      - relay
+  /relay/routes:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      security:
+      - BearerAuth: []
+      summary: Чиглүүлэлтийн дүрмүүдийг жагсаах
+      tags:
+      - relay
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Route
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/template_internal_http_datatransfers_requests.RelayRouteRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      security:
+      - BearerAuth: []
+      summary: Чиглүүлэлт үүсгэх (service_code → platform)
+      tags:
+      - relay
+  /relay/routes/{id}:
+    delete:
+      parameters:
+      - description: Route ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      security:
+      - BearerAuth: []
+      summary: Чиглүүлэлт устгах
+      tags:
+      - relay
+  /relay/webhook:
+    post:
+      consumes:
+      - application/json
+      description: X-Relay-Source (илгээгчийн code) + X-Relay-Signature (sha256=HMAC)
+        header-аар баталгаажуулж, шинэ хүсэлт болгон ingest хийнэ. JWT шаардахгүй.
+      parameters:
+      - description: Илгээгч platform-ын code
+        in: header
+        name: X-Relay-Source
+        required: true
+        type: string
+      - description: sha256=<HMAC-SHA256>
+        in: header
+        name: X-Relay-Signature
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/template_internal_http_datatransfers_responses.RelayRequestResponse'
+              type: object
+      summary: Peer platform-оос webhook хүлээж авах (дээш/доош, HMAC гарын үсэгтэй)
+      tags:
+      - relay
+  /site/appearance:
+    get:
+      description: Landing болон нийтийн хуудсанд хэрэглэх нийтийн харагдац (accent
+        · font · style · theme). Нэвтрэлт шаардахгүй.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/template_internal_http_datatransfers_responses.SiteAppearanceResponse'
+              type: object
+      summary: Сайтын харагдацын default-ыг унших
+      tags:
+      - site
+    put:
+      consumes:
+      - application/json
+      description: Админ (settings.manage) сайтын нийтийн харагдацыг өөрчилнө. accent
+        нь preset нэр эсвэл '#rrggbb' hex.
+      parameters:
+      - description: Харагдацын шинэ утга
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/template_internal_http_datatransfers_requests.SiteAppearanceUpdateRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+        "400":
+          description: Буруу утга
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+        "403":
+          description: settings.manage эрх дутуу
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      security:
+      - BearerAuth: []
+      summary: Сайтын харагдацын default-ыг шинэчлэх
+      tags:
+      - admin
   /sso/callback:
     post:
       consumes:
@@ -2898,7 +4512,7 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
-      summary: Gerege SSO callback
+      summary: dgov SSO callback
       tags:
       - sso
   /sso/logout:
@@ -2914,7 +4528,7 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
-      summary: Gerege SSO logout URL
+      summary: dgov SSO logout URL
       tags:
       - sso
   /sso/native:
@@ -2947,12 +4561,12 @@ paths:
           description: Validation error
           schema:
             $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
-      summary: Gerege SSO native (mobile PKCE) нэвтрэлт
+      summary: dgov SSO native (mobile PKCE) нэвтрэлт
       tags:
       - sso
   /sso/start:
     post:
-      description: sso.gerege.mn (OIDC) authorize URL-ийг state-тэй буцаана. BFF browser-ийг
+      description: sso.dgov.mn (OIDC) authorize URL-ийг state-тэй буцаана. BFF browser-ийг
         тийш чиглүүлнэ.
       produces:
       - application/json
@@ -2961,9 +4575,180 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
-      summary: Gerege SSO нэвтрэлт эхлүүлэх
+      summary: dgov SSO нэвтрэлт эхлүүлэх
       tags:
       - sso
+  /themes:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/template_internal_http_datatransfers_responses.ThemeResponse'
+                  type: array
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Theme-үүдийг жагсаах
+      tags:
+      - admin
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Theme
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/template_internal_http_datatransfers_requests.ThemeUpsertRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/template_internal_http_datatransfers_responses.ThemeResponse'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Шинэ theme үүсгэх
+      tags:
+      - admin
+  /themes/{id}:
+    delete:
+      parameters:
+      - description: Theme id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      security:
+      - BearerAuth: []
+      summary: Theme-ийг устгах
+      tags:
+      - admin
+    get:
+      parameters:
+      - description: Theme id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/template_internal_http_datatransfers_responses.ThemeResponse'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Нэг theme-ийг унших
+      tags:
+      - admin
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: Theme id
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Theme
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/template_internal_http_datatransfers_requests.ThemeUpsertRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      security:
+      - BearerAuth: []
+      summary: Theme-ийг шинэчлэх
+      tags:
+      - admin
+  /themes/{id}/active:
+    put:
+      parameters:
+      - description: Theme id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      security:
+      - BearerAuth: []
+      summary: Theme-ийг идэвхтэй (default) болгох
+      tags:
+      - admin
+  /themes/active:
+    get:
+      description: Нэвтрээгүй зочны landing-д хэрэглэх идэвхтэй (default) theme. Нэвтрэлт
+        шаардахгүй.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/template_internal_http_datatransfers_responses.ThemeResponse'
+              type: object
+      summary: Идэвхтэй landing theme-ийг унших
+      tags:
+      - site
+  /userinfo:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: OIDC userinfo
+      tags:
+      - oidc
   /users/me:
     get:
       description: Authorization header дахь JWT-ээс баталгаажуулагдсан хэрэглэгчийг
@@ -3313,6 +5098,44 @@ paths:
       summary: eID PKI самбарын нэгдсэн тоо
       tags:
       - users
+  /v1/admin/users:
+    post:
+      consumes:
+      - application/json
+      description: Иргэнийг регистрийн дугаараар урьдчилан бүртгэж, role ононо. Private
+        горимд зөвхөн ингэж бүртгэсэн иргэн Government SSO-оор нэвтэрнэ. 'users.manage'
+        эрх шаардана; admin/superadmin role-ыг зөвхөн super admin ононо.
+      parameters:
+      - description: Register + role
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/template_internal_http_datatransfers_requests.AdminCreateUserRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: User pre-registered
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+        "400":
+          description: Invalid request body
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+        "403":
+          description: Insufficient privilege for the role
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+        "409":
+          description: Register already exists
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      security:
+      - BearerAuth: []
+      summary: Хэрэглэгч урьдчилан бүртгэх (private платформ)
+      tags:
+      - admin
   /v1/audit:
     get:
       description: Hash-chained, append-only audit log-ийг хуудаслан буцаана. action
@@ -3391,6 +5214,341 @@ paths:
       summary: Audit гинж шалгах (admin)
       tags:
       - audit
+  /v1/auth/superadmin/mfa:
+    post:
+      consumes:
+      - application/json
+      description: Google эсвэл eID нэвтрэлтээс авсан mfa_token-ийг TOTP код ЭСВЭЛ
+        нөөц кодоор баталгаажуулж session олгоно. Нөөц код нэг удаагийн (хэрэглэгдмэгц
+        идэвхгүй болно). Хэт олон буруу оролдлого → токен цуцлагдана.
+      parameters:
+      - description: mfa_token + TOTP эсвэл нөөц код
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/template_internal_http_datatransfers_requests.SuperadminMFARequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Logged in
+          schema:
+            allOf:
+            - $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/template_internal_http_datatransfers_responses.SuperadminMFAResponse'
+              type: object
+        "400":
+          description: Invalid code
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+        "403":
+          description: MFA token invalid/expired or too many attempts
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      summary: Super admin нэвтрэлт — 2FA (TOTP / нөөц код)
+      tags:
+      - superadmin-onboard
+  /v1/auth/superadmin/onboard/eid/poll:
+    post:
+      consumes:
+      - application/json
+      description: 'eID session-ийн төлвийг long-poll-оор (≤25с) асууна: RUNNING/COMPLETE/EXPIRED/REFUSED.
+        COMPLETE үед identity нь шидтэнд БАРИГДАЖ, алхам "email" болно. АНХААР: энэ
+        алхамд токен ОЛГОГДОХГҮЙ.'
+      parameters:
+      - description: Onboard token + eID session id
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/template_internal_http_datatransfers_requests.SuperadminOnboardEIDPollRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Session state
+          schema:
+            allOf:
+            - $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/template_internal_http_datatransfers_responses.SuperadminOnboardEIDPollResponse'
+              type: object
+        "400":
+          description: Invalid body or wrong step
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+        "403":
+          description: Onboard session invalid or expired
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      summary: Super admin бүртгэл — eID төлөв асуух (long-poll)
+      tags:
+      - superadmin-onboard
+  /v1/auth/superadmin/onboard/eid/start:
+    post:
+      consumes:
+      - application/json
+      description: Бүртгэлийн eID баталгаажуулах алхмыг QR/deep-link-ээр эхлүүлнэ.
+        callbackUrl хоосон бол CROSS-DEVICE (desktop QR); хоосон биш бол SAME-DEVICE
+        (mobile browser).
+      parameters:
+      - description: Onboard token
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/template_internal_http_datatransfers_requests.SuperadminOnboardEIDStartRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: eID session started
+          schema:
+            allOf:
+            - $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/template_internal_http_datatransfers_responses.SuperadminOnboardEIDStartResponse'
+              type: object
+        "400":
+          description: Invalid body or wrong step
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+        "403":
+          description: Onboard session invalid or expired
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      summary: Super admin бүртгэл — eID эхлүүлэх (QR / deep-link)
+      tags:
+      - superadmin-onboard
+  /v1/auth/superadmin/onboard/eid/start-id:
+    post:
+      consumes:
+      - application/json
+      description: Бүртгэлийн eID алхмыг иргэний РД-аар эхлүүлж, бүртгэлтэй төхөөрөмж
+        рүү баталгаажуулах push илгээнэ (device_link шаардлагагүй).
+      parameters:
+      - description: Onboard token + иргэний РД
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/template_internal_http_datatransfers_requests.SuperadminOnboardEIDStartIDRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: eID session started
+          schema:
+            allOf:
+            - $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/template_internal_http_datatransfers_responses.SuperadminOnboardEIDStartResponse'
+              type: object
+        "400":
+          description: Invalid national_id or wrong step
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+        "403":
+          description: Onboard session invalid or expired
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      summary: Super admin бүртгэл — eID эхлүүлэх (РД-аар push)
+      tags:
+      - superadmin-onboard
+  /v1/auth/superadmin/onboard/email/send:
+    post:
+      consumes:
+      - application/json
+      description: Урилгын и-мэйл рүү 6 оронтой баталгаажуулах код илгээнэ (хаяг нь
+        шидтэний session-оос авагдана — клиент өөр хаяг заах боломжгүй).
+      parameters:
+      - description: Onboard token
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/template_internal_http_datatransfers_requests.SuperadminOnboardTokenRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OTP sent
+          schema:
+            allOf:
+            - $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/template_internal_http_datatransfers_responses.SuperadminOnboardStepResponse'
+              type: object
+        "400":
+          description: Wrong step
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+        "403":
+          description: Onboard session invalid or expired
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      summary: Super admin бүртгэл — и-мэйл OTP илгээх
+      tags:
+      - superadmin-onboard
+  /v1/auth/superadmin/onboard/email/verify:
+    post:
+      consumes:
+      - application/json
+      description: И-мэйл рүү илгээсэн кодыг шалгана. Амжилттай бол алхам "totp" болно.
+        Хэт олон буруу оролдлого → 403.
+      parameters:
+      - description: Onboard token + код
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/template_internal_http_datatransfers_requests.SuperadminOnboardCodeRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Email verified
+          schema:
+            allOf:
+            - $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/template_internal_http_datatransfers_responses.SuperadminOnboardStepResponse'
+              type: object
+        "400":
+          description: Invalid or expired code
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+        "403":
+          description: Onboard session invalid / too many attempts
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      summary: Super admin бүртгэл — и-мэйл OTP баталгаажуулах
+      tags:
+      - superadmin-onboard
+  /v1/auth/superadmin/onboard/google:
+    post:
+      consumes:
+      - application/json
+      description: Google OAuth code-ийг солиж, и-мэйлийг super admin урилгын allow-list-ийн
+        эсрэг шалгана. Урилгагүй / аль хэдийн ашигласан урилга бол 403. Амжилттай
+        бол шидтэний onboard_token үүсгэж, дараагийн алхмыг (eid) буцаана.
+      parameters:
+      - description: OAuth code + redirect_uri
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/template_internal_http_datatransfers_requests.SuperadminOnboardGoogleRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Onboarding started
+          schema:
+            allOf:
+            - $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/template_internal_http_datatransfers_responses.SuperadminOnboardStartResponse'
+              type: object
+        "400":
+          description: Invalid code
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+        "403":
+          description: Email is not invited or invite already used
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      summary: Super admin бүртгэл — Google алхам
+      tags:
+      - superadmin-onboard
+  /v1/auth/superadmin/onboard/totp/init:
+    post:
+      consumes:
+      - application/json
+      description: Шинэ TOTP secret үүсгэж, authenticator app-д уншуулах otpauth://
+        URI-г буцаана (QR-г frontend зурна; secret нь гараар оруулах хувилбарт). Дахин
+        дуудвал ШИНЭ secret үүснэ.
+      parameters:
+      - description: Onboard token
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/template_internal_http_datatransfers_requests.SuperadminOnboardTokenRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: TOTP secret + otpauth URI
+          schema:
+            allOf:
+            - $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/template_internal_http_datatransfers_responses.SuperadminOnboardTOTPResponse'
+              type: object
+        "400":
+          description: Wrong step
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+        "403":
+          description: Onboard session invalid or expired
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      summary: Super admin бүртгэл — TOTP (2FA) тохируулга эхлүүлэх
+      tags:
+      - superadmin-onboard
+  /v1/auth/superadmin/onboard/totp/verify:
+    post:
+      consumes:
+      - application/json
+      description: 'Authenticator app-ийн кодыг шалгаж, бүртгэлийг төгсгөнө: super
+        admin хэрэглэгч үүсгэж/ахиулж, нөөц кодуудыг хадгалж, урилгыг ашигласан болгож,
+        session (token + refresh_token) олгоно. recovery_codes нь ЗӨВХӨН ЭНЭ хариунд,
+        ЗӨВХӨН НЭГ УДАА буцна — дахин авах боломжгүй.'
+      parameters:
+      - description: Onboard token + TOTP код
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/template_internal_http_datatransfers_requests.SuperadminOnboardCodeRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Super admin created + logged in (recovery codes shown once)
+          schema:
+            allOf:
+            - $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/template_internal_http_datatransfers_responses.SuperadminOnboardDoneResponse'
+              type: object
+        "400":
+          description: Invalid code or incomplete steps
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+        "403":
+          description: Onboard session invalid or expired
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+        "409":
+          description: Email or Google account already linked to another user
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      summary: Super admin бүртгэл — TOTP баталгаажуулж ТӨГСГӨХ
+      tags:
+      - superadmin-onboard
   /v1/gspace:
     delete:
       parameters:
@@ -3959,6 +6117,67 @@ paths:
       summary: PDF гарын үсэг эхлүүлэх (eID PIN2)
       tags:
       - sign
+  /v1/superadmin/access-mode:
+    get:
+      description: Платформын хандалтын горим (public|private)-ыг буцаана. Зөвхөн
+        super admin хандана.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Access mode fetched
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+        "401":
+          description: Missing or invalid token
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+        "403":
+          description: Not a super admin
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      security:
+      - BearerAuth: []
+      summary: Платформын хандалтын горим
+      tags:
+      - superadmin
+    put:
+      consumes:
+      - application/json
+      description: 'Платформын хандалтын горимыг тохируулна. public: хэн ч Government
+        SSO-оор нэвтэрнэ; private: зөвхөн урьдчилан бүртгэсэн хэрэглэгч. Зөвхөн super
+        admin хандана.'
+      parameters:
+      - description: Access mode
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/template_internal_http_datatransfers_requests.SuperadminAccessModeRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Access mode updated
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+        "400":
+          description: Invalid request body
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+        "401":
+          description: Missing or invalid token
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+        "403":
+          description: Not a super admin
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      security:
+      - BearerAuth: []
+      summary: Платформын хандалтын горим тохируулах
+      tags:
+      - superadmin
   /v1/superadmin/admins:
     get:
       description: Админ түвшний бүх бүртгэлийг (super admin + admin) буцаана. Зөвхөн
@@ -4096,6 +6315,176 @@ paths:
       security:
       - BearerAuth: []
       summary: Хэрэглэгчид админ эрх олгох
+      tags:
+      - superadmin
+  /v1/superadmin/admins/by-register:
+    get:
+      description: Регистрийн дугаараар DAN-д БАЙГАА хэрэглэгчийг олж буцаана (эрх
+        олгохгүй, зөвхөн нэр/эрхийг урьдчилан харах). Зөвхөн super admin.
+      parameters:
+      - description: Регистрийн дугаар
+        in: query
+        name: register
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User found
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+        "404":
+          description: Register not registered in DAN
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      security:
+      - BearerAuth: []
+      summary: Регистрээр хэрэглэгч харах (preview)
+      tags:
+      - superadmin
+    post:
+      consumes:
+      - application/json
+      description: Регистрийн дугаараар БАЙГАА хэрэглэгчийг admin болгоно (шинэ хэрэглэгч
+        үүсгэхгүй). Зөвхөн super admin хандана.
+      parameters:
+      - description: Register
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/template_internal_http_datatransfers_requests.SuperadminAddAdminByRegisterRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Promoted to admin
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+        "404":
+          description: Register not registered in DAN
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+        "409":
+          description: Already an admin
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      security:
+      - BearerAuth: []
+      summary: Регистрээр админ нэмэх
+      tags:
+      - superadmin
+  /v1/superadmin/invites:
+    get:
+      description: Super admin болох урилгуудыг (хүлээгдэж буй + ашигласан) буцаана.
+        Зөвхөн super admin хандана.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Invites fetched
+          schema:
+            allOf:
+            - $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/template_internal_http_datatransfers_responses.SuperadminInviteResponse'
+                  type: array
+              type: object
+        "401":
+          description: Missing or invalid token
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+        "403":
+          description: Not a super admin
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      security:
+      - BearerAuth: []
+      summary: Super admin урилгуудыг жагсаах
+      tags:
+      - superadmin
+    post:
+      consumes:
+      - application/json
+      description: И-мэйлийг super admin болох allow-list-д нэмнэ. Урилга нь эрхийг
+        ШУУД олгодоггүй — урьсан хүн /auth/superadmin/onboard шидтэнг (Google + eID
+        + и-мэйл OTP + TOTP) бүрэн давж байж super admin болно. Зөвхөн super admin
+        хандана.
+      parameters:
+      - description: Invite email
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/template_internal_http_datatransfers_requests.SuperadminInviteRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Invite created
+          schema:
+            allOf:
+            - $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/template_internal_http_datatransfers_responses.SuperadminInviteResponse'
+              type: object
+        "400":
+          description: Invalid email
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+        "401":
+          description: Missing or invalid token
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+        "403":
+          description: Not a super admin
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+        "409":
+          description: Email already invited
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      security:
+      - BearerAuth: []
+      summary: Super admin урих
+      tags:
+      - superadmin
+  /v1/superadmin/invites/{email}:
+    delete:
+      description: Урилгыг allow-list-ээс хасна — хараахан бүртгүүлээгүй бол цаашид
+        бүртгүүлэх боломжгүй болно. Зөвхөн super admin хандана.
+      parameters:
+      - description: Invited email (URL-encoded)
+        in: path
+        name: email
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Invite deleted
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+        "401":
+          description: Missing or invalid token
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+        "403":
+          description: Not a super admin
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+        "404":
+          description: Invite not found
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      security:
+      - BearerAuth: []
+      summary: Super admin урилгыг цуцлах
       tags:
       - superadmin
 schemes:

@@ -1,4 +1,4 @@
-// Gerege Template Version 27.0
+// Government Template Platform V3.0
 // Gerege Systems Development Team болон Claude AI хамтран бүтээв, 2026.
 
 // audit.Usecase-д зориулсан гараар бичсэн mock (handler тестэд).
@@ -45,7 +45,7 @@ type mockConstructorTestingTNewAuditUsecase interface {
 // NewAuditUsecase нь AuditUsecase mock-ийн шинэ instance үүсгэнэ.
 func NewAuditUsecase(t mockConstructorTestingTNewAuditUsecase) *AuditUsecase {
 	m := &AuditUsecase{}
-	m.Mock.Test(t)
+	m.Test(t)
 	t.Cleanup(func() { m.AssertExpectations(t) })
 	return m
 }
