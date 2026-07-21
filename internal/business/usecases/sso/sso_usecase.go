@@ -1,7 +1,7 @@
-// Government Template Platform V3.0
+// Gerege Template Platform V3.0
 // Gerege Systems Development Team болон Claude AI хамтран бүтээв, 2026.
 
-// Package sso нь dgov SSO (sso.dgov.mn, OIDC) нэвтрэлтийн 2 дахь урсгал —
+// Package sso нь dgov SSO (sso.gerege.mn, OIDC) нэвтрэлтийн 2 дахь урсгал —
 // eID-ийн зэрэгцээ нэвтрэх арга. Authorization Code flow: Start нь authorize URL
 // (state-тэй) буцаана, Complete нь callback-ийн code-ийг солиж, иргэнийг
 // sso_sub-ээр upsert хийж, өөрийн JWT хос олгоно (login-тэй ижил session).

@@ -1,4 +1,4 @@
--- Government Template Platform V3.0
+-- Gerege Template Platform V3.0
 -- Superadmin-ий MFA onboarding: email баталгаажуулалт, TOTP 2FA, recovery code,
 -- болон superadmin урилга. TOTP secret нь AES-GCM-ээр шифрлэгдэж хадгалагдана
 -- (usecase давхаргад); recovery code нь SHA-256 hash, нэг удаагийн.

@@ -1,4 +1,4 @@
-// Government Template Platform V3.0
+// Gerege Template Platform V3.0
 // Gerege Systems Development Team болон Claude AI хамтран бүтээв, 2026.
 
 // Discovery болон JWKS нь ГАДААД гэрээ — RP-ийн сангууд болон iOS апп эдгээрийг
@@ -20,7 +20,7 @@ import (
 	oidchandler "template/internal/http/handlers/v1/oidc"
 )
 
-const testIssuer = "https://sso.dgov.mn"
+const testIssuer = "https://sso.gerege.mn"
 
 type memKeys struct{ keys []domain.SigningKey }
 

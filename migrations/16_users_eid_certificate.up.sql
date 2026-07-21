@@ -1,4 +1,4 @@
--- Government Template Platform V3.0
+-- Gerege Template Platform V3.0
 -- eID нэвтрэлтийн COMPLETE хариунд иргэний сертификат (cert.value = DER) болон
 -- documentNumber ирдэг. Түүнийг задлан хүчинтэй хугацаа / серийн дугаар / issuer
 -- / түлхүүрийн төрлийг хадгална — Profile хуудсанд "Гэрчилгээ" хэсэгт харуулна.

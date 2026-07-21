@@ -1,4 +1,4 @@
-// Government Template Platform V3.0
+// Gerege Template Platform V3.0
 // Gerege Systems Development Team болон Claude AI хамтран бүтээв, 2026.
 
 // Package totp нь TOTP (RFC 6238) 2FA-ийн нимгэн боодол — secret үүсгэх,
@@ -9,7 +9,7 @@ package totp
 import "github.com/pquerna/otp/totp"
 
 // Generate нь шинэ TOTP secret (base32) + otpauth:// provisioning URI буцаана.
-// issuer нь app-ийн нэр (жишээ "Government Template Platform V3.0"), account нь хэрэглэгчийн
+// issuer нь app-ийн нэр (жишээ "Gerege Template Platform V3.0"), account нь хэрэглэгчийн
 // таних (email г.м.) — authenticator app-д эдгээр харагдана.
 func Generate(issuer, account string) (secret, url string, err error) {
 	key, err := totp.Generate(totp.GenerateOpts{

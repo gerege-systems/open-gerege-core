@@ -2,7 +2,7 @@ MIT License
 
 Copyright (c) 2023 Moh. Najib Fikri (original work: snykk/go-rest-boilerplate)
 Copyright (c) 2026 Gerege Systems Development Team & Claude AI (derivative work:
-                   Government Template Platform V3.0)
+                   Gerege Template Platform V3.0)
 
 This project is a derivative of the open-source snykk/go-rest-boilerplate
 (https://github.com/snykk/go-rest-boilerplate), with the HTTP layer converted

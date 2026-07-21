@@ -1,4 +1,4 @@
-# Government Template Platform V3.0 — Backend (Go)
+# Gerege Template Platform V3.0 — Backend (Go)
 
 > **Цахим засаглалыг бүтээх суурь** — _Нэг суурь — бүх төрийн үйлчилгээ._
 
@@ -9,7 +9,7 @@
 [![pgx](https://img.shields.io/badge/pgx-v5-336791.svg)](https://github.com/jackc/pgx)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-**Government Template Platform V3.0**-ийн Go backend — *аль ч* цахим төрийн
+**Gerege Template Platform V3.0**-ийн Go backend — *аль ч* цахим төрийн
 үйлчилгээг дээр нь босгож болох, үйлдвэрлэлд бэлэн суурь (foundation). Сахилга
 баттай **Clean Architecture** цөмийг гар бичсэн **pgx SQL** (ORM-гүй)-тэй хослуулж,
 төрийн түвшний бүрэн чадамжийг хайрцгаас нь гарган ирдэг: **eID Mongolia** танилт,
@@ -18,8 +18,8 @@
 хэлтэй (mn/en), эхнээсээ observable. **chi (net/http)** (HTTP), **pgx (pgxpool) +
 PostgreSQL** (өгөгдөл), **Redis + Ristretto** (кэш) дээр суурилсан.
 
-> **Жишиг deployment:** **Government Template Platform** ([template.dgov.mn](https://template.dgov.mn))
-> — төрийн үйлчилгээний платформ бөгөөд Government SSO-ийн Relying Party — энэ суурин
+> **Жишиг deployment:** **Gerege Template Platform** ([template.gerege.mn](https://template.gerege.mn))
+> — төрийн үйлчилгээний платформ бөгөөд Gerege SSO-ийн Relying Party — энэ суурин
 > дээр бүтээгдсэн жишээ бөгөөд eID нэвтрэлт болон бусад аппад зориулсан өөрийн OIDC
 > provider-ийг харуулдаг.
 
@@ -169,7 +169,7 @@ GOOGLE_CLIENT_ID=
 GOOGLE_CLIENT_SECRET=
 
 # OIDC PROVIDER тал (платформ өөрөө issuer) — тохируулаагүй бол урсгал inert
-OAUTH_ISSUER=                    # issuer, жишээ https://template.dgov.mn (хоосон = provider унтарна)
+OAUTH_ISSUER=                    # issuer, жишээ https://template.gerege.mn (хоосон = provider унтарна)
 SSO_STATE_KEY=                   # >= 32 байт; login/consent state cookie HMAC
 SSO_FIRSTPARTY_CLIENTS=          # consent дэлгэцийг алгасах client_id-уудын CSV
 SSO_ADMIN_API_KEYS=              # /admin гадаргуугийн bootstrap key-үүдийн CSV
@@ -348,5 +348,5 @@ curl http://localhost:8080/health
 
 ---
 
-**Government Template Platform V3.0** — **Gerege Systems Development Team** болон
+**Gerege Template Platform V3.0** — **Gerege Systems Development Team** болон
 **Claude AI** хамтран бүтээв, 2026.

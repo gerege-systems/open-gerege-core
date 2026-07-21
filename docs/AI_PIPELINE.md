@@ -163,4 +163,4 @@ Everything is testable without Gemini:
 
 ---
 
-**Government Template Platform V3.0** — Co-developed by the **Gerege Systems Development Team** and **Claude AI**, 2026.
+**Gerege Template Platform V3.0** — Co-developed by the **Gerege Systems Development Team** and **Claude AI**, 2026.

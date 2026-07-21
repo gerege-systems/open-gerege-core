@@ -1,7 +1,7 @@
-// Government Template Platform V3.0
+// Gerege Template Platform V3.0
 // Gerege Systems Development Team болон Claude AI хамтран бүтээв, 2026.
 
-// Package ssoeidproxy нь dgov SSO (sso.dgov.mn)-ий eID proxy service-ийн client.
+// Package ssoeidproxy нь dgov SSO (sso.gerege.mn)-ий eID proxy service-ийн client.
 // SSO нь /rp/eid/* (дотор /api/v1/eid/*) дор бүртгэгдсэн апп (RP)-уудад иргэний
 // PKI самбарыг ДАМЖУУЛАН үзүүлдэг: апп нь хэрэглэгчийнхээ SSO access token-оор
 // дуудахад SSO өөрийн eidmongolia RP creds-ээр өгөгдлийг татаж өгнө. Тиймээс
@@ -12,7 +12,7 @@
 //	GET {base}/devices        — холбоотой төхөөрөмжүүд
 //	GET {base}/activity        — RP-scoped auth/sign түүх
 //
-// base жишээ: https://sso.dgov.mn/rp/eid. Хариу нь {data: <snake_case DTO>}
+// base жишээ: https://sso.gerege.mn/rp/eid. Хариу нь {data: <snake_case DTO>}
 // дугтуйтай — wire бүтцээр задалж, pkg/eid-ийн домэйн төрлүүд рүү буулгана.
 package ssoeidproxy
 
@@ -47,7 +47,7 @@ type Client struct {
 	http *http.Client
 }
 
-// New нь base URL (жишээ https://sso.dgov.mn/rp/eid)-ээр client үүсгэнэ.
+// New нь base URL (жишээ https://sso.gerege.mn/rp/eid)-ээр client үүсгэнэ.
 func New(baseURL string) *Client {
 	return &Client{
 		base: strings.TrimRight(strings.TrimSpace(baseURL), "/"),

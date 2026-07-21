@@ -1,18 +1,18 @@
-// Government Template Platform V3.0
+// Gerege Template Platform V3.0
 // Gerege Systems Development Team болон Claude AI хамтран бүтээв, 2026.
 
-// Package main нь Government Template Platform V3.0-ийн API эхлэх цэг юм.
+// Package main нь Gerege Template Platform V3.0-ийн API эхлэх цэг юм.
 //
 // Энэ нь нээлттэй эхийн snykk/go-rest-boilerplate (MIT, зохиогч Najib
 // Fikri)-ээс үүсэлтэй; HTTP давхаргыг chi (net/http) руу, өгөгдлийн давхаргыг
 // jackc/pgx (pgxpool, түүхий SQL) руу хөрвүүлсэн. Бүрэн зохиогчийн мэдээллийг README.md болон docs/ARCHITECTURE.md-ээс үзнэ үү.
 //
-// @title           Government Template Platform V3.0 API
+// @title           Gerege Template Platform V3.0 API
 // @version         1.0
 // @description     chi (net/http) + pgx (PostgreSQL) + Redis дээр суурилсан Clean Architecture бүхий Go backend. Нээлттэй эхийн snykk/go-rest-boilerplate (MIT, зохиогч Najib Fikri)-ээс үүсэлтэй; HTTP давхаргыг chi, өгөгдлийн давхаргыг pgx руу хөрвүүлсэн.
 // @termsOfService  https://github.com/snykk/go-rest-boilerplate
 //
-// @contact.name   Government Template Platform V3.0
+// @contact.name   Gerege Template Platform V3.0
 // @contact.url    https://github.com/snykk/go-rest-boilerplate
 //
 // @license.name  MIT

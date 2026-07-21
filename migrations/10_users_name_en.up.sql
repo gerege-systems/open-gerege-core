@@ -1,4 +1,4 @@
--- Government Template Platform V3.0
+-- Gerege Template Platform V3.0
 -- Хэрэглэгчийн англи (Латин) овог/нэр — хэл солиход нэрийг тухайн хэлээр
 -- үзүүлэхэд. Хоосон default тул backward compatible.
 

@@ -1,4 +1,4 @@
-// Government Template Platform V3.0
+// Gerege Template Platform V3.0
 // Gerege Systems Development Team болон Claude AI хамтран бүтээв, 2026.
 
 package oidc
@@ -159,7 +159,7 @@ func tokenService(t *testing.T, c domain.OAuthClient) (*Service, *tokenFlow) {
 	if err := km.EnsureKey(context.Background()); err != nil {
 		t.Fatalf("EnsureKey: %v", err)
 	}
-	svc := NewService(&fakeClients{c: c}, flow, "https://sso.dgov.mn").WithTokenIssuing(km, &fakeUsers{})
+	svc := NewService(&fakeClients{c: c}, flow, "https://sso.gerege.mn").WithTokenIssuing(km, &fakeUsers{})
 	return svc, flow
 }
 
@@ -461,7 +461,7 @@ func TestIDTokenFailsClosedWhenUserCannotBeLoaded(t *testing.T) {
 		t.Fatalf("EnsureKey: %v", err)
 	}
 	c := confidentialClient(t)
-	s := NewService(&fakeClients{c: c}, flow, "https://sso.dgov.mn").
+	s := NewService(&fakeClients{c: c}, flow, "https://sso.gerege.mn").
 		WithTokenIssuing(km, &fakeUsers{err: errors.New("db down")})
 
 	code, verifier := issueCode(t, s, flow, "openid profile")

@@ -1,4 +1,4 @@
--- Government Template Platform V3.0
+-- Gerege Template Platform V3.0
 -- 46_relay_webhook-ийг буцаана: чиглэл/webhook нууцыг хасаж, дээд демо peer-ийг устгана.
 
 DELETE FROM relay_platforms WHERE code = 'e-mongolia';

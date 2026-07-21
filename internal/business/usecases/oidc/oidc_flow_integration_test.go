@@ -1,6 +1,6 @@
 //go:build integration
 
-// Government Template Platform V3.0
+// Gerege Template Platform V3.0
 // Gerege Systems Development Team болон Claude AI хамтран бүтээв, 2026.
 
 // Бүрэн authorize → consent → token → userinfo → refresh урсгалыг ЖИНХЭНЭ
@@ -34,7 +34,7 @@ const (
 	testClientID = "ring-dgov-mn"
 	testSecret   = "integration-test-client-secret"
 	testRedirect = "https://ring.dgov.mn/sso/callback"
-	testIssuer   = "https://sso.dgov.mn"
+	testIssuer   = "https://sso.gerege.mn"
 )
 
 // ЖИНХЭНЭ users usecase + repository-г ашиглана, stub БИШ.

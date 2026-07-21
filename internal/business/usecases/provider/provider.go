@@ -1,7 +1,7 @@
-// eID based AI enabled Government Template Platform V3.0
+// eID based AI enabled Gerege Template Platform V3.0
 // Gerege Systems Development Team болон Claude AI хамтран бүтээв, 2026.
 
-// Package provider нь sso.dgov.mn-ийг OIDC provider болгосон login/consent/
+// Package provider нь sso.gerege.mn-ийг OIDC provider болгосон login/consent/
 // logout цөм. `/oauth2/auth` нь browser-ыг энд (нэвтрэх/зөвшөөрөх хуудас руу)
 // challenge-тэй чиглүүлдэг; энэ usecase нь challenge-ыг уншиж, иргэнийг
 // платформын ОДОО БАЙГАА eID нэвтрэлтээр (session) баталгаажуулж, subject-ээр

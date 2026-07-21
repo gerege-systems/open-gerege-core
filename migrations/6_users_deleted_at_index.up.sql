@@ -1,4 +1,4 @@
--- Government Template Platform V3.0
+-- Gerege Template Platform V3.0
 -- soft-delete query-уудын гүйцэтгэлд зориулсан deleted_at индекс. GORM
 -- AutoMigrate-ийг хассан (ORM-гүй) тул энэ индексийг ил тодорхойлно.
 -- email/username нь partial-unique индексээр (WHERE deleted_at IS NULL)

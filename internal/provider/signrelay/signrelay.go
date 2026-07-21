@@ -1,7 +1,7 @@
-// eID based AI enabled Government Template Platform V3.0
+// eID based AI enabled Gerege Template Platform V3.0
 // Gerege Systems Development Team болон Claude AI хамтран бүтээв, 2026.
 
-// Package signrelay нь 3 дагч RP (жишээ template.dgov.mn) dan-аар ДАМЖИН eID
+// Package signrelay нь 3 дагч RP (жишээ template.gerege.mn) dan-аар ДАМЖИН eID
 // гарын үсэг зурах reverse-proxy. RP нь eidmongolia-ий signature RP creds-гүй
 // (401) тул dan (creds-тэй) урдаа тавьж өгнө: /rp/sign/v3/* → eidmongolia /v3/*
 // руу dan-ий жинхэнэ EID_RP_SECRET-ыг Bearer болгож дамжуулна. RP нь зөвхөн

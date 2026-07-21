@@ -1,4 +1,4 @@
--- Government Template Platform V3.0
+-- Gerege Template Platform V3.0
 -- Two net-new append-only event stores: a hash-chained `audit_log` and a
 -- RASP-style `security_events` ingest table. Both are RLS-protected. The audit
 -- log is admin/service-only end-to-end (regular users may neither read nor

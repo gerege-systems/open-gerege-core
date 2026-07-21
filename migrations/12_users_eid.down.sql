@@ -1,4 +1,4 @@
--- Government Template Platform V3.0
+-- Gerege Template Platform V3.0
 -- 12_users_eid-ийг буцаана. eID хэрэглэгч (national_id-тэй, password/email NULL)
 -- байхгүй гэж үзнэ — энэ migration-ийг буцаахаас өмнө тэдгээрийг устгасан байх
 -- ёстой, эс бөгөөс NOT NULL-ийг сэргээх алхам амжилтгүй болно.

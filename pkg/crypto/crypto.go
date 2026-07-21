@@ -1,4 +1,4 @@
-// Government Template Platform V3.0
+// Gerege Template Platform V3.0
 // Gerege Systems Development Team болон Claude AI хамтран бүтээв, 2026.
 
 // Package crypto нь storage-д мэдрэмтгий утга (жишээ TOTP secret)-ыг AES-256-GCM-

@@ -1,4 +1,4 @@
-// Government Template Platform V3.0
+// Gerege Template Platform V3.0
 // Gerege Systems Development Team болон Claude AI хамтран бүтээв, 2026.
 
 // Package admin нь /admin/* удирдлагын endpoint-уудыг үйлчилнэ — хэрэглэгч
@@ -79,11 +79,11 @@ func (h Handler) UpdateUserRole(w http.ResponseWriter, r *http.Request) error {
 }
 
 // CreateUser нь private платформд иргэнийг регистрийн дугаараар урьдчилан
-// бүртгэнэ (role оноож). Иргэн хожим Government SSO-оор эхэлж нэвтэрхэд энэ мөр
+// бүртгэнэ (role оноож). Иргэн хожим Gerege SSO-оор эхэлж нэвтэрхэд энэ мөр
 // нь civil_id/sso_sub-оор холбогдоно.
 //
 // @Summary      Хэрэглэгч урьдчилан бүртгэх (private платформ)
-// @Description  Иргэнийг регистрийн дугаараар урьдчилан бүртгэж, role ононо. Private горимд зөвхөн ингэж бүртгэсэн иргэн Government SSO-оор нэвтэрнэ. 'users.manage' эрх шаардана; admin/superadmin role-ыг зөвхөн super admin ононо.
+// @Description  Иргэнийг регистрийн дугаараар урьдчилан бүртгэж, role ононо. Private горимд зөвхөн ингэж бүртгэсэн иргэн Gerege SSO-оор нэвтэрнэ. 'users.manage' эрх шаардана; admin/superadmin role-ыг зөвхөн super admin ононо.
 // @Tags         admin
 // @Accept       json
 // @Produce      json

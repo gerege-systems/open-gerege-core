@@ -1,4 +1,4 @@
-// Government Template Platform V3.0
+// Gerege Template Platform V3.0
 // Gerege Systems Development Team болон Claude AI хамтран бүтээв, 2026.
 
 // Package users нь хэрэглэгчийн identity-ийн CRUD-ийг хариуцдаг: үүсгэх, хайх,
@@ -54,7 +54,7 @@ type Usecase interface {
 	Delete(ctx context.Context, req DeleteRequest) error
 	// CreatePreRegistered нь админ иргэнийг регистрийн дугаараар урьдчилан
 	// бүртгэнэ (private платформын хандалт) — role оноож, идэвхтэй мөр үүсгэнэ.
-	// Иргэн хожим Government SSO-оор эхэлж нэвтэрхэд энэ мөр нь civil_id/sso_sub-
+	// Иргэн хожим Gerege SSO-оор эхэлж нэвтэрхэд энэ мөр нь civil_id/sso_sub-
 	// оор холбогдоно.
 	CreatePreRegistered(ctx context.Context, req CreatePreRegisterRequest) (domain.User, error)
 }

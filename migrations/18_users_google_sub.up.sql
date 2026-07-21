@@ -1,4 +1,4 @@
--- Government Template Platform V3.0
+-- Gerege Template Platform V3.0
 -- Google холболт: eID хэрэглэгчийн бүртгэлд Google account-ийг холбоно. Google-ээр
 -- эхний удаа нэвтрэхэд ЗААВАЛ eID-ээр баталгаажуулж бодит хүнтэй холбоно; тэр үед
 -- google_sub нь тухайн eID хэрэглэгчийн мөрд бичигдэнэ. Дараа нь google_sub-аар

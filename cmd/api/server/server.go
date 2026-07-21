@@ -1,4 +1,4 @@
-// Government Template Platform V3.0
+// Gerege Template Platform V3.0
 // Gerege Systems Development Team болон Claude AI хамтран бүтээв, 2026.
 
 package server
@@ -213,13 +213,13 @@ func NewApp() (*App, error) {
 	// Gerege Verify / XYP — улсын бүртгэлээс байгууллагын мэдээлэл (eID байгууллага холбох).
 	xypClient := xyp.NewClient(config.AppConfig.XYPAPIBase, config.AppConfig.XYPClientID, config.AppConfig.XYPClientSecret)
 
-	// Government SSO (sso.dgov.mn, OIDC) client — RP нэвтрэлт (ssoUC доор) болон
+	// Gerege SSO (sso.gerege.mn, OIDC) client — RP нэвтрэлт (ssoUC доор) болон
 	// eID proxy-д хуваалцана.
 	ssoClient := oidc.NewClient(config.AppConfig.SSOIssuer, config.AppConfig.SSOClientID, config.AppConfig.SSOClientSecret, config.AppConfig.SSORedirectURI, config.AppConfig.SSOScope)
 
 	// SSO eID proxy (сонголттой) — SSO_EID_PROXY_BASE_URL + INTEGRATION_ENC_KEY
 	// хоёулаа тохируулсан бол иргэний PKI самбар (summary/certificates/devices/
-	// activity) нь шууд eidmongolia-ий оронд sso.dgov.mn/rp/eid-ээр дамжина.
+	// activity) нь шууд eidmongolia-ий оронд sso.gerege.mn/rp/eid-ээр дамжина.
 	// Токенуудыг шифрлэн (sso_tokens) хадгалж, хугацаа дуусахад refresh хийнэ.
 	// Хоосон бол шууд eidmongolia зам (өөрчлөлтгүй).
 	var (
@@ -281,8 +281,8 @@ func NewApp() (*App, error) {
 	// Gerege Core (core.gerege.mn) — USER FIND / ORG FIND хайлтын wrap.
 	coreUC := core.NewUsecase(config.AppConfig.CoreAPIBase, config.AppConfig.CoreAPIToken)
 
-	// Government SSO (sso.dgov.mn, OIDC) — гадаад SSO provider-т нэвтрэх RP урсгал.
-	// Энэ апп нь sso.dgov.mn-ий relying party: нэвтрэлтийг тийш даатгаж, буцаж
+	// Gerege SSO (sso.gerege.mn, OIDC) — гадаад SSO provider-т нэвтрэх RP урсгал.
+	// Энэ апп нь sso.gerege.mn-ий relying party: нэвтрэлтийг тийш даатгаж, буцаж
 	// ирсэн code-ийг токен болгож солин, хэрэглэгчийг sso_sub-ээр upsert хийнэ.
 	// ssoClient дээр (eID proxy-тай хамт) угсарсан. ssoTokenStorer нь SSO eID
 	// proxy идэвхтэй үед нэвтрэлтийн дараа токенуудыг хадгална (nil бол алгасна).
@@ -552,7 +552,7 @@ func NewApp() (*App, error) {
 	})
 
 	// OIDC provider — /admin оператор гадаргуу (RP OAuth2 client бүртгэл/удирдлага
-	// + admin API key). sso.dgov.mn нь Ory Hydra-г урдаа тавьж SSO болно. Зөвхөн
+	// + admin API key). sso.gerege.mn нь Ory Hydra-г урдаа тавьж SSO болно. Зөвхөн
 	// Hydra тохируулагдсан (ProviderConfigured) үед идэвхжинэ; эс бөгөөс inert.
 	if config.AppConfig.ProviderConfigured() {
 		devAppsStore := devapps.New(pool)
@@ -566,7 +566,7 @@ func NewApp() (*App, error) {
 		})
 	}
 
-	// Sign relay — 3 дагч RP (template.dgov.mn гэх мэт) dan-аар ДАМЖИН eID гарын
+	// Sign relay — 3 дагч RP (template.gerege.mn гэх мэт) dan-аар ДАМЖИН eID гарын
 	// үсэг зурах reverse-proxy (/rp/sign/*). dan-ий eidmongolia RP creds шаардана.
 	if config.AppConfig.SignRelayToken != "" && config.AppConfig.EIDRPSecret != "" {
 		if relay, rerr := signrelay.New(config.AppConfig.EIDBaseURL, config.AppConfig.EIDRPSecret, config.AppConfig.SignRelayToken); rerr != nil {

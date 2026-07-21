@@ -1,4 +1,4 @@
-// Government Template Platform V3.0
+// Gerege Template Platform V3.0
 // Gerege Systems Development Team болон Claude AI хамтран бүтээв, 2026.
 
 package postgres
@@ -19,7 +19,7 @@ import (
 // CreatePreRegistered нь админ иргэнийг РЕГИСТРИЙН ДУГААР (national_id)-аар
 // урьдчилан бүртгэнэ (private платформын хандалт): национал дугаар + нэр + role-
 // той идэвхтэй мөр үүсгэнэ, гэхдээ password/email/civil_id/sso_sub-гүй. Иргэн
-// хожим Government SSO (eID)-ээр эхэлж нэвтэрхэд ssouser upsert нь энэ мөрийг
+// хожим Gerege SSO (eID)-ээр эхэлж нэвтэрхэд ssouser upsert нь энэ мөрийг
 // national_id-аар олж, civil_id/sso_sub-ыг залгана (давхардал үүсэхгүй).
 //
 // Тухайн national_id аль хэдийн бүртгэлтэй бол apperror.Conflict.

@@ -1,4 +1,4 @@
--- Government Template Platform V3.0
+-- Gerege Template Platform V3.0
 -- Public RP-д eID IdP нь national_id (reg_no)-г илчлэхгүй, зөвхөн civil_id өгдөг
 -- тул eID хэрэглэгчийн давтагдашгүй түлхүүр нь civil_id болно. UpsertFromEID-ийн
 -- ON CONFLICT (lower(civil_id))-ийг дэмжих partial unique index нэмнэ. Migration

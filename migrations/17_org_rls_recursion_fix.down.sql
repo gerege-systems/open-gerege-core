@@ -1,4 +1,4 @@
--- Government Template Platform V3.0
+-- Gerege Template Platform V3.0
 -- 17_org_rls_recursion_fix-ийг буцаана — migration 14-ийн (recursive) policy-д эргүүлнэ.
 
 DROP POLICY IF EXISTS organizations_member ON organizations;

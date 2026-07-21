@@ -1,4 +1,4 @@
--- Government Template Platform V3.0
+-- Gerege Template Platform V3.0
 -- Ring System · R1 — Үйлчилгээний нэгдсэн регистрийг буцаана.
 -- Хамаарлын эсрэг дарааллаар: view → хамаарсан хүснэгтүүд → мастер хүснэгтүүд.
 

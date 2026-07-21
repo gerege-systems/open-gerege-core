@@ -1,4 +1,4 @@
-// Government Template Platform V3.0
+// Gerege Template Platform V3.0
 // Gerege Systems Development Team болон Claude AI хамтран бүтээв, 2026.
 
 package oidc
@@ -137,7 +137,7 @@ func webClient() domain.OAuthClient {
 
 func newService(c domain.OAuthClient) (*Service, *fakeFlow) {
 	flow := newFakeFlow()
-	return NewService(&fakeClients{c: c}, flow, "https://sso.dgov.mn"), flow
+	return NewService(&fakeClients{c: c}, flow, "https://sso.gerege.mn"), flow
 }
 
 func validRequest() AuthorizeRequest {

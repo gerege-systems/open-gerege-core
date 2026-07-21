@@ -1,4 +1,4 @@
-# Security Posture — Government Template Platform V3.0
+# Security Posture — Gerege Template Platform V3.0
 
 > 🌐 **English** · Монгол тайлбарыг кодын комментуудаас үзнэ үү. Эмзэг байдлыг
 > мэдээлэх журмыг [`/SECURITY.md`](../../SECURITY.md)-аас үз.
@@ -143,5 +143,5 @@ what remains for later phases. To report a vulnerability, see the repository
 
 ---
 
-**Government Template Platform V3.0** — Co-developed by the **Gerege Systems
+**Gerege Template Platform V3.0** — Co-developed by the **Gerege Systems
 Development Team** and **Claude AI**, 2026.

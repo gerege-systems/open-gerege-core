@@ -1,6 +1,6 @@
 //go:build integration
 
-// Government Template Platform V3.0
+// Gerege Template Platform V3.0
 // Gerege Systems Development Team болон Claude AI хамтран бүтээв, 2026.
 
 // oauth_clients repository-ийн integration тест (жинхэнэ Postgres). Энэ хүснэгт
@@ -126,7 +126,7 @@ func TestOAuthClientRepository(t *testing.T) {
 	t.Run("list returns newest first", func(t *testing.T) {
 		second := seedClient()
 		second.ClientID = "template-dgov-mn"
-		second.RedirectURIs = []string{"https://template.dgov.mn/auth/callback"}
+		second.RedirectURIs = []string{"https://template.gerege.mn/auth/callback"}
 		_, err := repo.Create(ctx, second)
 		require.NoError(t, err)
 

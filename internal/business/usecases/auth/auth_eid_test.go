@@ -1,4 +1,4 @@
-// Government Template Platform V3.0
+// Gerege Template Platform V3.0
 // Gerege Systems Development Team болон Claude AI хамтран бүтээв, 2026.
 
 // eID нэвтрэлтийн usecase давхаргын unit тестүүд (mock-той, DB-гүй): EIDStart
@@ -44,7 +44,7 @@ func jwtPairZero() jwt.TokenPair { return jwt.TokenPair{} }
 func TestEIDStart(t *testing.T) {
 	t.Run("success maps start result to response", func(t *testing.T) {
 		f := newFixture(t)
-		f.eid.On("QRInitiate", mock.Anything, "template.dgov.mn", "", mock.AnythingOfType("string")).
+		f.eid.On("QRInitiate", mock.Anything, "template.gerege.mn", "", mock.AnythingOfType("string")).
 			Return(&eid.StartResult{
 				SessionID:        "sess-1",
 				VerificationCode: "1234",
@@ -86,7 +86,7 @@ func TestEIDStartByNationalID(t *testing.T) {
 
 	t.Run("success returns session without device link (push flow)", func(t *testing.T) {
 		f := newFixture(t)
-		f.eid.On("Initiate", mock.Anything, "УБ99887766", "template.dgov.mn", mock.AnythingOfType("string")).
+		f.eid.On("Initiate", mock.Anything, "УБ99887766", "template.gerege.mn", mock.AnythingOfType("string")).
 			Return(&eid.StartResult{SessionID: "sess-2", VerificationCode: "5678"}, nil).Once()
 
 		resp, err := f.usecase.EIDStartByNationalID(context.Background(), "УБ99887766", "")

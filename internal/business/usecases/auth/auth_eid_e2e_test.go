@@ -1,6 +1,6 @@
 //go:build integration
 
-// Government Template Platform V3.0
+// Gerege Template Platform V3.0
 // Gerege Systems Development Team болон Claude AI хамтран бүтээв, 2026.
 
 // eID нэвтрэлтийн бүрэн end-to-end тест — "апп хүртэл". Fake eID Mongolia v3
@@ -147,7 +147,7 @@ func buildEIDStack(t *testing.T, baseURL string) (auth.Usecase, users.Usecase) {
 		OTPMaxAttempts: 5, OTPTTL: 5 * time.Minute, PasswordResetTTL: 30 * time.Minute,
 		BcryptCost: 4, LoginMaxAttempts: 10, LoginLockoutTTL: 15 * time.Minute,
 		ForgotMaxAttempts: 3, ForgotLockoutTTL: 15 * time.Minute,
-		EIDCallbackURL: "https://template.dgov.mn/login/verify", EIDDisplayText: "template.dgov.mn",
+		EIDCallbackURL: "https://template.gerege.mn/login/verify", EIDDisplayText: "template.gerege.mn",
 	})
 	return authUC, usersUC
 }

@@ -1,4 +1,4 @@
-// Government Template Platform V3.0
+// Gerege Template Platform V3.0
 // Gerege Systems Development Team болон Claude AI хамтран бүтээв, 2026.
 
 package config
@@ -75,11 +75,11 @@ type Config struct {
 	EIDCertLevel   string `mapstructure:"EID_CERT_LEVEL"`
 	EIDCallbackURL string `mapstructure:"EID_CALLBACK_URL"`
 	EIDDisplayText string `mapstructure:"EID_DISPLAY_TEXT"`
-	// SignRelayToken — 3 дагч RP (жишээ template.dgov.mn) dan-аар ДАМЖИН eID
+	// SignRelayToken — 3 дагч RP (жишээ template.gerege.mn) dan-аар ДАМЖИН eID
 	// гарын үсэг зурахад ашиглах shared token. dan нь /rp/sign/* дор eidmongolia-
 	// ий signature API-г урдаа тавьж, өөрийн EID_RP_SECRET-ыг нэмж дамжуулна.
 	// Хоосон бол relay идэвхгүй. RP нь энэ token-ыг EID_RP_SECRET болгож,
-	// EID_BASE_URL-аа https://sso.dgov.mn/rp/sign/v3 руу заана (RPUUID нь dan-ийх).
+	// EID_BASE_URL-аа https://sso.gerege.mn/rp/sign/v3 руу заана (RPUUID нь dan-ийх).
 	SignRelayToken string `mapstructure:"SIGN_RELAY_TOKEN"`
 
 	// PDF гарын үсгийн (PAdES) серверийн БАЙНГЫН Document-Signer гэрчилгээ +
@@ -152,9 +152,9 @@ type Config struct {
 	// томилно (API-аар үүсгэдэггүй). Хэрэглэгч эхлээд бүртгүүлсэн байх ёстой.
 	SuperAdminEmail string `mapstructure:"SUPERADMIN_EMAIL"`
 
-	// Government SSO (sso.dgov.mn, OIDC) — гадаад SSO provider-т нэвтрэх RP (consumer).
+	// Gerege SSO (sso.gerege.mn, OIDC) — гадаад SSO provider-т нэвтрэх RP (consumer).
 	// ClientID/Secret хоосон бол SSO урсгал inert. RedirectURI нь SSO client-д
-	// бүртгэгдсэн callback (жишээ https://template.dgov.mn/sso/callback) байх ёстой.
+	// бүртгэгдсэн callback (жишээ https://template.gerege.mn/sso/callback) байх ёстой.
 	SSOIssuer       string `mapstructure:"SSO_ISSUER"`
 	SSOClientID     string `mapstructure:"SSO_CLIENT_ID"`
 	SSOClientSecret string `mapstructure:"SSO_CLIENT_SECRET"`
@@ -164,7 +164,7 @@ type Config struct {
 	// default template-dgov-mn-ios).
 	SSONativeClientID string `mapstructure:"SSO_NATIVE_CLIENT_ID"`
 	// SSOEidProxyBaseURL нь SSO-ий eID proxy-ийн суурь URL (жишээ
-	// https://sso.dgov.mn/rp/eid). Тохируулсан бол иргэний PKI самбар
+	// https://sso.gerege.mn/rp/eid). Тохируулсан бол иргэний PKI самбар
 	// (summary/certificates/devices/activity) нь шууд eidmongolia-ий оронд SSO
 	// proxy-гоор дамжина — энэ апп-д eID RP creds/PKI_READ шаардахгүй. Хоосон бол
 	// шууд eidmongolia (EID_BASE_URL) зам. offline_access scope + хадгалагдсан
@@ -179,7 +179,7 @@ type Config struct {
 
 	// --- OIDC PROVIDER тал (энэ платформ нь ӨӨРӨӨ SSO provider). Дээрх SSO_* нь
 	// RP (нэвтрэгч) тал; доорхи OAUTH_*/SSO_ADMIN_* нь PROVIDER (issuer) тал. ---
-	// OAuthIssuer нь OIDC issuer (жишээ https://template.dgov.mn). Discovery,
+	// OAuthIssuer нь OIDC issuer (жишээ https://template.gerege.mn). Discovery,
 	// id_token-ий `iss` болон бүх endpoint URL үүнээс гарна.
 	OAuthIssuer string `mapstructure:"OAUTH_ISSUER"`
 	// SSOStateKey нь login/consent урсгалын transient state cookie HMAC түлхүүр
@@ -205,8 +205,8 @@ func (c *Config) SSOAdminAPIKeysList() []string { return splitCSVConfig(c.SSOAdm
 func (c *Config) SSOAdminSubsList() []string { return splitCSVConfig(c.SSOAdminSubs) }
 
 // Issuer нь OIDC issuer-ийг буцаана. Сүүлийн slash-ыг ХАСНА — issuer нь
-// id_token-ий `iss`-тэй ЯГ таарах ёстой тул "https://template.dgov.mn/" ба
-// "https://template.dgov.mn" хоёр өөр утга болно.
+// id_token-ий `iss`-тэй ЯГ таарах ёстой тул "https://template.gerege.mn/" ба
+// "https://template.gerege.mn" хоёр өөр утга болно.
 func (c *Config) Issuer() string {
 	return strings.TrimRight(strings.TrimSpace(c.OAuthIssuer), "/")
 }
@@ -290,7 +290,7 @@ func InitializeAppConfig() error {
 	_ = viper.BindEnv("GSPACE_BASE_PATH")
 	_ = viper.BindEnv("GSPACE_QUOTA_BYTES")
 	_ = viper.BindEnv("GSPACE_HOST_KEY")
-	// OIDC PROVIDER тал (sso.dgov.mn нь Hydra-г урдаа тавьж SSO болно) — нууц/
+	// OIDC PROVIDER тал (sso.gerege.mn нь Hydra-г урдаа тавьж SSO болно) — нууц/
 	// орчин-тусгай тул ил bind хийнэ.
 	_ = viper.BindEnv("OAUTH_ISSUER")
 	_ = viper.BindEnv("SSO_STATE_KEY")
@@ -450,10 +450,10 @@ func applyDefaults() {
 		AppConfig.EIDCertLevel = "ADVANCED"
 	}
 	if AppConfig.EIDCallbackURL == "" {
-		AppConfig.EIDCallbackURL = "https://template.dgov.mn/login/verify"
+		AppConfig.EIDCallbackURL = "https://template.gerege.mn/login/verify"
 	}
 	if AppConfig.EIDDisplayText == "" {
-		AppConfig.EIDDisplayText = "template.dgov.mn"
+		AppConfig.EIDDisplayText = "template.gerege.mn"
 	}
 	if AppConfig.CoreAPIBase == "" {
 		AppConfig.CoreAPIBase = "https://core.gerege.mn"
@@ -470,9 +470,9 @@ func applyDefaults() {
 	if AppConfig.GSpaceQuota == 0 {
 		AppConfig.GSpaceQuota = 2 << 20 // 2 MB
 	}
-	// Government SSO (RP/consumer) default-ууд.
+	// Gerege SSO (RP/consumer) default-ууд.
 	if AppConfig.SSOIssuer == "" {
-		AppConfig.SSOIssuer = "https://sso.dgov.mn"
+		AppConfig.SSOIssuer = "https://sso.gerege.mn"
 	}
 	if AppConfig.SSOScope == "" {
 		AppConfig.SSOScope = "openid profile email"

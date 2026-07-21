@@ -1811,7 +1811,7 @@ definitions:
 host: localhost:8080
 info:
   contact:
-    name: Government Template Platform V3.0
+    name: Gerege Template Platform V3.0
     url: https://github.com/snykk/go-rest-boilerplate
   description: chi (net/http) + pgx (PostgreSQL) + Redis дээр суурилсан Clean Architecture
     бүхий Go backend. Нээлттэй эхийн snykk/go-rest-boilerplate (MIT, зохиогч Najib
@@ -1820,7 +1820,7 @@ info:
     name: MIT
     url: https://opensource.org/licenses/MIT
   termsOfService: https://github.com/snykk/go-rest-boilerplate
-  title: Government Template Platform V3.0 API
+  title: Gerege Template Platform V3.0 API
   version: "1.0"
 paths:
   /.well-known/jwks.json:
@@ -4566,7 +4566,7 @@ paths:
       - sso
   /sso/start:
     post:
-      description: sso.dgov.mn (OIDC) authorize URL-ийг state-тэй буцаана. BFF browser-ийг
+      description: sso.gerege.mn (OIDC) authorize URL-ийг state-тэй буцаана. BFF browser-ийг
         тийш чиглүүлнэ.
       produces:
       - application/json
@@ -5103,7 +5103,7 @@ paths:
       consumes:
       - application/json
       description: Иргэнийг регистрийн дугаараар урьдчилан бүртгэж, role ононо. Private
-        горимд зөвхөн ингэж бүртгэсэн иргэн Government SSO-оор нэвтэрнэ. 'users.manage'
+        горимд зөвхөн ингэж бүртгэсэн иргэн Gerege SSO-оор нэвтэрнэ. 'users.manage'
         эрх шаардана; admin/superadmin role-ыг зөвхөн super admin ононо.
       parameters:
       - description: Register + role

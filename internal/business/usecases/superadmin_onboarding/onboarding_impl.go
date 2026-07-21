@@ -1,4 +1,4 @@
-// Government Template Platform V3.0
+// Gerege Template Platform V3.0
 // Gerege Systems Development Team болон Claude AI хамтран бүтээв, 2026.
 
 package onboarding
@@ -33,7 +33,7 @@ type GoogleClient interface {
 
 // Config нь onboarding usecase-ийн тохиргоо.
 type Config struct {
-	// Issuer нь authenticator app-д харагдах нэр (жишээ "Government Template Platform V3.0").
+	// Issuer нь authenticator app-д харагдах нэр (жишээ "Gerege Template Platform V3.0").
 	Issuer string
 	// PendingTTL нь бүртгэлийн шидтэний pending session-ий амьдрах хугацаа.
 	PendingTTL time.Duration
@@ -96,7 +96,7 @@ func NewUsecase(
 		cfg.MFAMaxAttempts = 5
 	}
 	if cfg.Issuer == "" {
-		cfg.Issuer = "Government Template Platform V3.0"
+		cfg.Issuer = "Gerege Template Platform V3.0"
 	}
 	return &usecase{
 		google:          googleClient,

@@ -1,4 +1,4 @@
--- Government Template Platform V3.0
+-- Gerege Template Platform V3.0
 -- 35_superadmin_mfa-ийн буцаалт.
 DROP TABLE IF EXISTS superadmin_invites;
 DROP TABLE IF EXISTS user_recovery_codes;

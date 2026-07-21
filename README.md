@@ -1,4 +1,4 @@
-# Government Template Platform V3.0 — Backend (Go)
+# Gerege Template Platform V3.0 — Backend (Go)
 
 > _One foundation — every government service._
 
@@ -9,7 +9,7 @@
 [![pgx](https://img.shields.io/badge/pgx-v5-336791.svg)](https://github.com/jackc/pgx)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-The Go backend of the **Government Template Platform V3.0** — a production-ready
+The Go backend of the **Gerege Template Platform V3.0** — a production-ready
 foundation on which *any* digital-government service can be built. It pairs a
 disciplined **Clean Architecture** core with hand-written **pgx SQL** (no ORM),
 and ships with a full suite of government-grade capabilities out of the box:
@@ -19,8 +19,8 @@ security hardening — all bilingual (mn/en) and observable from day one. Built 
 **chi (net/http)** for HTTP, **pgx (pgxpool) + PostgreSQL** for data, and
 **Redis + Ristretto** for cache.
 
-> **Reference deployment:** **Government Template Platform** ([template.dgov.mn](https://template.dgov.mn))
-> — a government service platform and Relying Party of Government SSO built on this
+> **Reference deployment:** **Gerege Template Platform** ([template.gerege.mn](https://template.gerege.mn))
+> — a government service platform and Relying Party of Gerege SSO built on this
 > foundation, showcasing eID single sign-on and a built-in OIDC provider for other apps.
 
 ## 📌 Origin & Open Source
@@ -169,7 +169,7 @@ GOOGLE_CLIENT_ID=
 GOOGLE_CLIENT_SECRET=
 
 # OIDC PROVIDER side (the platform is its own issuer) — provider flows are inert unless set
-OAUTH_ISSUER=                    # issuer, e.g. https://template.dgov.mn (empty = provider off)
+OAUTH_ISSUER=                    # issuer, e.g. https://template.gerege.mn (empty = provider off)
 SSO_STATE_KEY=                   # >= 32 bytes; login/consent state cookie HMAC
 SSO_FIRSTPARTY_CLIENTS=          # CSV client_ids that skip the consent screen
 SSO_ADMIN_API_KEYS=              # CSV bootstrap keys for the /admin surface
@@ -337,5 +337,5 @@ template is itself **MIT-licensed** (see the `LICENSE` file).
 
 ---
 
-**Government Template Platform V3.0** — Co-developed by the **Gerege Systems
+**Gerege Template Platform V3.0** — Co-developed by the **Gerege Systems
 Development Team** and **Claude AI**, 2026.

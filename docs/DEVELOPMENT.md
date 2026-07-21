@@ -2,10 +2,10 @@
 
 > 🌐 **English** · [Монгол](DEVELOPMENT_MN.md)
 
-This guide helps developers set up and work with the **Government Template
+This guide helps developers set up and work with the **Gerege Template
 Platform V3.0** (Цахим засаглалыг бүтээх суурь) codebase — a production-ready
 foundation on which any digital-government service can be built. Its flagship
-reference deployment is **Government Template Platform** (template.dgov.mn), an eID-based
+reference deployment is **Gerege Template Platform** (template.gerege.mn), an eID-based
 government service platform built on this stack.
 
 > **Origin.** Derived from the open-source
@@ -418,4 +418,4 @@ Before deploying, ensure:
 
 ---
 
-**Government Template Platform V3.0** — Co-developed by the **Gerege Systems Development Team** and **Claude AI**, 2026.
+**Gerege Template Platform V3.0** — Co-developed by the **Gerege Systems Development Team** and **Claude AI**, 2026.

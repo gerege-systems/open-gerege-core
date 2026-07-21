@@ -1,5 +1,5 @@
 #!/bin/sh
-# Government Template Platform V3.0
+# Gerege Template Platform V3.0
 #
 # Postgres-ийн анхны init дээр НЭГ удаа (data volume хоосон үед) superuser
 # POSTGRES_USER-ээр ажиллана. Хамгийн бага эрхтэй (least-privilege) application

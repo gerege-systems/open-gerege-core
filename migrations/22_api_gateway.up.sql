@@ -1,4 +1,4 @@
--- Government Template Platform V3.0
+-- Gerege Template Platform V3.0
 -- API Gateway (нэгдсэн, эцсийн хэлбэр): upstream service-үүд + нэгдсэн
 -- 'applications' бүртгэл (gateway consumer + SSO RP-г НЭГ загварт нэгтгэсэн) +
 -- request-log telemetry. Application бүр = Hydra OAuth2 client; аппад зөвшөөрсөн
@@ -74,15 +74,15 @@ ON CONFLICT (key) DO NOTHING;
 -- админ UI-аас secret эргүүлж/дахин үүсгэнэ.
 INSERT INTO gateway_services (name, protocol, host, port, path, tags, scope)
 SELECT * FROM (VALUES
-    ('dan-sso',  'https', 'sso.dgov.mn', 443, '/oauth2',  ARRAY['sso', 'oidc']::text[], 'svc:dan-sso'),
-    ('eid-sign', 'https', 'sso.dgov.mn', 443, '/rp/sign', ARRAY['eid', 'sign']::text[], 'svc:eid-sign')
+    ('dan-sso',  'https', 'sso.gerege.mn', 443, '/oauth2',  ARRAY['sso', 'oidc']::text[], 'svc:dan-sso'),
+    ('eid-sign', 'https', 'sso.gerege.mn', 443, '/rp/sign', ARRAY['eid', 'sign']::text[], 'svc:eid-sign')
 ) AS v(name, protocol, host, port, path, tags, scope)
 WHERE NOT EXISTS (SELECT 1 FROM gateway_services);
 
 INSERT INTO applications (client_id, name, app_type, tags, redirect_uris, enabled, created_by)
 SELECT * FROM (VALUES
-    ('template-dgov-mn',  'template.dgov.mn',  'web', ARRAY['rp']::text[],
-        ARRAY['https://template.dgov.mn/auth/callback']::text[], true, 'seed-rp'),
+    ('template-dgov-mn',  'template.gerege.mn',  'web', ARRAY['rp']::text[],
+        ARRAY['https://template.gerege.mn/auth/callback']::text[], true, 'seed-rp'),
     ('developer-dgov-mn', 'developer.dgov.mn', 'web', ARRAY['rp', 'developer']::text[],
         ARRAY['https://developer.dgov.mn/auth/callback']::text[], true, 'seed-rp')
 ) AS v(client_id, name, app_type, tags, redirect_uris, enabled, created_by)

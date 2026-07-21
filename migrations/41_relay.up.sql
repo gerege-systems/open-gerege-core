@@ -1,4 +1,4 @@
--- Government Template Platform V3.0
+-- Gerege Template Platform V3.0
 -- Platform-хоорондын үйлчилгээний хүсэлт дамжуулах + SLA хяналт. Дээд platform-оос
 -- хугацаатай хүсэлт хүлээж авч, доод platform-ууд руу дамжуулж (routing rules),
 -- заагдсан хугацаанд биелэлтийг хянаж/шахаж, хариуг цуглуулна. Эдгээр нь

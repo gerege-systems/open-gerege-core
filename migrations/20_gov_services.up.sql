@@ -1,4 +1,4 @@
--- Government Template Platform V3.0
+-- Gerege Template Platform V3.0
 -- Иргэний "Төрийн үйлчилгээ" портал (me систем). gov_services нь нийтийн
 -- үйлчилгээний каталог (RLS-гүй лавлах); бусад нь хэрэглэгч-тус-бүрийн өгөгдөл
 -- бөгөөд user_id-гаар scope хийгдэнэ. Хоёр давхар хамгаалалт: repository query

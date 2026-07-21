@@ -2,11 +2,11 @@
 
 > 🌐 **English** · [Монгол](ARCHITECTURE_MN.md)
 
-This document describes the high-level architecture of the **Government Template
+This document describes the high-level architecture of the **Gerege Template
 Platform V3.0** (Цахим засаглалыг бүтээх суурь) — a production-ready foundation on
 which any digital-government service can be built. Its flagship reference
-deployment is **Government Template Platform** (at **template.dgov.mn**), an **eID-based
-government service platform** — a Relying Party of Government SSO. The backend module is `template`; the stack is **chi (net/http)
+deployment is **Gerege Template Platform** (at **template.gerege.mn**), an **eID-based
+government service platform** — a Relying Party of Gerege SSO. The backend module is `template`; the stack is **chi (net/http)
 + pgx (pgxpool) + PostgreSQL + Redis + Gemini AI**, organized along Clean
 Architecture lines and fronted by a Next.js BFF.
 
@@ -524,4 +524,4 @@ under the MIT License (see `LICENSE`).
 
 ---
 
-**Government Template Platform V3.0** — Co-developed by the **Gerege Systems Development Team** and **Claude AI**, 2026.
+**Gerege Template Platform V3.0** — Co-developed by the **Gerege Systems Development Team** and **Claude AI**, 2026.

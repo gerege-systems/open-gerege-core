@@ -2,11 +2,11 @@
 
 > 🌐 [English](ARCHITECTURE.md) · **Монгол**
 
-Энэ баримт нь **Government Template Platform V3.0** (Цахим засаглалыг бүтээх суурь)
+Энэ баримт нь **Gerege Template Platform V3.0** (Цахим засаглалыг бүтээх суурь)
 — аливаа цахим засаглалын үйлчилгээг дээр нь босгох боломжтой production-д бэлэн
 суурийн ерөнхий архитектурыг тайлбарлана. Түүний тэргүүлэх жишиг deployment нь
-**Government Template Platform** (**template.dgov.mn** дээр байрласан) — **eID-д суурилсан
-төрийн үйлчилгээний платформ** (Government SSO-ийн Relying Party) юм. Backend модуль нь `template`; стек нь **chi (net/http) + pgx
+**Gerege Template Platform** (**template.gerege.mn** дээр байрласан) — **eID-д суурилсан
+төрийн үйлчилгээний платформ** (Gerege SSO-ийн Relying Party) юм. Backend модуль нь `template`; стек нь **chi (net/http) + pgx
 (pgxpool) + PostgreSQL + Redis + Gemini AI**, Clean Architecture зарчмаар зохион
 байгуулагдсан бөгөөд Next.js BFF-ээр хучигдсан.
 
@@ -522,4 +522,4 @@ eID/SSO/OIDC-provider интеграцууд, feature модулиудыг эн�
 
 ---
 
-**Government Template Platform V3.0** — **Gerege Systems Development Team** болон **Claude AI** хамтран бүтээв, 2026.
+**Gerege Template Platform V3.0** — **Gerege Systems Development Team** болон **Claude AI** хамтран бүтээв, 2026.

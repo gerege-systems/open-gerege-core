@@ -1,4 +1,4 @@
--- Government Template Platform V3.0
+-- Gerege Template Platform V3.0
 -- Хэрэглэгчийн гуравдагч этгээдийн интеграцийн (Google Drive/Meet, Dropbox)
 -- OAuth токеныг хадгална. Токенууд usecase давхаргад шифрлэгдэж ирдэг тул
 -- хүснэгтэд шифрлэгдсэн (ciphertext) хэлбэрээр хадгалагдана. Хэрэглэгч-тус-бүрийн

@@ -1,7 +1,7 @@
--- Government Template Platform V3.0
+-- Gerege Template Platform V3.0
 -- Платформын хандалтын горим (access_mode: public|private). Singleton (id=1)
 -- config хүснэгт — site_appearance-ийн адил RLS-гүй нийтийн тохиргоо, зөвхөн
--- superadmin UPDATE хийнэ. public: хэн ч Government SSO-оор нэвтэрч болно (одоогийн
+-- superadmin UPDATE хийнэ. public: хэн ч Gerege SSO-оор нэвтэрч болно (одоогийн
 -- зан төлөв); private: зөвхөн админаас урьдчилан бүртгэсэн (national_id/civil_id-
 -- ээр тохирох) хэрэглэгч л нэвтэрнэ, бусад иргэн eID-ээр баталгаажсан ч 403 авна.
 

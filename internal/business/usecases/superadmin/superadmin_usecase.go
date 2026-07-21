@@ -1,4 +1,4 @@
-// Government Template Platform V3.0
+// Gerege Template Platform V3.0
 // Gerege Systems Development Team болон Claude AI хамтран бүтээв, 2026.
 
 // Package superadmin нь super admin-ий "админуудыг удирдах" use case давхарга
@@ -61,7 +61,7 @@ type Usecase interface {
 	// GetAccessMode нь платформын хандалтын горим (public|private)-ыг буцаана.
 	GetAccessMode(ctx context.Context) (string, error)
 	// SetAccessMode нь платформын хандалтын горимыг тохируулна. public: хэн ч
-	// Government SSO-оор нэвтэрнэ; private: зөвхөн админаас урьдчилан бүртгэсэн
+	// Gerege SSO-оор нэвтэрнэ; private: зөвхөн админаас урьдчилан бүртгэсэн
 	// хэрэглэгч. Буруу утга → apperror.BadRequest.
 	SetAccessMode(ctx context.Context, mode string) error
 }

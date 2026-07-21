@@ -2,10 +2,10 @@
 
 > 🌐 [English](API_CONTRACT.md) · **Монгол**
 
-**Government Template Platform V3.0** (Цахим засаглалыг бүтээх суурь)-ийн REST API
+**Gerege Template Platform V3.0** (Цахим засаглалыг бүтээх суурь)-ийн REST API
 лавлагаа — цахим засаглалын үйлчилгээг дээр нь босгох production-д бэлэн суурь
 (Clean-Architecture Go backend + Next.js BFF + Gemini AI). Энэ лавлагаа нь түүний
-жишиг deployment болох **Government Template Platform** (template.dgov.mn) — eID-д
+жишиг deployment болох **Gerege Template Platform** (template.gerege.mn) — eID-д
 суурилсан төрийн үйлчилгээний платформыг тусгана. Амьд, автоматаар
 үүсгэгддэг spec-ийг `GET /swagger/`-ээр үзүүлнэ (эх сурвалж: `docs/swagger.json`).
 
@@ -506,5 +506,5 @@ endpoint-уудад `@Router` annotation-той хэвээр байгаа — д
 
 ---
 
-**Government Template Platform V3.0** — Co-developed by the **Gerege Systems Development Team** and **Claude AI**, 2026.
+**Gerege Template Platform V3.0** — Co-developed by the **Gerege Systems Development Team** and **Claude AI**, 2026.
 </content>

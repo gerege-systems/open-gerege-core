@@ -1,4 +1,4 @@
-// Government Template Platform V3.0
+// Gerege Template Platform V3.0
 // Gerege Systems Development Team болон Claude AI хамтран бүтээв, 2026.
 
 package applications
@@ -154,9 +154,9 @@ func TestListMapsHydraClients(t *testing.T) {
 	repo := &fakeRepo{serviceIDs: []string{"id-1"}}
 	fh := &fakeStore{list: []domain.OAuthClient{
 		{
-			ClientID: "template-dgov-mn", ClientName: "template.dgov.mn",
+			ClientID: "template-dgov-mn", ClientName: "template.gerege.mn",
 			GrantTypes: []string{"authorization_code", "refresh_token"}, TokenEndpointAuthMethod: "client_secret_basic",
-			RedirectURIs: []string{"https://template.dgov.mn/cb"},
+			RedirectURIs: []string{"https://template.gerege.mn/cb"},
 			Scopes:       []string{"openid", "profile", "email", "svc:eid-sign"},
 			Tags:         []string{"rp"},
 			Enabled:      true,
@@ -181,7 +181,7 @@ func TestListMapsHydraClients(t *testing.T) {
 	if a.ID != "template-dgov-mn" || a.ClientID != "template-dgov-mn" {
 		t.Fatalf("id/client_id should be the Hydra client_id, got %+v", a)
 	}
-	if a.Name != "template.dgov.mn" || a.AppType != "web" {
+	if a.Name != "template.gerege.mn" || a.AppType != "web" {
 		t.Fatalf("name/type mapping wrong: %+v", a)
 	}
 	if len(a.Tags) != 1 || a.Tags[0] != "rp" || !a.Enabled {

@@ -1,3 +1,3 @@
--- Government Template Platform V3.0
+-- Gerege Template Platform V3.0
 ALTER TABLE users DROP COLUMN IF EXISTS first_name;
 ALTER TABLE users DROP COLUMN IF EXISTS last_name;

@@ -1,7 +1,7 @@
-// Government Template Platform V3.0
+// Gerege Template Platform V3.0
 // Gerege Systems Development Team болон Claude AI хамтран бүтээв, 2026.
 
-// Package sso нь /sso/* endpoint-уудыг үйлчилнэ — dgov SSO (sso.dgov.mn,
+// Package sso нь /sso/* endpoint-уудыг үйлчилнэ — dgov SSO (sso.gerege.mn,
 // OIDC) нэвтрэлтийн 2 дахь урсгал. Start нь authorize URL буцаана, Callback нь
 // code-ийг солиж токен олгоно. Бүгд нэвтрэхээс өмнөх (ServiceRLSContext) урсгал.
 package sso
@@ -66,7 +66,7 @@ type logoutResponse struct {
 
 // Start godoc
 // @Summary      dgov SSO нэвтрэлт эхлүүлэх
-// @Description  sso.dgov.mn (OIDC) authorize URL-ийг state-тэй буцаана. BFF browser-ийг тийш чиглүүлнэ.
+// @Description  sso.gerege.mn (OIDC) authorize URL-ийг state-тэй буцаана. BFF browser-ийг тийш чиглүүлнэ.
 // @Tags         sso
 // @Produce      json
 // @Success      200  {object}  v1.BaseResponse

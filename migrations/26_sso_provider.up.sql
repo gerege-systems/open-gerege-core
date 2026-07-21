@@ -1,5 +1,5 @@
--- eID based AI enabled Government Template Platform V3.0
--- sso.dgov.mn-ийг OIDC provider (Ory Hydra + ssod-style login/consent) болгох
+-- eID based AI enabled Gerege Template Platform V3.0
+-- sso.gerege.mn-ийг OIDC provider (Ory Hydra + ssod-style login/consent) болгох
 -- persistence: RP апп бүртгэл, /admin API key-үүд, нэвтрэлтийн audit. Эдгээр нь
 -- глобал/оператор гадаргуу тул RLS-гүй (gov_services-тэй адил лавлах загвар) —
 -- эрхийг role-ийн table privilege (initdb-ийн default grant) хамгаална.

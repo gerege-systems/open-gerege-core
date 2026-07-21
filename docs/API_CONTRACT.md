@@ -2,10 +2,10 @@
 
 > 🌐 **English** · [Монгол](API_CONTRACT_MN.md)
 
-REST API reference for the **Government Template Platform V3.0** (Цахим засаглалыг
+REST API reference for the **Gerege Template Platform V3.0** (Цахим засаглалыг
 бүтээх суурь) — a production-ready foundation for building digital-government
 services (Clean-Architecture Go backend + Next.js BFF + Gemini AI). This contract
-tracks its reference deployment, **Government Template Platform** (template.dgov.mn), an
+tracks its reference deployment, **Gerege Template Platform** (template.gerege.mn), an
 eID-based government service platform. The live, auto-generated spec is served at `GET
 /swagger/` (source: `docs/swagger.json`).
 
@@ -510,6 +510,6 @@ surface above reflects `route_auth.go`, which is authoritative.)
 
 ---
 
-**Government Template Platform V3.0** — Co-developed by the **Gerege Systems Development Team** and **Claude AI**, 2026.
+**Gerege Template Platform V3.0** — Co-developed by the **Gerege Systems Development Team** and **Claude AI**, 2026.
 </content>
 </invoke>

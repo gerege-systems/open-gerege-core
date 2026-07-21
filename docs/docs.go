@@ -11,7 +11,7 @@ const docTemplate = `{
         "title": "{{.Title}}",
         "termsOfService": "https://github.com/snykk/go-rest-boilerplate",
         "contact": {
-            "name": "Government Template Platform V3.0",
+            "name": "Gerege Template Platform V3.0",
             "url": "https://github.com/snykk/go-rest-boilerplate"
         },
         "license": {
@@ -4312,7 +4312,7 @@ const docTemplate = `{
         },
         "/sso/start": {
             "post": {
-                "description": "sso.dgov.mn (OIDC) authorize URL-ийг state-тэй буцаана. BFF browser-ийг тийш чиглүүлнэ.",
+                "description": "sso.gerege.mn (OIDC) authorize URL-ийг state-тэй буцаана. BFF browser-ийг тийш чиглүүлнэ.",
                 "produces": [
                     "application/json"
                 ],
@@ -5219,7 +5219,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Иргэнийг регистрийн дугаараар урьдчилан бүртгэж, role ононо. Private горимд зөвхөн ингэж бүртгэсэн иргэн Government SSO-оор нэвтэрнэ. 'users.manage' эрх шаардана; admin/superadmin role-ыг зөвхөн super admin ононо.",
+                "description": "Иргэнийг регистрийн дугаараар урьдчилан бүртгэж, role ононо. Private горимд зөвхөн ингэж бүртгэсэн иргэн Gerege SSO-оор нэвтэрнэ. 'users.manage' эрх шаардана; admin/superadmin role-ыг зөвхөн super admin ононо.",
                 "consumes": [
                     "application/json"
                 ],
@@ -6879,7 +6879,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Платформын хандалтын горимыг тохируулна. public: хэн ч Government SSO-оор нэвтэрнэ; private: зөвхөн урьдчилан бүртгэсэн хэрэглэгч. Зөвхөн super admin хандана.",
+                "description": "Платформын хандалтын горимыг тохируулна. public: хэн ч Gerege SSO-оор нэвтэрнэ; private: зөвхөн урьдчилан бүртгэсэн хэрэглэгч. Зөвхөн super admin хандана.",
                 "consumes": [
                     "application/json"
                 ],
@@ -10041,7 +10041,7 @@ var SwaggerInfo = &swag.Spec{
 	Host:             "localhost:8080",
 	BasePath:         "/api/v1",
 	Schemes:          []string{"http", "https"},
-	Title:            "Government Template Platform V3.0 API",
+	Title:            "Gerege Template Platform V3.0 API",
 	Description:      "chi (net/http) + pgx (PostgreSQL) + Redis дээр суурилсан Clean Architecture бүхий Go backend. Нээлттэй эхийн snykk/go-rest-boilerplate (MIT, зохиогч Najib Fikri)-ээс үүсэлтэй; HTTP давхаргыг chi, өгөгдлийн давхаргыг pgx руу хөрвүүлсэн.",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
