@@ -460,7 +460,11 @@ anyone can ask about the platform before signing in. Same pipeline as
 | Tools | knowledge-base search only — the usecase is wired with a restricted tool set, so no tool that reads user data is reachable |
 | Prompt | an extra hardcoded guardrail layer: never ask for personal data, never claim access to an account |
 
-**Response `200`** — identical shape to `/ai/chat` (`reply`, `steps`, `degraded`).
+**Response `200`** — `/ai/chat`'s shape plus `transcript`. A voice message is
+transcribed first (STT) and the chat then runs on that text, so the widget can
+show what was actually heard instead of a "voice message" placeholder. When no
+speech is recognised the endpoint returns `200` with an empty `reply` and
+`degraded: true` (no second Gemini call).
 
 ### POST `/public/ai/tts` 🌐
 **No authentication.** The "listen" button in the landing widget — turns one

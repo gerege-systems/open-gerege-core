@@ -7,6 +7,7 @@ package ai
 
 import (
 	"net/http"
+	"strings"
 
 	aiuc "template/internal/business/usecases/ai"
 	"template/internal/http/datatransfers/requests"
@@ -26,7 +27,7 @@ func NewHandler(usecase aiuc.Usecase) Handler {
 
 // PublicChat godoc
 // @Summary      Нээлттэй AI туслах (нэвтрэлтгүй)
-// @Description  Нүүр хуудасны чат виджетэд зориулсан НЭВТРЭЛТГҮЙ чат. Текст ба/эсвэл богино дуут мессеж (push-to-talk, ~250 KB base64 ≈ 15 сек), мессеж 1000 тэмдэгт, түүх 6 ээлж. Туслах нь платформын мэдлэгийн санд тулгуурлан хариулах бөгөөд хэрэглэгчийн бүртгэлийн өгөгдөлд ХАНДАХГҮЙ (тусдаа tool багц + нэмэлт guardrail). IP тус бүрт минутанд ~6 хүсэлт.
+// @Description  Нүүр хуудасны чат виджетэд зориулсан НЭВТРЭЛТГҮЙ чат. Текст эсвэл богино дуут мессеж (push-to-talk, ~250 KB base64 ≈ 15 сек), мессеж 1000 тэмдэгт, түүх 6 ээлж. Дуут мессежийг эхлээд STT-ээр текст болгож, хариунд transcript талбараар буцаана; яриа таниагүй бол degraded=true, хоосон reply. Туслах нь платформын мэдлэгийн санд тулгуурлан хариулах бөгөөд хэрэглэгчийн бүртгэлийн өгөгдөлд ХАНДАХГҮЙ (тусдаа tool багц + нэмэлт guardrail). IP тус бүрт минутанд ~6 хүсэлт.
 // @Tags         ai
 // @Accept       json
 // @Produce      json
@@ -56,16 +57,34 @@ func (h Handler) PublicChat(w http.ResponseWriter, r *http.Request) error {
 		history = append(history, aiuc.Turn{Role: t.Role, Text: t.Text})
 	}
 
-	var audio *aiuc.Audio
+	// Дуут мессежийг эхлээд ТЕКСТ болгоно (STT), дараа нь текстээр чатлана.
+	// Audio-г чат model руу шууд өгч ч болно (мультимодаль) — гэхдээ тэгвэл
+	// хэрэглэгч юу сонсогдсоныг хардаггүй, ярианы түүх ч «дуут мессеж» гэсэн
+	// орлуулагчаар дүүрдэг. Хуулбарыг буцаана: UI бөмбөлөгт харуулна.
+	prompt := req.Message
+	var transcript string
 	if req.Audio != nil {
-		audio = &aiuc.Audio{Mime: req.Audio.Mime, Data: req.Audio.Data}
+		stt, sttErr := h.usecase.Transcribe(ctx, aiuc.TranscribeRequest{
+			Audio: aiuc.Audio{Mime: req.Audio.Mime, Data: req.Audio.Data},
+		})
+		if sttErr != nil {
+			return v1.RespondWithError(w, r, sttErr)
+		}
+		transcript = strings.TrimSpace(stt.Text)
+		if transcript == "" {
+			// Чимээгүй / яриа таниагүй — Gemini-г дахин зовоохгүйгээр буцаана.
+			// Клиент нь хоосон хуулбарыг хараад өөрийн хэл дээрх сануулга
+			// харуулна (сервер талд хэлний мессеж давхардуулах шаардлагагүй).
+			return v1.NewSuccessResponse(w, r, http.StatusOK, "no speech detected",
+				responses.AIChatResponse{Degraded: true})
+		}
+		prompt = transcript
 	}
 
 	// Anonymous=true нь system prompt дээр зочны хоригийг нэмнэ; usecase нь
 	// нийтэд аюулгүй tool багцтайгаар холбогдсон (server.go).
 	result, err := h.usecase.Run(ctx, aiuc.RunRequest{
-		Prompt:    req.Message,
-		Audio:     audio,
+		Prompt:    prompt,
 		History:   history,
 		Lang:      req.Lang,
 		Anonymous: true,
@@ -74,7 +93,9 @@ func (h Handler) PublicChat(w http.ResponseWriter, r *http.Request) error {
 		return v1.RespondWithError(w, r, err)
 	}
 
-	return v1.NewSuccessResponse(w, r, http.StatusOK, "ai reply generated", responses.FromAIRunResult(result))
+	out := responses.FromAIRunResult(result)
+	out.Transcript = transcript
+	return v1.NewSuccessResponse(w, r, http.StatusOK, "ai reply generated", out)
 }
 
 // Chat godoc

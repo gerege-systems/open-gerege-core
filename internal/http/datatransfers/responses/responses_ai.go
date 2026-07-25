@@ -23,6 +23,10 @@ type AIChatResponse struct {
 	Reply    string       `json:"reply"`
 	Steps    []AIChatStep `json:"steps,omitempty"`
 	Degraded bool         `json:"degraded,omitempty"`
+	// Transcript нь дуут мессежийн текст хуулбар (зөвхөн audio илгээсэн үед).
+	// Frontend үүнийг хэрэглэгчийн бөмбөлөгт харуулна — «Дуут мессеж» гэсэн
+	// орлуулагчаас хамаагүй ойлгомжтой бөгөөд юу сонсогдсоныг ил болгоно.
+	Transcript string `json:"transcript,omitempty"`
 }
 
 // FromAIRunResult нь usecase-ийн үр дүнг HTTP DTO руу буулгана.

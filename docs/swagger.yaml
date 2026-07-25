@@ -1048,6 +1048,12 @@ definitions:
         items:
           $ref: '#/definitions/template_internal_http_datatransfers_responses.AIChatStep'
         type: array
+      transcript:
+        description: |-
+          Transcript нь дуут мессежийн текст хуулбар (зөвхөн audio илгээсэн үед).
+          Frontend үүнийг хэрэглэгчийн бөмбөлөгт харуулна — «Дуут мессеж» гэсэн
+          орлуулагчаас хамаагүй ойлгомжтой бөгөөд юу сонсогдсоныг ил болгоно.
+        type: string
     type: object
   template_internal_http_datatransfers_responses.AIChatStep:
     properties:
@@ -3881,11 +3887,13 @@ paths:
     post:
       consumes:
       - application/json
-      description: Нүүр хуудасны чат виджетэд зориулсан НЭВТРЭЛТГҮЙ чат. Текст ба/эсвэл
+      description: Нүүр хуудасны чат виджетэд зориулсан НЭВТРЭЛТГҮЙ чат. Текст эсвэл
         богино дуут мессеж (push-to-talk, ~250 KB base64 ≈ 15 сек), мессеж 1000 тэмдэгт,
-        түүх 6 ээлж. Туслах нь платформын мэдлэгийн санд тулгуурлан хариулах бөгөөд
-        хэрэглэгчийн бүртгэлийн өгөгдөлд ХАНДАХГҮЙ (тусдаа tool багц + нэмэлт guardrail).
-        IP тус бүрт минутанд ~6 хүсэлт.
+        түүх 6 ээлж. Дуут мессежийг эхлээд STT-ээр текст болгож, хариунд transcript
+        талбараар буцаана; яриа таниагүй бол degraded=true, хоосон reply. Туслах нь
+        платформын мэдлэгийн санд тулгуурлан хариулах бөгөөд хэрэглэгчийн бүртгэлийн
+        өгөгдөлд ХАНДАХГҮЙ (тусдаа tool багц + нэмэлт guardrail). IP тус бүрт минутанд
+        ~6 хүсэлт.
       parameters:
       - description: Chat message + optional short history
         in: body
