@@ -11,7 +11,9 @@ import (
 	"strings"
 
 	"template/internal/apperror"
+	"template/internal/constants"
 	"template/pkg/gemini"
+	"template/pkg/logger"
 )
 
 // speechError нь Gemini-ийн алдааг ангилна: хугацаа хэтэрсэн / холболт тасарсан
@@ -53,12 +55,19 @@ func (uc *usecase) Transcribe(ctx context.Context, req TranscribeRequest) (Trans
 	return TranscribeResult{Text: resp.Text()}, nil
 }
 
+// speakAttempts — TTS model нь ХААЯА амжилттай (200) хариу буцаагаад дотор нь
+// аудио хийхгүй байдаг. Хэмжилтээр ижил текст нэг удаа хоосон, дараагийн
+// оролдлогод бүтэн ирдэг тул энэ нь агуулгын биш, түр зуурын алдаа —
+// хэрэглэгчид алдаа өгөхийн өмнө хэдэн удаа дахин оролдоно. Нэг дуудалт
+// 3-5 секунд тул AIRequestTimeout (50с)-д гурав багтана.
+const speakAttempts = 3
+
 func (uc *usecase) Speak(ctx context.Context, req SpeakRequest) (SpeakResult, error) {
 	voice := req.Voice
 	if voice == "" {
 		voice = uc.cfg.Voice
 	}
-	resp, err := uc.ttsClient.GenerateContent(ctx, gemini.Request{
+	geminiReq := gemini.Request{
 		Contents: []gemini.Content{{Role: "user", Parts: []gemini.Part{{Text: req.Text}}}},
 		GenerationConfig: &gemini.GenerationConfig{
 			ResponseModalities: []string{"AUDIO"},
@@ -68,15 +77,25 @@ func (uc *usecase) Speak(ctx context.Context, req SpeakRequest) (SpeakResult, er
 				},
 			},
 		},
-	})
-	if err != nil {
-		return SpeakResult{}, speechError("ai speak", err)
 	}
-	blob := resp.InlineAudio()
-	if blob == nil {
-		return SpeakResult{}, apperror.InternalCause(fmt.Errorf("ai speak: no audio in response"))
+
+	for attempt := 1; attempt <= speakAttempts; attempt++ {
+		resp, err := uc.ttsClient.GenerateContent(ctx, geminiReq)
+		if err != nil {
+			return SpeakResult{}, speechError("ai speak", err)
+		}
+		if blob := resp.InlineAudio(); blob != nil {
+			return toWAV(*blob)
+		}
+		logger.WarnWithContext(ctx, "ai: tts returned no audio, retrying", logger.Fields{
+			constants.LoggerCategory: constants.LoggerCategoryAI,
+			"attempt":                attempt,
+			"attempts":               speakAttempts,
+		})
 	}
-	return toWAV(*blob)
+	// Бүх оролдлого хоосон — түр зуурын саатал (503), дотоод алдаа биш.
+	return SpeakResult{}, apperror.UnavailableCause(
+		fmt.Errorf("ai speak: no audio in response after %d attempts", speakAttempts))
 }
 
 // toWAV нь TTS-ийн түүхий PCM гаралтыг browser тоглуулж чадах WAV болгоно;

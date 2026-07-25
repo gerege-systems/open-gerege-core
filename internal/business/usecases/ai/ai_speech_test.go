@@ -109,12 +109,34 @@ func TestSpeakWrapsPCMAsWAV(t *testing.T) {
 	assert.Equal(t, defaultVoice, req.GenerationConfig.SpeechConfig.VoiceConfig.PrebuiltVoiceConfig.VoiceName)
 }
 
+// TTS model заримдаа 200 буцаагаад аудиогүй хариу өгдөг (бодит хэмжилт).
+// Бүх оролдлого хоосон бол 503 — дахин оролдоход эдгэрдэг түр саатал.
 func TestSpeakNoAudioInResponse(t *testing.T) {
-	tts := &fakeGenerator{responses: []gemini.Response{textResponse("за")}}
+	tts := &fakeGenerator{responses: []gemini.Response{
+		textResponse("за"), textResponse("за"), textResponse("за"),
+	}}
 	uc := NewUsecase(&fakeGenerator{}, tts, nil, nil, Config{})
 
 	_, err := uc.Speak(context.Background(), SpeakRequest{Text: "x"})
 	require.Error(t, err)
+	assert.True(t, apperror.Is(err, apperror.ErrTypeUnavailable))
+	assert.Len(t, tts.requests, speakAttempts, "хоосон хариу бүрд дахин оролдоно")
+}
+
+// Эхний хариу хоосон байсан ч дараагийнх нь аудиотай бол хэрэглэгч алдаа
+// хардаггүй — энэ л retry-ийн гол зорилго.
+func TestSpeakRetriesUntilAudio(t *testing.T) {
+	pcm := []byte{0x01, 0x02}
+	tts := &fakeGenerator{responses: []gemini.Response{
+		textResponse("за"),
+		audioResponse("audio/L16;codec=pcm;rate=24000", pcm),
+	}}
+	uc := NewUsecase(&fakeGenerator{}, tts, nil, nil, Config{})
+
+	res, err := uc.Speak(context.Background(), SpeakRequest{Text: "x"})
+	require.NoError(t, err)
+	assert.Equal(t, "audio/wav", res.Mime)
+	assert.Len(t, tts.requests, 2)
 }
 
 func TestTranslateText(t *testing.T) {

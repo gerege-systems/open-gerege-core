@@ -189,7 +189,7 @@ tool-ууд тогтоож өгдөг.
 |--------|----------|------------------|
 | Дуут чат мессеж | `POST /ai/chat` + `audio` | audio нь user ээлжид inline орж явна — чат model нь multimodal |
 | Яриа→текст | `POST /ai/stt` | "яг сонссоноо буцаа" гэсэн чанд заавартай нэг удаагийн Gemini дуудлага; хоосон текст = яриа илрээгүй |
-| Текст→яриа | `POST /ai/tts` | тусдаа TTS model (`GEMINI_TTS_MODEL`), `responseModalities: ["AUDIO"]`; түүхий PCM (L16/24kHz)-ийг WAV толгойгоор ороодог (`pkg/gemini/wav.go`) тул browser шууд тоглуулна |
+| Текст→яриа | `POST /ai/tts` | тусдаа TTS model (`GEMINI_TTS_MODEL`), `responseModalities: ["AUDIO"]`; түүхий PCM (L16/24kHz)-ийг WAV толгойгоор ороодог (`pkg/gemini/wav.go`) тул browser шууд тоглуулна. Model нь хааяа `200` буцаагаад дотор нь **аудиогүй** байдаг (хэмжсэн — ижил текст дараагийн дуудалтад бүтэн ирдэг) тул `Speak` 3 хүртэл удаа дахин оролдоод сая `503` буцаана (500 биш — түр зуурын саатал) |
 | Шууд орчуулга | `POST /ai/translate` | текст → орчуулга; audio → **хоёр алхамт** STT→орчуулга (найдвартай, structured output задлах шаардлагагүй); `speak: true` бол орчуулгын TTS хувилбар нэмэгдэнэ. TTS унавал текст хэвээр буцна |
 
 **Live орчуулгын UX** (frontend `LiveTranslateView`): микрофон ~7 секундын

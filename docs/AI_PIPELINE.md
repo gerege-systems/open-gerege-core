@@ -189,7 +189,7 @@ not from the phrasing.
 |------------|----------|--------------|
 | Voice chat message | `POST /ai/chat` with `audio` | audio goes straight into the user turn as inline data — the chat model is multimodal |
 | Speech-to-text | `POST /ai/stt` | one-shot Gemini call with a strict "transcribe verbatim" instruction; empty text = no speech |
-| Text-to-speech | `POST /ai/tts` | separate TTS model (`GEMINI_TTS_MODEL`) with `responseModalities: ["AUDIO"]`; the raw PCM (L16/24kHz) is wrapped into a WAV header (`pkg/gemini/wav.go`) so browsers can play it directly |
+| Text-to-speech | `POST /ai/tts` | separate TTS model (`GEMINI_TTS_MODEL`) with `responseModalities: ["AUDIO"]`; the raw PCM (L16/24kHz) is wrapped into a WAV header (`pkg/gemini/wav.go`) so browsers can play it directly. The model occasionally answers `200` with **no audio part** — measured, and the same text succeeds on the next call — so `Speak` retries up to 3× and only then returns `503` (a transient upstream failure, not a 500) |
 | Live translation | `POST /ai/translate` | text → translate; audio → **two-step** STT→translate (reliable, no structured-output parsing); `speak: true` adds a TTS rendering of the translation. TTS failure degrades silently (text still returned) |
 
 **Live translation UX** (frontend `LiveTranslateView`): the mic records ~7s

@@ -165,7 +165,7 @@ aiTools := append(ai.DefaultTools(), ai.KnowledgeSearchTool(aiRepo), myTool)
 |------------|----------|--------------|
 | 语音聊天消息 | 带 `audio` 的 `POST /ai/chat` | 音频作为内联数据直接进入用户轮次 — 聊天模型本身是多模态的 |
 | 语音转文字 | `POST /ai/stt` | 一次性调用 Gemini，附带严格的“逐字转写”指令；文本为空 = 没有语音 |
-| 文字转语音 | `POST /ai/tts` | 使用单独的 TTS 模型（`GEMINI_TTS_MODEL`），`responseModalities: ["AUDIO"]`；原始 PCM（L16/24kHz）会被包上 WAV 头（`pkg/gemini/wav.go`），以便浏览器直接播放 |
+| 文字转语音 | `POST /ai/tts` | 使用单独的 TTS 模型（`GEMINI_TTS_MODEL`），`responseModalities: ["AUDIO"]`；原始 PCM（L16/24kHz）会被包上 WAV 头（`pkg/gemini/wav.go`），以便浏览器直接播放。该模型偶尔会返回 `200` 但**不带音频**（实测如此，同一段文本下次调用即成功），因此 `Speak` 最多重试 3 次，之后才返回 `503`（上游的临时故障，而非 500）|
 | 实时翻译 | `POST /ai/translate` | 文本 → 直接翻译；音频 → **两步**：STT→翻译（可靠，无需解析结构化输出）；`speak: true` 会附加译文的 TTS 音频。TTS 失败时静默降级（文本照常返回） |
 
 **实时翻译的交互设计**（前端 `LiveTranslateView`）：麦克风以约 7 秒为一段录制 —
