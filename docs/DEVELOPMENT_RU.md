@@ -53,6 +53,7 @@ make pre-push           # Воспроизвести CI локально: lint +
 ```bash
 make test               # Юнит-тесты (только моки — быстро, без Docker)
 make test-integration   # Интеграционные тесты (нужен Docker: Postgres + Redis)
+                        # CI тоже их запускает (отдельный job), деплой их ждёт
 make test-cover         # Тесты с отчётом о покрытии
 ```
 

@@ -12,6 +12,7 @@ import (
 
 	"github.com/testcontainers/testcontainers-go"
 	tcredis "github.com/testcontainers/testcontainers-go/modules/redis"
+
 	"template/internal/datasources/caches"
 )
 

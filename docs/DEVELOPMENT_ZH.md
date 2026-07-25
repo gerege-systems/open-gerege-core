@@ -52,6 +52,7 @@ make pre-push           # 在本地复现 CI：lint + 测试 + swag 漂移检查
 ```bash
 make test               # 单元测试（仅 mock — 快速，无需 Docker）
 make test-integration   # 集成测试（需要 Docker：Postgres + Redis）
+                        # CI 也会实际运行（独立 job），部署会等待它们
 make test-cover         # 带覆盖率报告的测试
 ```
 

@@ -44,7 +44,7 @@ const (
 // RLS-тэй `users` хүснэгтээс уншихад "user not found" болж token гаргах бүрд 500
 // буцдаг байв. Stub нь DB-д огт хүрдэггүй тул тестүүд ногоон хэвээр байсан.
 // setup нь RLS хүчинтэй (non-superuser) pool дээр service-ийг угсарна.
-func setup(t *testing.T) (*oidcuc.Service, string) {
+func setup(t *testing.T) (svc *oidcuc.Service, subject string) {
 	t.Helper()
 	admin := testenv.StartPostgres(t)
 	app := testenv.AppUserPool(t, admin)
@@ -61,7 +61,7 @@ func setup(t *testing.T) (*oidcuc.Service, string) {
 		require.NoError(t, err, "grant on %s", tbl)
 	}
 
-	subject := seedUser(t, admin)
+	subject = seedUser(t, admin)
 	seedClient(t, app)
 
 	flow := oauthpg.NewFlowRepository(app)
@@ -72,7 +72,7 @@ func setup(t *testing.T) (*oidcuc.Service, string) {
 
 	users := usersuc.NewUsecase(userspg.NewUserRepository(app), nil, usersuc.Config{})
 
-	svc := oidcuc.NewService(clients, flow, testIssuer).
+	svc = oidcuc.NewService(clients, flow, testIssuer).
 		WithTokenIssuing(keys, users)
 	return svc, subject
 }

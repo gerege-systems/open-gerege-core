@@ -129,7 +129,7 @@ func (s *fakeEIDServer) handler() http.Handler {
 
 // buildEIDStack нь бодит eid.Client-ийг fake сервер рүү холбож, auth/users
 // usecase-ийг жинхэнэ Postgres/Redis/JWT дээр угсарна.
-func buildEIDStack(t *testing.T, baseURL string) (auth.Usecase, users.Usecase) {
+func buildEIDStack(t *testing.T, baseURL string) (authUC auth.Usecase, usersUC users.Usecase) {
 	t.Helper()
 	db := testenv.StartPostgres(t)
 	redis := testenv.StartRedis(t)
@@ -141,9 +141,9 @@ func buildEIDStack(t *testing.T, baseURL string) (auth.Usecase, users.Usecase) {
 	require.NoError(t, err)
 	jwtSvc := jwt.NewJWTServiceWithRefresh("integration-test-secret-thirty-two-chars!", "eid-e2e", 1, 7)
 
-	usersUC := users.NewUsecase(userspostgres.NewUserRepository(db), ristretto, users.Config{BcryptCost: 4})
+	usersUC = users.NewUsecase(userspostgres.NewUserRepository(db), ristretto, users.Config{BcryptCost: 4})
 	eidClient := eid.NewClient(baseURL, "c4f371c3-20bd-462e-8d97-5bc4a20fde08", "template-web", "rp_sk_test", "ADVANCED")
-	authUC := auth.NewUsecase(usersUC, jwtSvc, &testenv.FakeVerifier{}, eidClient, nil, google.NewClient("", ""), redis, auth.Config{
+	authUC = auth.NewUsecase(usersUC, jwtSvc, &testenv.FakeVerifier{}, eidClient, nil, google.NewClient("", ""), redis, auth.Config{
 		OTPMaxAttempts: 5, OTPTTL: 5 * time.Minute, PasswordResetTTL: 30 * time.Minute,
 		BcryptCost: 4, LoginMaxAttempts: 10, LoginLockoutTTL: 15 * time.Minute,
 		ForgotMaxAttempts: 3, ForgotLockoutTTL: 15 * time.Minute,

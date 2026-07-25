@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/require"
+
 	"template/internal/business/usecases/auth"
 	"template/internal/business/usecases/users"
 	"template/internal/config"

@@ -45,9 +45,10 @@ fmt: ## Format all Go files
 pre-push: ci-lint ci-test ci-swag-check ci-build ## Mirror CI checks locally before pushing (lint + test + swag drift + build)
 	@echo "All CI checks passed."
 
-ci-lint: ## Run golangci-lint matching .github/workflows/ci.yml (auto-installs if missing)
+ci-lint: ## Run golangci-lint (unit + integration tags — tagged files rot silently otherwise)
 	@command -v golangci-lint >/dev/null 2>&1 || go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@latest
 	golangci-lint run ./...
+	golangci-lint run --build-tags=integration ./...
 
 ci-test: ## Run unit tests with race + coverage matching CI
 	go test -race -coverprofile=coverage.out ./...

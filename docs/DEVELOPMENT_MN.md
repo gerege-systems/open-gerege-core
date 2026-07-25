@@ -51,7 +51,8 @@ make pre-push           # Mirror CI locally: lint + test + swag drift + build
 
 ```bash
 make test               # Unit tests (mocks only — fast, no Docker)
-make test-integration   # Integration tests (requires Docker: Postgres + Redis)
+make test-integration   # Integration тест (Docker шаардна: Postgres + Redis)
+                        # CI ч эдгээрийг ажиллуулна (тусдаа job) — deploy хүлээнэ
 make test-cover         # Tests with coverage report
 ```
 

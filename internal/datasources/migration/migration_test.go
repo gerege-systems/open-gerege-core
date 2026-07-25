@@ -13,6 +13,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
 	"template/internal/datasources/migration"
 	"template/internal/test/testenv"
 	"template/pkg/logger"
@@ -28,7 +29,7 @@ func writeMigration(t *testing.T, dir, num, body, downBody string) {
 	require.NoError(t, os.WriteFile(filepath.Join(dir, num+"_test.down.sql"), []byte(downBody), 0o600))
 }
 
-func newRunner(t *testing.T) (*migration.Runner, string) {
+func newRunner(t *testing.T) (runner *migration.Runner, dsn string) {
 	t.Helper()
 	pool := testenv.StartPostgresEmpty(t)
 	dir := t.TempDir()

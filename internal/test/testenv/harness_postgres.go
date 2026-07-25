@@ -194,7 +194,7 @@ func migrationsDir() string {
 			// go.mod олохгүйгээр файлын системийн үндэст хүрсэн —
 			// буруу директорыг чимээгүй сонгохын оронд доош чанга
 			// бүтэлгүйтэх замыг буцаа.
-			return filepath.Join("migrations")
+			return "migrations"
 		}
 		dir = parent
 	}
