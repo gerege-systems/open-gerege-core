@@ -106,9 +106,11 @@ type Config struct {
 	GeminiVoice    string `mapstructure:"GEMINI_VOICE"`
 	GeminiAPIBase  string `mapstructure:"GEMINI_API_BASE"`
 	// GeminiEmbedModel нь мэдлэгийн сангийн вектор (embedding) үүсгэх model.
-	// Хоосон бол text-embedding-004 — түүний гаралт 768 хэмжээст бөгөөд
-	// ai_knowledge.embedding баганы vector(768)-той таарна. Өөр хэмжээтэй
-	// model руу шилжихэд migration-аар баганаа солино.
+	// ХООСОН орхих нь зөв: client нь боломжтой model-ыг өөрөө сонгоно
+	// (gemini-embedding-001 → text-embedding-004 → embedding-001), учир нь
+	// нэр бүр бүх API түлхүүрт байдаггүй (404). Гаралтын хэмжээг client
+	// 768 болгож шууд захиалдаг тул ai_knowledge.embedding (vector(768))-той
+	// үргэлж таарна.
 	GeminiEmbedModel string `mapstructure:"GEMINI_EMBED_MODEL"`
 	// AIScopePrompt нь AI туслахын хамрах хүрээний env fallback — DB-ийн
 	// 'scope' prompt давхарга хоосон/уншигдахгүй үед хэрэглэгдэнэ.
@@ -439,9 +441,6 @@ func applyDefaults() {
 	}
 	if AppConfig.GeminiTTSModel == "" {
 		AppConfig.GeminiTTSModel = "gemini-2.5-flash-preview-tts"
-	}
-	if AppConfig.GeminiEmbedModel == "" {
-		AppConfig.GeminiEmbedModel = "text-embedding-004"
 	}
 	// eID RP-ийн өгөгдмөл утгууд. IdP-ийн нийтийн endpoint болон бүртгэгдсэн
 	// callback URL тул орчин болгонд найдвартай ажиллана; тохиргоогоор дарж

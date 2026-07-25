@@ -158,3 +158,70 @@ func TestVectorLiteral(t *testing.T) {
 	// pgvector-ийн литерал хэлбэрт хаалт болон таслал л байна (зай биш).
 	assert.False(t, strings.Contains(VectorLiteral([]float32{1, 2}), " "))
 }
+
+// Тохируулсан / өгөгдмөл model нь тухайн түлхүүрт байхгүй (404) бол дараагийн
+// нэр рүү шилжинэ; ажилласан нэрийг тогтоож аваад дараагийн дуудалтад шууд
+// хэрэглэнэ (дахин 404 идэхгүй).
+func TestEmbed_FallsBackWhenModelMissing(t *testing.T) {
+	var paths []string
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		paths = append(paths, r.URL.Path)
+		if strings.Contains(r.URL.Path, embedModelFallbacks[0]) {
+			w.WriteHeader(http.StatusNotFound)
+			_, _ = w.Write([]byte(`{"error":{"code":404,"message":"not found for API version v1beta"}}`))
+			return
+		}
+		require.NoError(t, json.NewEncoder(w).Encode(vectorsOf(1, 0.3)))
+	}))
+	defer srv.Close()
+
+	c := NewClient(srv.URL, "key", "")
+	c.sleep = func(context.Context, time.Duration) error { return nil }
+
+	got, err := c.Embed(context.Background(), []string{"x"}, TaskQuery)
+	require.NoError(t, err)
+	require.Len(t, got, 1)
+	require.Len(t, paths, 2, "эхнийх 404 → хоёр дахийг оролдоно")
+	assert.Contains(t, paths[0], embedModelFallbacks[0])
+	assert.Contains(t, paths[1], embedModelFallbacks[1])
+
+	// Хоёр дахь дуудалт нь ажилласан model руу шууд очно.
+	_, err = c.Embed(context.Background(), []string{"y"}, TaskQuery)
+	require.NoError(t, err)
+	require.Len(t, paths, 3)
+	assert.Contains(t, paths[2], embedModelFallbacks[1])
+}
+
+// Бүх нэр 404 бол сүүлчийн алдааг буцаана (чимээгүй амжилт биш).
+func TestEmbed_AllModelsMissing(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.WriteHeader(http.StatusNotFound)
+		_, _ = w.Write([]byte(`{"error":{"code":404}}`))
+	}))
+	defer srv.Close()
+
+	c := NewClient(srv.URL, "key", "")
+	c.sleep = func(context.Context, time.Duration) error { return nil }
+
+	_, err := c.Embed(context.Background(), []string{"x"}, TaskQuery)
+	require.Error(t, err)
+	assert.ErrorIs(t, err, errEmbedModelUnavailable)
+}
+
+// Хүсэлт бүрд DB-ийн багана (vector(768))-тай таарах хэмжээг шууд заана —
+// gemini-embedding-001 нь өгөгдмөлөөр 3072 хэмжээст гардаг.
+func TestEmbed_RequestsFixedDimension(t *testing.T) {
+	var body batchEmbedRequest
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		require.NoError(t, json.NewDecoder(r.Body).Decode(&body))
+		require.NoError(t, json.NewEncoder(w).Encode(vectorsOf(1, 0.1)))
+	}))
+	defer srv.Close()
+
+	c := NewClient(srv.URL, "key", "")
+	_, err := c.Embed(context.Background(), []string{"x"}, TaskDocument)
+
+	require.NoError(t, err)
+	require.Len(t, body.Requests, 1)
+	assert.Equal(t, EmbedDim, body.Requests[0].OutputDimensionality)
+}

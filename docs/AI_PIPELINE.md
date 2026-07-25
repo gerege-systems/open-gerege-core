@@ -134,8 +134,12 @@ stable `slug` (the seed upserts on it), `source`, `lang` and a `vector(768)`
   then either restart or call `POST /api/v1/admin/ai/knowledge/reindex`
   (`settings.manage`, also a button under Admin → Settings). Changing `content`
   clears the stored embedding so the backfill recomputes it.
-- **Model.** `GEMINI_EMBED_MODEL` (default `text-embedding-004`, 768 dims). A
-  model with a different dimension needs a migration to change the column.
+- **Model.** Leave `GEMINI_EMBED_MODEL` empty and the client picks a working
+  model itself — `gemini-embedding-001` → `text-embedding-004` → `embedding-001`
+  — because a given name may not exist for your API key/version (404). The first
+  one that answers is cached for the process. Every request asks for
+  `outputDimensionality: 768`, so the vector always fits `ai_knowledge.embedding`
+  (`vector(768)`); changing that column's size needs a migration.
 
 ## Answer variety
 

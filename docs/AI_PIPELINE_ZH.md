@@ -119,8 +119,11 @@ aiTools := append(ai.DefaultTools(), ai.KnowledgeSearchTool(aiRepo), myTool)
 - **修改语料。** 在迁移中新增或修改条目（保留 `slug`），然后重启，或调用
   `POST /api/v1/admin/ai/knowledge/reindex`（需 `settings.manage`；
   管理 → 设置 中也有按钮）。修改 `content` 会清空已存向量，由回填重新计算。
-- **模型。** `GEMINI_EMBED_MODEL`（默认 `text-embedding-004`，768 维）。
-  换用维度不同的模型需要迁移来修改该列。
+- **模型。** 把 `GEMINI_EMBED_MODEL` 留空即可，客户端会自行选择可用模型 —
+  `gemini-embedding-001` → `text-embedding-004` → `embedding-001` —
+  因为某个名称在你的 API key/版本下可能并不存在（404）。第一个成功响应的模型会在进程内缓存。
+  每次请求都指定 `outputDimensionality: 768`，因此向量始终匹配
+  `ai_knowledge.embedding`（`vector(768)`）；修改该列尺寸需要迁移。
 
 ## 回复的多样性
 

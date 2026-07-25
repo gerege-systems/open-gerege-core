@@ -136,8 +136,12 @@ pgvector + HNSW индекс).
   `POST /api/v1/admin/ai/knowledge/reindex` дуудна (`settings.manage`; Админ →
   Тохиргоо дотор товч бий). `content` өөрчлөгдвөл хадгалсан embedding
   цэвэрлэгдэж, backfill дахин тооцоолно.
-- **Model.** `GEMINI_EMBED_MODEL` (өгөгдмөл `text-embedding-004`, 768 хэмжээст).
-  Өөр хэмжээтэй model хэрэглэвэл багана солих migration шаардана.
+- **Model.** `GEMINI_EMBED_MODEL`-ыг хоосон орхиход client өөрөө боломжтойг нь
+  сонгоно — `gemini-embedding-001` → `text-embedding-004` → `embedding-001` —
+  учир нь нэр бүр бүх API түлхүүр/хувилбарт байдаггүй (404). Эхэлж хариулсныг
+  процессын турш тогтоож авна. Хүсэлт бүрд `outputDimensionality: 768` гэж
+  захиалдаг тул вектор нь `ai_knowledge.embedding` (`vector(768)`)-д үргэлж
+  таарна; баганы хэмжээг өөрчлөх бол migration хэрэгтэй.
 
 ## Хариултын олон янз байдал
 

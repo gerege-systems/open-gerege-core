@@ -20,6 +20,7 @@ import (
 	"io"
 	"net/http"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -204,9 +205,14 @@ type Client struct {
 	apiKey string
 	model  string
 	// embedModel нь мэдлэгийн сангийн вектор (embedding) үүсгэх model —
-	// chat model-оос тусдаа (embed.go). Хоосон бол text-embedding-004.
+	// chat model-оос тусдаа (embed.go). Хоосон бол fallback жагсаалтын эхнийх.
 	embedModel string
-	http       *http.Client
+	// embedResolved нь ажиллаж байгаа нь батлагдсан embedding model
+	// (embedMu-гээр хамгаалагдана) — 404 дээр fallback хийсний дараа
+	// дараагийн дуудалтууд шууд түүн рүү очно.
+	embedMu       sync.Mutex
+	embedResolved string
+	http          *http.Client
 	// sleep-ийг тестэд override хийнэ (бодит backoff хүлээхгүйн тулд).
 	sleep func(ctx context.Context, d time.Duration) error
 }

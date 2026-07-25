@@ -19,8 +19,23 @@ import (
 // migration-аар баганаа солих шаардлагатай.
 const EmbedDim = 768
 
-// defaultEmbedModel нь embedding-ийн өгөгдмөл model.
-const defaultEmbedModel = "text-embedding-004"
+// embedModelFallbacks нь оролдох embedding model-ууд (эрэмбээр). Google нь
+// хуучин model-уудыг тухайн API хувилбар/түлхүүрийн хувьд хаадаг тул нэг
+// нэрэнд бүү найд: 404 (model олдсонгүй / embedContent дэмжихгүй) гарвал
+// дараагийнх руу шилжинэ. Ажилласан нэрийг тогтоож аваад дараагийн
+// дуудалтуудад шууд хэрэглэнэ.
+var embedModelFallbacks = []string{
+	"gemini-embedding-001",
+	"text-embedding-004",
+	"embedding-001",
+}
+
+// defaultEmbedModel нь эхний оролдлогын model (тохиргоо хоосон үед).
+const defaultEmbedModel = "gemini-embedding-001"
+
+// errEmbedModelUnavailable нь тухайн model энэ түлхүүр/хувилбарт байхгүйг
+// заана — дараагийн нэр рүү шилжих дохио (хэрэглэгчид харагдахгүй).
+var errEmbedModelUnavailable = errors.New("gemini: embedding model unavailable")
 
 // Embedding-ийн task type-ууд. Retrieval-д баримт болон асуултыг өөр өөр
 // төрлөөр embed хийхэд таарц мэдэгдэхүйц сайжирдаг (Google-ийн зөвлөмж).
@@ -49,9 +64,10 @@ type embedContent struct {
 }
 
 type embedRequest struct {
-	Model    string       `json:"model"`
-	Content  embedContent `json:"content"`
-	TaskType string       `json:"taskType,omitempty"`
+	Model                string       `json:"model"`
+	Content              embedContent `json:"content"`
+	TaskType             string       `json:"taskType,omitempty"`
+	OutputDimensionality int          `json:"outputDimensionality,omitempty"`
 }
 
 type batchEmbedRequest struct {
@@ -79,6 +95,54 @@ func (c *Client) Embed(ctx context.Context, texts []string, taskType string) ([]
 	}
 
 	var lastErr error
+	for _, model := range c.embedCandidates() {
+		out, err := c.embedWithModel(ctx, model, texts, taskType)
+		if err == nil {
+			c.rememberEmbedModel(model)
+			return out, nil
+		}
+		lastErr = err
+		if !errors.Is(err, errEmbedModelUnavailable) {
+			return nil, err
+		}
+		// 404 — энэ нэр тухайн түлхүүрт байхгүй; дараагийнхыг оролдоно.
+	}
+	return nil, lastErr
+}
+
+// embedCandidates нь оролдох model-уудын жагсаалтыг эрэмбэлж буцаана:
+// нэгэнт ажилласан нь тогтоогдсон бол зөвхөн түүнийг, эс бөгөөс
+// тохируулсан нэр + fallback-ууд (давхардалгүй).
+func (c *Client) embedCandidates() []string {
+	c.embedMu.Lock()
+	resolved := c.embedResolved
+	configured := c.embedModel
+	c.embedMu.Unlock()
+
+	if resolved != "" {
+		return []string{resolved}
+	}
+	out := make([]string, 0, len(embedModelFallbacks)+1)
+	seen := map[string]bool{}
+	for _, m := range append([]string{configured}, embedModelFallbacks...) {
+		if m == "" || seen[m] {
+			continue
+		}
+		seen[m] = true
+		out = append(out, m)
+	}
+	return out
+}
+
+func (c *Client) rememberEmbedModel(model string) {
+	c.embedMu.Lock()
+	c.embedResolved = model
+	c.embedMu.Unlock()
+}
+
+// embedWithModel нь нэг model дээр retry/backoff-той оролдоно.
+func (c *Client) embedWithModel(ctx context.Context, model string, texts []string, taskType string) ([][]float32, error) {
+	var lastErr error
 	for attempt := 0; attempt < maxAttempts; attempt++ {
 		if attempt > 0 {
 			backoff := initialBackoff << (attempt - 1)
@@ -87,7 +151,7 @@ func (c *Client) Embed(ctx context.Context, texts []string, taskType string) ([]
 			}
 		}
 
-		out, retryable, err := c.embedOnce(ctx, texts, taskType)
+		out, retryable, err := c.embedOnce(ctx, model, texts, taskType)
 		if err == nil {
 			return out, nil
 		}
@@ -99,8 +163,7 @@ func (c *Client) Embed(ctx context.Context, texts []string, taskType string) ([]
 	return nil, fmt.Errorf("gemini: %d attempts failed: %w", maxAttempts, lastErr)
 }
 
-func (c *Client) embedOnce(ctx context.Context, texts []string, taskType string) (vectors [][]float32, retryable bool, err error) {
-	model := c.embedModel
+func (c *Client) embedOnce(ctx context.Context, model string, texts []string, taskType string) (vectors [][]float32, retryable bool, err error) {
 	if model == "" {
 		model = defaultEmbedModel
 	}
@@ -112,6 +175,9 @@ func (c *Client) embedOnce(ctx context.Context, texts []string, taskType string)
 			Model:    qualified,
 			Content:  embedContent{Parts: []Part{{Text: t}}},
 			TaskType: taskType,
+			// Model-ууд өөр өөр хэмжээтэй (gemini-embedding-001 нь өгөгдмөл
+			// 3072) тул DB-ийн vector(768)-д таарахаар шууд заана.
+			OutputDimensionality: EmbedDim,
 		})
 	}
 
@@ -148,6 +214,10 @@ func (c *Client) embedOnce(ctx context.Context, texts []string, taskType string)
 	switch {
 	case httpResp.StatusCode == http.StatusTooManyRequests || httpResp.StatusCode >= 500:
 		return nil, true, fmt.Errorf("gemini: embed status %d: %s", httpResp.StatusCode, snippet(raw))
+	case httpResp.StatusCode == http.StatusNotFound:
+		// Тухайн model энэ түлхүүр/API хувилбарт байхгүй — дараагийн нэрийг
+		// оролдоно (дахин оролдоод нэмэргүй).
+		return nil, false, fmt.Errorf("%w: %s: %s", errEmbedModelUnavailable, model, snippet(raw))
 	case httpResp.StatusCode >= 300:
 		return nil, false, fmt.Errorf("gemini: embed status %d: %s", httpResp.StatusCode, snippet(raw))
 	}

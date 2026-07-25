@@ -207,7 +207,7 @@ GEMINI_API_KEY=                  # хоосон = AI идэвхгүй (endpoint 
 GEMINI_MODEL=gemini-2.5-flash    # сонголттой override (чат / STT / орчуулга)
 GEMINI_TTS_MODEL=gemini-2.5-flash-preview-tts  # сонголттой override (TTS)
 GEMINI_VOICE=Kore                # сонголттой prebuilt TTS дуу хоолой
-GEMINI_EMBED_MODEL=text-embedding-004  # мэдлэгийн сангийн вектор model (768 хэмжээст — ai_knowledge.embedding-тэй таарна)
+GEMINI_EMBED_MODEL=              # мэдлэгийн сангийн вектор model; хоосон = автоматаар сонгоно (gemini-embedding-001 → text-embedding-004 → embedding-001), үргэлж 768 хэмжээгээр
 GEMINI_API_BASE=                 # сонголттой override (өгөгдмөл: Google generativelanguage v1beta)
 AI_SCOPE_PROMPT=                 # DB-ийн 'scope' давхарга хоосон үеийн хамрах хүрээний fallback
 
