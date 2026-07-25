@@ -19,6 +19,10 @@ const (
 	ErrTypeForbidden
 	ErrTypeConflict
 	ErrTypeBadRequest
+	// ErrTypeUnavailable нь ТҮР ЗУУРЫН саатал — гадаад үйлчилгээ (Gemini г.м.)
+	// хугацаа хэтэрсэн/боломжгүй. Дахин оролдвол болох магадлалтай тул 503
+	// болж буурдаг: 500 нь «бидний тал эвдэрсэн» гэсэн буруу дохио өгдөг.
+	ErrTypeUnavailable
 )
 
 // DomainError нь business давхаргад дамждаг төрөлжсөн алдаа юм.
@@ -58,6 +62,17 @@ func Forbidden(msg string) *DomainError    { return New(ErrTypeForbidden, msg) }
 func Conflict(msg string) *DomainError     { return New(ErrTypeConflict, msg) }
 func BadRequest(msg string) *DomainError   { return New(ErrTypeBadRequest, msg) }
 func Internal(msg string) *DomainError     { return New(ErrTypeInternal, msg) }
+func Unavailable(msg string) *DomainError  { return New(ErrTypeUnavailable, msg) }
+
+// UnavailableCause нь түр зуурын саатлыг клиентэд аюулгүй мессежээр өгч,
+// доод түвшний шалтгааныг зөвхөн лог руу үлдээнэ (InternalCause-тай ижил).
+func UnavailableCause(cause error) *DomainError {
+	return &DomainError{
+		Type:    ErrTypeUnavailable,
+		Message: "Үйлчилгээ түр боломжгүй байна. Дараа дахин оролдоно уу.",
+		Cause:   cause,
+	}
+}
 
 // Is нь алдааны гинжин дэх DomainError тухайн төрлийнх эсэхийг шалгана.
 // Wrap/InternalCause-аар боосон алдаанд ч ажиллана (errors.As).

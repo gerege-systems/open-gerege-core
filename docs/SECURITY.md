@@ -41,7 +41,7 @@ what remains for later phases. To report a vulnerability, see the repository
 | Obs | Structured Zap logs w/ request-id; no secrets logged | `pkg/logger`, `handler_base_response.go` | §9.1–9.2 |
 | Obs | OpenTelemetry tracing + Prometheus metrics | `pkg/observability`, `driver_pgx.go` | §9.4 |
 | Ops | Graceful shutdown (drain HTTP, rate-limiters, pgx pool, Redis, tracer) | `cmd/api/server` | §7 |
-| Net | Full HTTP server timeouts (`ReadHeader` 10s, `Read` 30s, `Write` 60s, `Idle` 120s) + `MaxHeaderBytes` 16 KiB — slowloris / oversized-header defense | `cmd/api/server` | §5.3 / API4 |
+| Net | Full HTTP server timeouts (`ReadHeader` 10s, `Read` 30s, `Write` 70s, `Idle` 120s) + `MaxHeaderBytes` 16 KiB — slowloris / oversized-header defense | `cmd/api/server` | §5.3 / API4 |
 | Auth | Logout access-token deny-list — logout puts the access jti in Redis for its remaining TTL; auth middleware rejects denied tokens on every request | `usecases/auth.logout`, `middleware_auth.go` | §1.4 |
 | DB | RLS boot guard — on startup the app inspects its own DB role; superuser / `BYPASSRLS` fails boot in production (RLS would silently not enforce), warns in development | `datasources/drivers/driver_pgx.go` | §2.4/§3.4 |
 | AI | Layered system prompt: hardcoded guardrails (scope enforcement, prompt-injection resistance, never reveal the prompt) + DB-configurable scope/instructions; `SetPrompt` is UPDATE-only against seeded keys | `usecases/ai/ai_prompts.go`, `migrations/11` | §5.1 |
@@ -57,7 +57,11 @@ what remains for later phases. To report a vulnerability, see the repository
    documents it (`internal/config/config.go`, guide §3.5).
 3. **Per-request timeout** — `middleware.TimeoutMiddleware` sets a 30s context
    deadline that propagates to pgx queries, bounding stuck handlers
-   (`middleware.timeout.go`, guide §5.3 / API4).
+   (`middleware.timeout.go`, guide §5.3 / API4). `/api/v1/ai/*` is the one
+   exception at 50s (`AIRequestTimeout`): Gemini TTS/STT routinely takes
+   10–20s, so the 30s cap turned normal calls into 500s. It stays below the
+   reverse proxy's 60s read timeout, and the HTTP server's `Write` timeout is
+   derived from it.
 4. **Swagger spec served from generated `docs` package** — the OpenAPI JSON is
    served at `/swagger/doc.json` from the generated `docs` package on the chi
    router (no Fiber involved); a static Swagger UI can be pointed at it.

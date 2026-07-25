@@ -181,8 +181,9 @@ HTTP → Usecase → Repository → Domain
 6. **CORS**（`CORSMiddleware`）— 来源取自 `ALLOWED_ORIGINS`（通配符仅限开发环境）。
 7. **请求体大小限制**（`BodySizeLimitMiddleware`）— 全局上限（各路由另有更严格的限制）。
 8. **访问日志**（`AccessLogMiddleware`）— 结构化的单行访问日志。
-9. **超时**（`TimeoutMiddleware`）— 按请求的截止时间（服务器 `WriteTimeout` 设置得更长，
-   以便它能先触发）。
+9. **超时**（`TimeoutMiddleware`）— 按请求的截止时间：默认 30 秒，`/api/v1/ai/*` 为 50 秒
+   （Gemini 的 TTS/STT 需要 10–20 秒）。服务器 `WriteTimeout` 由其中最长者推导，
+   以便该中间件先触发。
 
 **分组 / 单路由中间件：**
 

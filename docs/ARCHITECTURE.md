@@ -183,7 +183,7 @@ Request ID so panics downstream are caught and the recovery response carries a
 6. **CORS** (`CORSMiddleware`) — origins from `ALLOWED_ORIGINS` (wildcard only in dev).
 7. **Body Size Limit** (`BodySizeLimitMiddleware`) — global ceiling (per-route tighter caps).
 8. **Access Log** (`AccessLogMiddleware`) — structured one-line access log.
-9. **Timeout** (`TimeoutMiddleware`) — per-request deadline (server `WriteTimeout` is set longer so it can fire first).
+9. **Timeout** (`TimeoutMiddleware`) — per-request deadline, 30s by default and 50s on `/api/v1/ai/*` (Gemini TTS/STT take 10–20s); the server `WriteTimeout` is derived from the longest of these so the middleware fires first.
 
 **Per-group / per-route middleware:**
 - **Auth** (`NewAuthMiddleware`) — validates the JWT bearer token, stashes `CurrentUser` in context, and **sets the RLS identity** on the context: `rls.WithAdmin` for admins, `rls.WithUser` otherwise (`middleware_auth.go`).

@@ -7,11 +7,13 @@ import (
 	"context"
 	"encoding/base64"
 	"errors"
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
+	"template/internal/apperror"
 	"template/pkg/gemini"
 )
 
@@ -51,6 +53,39 @@ func TestTranscribeError(t *testing.T) {
 
 	_, err := uc.Transcribe(context.Background(), TranscribeRequest{Audio: testAudio})
 	require.Error(t, err)
+}
+
+// Түр зуурын саатал (хугацаа хэтрэлт, Gemini боломжгүй) нь 500 биш 503 —
+// дахин оролдвол болох алдааг «дотоод алдаа» гэж хэлэх нь буруу дохио.
+func TestSpeakTransientFailureIsUnavailable(t *testing.T) {
+	tests := []struct {
+		name string
+		err  error
+	}{
+		{name: "хугацаа хэтэрсэн", err: fmt.Errorf("gemini: http: %w", context.DeadlineExceeded)},
+		{name: "gemini боломжгүй", err: fmt.Errorf("%w: 3 attempts failed", gemini.ErrUnavailable)},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tts := &fakeGenerator{errs: []error{tt.err}}
+			uc := NewUsecase(&fakeGenerator{}, tts, nil, nil, Config{})
+
+			_, err := uc.Speak(context.Background(), SpeakRequest{Text: "сайн уу"})
+			require.Error(t, err)
+			assert.True(t, apperror.Is(err, apperror.ErrTypeUnavailable),
+				"ErrTypeUnavailable хүлээж байна, гарсан: %v", err)
+		})
+	}
+}
+
+// Бусад алдаа (буруу хариу, тохиргооны алдаа г.м.) 500 хэвээр.
+func TestSpeakOtherFailureStaysInternal(t *testing.T) {
+	tts := &fakeGenerator{errs: []error{errors.New("boom")}}
+	uc := NewUsecase(&fakeGenerator{}, tts, nil, nil, Config{})
+
+	_, err := uc.Speak(context.Background(), SpeakRequest{Text: "сайн уу"})
+	require.Error(t, err)
+	assert.True(t, apperror.Is(err, apperror.ErrTypeInternal))
 }
 
 func TestSpeakWrapsPCMAsWAV(t *testing.T) {

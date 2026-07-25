@@ -29,6 +29,11 @@ import (
 // ижил загвар).
 var ErrNotConfigured = errors.New("gemini: API key not configured (GEMINI_API_KEY)")
 
+// ErrUnavailable нь ТҮР ЗУУРЫН саатлыг заана: сүлжээ тасарсан, 429/5xx дээр
+// бүх дахин оролдлого дууссан. Дуудагч үүнийг хараад 503 буцаах / fallback
+// хариулт өгөх шийдвэрээ гаргана (байнгын алдаанаас ялгаж).
+var ErrUnavailable = errors.New("gemini: service unavailable")
+
 const (
 	defaultBase  = "https://generativelanguage.googleapis.com/v1beta"
 	defaultModel = "gemini-2.5-flash"
@@ -271,7 +276,7 @@ func (c *Client) GenerateContent(ctx context.Context, req Request) (Response, er
 			return Response{}, err
 		}
 	}
-	return Response{}, fmt.Errorf("gemini: %d attempts failed: %w", maxAttempts, lastErr)
+	return Response{}, fmt.Errorf("%w: %d attempts failed: %v", ErrUnavailable, maxAttempts, lastErr)
 }
 
 // generateOnce нь нэг HTTP оролдлого хийнэ. retryable нь алдааг дахин
@@ -296,7 +301,7 @@ func (c *Client) generateOnce(ctx context.Context, req Request) (Response, bool,
 		if ctx.Err() != nil {
 			return Response{}, false, fmt.Errorf("gemini: http: %w", err)
 		}
-		return Response{}, true, fmt.Errorf("gemini: http: %w", err)
+		return Response{}, true, fmt.Errorf("%w: http: %v", ErrUnavailable, err)
 	}
 	defer func() { _ = httpResp.Body.Close() }()
 

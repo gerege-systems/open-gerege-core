@@ -374,6 +374,12 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
                         }
+                    },
+                    "503": {
+                        "description": "Upstream (Gemini) timed out or unavailable — retry",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
                     }
                 }
             }
@@ -521,6 +527,12 @@ const docTemplate = `{
                     },
                     "429": {
                         "description": "Rate limit exceeded",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    },
+                    "503": {
+                        "description": "Upstream (Gemini) timed out or unavailable — retry",
                         "schema": {
                             "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
                         }

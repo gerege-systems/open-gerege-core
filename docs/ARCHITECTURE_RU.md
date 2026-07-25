@@ -190,7 +190,7 @@ Recoverer сразу после Request ID, чтобы паники ниже п�
 6. **CORS** (`CORSMiddleware`) — origin из `ALLOWED_ORIGINS` (wildcard только в разработке).
 7. **Ограничение размера тела** (`BodySizeLimitMiddleware`) — общий потолок (на маршрутах строже).
 8. **Access Log** (`AccessLogMiddleware`) — структурированный однострочный лог доступа.
-9. **Timeout** (`TimeoutMiddleware`) — дедлайн на запрос (серверный `WriteTimeout` больше, чтобы этот сработал первым).
+9. **Timeout** (`TimeoutMiddleware`) — дедлайн на запрос: 30 с по умолчанию и 50 с на `/api/v1/ai/*` (TTS/STT в Gemini занимают 10–20 с). Серверный `WriteTimeout` выводится из наибольшего из них, чтобы middleware сработал первым.
 
 **Middleware групп и маршрутов:**
 

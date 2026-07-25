@@ -596,7 +596,8 @@ func NewApp() (*App, error) {
 	// Серверийн түвшний timeout-ууд (slowloris / удаан client-ийн эсрэг):
 	//   - ReadTimeout нь header+body уншилтыг бүхэлд нь хязгаарлана;
 	//   - WriteTimeout нь handler + хариу бичилтийг хамардаг тул request-
-	//     түвшний timeout (TimeoutMiddleware, 30s)-аас урт байх ёстой;
+	//     түвшний ХАМГИЙН УРТ timeout-аас (AIRequestTimeout, 50s) урт байх
+	//     ёстой — эс тэгвээс удаан AI хариу бичих үед холболт тасарна;
 	//   - IdleTimeout нь сул keep-alive холболтыг чөлөөлнө;
 	//   - MaxHeaderBytes нь body-н хязгаараас гадуурх том header-ийн
 	//     дайралтыг хаана (JWT+cookie 16 KiB-д амархан багтана).
@@ -605,7 +606,7 @@ func NewApp() (*App, error) {
 		Handler:           r,
 		ReadHeaderTimeout: 10 * time.Second,
 		ReadTimeout:       30 * time.Second,
-		WriteTimeout:      2 * middlewares.DefaultRequestTimeout,
+		WriteTimeout:      middlewares.AIRequestTimeout + 20*time.Second,
 		IdleTimeout:       120 * time.Second,
 		MaxHeaderBytes:    16 << 10,
 	}

@@ -34,6 +34,7 @@ func toAudio(a *requests.AIAudio) *aiuc.Audio {
 // @Failure      401      {object}  v1.BaseResponse  "Missing/invalid token"
 // @Failure      422      {object}  v1.BaseResponse  "Validation error"
 // @Failure      429      {object}  v1.BaseResponse  "Rate limit exceeded"
+// @Failure      503      {object}  v1.BaseResponse  "Upstream (Gemini) timed out or unavailable — retry"
 // @Router       /ai/stt [post]
 func (h Handler) Transcribe(w http.ResponseWriter, r *http.Request) error {
 	var req requests.AISTTRequest
@@ -66,6 +67,7 @@ func (h Handler) Transcribe(w http.ResponseWriter, r *http.Request) error {
 // @Failure      401      {object}  v1.BaseResponse  "Missing/invalid token"
 // @Failure      422      {object}  v1.BaseResponse  "Validation error"
 // @Failure      429      {object}  v1.BaseResponse  "Rate limit exceeded"
+// @Failure      503      {object}  v1.BaseResponse  "Upstream (Gemini) timed out or unavailable — retry"
 // @Router       /ai/tts [post]
 func (h Handler) Speak(w http.ResponseWriter, r *http.Request) error {
 	var req requests.AITTSRequest

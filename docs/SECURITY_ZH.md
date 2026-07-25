@@ -55,7 +55,10 @@ NIST SP 800-63B / 800-218 以及 CIS Controls**。它记录了代码中强制执
    （`internal/config/config.go`，指南 §3.5）。
 3. **按请求超时** — `middleware.TimeoutMiddleware` 设置 30 秒的 context 截止时间，
    并传播到 pgx 查询，为卡住的 handler 划定边界
-   （`middleware.timeout.go`，指南 §5.3 / API4）。
+   （`middleware.timeout.go`，指南 §5.3 / API4）。唯一的例外是
+   `/api/v1/ai/*` 的 50 秒（`AIRequestTimeout`）：Gemini 的 TTS/STT 通常需要
+   10–20 秒，30 秒的上限会把正常调用变成 500。该值仍低于反向代理的 60 秒读超时，
+   HTTP 服务器的 `Write` 超时也由它推导。
 4. **由生成的 `docs` 包提供 Swagger 规范** — OpenAPI JSON 由 chi 路由上的生成
    `docs` 包在 `/swagger/doc.json` 提供（不涉及 Fiber）；可让静态 Swagger UI 指向它。
 5. **运维端点门禁** — `/metrics` 与 `/swagger/doc.json` 不再公开提供。生产环境中

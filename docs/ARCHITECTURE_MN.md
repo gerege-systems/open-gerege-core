@@ -184,7 +184,7 @@ swagger annotation тээнэ.
 6. **CORS** (`CORSMiddleware`) — `ALLOWED_ORIGINS`-аас origin (wildcard зөвхөн dev-д).
 7. **Body Size Limit** (`BodySizeLimitMiddleware`) — global дээд хязгаар (route тус бүр чанга хязгаартай).
 8. **Access Log** (`AccessLogMiddleware`) — бүтэцлэгдсэн нэг мөрийн access log.
-9. **Timeout** (`TimeoutMiddleware`) — хүсэлт тус бүрийн deadline (сервер `WriteTimeout` үүнээс урт тул энэ эхэлж ажиллана).
+9. **Timeout** (`TimeoutMiddleware`) — хүсэлт тус бүрийн deadline: ерөнхийдөө 30с, `/api/v1/ai/*` дээр 50с (Gemini-ийн TTS/STT 10–20с зарцуулдаг). Сервер `WriteTimeout` нь эдгээрийн хамгийн уртаас гаралтай тул middleware эхэлж ажиллана.
 
 **Бүлэг / route тус бүрийн middleware:**
 - **Auth** (`NewAuthMiddleware`) — JWT bearer токеныг баталгаажуулж, `CurrentUser`-ийг context-д хийж, context дээр **RLS identity тогтооно**: admin бол `rls.WithAdmin`, эс бөгөөс `rls.WithUser` (`middleware_auth.go`).

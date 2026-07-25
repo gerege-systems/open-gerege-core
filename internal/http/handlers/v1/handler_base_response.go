@@ -123,6 +123,8 @@ func mapDomainErrorToHTTP(err error) int {
 			return http.StatusConflict
 		case apperror.ErrTypeBadRequest:
 			return http.StatusBadRequest
+		case apperror.ErrTypeUnavailable:
+			return http.StatusServiceUnavailable
 		default:
 			return http.StatusInternalServerError
 		}

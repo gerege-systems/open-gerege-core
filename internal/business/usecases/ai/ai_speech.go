@@ -6,12 +6,26 @@ package ai
 import (
 	"context"
 	"encoding/base64"
+	"errors"
 	"fmt"
 	"strings"
 
 	"template/internal/apperror"
 	"template/pkg/gemini"
 )
+
+// speechError нь Gemini-ийн алдааг ангилна: хугацаа хэтэрсэн / холболт тасарсан
+// зэрэг ТҮР ЗУУРЫН саатлыг 503 болгож, бусдыг 500-аар үлдээнэ. TTS нь урт
+// текст дээр 10-20 секунд зарцуулдаг тул deadline-д мөргөх нь бодит бөгөөд
+// дахин оролдоход эдгэрдэг тохиолдол — «дотоод алдаа» гэж хэлэх нь буруу.
+func speechError(op string, err error) error {
+	wrapped := fmt.Errorf("%s: %w", op, err)
+	if errors.Is(err, context.DeadlineExceeded) || errors.Is(err, context.Canceled) ||
+		errors.Is(err, gemini.ErrUnavailable) {
+		return apperror.UnavailableCause(wrapped)
+	}
+	return apperror.InternalCause(wrapped)
+}
 
 // Дуу хоолойн боломжууд: Transcribe (STT) / Speak (TTS) / Translate.
 // Чатаас ялгаатай нь эдгээр нь fallback мессеж буцаадаггүй — алдааг шууд
@@ -34,7 +48,7 @@ func (uc *usecase) Transcribe(ctx context.Context, req TranscribeRequest) (Trans
 		}},
 	})
 	if err != nil {
-		return TranscribeResult{}, apperror.InternalCause(fmt.Errorf("ai transcribe: %w", err))
+		return TranscribeResult{}, speechError("ai transcribe", err)
 	}
 	return TranscribeResult{Text: resp.Text()}, nil
 }
@@ -56,7 +70,7 @@ func (uc *usecase) Speak(ctx context.Context, req SpeakRequest) (SpeakResult, er
 		},
 	})
 	if err != nil {
-		return SpeakResult{}, apperror.InternalCause(fmt.Errorf("ai speak: %w", err))
+		return SpeakResult{}, speechError("ai speak", err)
 	}
 	blob := resp.InlineAudio()
 	if blob == nil {
