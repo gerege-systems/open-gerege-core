@@ -105,12 +105,49 @@ func TestKnowledgeSearch_FallsBackToKeyword(t *testing.T) {
 
 			require.NoError(t, err)
 			assert.Equal(t, "keyword", res["mode"])
-			assert.Equal(t, "нэвтрэлт", tt.repo.lastQuery, "ILIKE хайлт хийгдсэн байх ёстой")
+			require.NotEmpty(t, tt.repo.queries, "ILIKE хайлт хийгдсэн байх ёстой")
+			assert.Equal(t, "нэвтрэлт", tt.repo.queries[0])
 			results := res["results"].([]map[string]any)
 			require.Len(t, results, 1)
 			assert.Equal(t, "Түлхүүр үг", results[0]["title"])
 		})
 	}
+}
+
+// Вектор хайлт ойролцоо утгатай бүх бичлэгийг авчирдаг (энэ корпус дээр
+// ХАМААРАЛГҮЙ хоёр бүлэг хүртэл 0.64+ ижилсэлтэй) тул шилдэг таарцаас хол
+// зөрсөн бичлэгүүдийг хасна — model-д цөөн боловч оновчтой контекст өгнө.
+func TestKnowledgeSearch_KeepsOnlyNearTopHits(t *testing.T) {
+	repo := &fakeAIRepo{vectorHits: []domain.AIKnowledge{
+		{ID: 1, Title: "Оновчтой", Score: 0.86},
+		{ID: 2, Title: "Мөн оновчтой", Score: 0.83},
+		{ID: 3, Title: "Хол зөрсөн", Score: 0.74},
+		{ID: 4, Title: "Огт өөр", Score: 0.70},
+	}}
+
+	res, err := KnowledgeSearchTool(repo, &fakeEmbedder{}).Execute(context.Background(),
+		map[string]any{"query": "асуулт"})
+
+	require.NoError(t, err)
+	assert.Equal(t, "vector", res["mode"])
+	assert.Equal(t, 2, res["count"], "шилдгээс %.2f-оос холдсоныг хасна", relativeScoreMargin)
+	results := res["results"].([]map[string]any)
+	assert.Equal(t, "Оновчтой", results[0]["title"])
+	assert.Equal(t, "Мөн оновчтой", results[1]["title"])
+}
+
+func TestKnowledgeSearch_CapsResultCount(t *testing.T) {
+	hits := make([]domain.AIKnowledge, 0, knowledgeTopK)
+	for i := 0; i < knowledgeTopK; i++ {
+		hits = append(hits, domain.AIKnowledge{ID: i + 1, Title: "ойролцоо", Score: 0.9})
+	}
+	repo := &fakeAIRepo{vectorHits: hits}
+
+	res, err := KnowledgeSearchTool(repo, &fakeEmbedder{}).Execute(context.Background(),
+		map[string]any{"query": "асуулт"})
+
+	require.NoError(t, err)
+	assert.Equal(t, maxKnowledgeResults, res["count"])
 }
 
 // --- backfill ---

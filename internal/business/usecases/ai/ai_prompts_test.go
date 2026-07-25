@@ -24,12 +24,14 @@ type fakeAIRepo struct {
 	vectorHits []domain.AIKnowledge
 	vectorErr  error
 	// pending нь embedding хүлээж буй бичлэгүүд; saved нь хадгалагдсан вектор.
-	pending    []domain.AIKnowledgeChunk
-	saved      map[int][]float32
-	savedHash  map[int]string
-	listErr    error
-	listCalls  int
-	lastQuery  string
+	pending   []domain.AIKnowledgeChunk
+	saved     map[int][]float32
+	savedHash map[int]string
+	listErr   error
+	listCalls int
+	lastQuery string
+	// queries нь ILIKE-д оролдсон бүх нэр томьёо (задлагдсан үгс).
+	queries    []string
 	lastVector []float32
 	setCalls   int
 	lastSetKey string
@@ -93,6 +95,7 @@ func (f *fakeAIRepo) SetPrompt(_ context.Context, key, content string) error {
 
 func (f *fakeAIRepo) SearchKnowledge(_ context.Context, query string, _ int) ([]domain.AIKnowledge, error) {
 	f.lastQuery = query
+	f.queries = append(f.queries, query)
 	return f.knowledge, nil
 }
 
@@ -177,8 +180,9 @@ func TestKnowledgeSearchTool(t *testing.T) {
 
 	res, err := tool.Execute(context.Background(), map[string]any{"query": "нууц үг"})
 	require.NoError(t, err)
-	assert.Equal(t, "нууц үг", repo.lastQuery)
-	assert.Equal(t, 1, res["count"])
+	require.NotEmpty(t, repo.queries)
+	assert.Equal(t, "нууц үг", repo.queries[0], "эхлээд бүтэн мөрөөр хайна")
+	assert.Equal(t, 1, res["count"], "давхардсан бичлэгийг дахин нэмэхгүй")
 
 	results, ok := res["results"].([]map[string]any)
 	require.True(t, ok)

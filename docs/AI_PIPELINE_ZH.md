@@ -98,12 +98,17 @@ aiTools := append(ai.DefaultTools(), ai.KnowledgeSearchTool(aiRepo), myTool)
 随平台附带的工具：
 
 - **`search_knowledge`** — 对 `ai_knowledge` 的**语义（向量）检索**。
-  问题会被向量化（`text-embedding-004`，`RETRIEVAL_QUERY`），并在 **pgvector**
+  问题会被向量化（`gemini-embedding-001`，`RETRIEVAL_QUERY`），并在 **pgvector**
   中按余弦距离匹配（`embedding <=> $1`，HNSW 索引），因此换个说法提问也能找到正确条目。
-  低于 `minVectorScore`（0.55）的命中会被丢弃 — 「我不知道」胜过编造。
-  当未配置 embedder、向量化调用失败或没有命中达到阈值时，会回退到原先的
-  `ILIKE` 关键词查询；工具返回值会标明实际使用的模式
-  （`"mode": "vector" | "keyword"`）。基础防护规则要求模型在回答平台问题*之前*调用它。
+  随后对前 8 个候选按**与最佳命中的相对差距**过滤：低于最佳命中
+  `relativeScoreMargin`（0.06）以上的一律丢弃，最多保留
+  `maxKnowledgeResults`（4）条。为何用相对阈值：在本语料上实测，即使*毫不相关*
+  的两个条目余弦相似度也在 0.64 以上，因此固定阈值（原先的 0.55）什么都过滤不掉；
+  `minVectorScore`（0.35）现在只是丢弃垃圾的下限。当未配置 embedder、向量化调用失败
+  或过滤后无结果时，会回退到 `ILIKE` 关键词查询 — 由于模型被要求传入完整问句，
+  回退会把问句拆成词，并用最长词的 6 字符词干去检索。工具返回值会标明实际使用的模式
+  （`"mode": "vector" | "keyword"`）；日志只记录模式、命中数、最高分与 slug
+  （绝不记录用户问题原文）。基础防护规则要求模型在回答平台问题*之前*调用它。
 - **`get_server_time`** — 一个最小演示（乌兰巴托时间），零依赖。
 
 ## 知识库（RAG）

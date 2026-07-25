@@ -109,14 +109,21 @@ aiTools := append(ai.DefaultTools(), ai.KnowledgeSearchTool(aiRepo), myTool)
 Shipped tools:
 
 - **`search_knowledge`** — **semantic (vector) search** over `ai_knowledge`.
-  The question is embedded (`text-embedding-004`, `RETRIEVAL_QUERY`) and matched
-  by cosine distance in **pgvector** (`embedding <=> $1`, HNSW index), so a
-  question phrased differently still finds the right chunk. Hits below
-  `minVectorScore` (0.55) are dropped — "I don't know" beats a made-up answer.
-  It falls back to the old `ILIKE` keyword query when no embedder is configured,
-  the embedding call fails, or nothing clears the threshold; the tool result says
-  which mode ran (`"mode": "vector" | "keyword"`). The base guardrails tell the
-  model to call it *before* answering platform questions.
+  The question is embedded (`gemini-embedding-001`, `RETRIEVAL_QUERY`) and
+  matched by cosine distance in **pgvector** (`embedding <=> $1`, HNSW index),
+  so a question phrased differently still finds the right chunk. The top-8
+  candidates are then filtered **relative to the best hit**: anything further
+  than `relativeScoreMargin` (0.06) below it is dropped, and at most
+  `maxKnowledgeResults` (4) survive. Why relative: measured on this corpus,
+  even *unrelated* chunks sit at 0.64+ cosine similarity, so a fixed threshold
+  (the old 0.55) filtered nothing; `minVectorScore` (0.35) is now only a garbage
+  floor. It falls back to the `ILIKE` keyword query when no embedder is
+  configured, the embedding call fails, or nothing survives the filter — and
+  because the model is told to pass the full question, the fallback splits it
+  into words and searches the longest ones by their 6-character stem. The tool
+  result says which mode ran (`"mode": "vector" | "keyword"`); the log records
+  mode, hit count, top score and slug (never the user's question text). The base
+  guardrails tell the model to call it *before* answering platform questions.
 - **`get_server_time`** — minimal demo (Ulaanbaatar time), zero dependencies.
 
 ## Knowledge base (RAG)
