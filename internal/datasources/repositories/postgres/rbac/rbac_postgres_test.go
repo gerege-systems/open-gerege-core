@@ -42,7 +42,9 @@ func TestRBACRepository(t *testing.T) {
 	})
 
 	t.Run("seeded permission grants (user role)", func(t *testing.T) {
-		perms, err := repo.GetRolePermissions(ctx, 2) // user
+		// domain-ий тогтмолыг ашиглана — migration 23 role id-г дахин зурдаг
+		// (user 2→4) тул хатуу бичсэн тоо нам гүм буруу role-ыг шалгадаг болно.
+		perms, err := repo.GetRolePermissions(ctx, domain.RoleUser)
 		require.NoError(t, err)
 		assert.Contains(t, perms, "dashboard.view")
 		assert.Contains(t, perms, "personal.view")

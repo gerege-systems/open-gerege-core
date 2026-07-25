@@ -23,6 +23,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/stretchr/testify/require"
 
+	"template/internal/business/domain"
 	"template/internal/business/usecases/ai"
 	"template/internal/business/usecases/audit"
 	"template/internal/business/usecases/org"
@@ -96,11 +97,14 @@ const anyAllowed = -1
 func TestAuthorizationMatrix(t *testing.T) {
 	srv, jwtSvc := newAuthzServer(t)
 
-	adminTok, err := jwtSvc.GenerateToken(adminUserID, true, 1, "admin@test.mn")
+	// Role ID-г ТОГТМОЛООР авна: migration 23 нь id-нуудыг дахин зурсан
+	// (admin 1→2, user 2→4) тул хатуу бичсэн тоо нам гүм хуучирч, «user»
+	// persona админ болж хувирдаг байв — тест эрхийн зөрчлийг барихаа больдог.
+	adminTok, err := jwtSvc.GenerateToken(adminUserID, true, domain.RoleAdmin, "admin@test.mn")
 	require.NoError(t, err)
-	managerTok, err := jwtSvc.GenerateToken(managerUserID, false, 3, "manager@test.mn")
+	managerTok, err := jwtSvc.GenerateToken(managerUserID, false, domain.RoleManager, "manager@test.mn")
 	require.NoError(t, err)
-	userTok, err := jwtSvc.GenerateToken(plainUserID, false, 2, "user@test.mn")
+	userTok, err := jwtSvc.GenerateToken(plainUserID, false, domain.RoleUser, "user@test.mn")
 	require.NoError(t, err)
 	// Хуучин (RoleID claim-гүй) токен — user role руу fallback хийх ёстой.
 	legacyTok, err := jwtSvc.GenerateToken(plainUserID, false, 0, "legacy@test.mn")
