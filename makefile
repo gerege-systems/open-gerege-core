@@ -53,8 +53,9 @@ ci-lint: ## Run golangci-lint (unit + integration tags — tagged files rot sile
 ci-test: ## Run unit tests with race + coverage matching CI
 	go test -race -coverprofile=coverage.out ./...
 
-ci-test-integration: ## Run integration tests matching CI (requires Docker)
-	GOFLAGS=-mod=mod go test -tags=integration -race -timeout=10m ./...
+ci-test-integration: ## Run integration tests (requires Docker). CI runs the same
+                    ## suite without -race in its own job; -race here is stricter.
+	GOFLAGS=-mod=mod go test -tags=integration -race -timeout=20m ./...
 
 ci-swag-check: ## Verify docs/ is in sync with handler annotations
 	@command -v swag >/dev/null 2>&1 || go install github.com/swaggo/swag/cmd/swag@latest
