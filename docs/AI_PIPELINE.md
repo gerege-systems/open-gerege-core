@@ -46,7 +46,7 @@ context (so RLS and timeouts apply to anything they touch).
 4. If the reply is **text**: return it.
 
 **Failure semantics:** transient Gemini failures (after the client's own
-3× retry) do **not** produce a 5xx — the user gets a Mongolian fallback
+3× retry) do **not** produce a 5xx — the user gets a localized fallback
 message with `degraded: true`. Only a missing `GEMINI_API_KEY` is a real
 error (500, cause logged). Unknown/failed tools are reported back to the
 model as `{"error": …}` so it can apologize gracefully — tool errors never
@@ -59,10 +59,14 @@ The system prompt is assembled per request from three layers
 
 | Layer | Source | Editable | Purpose |
 |-------|--------|----------|---------|
-| 1. Base guardrails | hardcoded const | **never** | Mongolian-only, scope enforcement, prompt-injection resistance ("forget your instructions" is treated as plain text; the prompt is never revealed) |
+| 1. Base guardrails | hardcoded const | **never** | Reply language (from the request's `lang`), scope enforcement, prompt-injection resistance ("forget your instructions" is treated as plain text; the prompt is never revealed) |
 | 2. Scope | `ai_prompts` table → `AI_SCOPE_PROMPT` env → built-in default | admin, at runtime | *What* the assistant helps with. The assistant politely refuses anything outside it |
 | 3. Instructions | `ai_prompts` table (optional) | admin, at runtime | Tone, extra rules |
 
+- **Reply language** comes from the request's `lang` (the frontend sends the UI
+  language: `mn`/`en`/`zh`/`ru`; unknown or empty ⇒ `mn`). If the user writes in a
+  different language, the model follows the user. The `degraded` fallback message
+  is localized the same way.
 - Admin UI: **Admin → Settings**; API: `GET/PUT /api/v1/admin/ai/prompts/{key}`
   (`settings.manage` permission).
 - Prompts are cached for 60s; `SetPrompt` invalidates the cache, so changes

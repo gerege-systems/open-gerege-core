@@ -7451,6 +7451,16 @@ const docTemplate = `{
                         "$ref": "#/definitions/template_internal_http_datatransfers_requests.AIChatTurn"
                     }
                 },
+                "lang": {
+                    "description": "Lang нь frontend-ийн UI хэл — туслах ЭНЭ хэлээр хариулна. Хоосон бол\nсервер өгөгдмөл (mn) хэрэглэнэ; цагаан жагсаалтаас гадуур утга орохгүй.",
+                    "type": "string",
+                    "enum": [
+                        "mn",
+                        "en",
+                        "zh",
+                        "ru"
+                    ]
+                },
                 "message": {
                     "type": "string",
                     "maxLength": 4000

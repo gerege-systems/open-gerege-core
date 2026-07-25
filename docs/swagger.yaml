@@ -30,6 +30,16 @@ definitions:
           $ref: '#/definitions/template_internal_http_datatransfers_requests.AIChatTurn'
         maxItems: 20
         type: array
+      lang:
+        description: |-
+          Lang нь frontend-ийн UI хэл — туслах ЭНЭ хэлээр хариулна. Хоосон бол
+          сервер өгөгдмөл (mn) хэрэглэнэ; цагаан жагсаалтаас гадуур утга орохгүй.
+        enum:
+        - mn
+        - en
+        - zh
+        - ru
+        type: string
       message:
         maxLength: 4000
         type: string
@@ -6144,7 +6154,7 @@ paths:
     put:
       consumes:
       - application/json
-      description: 'Платформын хандалтын горимыг тохируулна. public: хэн ч Government
+      description: 'Платформын хандалтын горимыг тохируулна. public: хэн ч Gerege
         SSO-оор нэвтэрнэ; private: зөвхөн урьдчилан бүртгэсэн хэрэглэгч. Зөвхөн super
         admin хандана.'
       parameters:

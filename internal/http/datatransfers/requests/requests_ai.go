@@ -25,6 +25,9 @@ type AIChatRequest struct {
 	Message string       `json:"message" validate:"omitempty,max=4000"`
 	Audio   *AIAudio     `json:"audio" validate:"omitempty"`
 	History []AIChatTurn `json:"history" validate:"omitempty,max=20,dive"`
+	// Lang нь frontend-ийн UI хэл — туслах ЭНЭ хэлээр хариулна. Хоосон бол
+	// сервер өгөгдмөл (mn) хэрэглэнэ; цагаан жагсаалтаас гадуур утга орохгүй.
+	Lang string `json:"lang" validate:"omitempty,oneof=mn en zh ru"`
 }
 
 // AISTTRequest нь POST /ai/stt-ийн body — audio-г текст болгоно.

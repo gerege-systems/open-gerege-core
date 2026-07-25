@@ -401,6 +401,7 @@ RASP 风格的客户端遥测。接收对任何已认证用户开放（RLS 打�
 | `message` | 可选（若无 `audio` 则必填），≤ 4000 字符 |
 | `audio` | 可选；`mime` ∈ webm/ogg/wav/mpeg/mp3/mp4/m4a/aac/flac，`data` base64 ≤ 约 700 KB |
 | `history` | 可选，≤ 20 轮 |
+| `lang` | 可选的界面语言 — `mn` \| `en` \| `zh` \| `ru`；助手以该语言回复（留空 ⇒ `mn`） |
 
 **响应 `200`**
 
@@ -412,7 +413,7 @@ RASP 风格的客户端遥测。接收对任何已认证用户开放（RLS 打�
 ```
 
 `steps` 列出模型执行过的 function call（流水线轨迹）。当 Gemini 暂时不可用时，
-该端点仍返回 `200`，携带蒙古语兜底 `reply` 和 `degraded: true`。
+该端点仍返回 `200`，携带以用户语言呈现的兜底 `reply` 和 `degraded: true`。
 
 ### POST `/ai/stt` 🔒
 

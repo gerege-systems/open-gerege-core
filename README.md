@@ -235,7 +235,7 @@ user who has already signed in via eID (promoted on the next boot) or by updatin
 ### AI prompt layers
 
 The AI assistant runs on a layered system prompt: **base guardrails**
-(hardcoded — Mongolian-only, scope enforcement, prompt-injection resistance)
+(hardcoded — reply language, scope enforcement, prompt-injection resistance)
 + **scope** (what the assistant helps with) + **instructions** (optional
 tone/rules). Scope and instructions live in the `ai_prompts` table and are
 editable at runtime via `GET/PUT /api/v1/admin/ai/prompts` (requires

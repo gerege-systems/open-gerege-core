@@ -87,7 +87,7 @@ what remains for later phases. To report a vulnerability, see the repository
    fails boot in production and logs a warning in development, so a
    misprovisioned DSN can no longer silently disable RLS.
 10. **AI guardrails** — the Gemini assistant runs on a layered prompt whose
-    base layer (Mongolian-only, scope enforcement, prompt-injection
+    base layer (reply language, scope enforcement, prompt-injection
     resistance) is hardcoded; only the scope/instructions layers are
     admin-editable (`settings.manage`, UPDATE-only against seeded keys). Tools
     execute server-side with the request context; tool failures are reported

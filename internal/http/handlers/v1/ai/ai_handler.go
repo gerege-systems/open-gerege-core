@@ -72,6 +72,7 @@ func (h Handler) Chat(w http.ResponseWriter, r *http.Request) error {
 		Prompt:  req.Message,
 		Audio:   toAudio(req.Audio),
 		History: history,
+		Lang:    req.Lang,
 	})
 	if err != nil {
 		return v1.RespondWithError(w, r, err)

@@ -15,9 +15,20 @@ import (
 	"template/pkg/logger"
 )
 
-// fallbackReply нь Gemini бүх оролдлогын дараа ч амжилтгүй үед хэрэглэгчид
-// очих Монгол мессеж — хүсэлтийг 5xx болгож унагахын оронд degraded хариу өгнө.
-const fallbackReply = "Уучлаарай, AI үйлчилгээ түр ачаалалтай байна. Та хэсэг хугацааны дараа дахин оролдоно уу."
+// fallbackReplies нь Gemini бүх оролдлогын дараа ч амжилтгүй үед хэрэглэгчид
+// очих мессеж — хүсэлтийг 5xx болгож унагахын оронд degraded хариу өгнө.
+// Хэрэглэгчийн хэлээр (UI-ийн хэл) буцаана; тодорхойгүй бол DefaultLang.
+var fallbackReplies = map[string]string{
+	"mn": "Уучлаарай, AI үйлчилгээ түр ачаалалтай байна. Та хэсэг хугацааны дараа дахин оролдоно уу.",
+	"en": "Sorry, the AI service is temporarily busy. Please try again in a moment.",
+	"zh": "抱歉，AI 服务暂时繁忙，请稍后再试。",
+	"ru": "Извините, сервис AI временно перегружен. Пожалуйста, попробуйте ещё раз чуть позже.",
+}
+
+// fallbackReply нь хэлэнд тохирсон degraded мессежийг буцаана.
+func fallbackReply(lang string) string {
+	return fallbackReplies[normalizeLang(lang)]
+}
 
 const (
 	defaultMaxSteps = 4
@@ -78,7 +89,7 @@ func (uc *usecase) Run(ctx context.Context, req RunRequest) (RunResult, error) {
 
 	var geminiReq gemini.Request
 	geminiReq.SystemInstruction = &gemini.Content{
-		Parts: []gemini.Part{{Text: uc.systemInstruction(ctx)}},
+		Parts: []gemini.Part{{Text: uc.systemInstruction(ctx, req.Lang)}},
 	}
 	geminiReq.Contents = contents
 	if len(uc.decls) > 0 {
@@ -101,14 +112,14 @@ func (uc *usecase) Run(ctx context.Context, req RunRequest) (RunResult, error) {
 				"error":                  err.Error(),
 				"step":                   step,
 			})
-			return RunResult{Reply: fallbackReply, Steps: steps, Degraded: true}, nil
+			return RunResult{Reply: fallbackReply(req.Lang), Steps: steps, Degraded: true}, nil
 		}
 
 		calls := resp.FunctionCalls()
 		if len(calls) == 0 {
 			reply := resp.Text()
 			if reply == "" {
-				return RunResult{Reply: fallbackReply, Steps: steps, Degraded: true}, nil
+				return RunResult{Reply: fallbackReply(req.Lang), Steps: steps, Degraded: true}, nil
 			}
 			return RunResult{Reply: reply, Steps: steps}, nil
 		}
@@ -132,7 +143,7 @@ func (uc *usecase) Run(ctx context.Context, req RunRequest) (RunResult, error) {
 		constants.LoggerCategory: constants.LoggerCategoryAI,
 		"max_steps":              uc.cfg.MaxSteps,
 	})
-	return RunResult{Reply: fallbackReply, Steps: steps, Degraded: true}, nil
+	return RunResult{Reply: fallbackReply(req.Lang), Steps: steps, Degraded: true}, nil
 }
 
 // executeTool нь нэг function дуудлагыг гүйцэтгэнэ. Алдааг model руу

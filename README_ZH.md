@@ -241,7 +241,7 @@ SUPERADMIN_EMAIL=                # 可选：启动时把该（已登录过的）
 ### AI 提示词分层
 
 AI 助手运行在分层系统提示词之上：**基础防护规则**
-（硬编码 — 仅蒙古语、范围约束、抗提示词注入）+ **scope**（助手协助的范围）
+（硬编码 — 回复语言、范围约束、抗提示词注入）+ **scope**（助手协助的范围）
 + **instructions**（可选的语气/规则）。scope 与 instructions 存放在 `ai_prompts` 表中，
 可通过 `GET/PUT /api/v1/admin/ai/prompts` 在运行时编辑
 （需要 `settings.manage`；界面在 管理 → 设置）。助手会拒绝所配置范围之外的一切请求，

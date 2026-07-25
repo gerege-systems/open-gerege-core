@@ -104,7 +104,7 @@ func TestRun(t *testing.T) {
 			name:         "transient gemini failure returns fallback",
 			gen:          &fakeGenerator{errs: []error{errors.New("gemini: 3 attempts failed")}},
 			req:          RunRequest{Prompt: "сайн уу"},
-			wantReply:    fallbackReply,
+			wantReply:    fallbackReply("mn"),
 			wantDegraded: true,
 		},
 		{
@@ -121,7 +121,7 @@ func TestRun(t *testing.T) {
 			}},
 			tools:        []ToolDef{echoTool("echo_tool")},
 			req:          RunRequest{Prompt: "loop"},
-			wantReply:    fallbackReply,
+			wantReply:    fallbackReply("mn"),
 			wantDegraded: true,
 			wantSteps:    2,
 		},
@@ -129,7 +129,7 @@ func TestRun(t *testing.T) {
 			name:         "empty model reply returns fallback",
 			gen:          &fakeGenerator{responses: []gemini.Response{textResponse("")}},
 			req:          RunRequest{Prompt: "сайн уу"},
-			wantReply:    fallbackReply,
+			wantReply:    fallbackReply("mn"),
 			wantDegraded: true,
 		},
 	}
@@ -171,7 +171,8 @@ func TestRunSendsSystemInstructionAndHistory(t *testing.T) {
 
 	req := gen.requests[0]
 	require.NotNil(t, req.SystemInstruction)
-	assert.Contains(t, req.SystemInstruction.Parts[0].Text, "Монгол хэлээр")
+	// Хэл заагаагүй бол өгөгдмөл (mn) хэлний дүрэм орно.
+	assert.Contains(t, req.SystemInstruction.Parts[0].Text, uiLangNames[DefaultLang])
 	// history 2 + шинэ prompt 1
 	require.Len(t, req.Contents, 3)
 	assert.Equal(t, "user", req.Contents[0].Role)
@@ -202,4 +203,52 @@ func TestServerTimeTool(t *testing.T) {
 	require.NoError(t, err)
 	assert.NotEmpty(t, res["datetime"])
 	assert.Equal(t, "Asia/Ulaanbaatar", res["timezone"])
+}
+
+// Хэрэглэгчийн хэл нь system prompt болон degraded мессежид тусна.
+func TestRun_UsesRequestLanguage(t *testing.T) {
+	for _, tt := range []struct {
+		name     string
+		lang     string
+		wantLang string
+	}{
+		{name: "chinese", lang: "zh", wantLang: "zh"},
+		{name: "russian", lang: "ru", wantLang: "ru"},
+		{name: "english", lang: "en", wantLang: "en"},
+		{name: "unknown falls back to default", lang: "xx", wantLang: DefaultLang},
+		{name: "empty falls back to default", lang: "", wantLang: DefaultLang},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			gen := &fakeGenerator{responses: []gemini.Response{textResponse("ok")}}
+			uc := NewUsecase(gen, gen, nil, nil, Config{})
+
+			_, err := uc.Run(context.Background(), RunRequest{Prompt: "hi", Lang: tt.lang})
+			require.NoError(t, err)
+			require.Len(t, gen.requests, 1)
+
+			prompt := gen.requests[0].SystemInstruction.Parts[0].Text
+			assert.Contains(t, prompt, uiLangNames[tt.wantLang])
+			// Зөвхөн нэг хэлний дүрэм орсон байх ёстой.
+			for code, name := range uiLangNames {
+				if code != tt.wantLang {
+					assert.NotContains(t, prompt, name)
+				}
+			}
+		})
+	}
+}
+
+// Gemini унасан үед degraded мессеж нь хэрэглэгчийн хэл дээр байна.
+func TestRun_FallbackIsLocalised(t *testing.T) {
+	for _, lang := range []string{"mn", "en", "zh", "ru"} {
+		t.Run(lang, func(t *testing.T) {
+			gen := &fakeGenerator{errs: []error{errors.New("gemini: 3 attempts failed")}}
+			uc := NewUsecase(gen, gen, nil, nil, Config{})
+
+			res, err := uc.Run(context.Background(), RunRequest{Prompt: "hi", Lang: lang})
+			require.NoError(t, err)
+			assert.True(t, res.Degraded)
+			assert.Equal(t, fallbackReplies[lang], res.Reply)
+		})
+	}
 }

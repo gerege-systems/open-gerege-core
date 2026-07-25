@@ -413,6 +413,7 @@ directly), or both. Stateless — pass prior turns in `history`.
 | `message` | optional (required if no `audio`), ≤ 4000 chars |
 | `audio` | optional; `mime` ∈ webm/ogg/wav/mpeg/mp3/mp4/m4a/aac/flac, `data` base64 ≤ ~700 KB |
 | `history` | optional, ≤ 20 turns |
+| `lang` | optional UI language — `mn` \| `en` \| `zh` \| `ru`; the assistant replies in it (empty ⇒ `mn`) |
 
 **Response `200`**
 ```json
@@ -423,7 +424,7 @@ directly), or both. Stateless — pass prior turns in `history`.
 ```
 `steps` lists the function calls the model executed (pipeline trace). When
 Gemini is temporarily unavailable the endpoint still returns `200` with a
-Mongolian fallback `reply` and `degraded: true`.
+localized fallback `reply` and `degraded: true`.
 
 ### POST `/ai/stt` 🔒
 Speech-to-text. **Request** `{ "audio": { "mime": "audio/webm", "data": "<base64>" } }`
