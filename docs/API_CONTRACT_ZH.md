@@ -317,6 +317,7 @@ OAuth2 的 **`client_secret`**（仅机密型）**只展示一次** —
 | DELETE | `/admin/users/{id}` | 🛡️ `users.manage` | 删除用户。 |
 | GET | `/admin/ai/prompts` | 🛡️ `settings.manage` | 列出可配置的 AI 提示词分层。 |
 | PUT | `/admin/ai/prompts/{key}` | 🛡️ `settings.manage` | 更新某个提示词层（`key` ∈ `scope` \| `instructions`）。 |
+| POST | `/admin/ai/knowledge/reindex` | 🛡️ `settings.manage` | 为向量缺失或过期的知识库条目重新生成向量；返回 `{ "embedded": n }`。未配置 `GEMINI_API_KEY` 时为空操作。 |
 
 > **命名提示。** 这个应用内的 `/api/v1/admin` 分组与下文*非 `/api` 挂载*中记录的
 > 顶层 `/admin` Hydra 运维面无关 — 同一个词，不同的挂载点。

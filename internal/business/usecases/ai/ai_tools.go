@@ -5,10 +5,14 @@ package ai
 
 import (
 	"context"
+	"math"
 	"time"
 
+	"template/internal/business/domain"
+	"template/internal/constants"
 	repointerface "template/internal/datasources/repositories/interface"
 	"template/pkg/gemini"
+	"template/pkg/logger"
 )
 
 // ToolFunc нь backend дээр ажиллах функц. Model args-ийг шийднэ, backend
@@ -28,11 +32,30 @@ func DefaultTools() []ToolDef {
 	return []ToolDef{serverTimeTool()}
 }
 
+// knowledgeTopK нь нэг хайлтад буцаах бичлэгийн тоо. Вектор хайлт нь ойролцоо
+// утгатай бичлэгүүдийг ч авчирдаг тул ILIKE-аас арай өгөөмөр (модел хамааралгүй
+// хэсгийг өөрөө шүүнэ).
+const knowledgeTopK = 6
+
+// minVectorScore нь cosine ойролцооллын доод босго. Үүнээс доош таарц нь
+// сэдвийн хувьд хамааралгүй байх магадлалтай тул хаяна — модел «мэдэхгүй»
+// гэж хэлэх нь буруу баримт зохиохоос дээр.
+const minVectorScore = 0.55
+
 // KnowledgeSearchTool нь ai_knowledge хүснэгтээс хайдаг tool — AI хэрэглэгчийн
 // асуултад хариулахын өмнө мэдлэгийн сангаас (DB) мэдээлэл татаж тулгуурлана.
 // Suurь зааварт (baseInstruction) "платформын асуултад эхлээд эндээс хай"
 // гэж заасан тул AI үүнийг өөрөө дууддаг.
-func KnowledgeSearchTool(repo repointerface.AIRepository) ToolDef {
+//
+// Хайлтын дараалал:
+//  1. Асуултыг Gemini-ээр embed хийж (RETRIEVAL_QUERY) вектор хайлт хийнэ —
+//     хэрэглэгч өөр үг хэллэгээр асуусан ч утга санааны хувьд ойр бичлэг олдоно.
+//  2. Embedder байхгүй / алдаа гарсан / вектор хайлтаас юу ч олдоогүй бол
+//     түлхүүр үгийн (ILIKE) хайлт руу уналт хийнэ.
+//
+// embedder nil байж болно (тест, эсвэл GEMINI_API_KEY-гүй орчин) — тэр үед
+// шууд ILIKE ажиллана.
+func KnowledgeSearchTool(repo repointerface.AIRepository, embedder gemini.Embedder) ToolDef {
 	return ToolDef{
 		Declaration: gemini.FunctionDeclaration{
 			Name: "search_knowledge",
@@ -55,18 +78,24 @@ func KnowledgeSearchTool(repo repointerface.AIRepository) ToolDef {
 			if query == "" {
 				return map[string]any{"results": []any{}, "note": "query хоосон байна"}, nil
 			}
-			items, err := repo.SearchKnowledge(ctx, query, 5)
-			if err != nil {
-				return nil, err
-			}
+
+			items, mode := searchKnowledge(ctx, repo, embedder, query)
 			results := make([]map[string]any, 0, len(items))
 			for _, it := range items {
-				results = append(results, map[string]any{
+				res := map[string]any{
 					"title":   it.Title,
 					"content": it.Content,
-				})
+				}
+				if it.Source != "" {
+					res["source"] = it.Source
+				}
+				if it.Score > 0 {
+					// Оноог хоёр орноор — модел хамааралын зэргийг харгалзана.
+					res["score"] = math.Round(it.Score*100) / 100
+				}
+				results = append(results, res)
 			}
-			return map[string]any{"results": results, "count": len(results)}, nil
+			return map[string]any{"results": results, "count": len(results), "mode": mode}, nil
 		},
 	}
 }
@@ -97,4 +126,55 @@ func serverTimeTool() ToolDef {
 			}, nil
 		},
 	}
+}
+
+// searchKnowledge нь семантик хайлтыг оролдоод, боломжгүй/үр дүнгүй үед
+// түлхүүр үгийн хайлт руу унана. Хоёр дахь утга нь ямар горимоор олдсоныг
+// заана ("vector" | "keyword") — модел болон логт ойлгомжтой байхад.
+func searchKnowledge(
+	ctx context.Context,
+	repo repointerface.AIRepository,
+	embedder gemini.Embedder,
+	query string,
+) (items []domain.AIKnowledge, mode string) {
+	if embedder != nil {
+		vectors, err := embedder.Embed(ctx, []string{query}, gemini.TaskQuery)
+		switch {
+		case err != nil:
+			// Gemini тохируулаагүй / түр саатсан — хайлтыг бүтэн унагахгүй.
+			logger.WarnWithContext(ctx, "ai: query embedding failed, falling back to keyword search", logger.Fields{
+				constants.LoggerCategory: constants.LoggerCategoryAI,
+				"error":                  err.Error(),
+			})
+		case len(vectors) == 1:
+			hits, vErr := repo.SearchKnowledgeByVector(ctx, vectors[0], knowledgeTopK)
+			if vErr != nil {
+				logger.WarnWithContext(ctx, "ai: vector search failed, falling back to keyword search", logger.Fields{
+					constants.LoggerCategory: constants.LoggerCategoryAI,
+					"error":                  vErr.Error(),
+				})
+				break
+			}
+			// Босгоос доош таарцыг хаяна.
+			kept := make([]domain.AIKnowledge, 0, len(hits))
+			for _, it := range hits {
+				if it.Score >= minVectorScore {
+					kept = append(kept, it)
+				}
+			}
+			if len(kept) > 0 {
+				return kept, "vector"
+			}
+		}
+	}
+
+	found, err := repo.SearchKnowledge(ctx, query, 5)
+	if err != nil {
+		logger.WarnWithContext(ctx, "ai: keyword search failed", logger.Fields{
+			constants.LoggerCategory: constants.LoggerCategoryAI,
+			"error":                  err.Error(),
+		})
+		return nil, "keyword"
+	}
+	return found, "keyword"
 }

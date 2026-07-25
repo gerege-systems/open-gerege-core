@@ -108,13 +108,46 @@ aiTools := append(ai.DefaultTools(), ai.KnowledgeSearchTool(aiRepo), myTool)
 
 Shipped tools:
 
-- **`search_knowledge`** — searches the `ai_knowledge` table (title/content
-  `ILIKE` + tag match, top 5). The base guardrails tell the model to call it
-  *before* answering platform questions and to say "I don't know" rather than
-  guess when nothing is found. Grow the corpus by inserting rows
-  (title/content/tags); swap the single query in
-  `repositories/postgres/ai` for tsvector or pgvector when it gets large.
+- **`search_knowledge`** — **semantic (vector) search** over `ai_knowledge`.
+  The question is embedded (`text-embedding-004`, `RETRIEVAL_QUERY`) and matched
+  by cosine distance in **pgvector** (`embedding <=> $1`, HNSW index), so a
+  question phrased differently still finds the right chunk. Hits below
+  `minVectorScore` (0.55) are dropped — "I don't know" beats a made-up answer.
+  It falls back to the old `ILIKE` keyword query when no embedder is configured,
+  the embedding call fails, or nothing clears the threshold; the tool result says
+  which mode ran (`"mode": "vector" | "keyword"`). The base guardrails tell the
+  model to call it *before* answering platform questions.
 - **`get_server_time`** — minimal demo (Ulaanbaatar time), zero dependencies.
+
+## Knowledge base (RAG)
+
+The platform's own knowledge lives in `ai_knowledge` — ~58 chunks written from
+the code and docs (migration `48_ai_knowledge_platform_corpus`). Each row has a
+stable `slug` (the seed upserts on it), `source`, `lang` and a `vector(768)`
+`embedding` (migration `47_ai_knowledge_vector`, pgvector + HNSW index).
+
+- **Embedding backfill.** On boot the API embeds every row whose `embedding` is
+  NULL or whose `content_hash` no longer matches the current text, in batches of
+  20 (`EmbedKnowledge`). It runs in the background — boot never blocks on it, and
+  without `GEMINI_API_KEY` it is a no-op (search stays on keywords).
+- **Editing the corpus.** Add or change rows in a migration (keep the `slug`),
+  then either restart or call `POST /api/v1/admin/ai/knowledge/reindex`
+  (`settings.manage`, also a button under Admin → Settings). Changing `content`
+  clears the stored embedding so the backfill recomputes it.
+- **Model.** `GEMINI_EMBED_MODEL` (default `text-embedding-004`, 768 dims). A
+  model with a different dimension needs a migration to change the column.
+
+## Answer variety
+
+The same question never gets a byte-identical answer twice:
+
+- The system prompt carries a `[НАЙРУУЛГА]` section with a fixed anti-repetition
+  rule plus one randomly chosen style hint per request (`styleHints`).
+- Sampling: `temperature` 1.0, `topP` 0.95.
+
+Only the *wording* varies. The rule states explicitly that facts, numbers, steps
+and sources stay the same — grounding comes from the knowledge base and tools,
+not from the phrasing.
 
 ## Voice
 

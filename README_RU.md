@@ -232,6 +232,7 @@ GEMINI_API_KEY=                  # пусто = AI выключен (endpoints �
 GEMINI_MODEL=gemini-2.5-flash    # необязательное переопределение (чат / STT / перевод)
 GEMINI_TTS_MODEL=gemini-2.5-flash-preview-tts  # необязательное переопределение (TTS)
 GEMINI_VOICE=Kore                # необязательный предустановленный голос TTS
+GEMINI_EMBED_MODEL=text-embedding-004  # модель векторов базы знаний (768 измерений — как ai_knowledge.embedding)
 GEMINI_API_BASE=                 # необязательное переопределение (по умолчанию Google generativelanguage v1beta)
 AI_SCOPE_PROMPT=                 # запасное значение области AI, когда слой 'scope' в базе пуст
 

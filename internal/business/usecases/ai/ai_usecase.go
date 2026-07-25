@@ -28,6 +28,14 @@ type Usecase interface {
 	// (Degraded=true) намжаана; зөвхөн тохиргооны алдааг error болгоно.
 	Run(ctx context.Context, req RunRequest) (RunResult, error)
 
+	// EmbedKnowledge нь мэдлэгийн сангийн embedding дутуу / хуучирсан
+	// бичлэгүүдийг вектор болгож хадгална. Буцаах утга нь шинэчлэгдсэн
+	// бичлэгийн тоо. Embedder тохируулаагүй бол 0, алдаагүй.
+	EmbedKnowledge(ctx context.Context) (int, error)
+	// WarmKnowledgeEmbeddings нь EmbedKnowledge-ийг арын дэвсгэрт ажиллуулж
+	// зөвхөн логдоно (ачаалалтын дараа дуудна).
+	WarmKnowledgeEmbeddings(ctx context.Context)
+
 	// ListPrompts нь тохируулдаг prompt давхаргуудыг буцаана (админ UI).
 	ListPrompts(ctx context.Context) ([]domain.AIPrompt, error)
 	// SetPrompt нь нэг давхаргын агуулгыг сольж, кэшийг хүчингүй болгоно.

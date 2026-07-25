@@ -97,12 +97,41 @@ aiTools := append(ai.DefaultTools(), ai.KnowledgeSearchTool(aiRepo), myTool)
 
 随平台附带的工具：
 
-- **`search_knowledge`** — 检索 `ai_knowledge` 表（标题/内容 `ILIKE` 加标签匹配，
-  取前 5 条）。基础防护规则要求模型在回答平台相关问题*之前*先调用它，
-  并在检索不到内容时回答“我不知道”，而不是猜测。通过插入数据行
-  （title/content/tags）扩充语料库；当数据量增大时，把
-  `repositories/postgres/ai` 中那条查询换成 tsvector 或 pgvector。
+- **`search_knowledge`** — 对 `ai_knowledge` 的**语义（向量）检索**。
+  问题会被向量化（`text-embedding-004`，`RETRIEVAL_QUERY`），并在 **pgvector**
+  中按余弦距离匹配（`embedding <=> $1`，HNSW 索引），因此换个说法提问也能找到正确条目。
+  低于 `minVectorScore`（0.55）的命中会被丢弃 — 「我不知道」胜过编造。
+  当未配置 embedder、向量化调用失败或没有命中达到阈值时，会回退到原先的
+  `ILIKE` 关键词查询；工具返回值会标明实际使用的模式
+  （`"mode": "vector" | "keyword"`）。基础防护规则要求模型在回答平台问题*之前*调用它。
 - **`get_server_time`** — 一个最小演示（乌兰巴托时间），零依赖。
+
+## 知识库（RAG）
+
+平台自身的知识存放在 `ai_knowledge` 中 — 约 58 个依据代码与文档撰写的条目
+（迁移 `48_ai_knowledge_platform_corpus`）。每行都有稳定的 `slug`（seed 依此 upsert）、
+`source`、`lang` 以及 `vector(768)` 类型的 `embedding`
+（迁移 `47_ai_knowledge_vector`，pgvector + HNSW 索引）。
+
+- **向量回填。** API 启动后会把 `embedding` 为 NULL、或 `content_hash` 与当前文本
+  不再匹配的行按每批 20 条进行向量化（`EmbedKnowledge`）。它在后台运行，不阻塞启动；
+  未配置 `GEMINI_API_KEY` 时为空操作（检索退回关键词方式）。
+- **修改语料。** 在迁移中新增或修改条目（保留 `slug`），然后重启，或调用
+  `POST /api/v1/admin/ai/knowledge/reindex`（需 `settings.manage`；
+  管理 → 设置 中也有按钮）。修改 `content` 会清空已存向量，由回填重新计算。
+- **模型。** `GEMINI_EMBED_MODEL`（默认 `text-embedding-004`，768 维）。
+  换用维度不同的模型需要迁移来修改该列。
+
+## 回复的多样性
+
+同一个问题永远不会得到逐字相同的回答：
+
+- 系统提示词包含 `[НАЙРУУЛГА]` 小节：固定的防重复规则，加上每次请求随机选取的
+  一个行文风格提示（`styleHints`）。
+- 采样：`temperature` 1.0，`topP` 0.95。
+
+变化的只有*措辞*。规则中明确写明事实、数字、步骤与来源保持不变 —
+准确性由知识库与工具提供，而非措辞。
 
 ## 语音
 

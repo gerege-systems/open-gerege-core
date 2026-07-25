@@ -329,6 +329,7 @@ Hydra** (`ProviderConfigured()`).
 | DELETE | `/admin/users/{id}` | 🛡️ `users.manage` | Удалить пользователя. |
 | GET | `/admin/ai/prompts` | 🛡️ `settings.manage` | Список настраиваемых слоёв промпта AI. |
 | PUT | `/admin/ai/prompts/{key}` | 🛡️ `settings.manage` | Обновить слой промпта (`key` ∈ `scope` \| `instructions`). |
+| POST | `/admin/ai/knowledge/reindex` | 🛡️ `settings.manage` | Пересчитать векторы записей базы знаний, у которых он отсутствует или устарел; возвращает `{ "embedded": n }`. Без `GEMINI_API_KEY` — пустая операция. |
 
 > **О названии.** Эта внутренняя группа `/api/v1/admin` не связана с
 > операторской поверхностью Hydra `/admin` верхнего уровня, описанной ниже в

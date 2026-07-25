@@ -18,13 +18,55 @@ import (
 
 // fakeAIRepo нь AIRepository-ийн in-memory fake.
 type fakeAIRepo struct {
-	prompts    map[string]string
-	knowledge  []domain.AIKnowledge
+	prompts   map[string]string
+	knowledge []domain.AIKnowledge
+	// vectorHits нь SearchKnowledgeByVector-ийн буцаах үр дүн (score-той).
+	vectorHits []domain.AIKnowledge
+	vectorErr  error
+	// pending нь embedding хүлээж буй бичлэгүүд; saved нь хадгалагдсан вектор.
+	pending    []domain.AIKnowledgeChunk
+	saved      map[int][]float32
+	savedHash  map[int]string
 	listErr    error
 	listCalls  int
 	lastQuery  string
+	lastVector []float32
 	setCalls   int
 	lastSetKey string
+}
+
+func (f *fakeAIRepo) SearchKnowledgeByVector(_ context.Context, embedding []float32, _ int) ([]domain.AIKnowledge, error) {
+	f.lastVector = embedding
+	if f.vectorErr != nil {
+		return nil, f.vectorErr
+	}
+	return f.vectorHits, nil
+}
+
+// ListKnowledgeForEmbedding нь pending-ийг нэг удаа өгөөд хоослоно — backfill
+// давталт төгсгөлгүй эргэлдэхгүй.
+func (f *fakeAIRepo) ListKnowledgeForEmbedding(_ context.Context, limit int) ([]domain.AIKnowledgeChunk, error) {
+	if len(f.pending) == 0 {
+		return nil, nil
+	}
+	if limit > 0 && limit < len(f.pending) {
+		out := f.pending[:limit]
+		f.pending = f.pending[limit:]
+		return out, nil
+	}
+	out := f.pending
+	f.pending = nil
+	return out, nil
+}
+
+func (f *fakeAIRepo) SaveKnowledgeEmbedding(_ context.Context, id int, embedding []float32, hash string) error {
+	if f.saved == nil {
+		f.saved = map[int][]float32{}
+		f.savedHash = map[int]string{}
+	}
+	f.saved[id] = embedding
+	f.savedHash[id] = hash
+	return nil
 }
 
 func (f *fakeAIRepo) ListPrompts(_ context.Context) ([]domain.AIPrompt, error) {
@@ -130,7 +172,7 @@ func TestKnowledgeSearchTool(t *testing.T) {
 	repo := &fakeAIRepo{knowledge: []domain.AIKnowledge{
 		{ID: 1, Title: "Нууц үг сэргээх", Content: "«Нууц үгээ мартсан» холбоосыг ашиглана."},
 	}}
-	tool := KnowledgeSearchTool(repo)
+	tool := KnowledgeSearchTool(repo, nil)
 	assert.Equal(t, "search_knowledge", tool.Declaration.Name)
 
 	res, err := tool.Execute(context.Background(), map[string]any{"query": "нууц үг"})
@@ -145,7 +187,7 @@ func TestKnowledgeSearchTool(t *testing.T) {
 }
 
 func TestKnowledgeSearchToolEmptyQuery(t *testing.T) {
-	tool := KnowledgeSearchTool(&fakeAIRepo{})
+	tool := KnowledgeSearchTool(&fakeAIRepo{}, nil)
 	res, err := tool.Execute(context.Background(), nil)
 	require.NoError(t, err)
 	assert.NotNil(t, res["note"])

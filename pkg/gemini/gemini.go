@@ -98,7 +98,10 @@ type Tool struct {
 // GenerationConfig нь generation-ий сонголттой тохиргоо. ResponseModalities
 // + SpeechConfig нь TTS model-уудад ("AUDIO" modality) хэрэглэгдэнэ.
 type GenerationConfig struct {
-	Temperature        *float64      `json:"temperature,omitempty"`
+	Temperature *float64 `json:"temperature,omitempty"`
+	// TopP нь nucleus sampling — Temperature-тэй хамт хариултын олон
+	// янз байдлыг тохируулна (1.0 = бүх боломжит үг).
+	TopP               *float64      `json:"topP,omitempty"`
 	MaxOutputTokens    int           `json:"maxOutputTokens,omitempty"`
 	ResponseModalities []string      `json:"responseModalities,omitempty"`
 	SpeechConfig       *SpeechConfig `json:"speechConfig,omitempty"`
@@ -200,7 +203,10 @@ type Client struct {
 	base   string
 	apiKey string
 	model  string
-	http   *http.Client
+	// embedModel нь мэдлэгийн сангийн вектор (embedding) үүсгэх model —
+	// chat model-оос тусдаа (embed.go). Хоосон бол text-embedding-004.
+	embedModel string
+	http       *http.Client
 	// sleep-ийг тестэд override хийнэ (бодит backoff хүлээхгүйн тулд).
 	sleep func(ctx context.Context, d time.Duration) error
 }
@@ -221,6 +227,15 @@ func NewClient(base, apiKey, model string) *Client {
 		http:   &http.Client{Timeout: 60 * time.Second},
 		sleep:  sleepCtx,
 	}
+}
+
+// WithEmbedModel нь embedding-ийн model-ыг сольж, тухайн client-ийг буцаана
+// (сүлжсэн тохиргоо). Хоосон утга нь өгөгдмөлийг хэвээр үлдээнэ.
+func (c *Client) WithEmbedModel(model string) *Client {
+	if model != "" {
+		c.embedModel = model
+	}
+	return c
 }
 
 // GenerateContent нь generateContent-ийг дуудаж, түр зуурын алдаан дээр

@@ -63,3 +63,22 @@ func (h Handler) SetPrompt(w http.ResponseWriter, r *http.Request) error {
 	}
 	return v1.NewSuccessResponse(w, r, http.StatusOK, "prompt updated", nil)
 }
+
+// ReindexKnowledge godoc
+// @Summary      Мэдлэгийн сангийн embedding-ийг шинэчлэх
+// @Description  ai_knowledge хүснэгтийн embedding дутуу эсвэл агуулга нь өөрчлөгдсөн (hash зөрсөн) бичлэгүүдийг Gemini-ээр дахин вектор болгож хадгална. Мэдлэгийн сангаа засварласны дараа дуудна — семантик хайлт шууд шинэчлэгдэнэ. GEMINI_API_KEY тохируулаагүй бол 0 буцаана (алдаа биш).
+// @Tags         admin
+// @Produce      json
+// @Security     BearerAuth
+// @Success      200  {object}  v1.BaseResponse  "Embedded count"
+// @Failure      401  {object}  v1.BaseResponse  "Missing/invalid token"
+// @Failure      403  {object}  v1.BaseResponse  "Missing settings.manage permission"
+// @Failure      500  {object}  v1.BaseResponse  "Embedding failed"
+// @Router       /admin/ai/knowledge/reindex [post]
+func (h Handler) ReindexKnowledge(w http.ResponseWriter, r *http.Request) error {
+	n, err := h.usecase.EmbedKnowledge(r.Context())
+	if err != nil {
+		return v1.RespondWithError(w, r, err)
+	}
+	return v1.NewSuccessResponse(w, r, http.StatusOK, "knowledge reindexed", map[string]int{"embedded": n})
+}

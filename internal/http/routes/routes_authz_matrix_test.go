@@ -130,6 +130,11 @@ func TestAuthorizationMatrix(t *testing.T) {
 			want: expectations{"anon": 401, "user": 403, "legacy": 403, "manager": 403, "admin": 200},
 		},
 		{
+			name: "admin AI knowledge reindex (settings.manage)", method: http.MethodPost,
+			path: "/api/v1/admin/ai/knowledge/reindex",
+			want: expectations{"anon": 401, "user": 403, "legacy": 403, "manager": 403, "admin": 200},
+		},
+		{
 			// roles.manage: зөвхөн admin.
 			name: "rbac roles list (roles.manage)", method: http.MethodGet, path: "/api/v1/rbac/roles",
 			want: expectations{"anon": 401, "user": 403, "legacy": 403, "manager": 403, "admin": 200},

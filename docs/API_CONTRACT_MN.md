@@ -326,6 +326,7 @@ Gerege Core (core.gerege.mn)-ийн хайлтын wrap; service токен back
 | DELETE | `/admin/users/{id}` | 🛡️ `users.manage` | Хэрэглэгч устгах. |
 | GET | `/admin/ai/prompts` | 🛡️ `settings.manage` | Тохируулж болох AI prompt давхаргуудыг жагсаах. |
 | PUT | `/admin/ai/prompts/{key}` | 🛡️ `settings.manage` | Prompt давхарга шинэчлэх (`key` ∈ `scope` \| `instructions`). |
+| POST | `/admin/ai/knowledge/reindex` | 🛡️ `settings.manage` | Мэдлэгийн сангийн вектор дутуу/хуучирсан мөрүүдийг дахин embed хийнэ; `{ "embedded": n }` буцаана. `GEMINI_API_KEY`-гүй бол юу ч хийхгүй. |
 
 > **Нэрийн тэмдэглэл.** Апп доторх энэ `/api/v1/admin` бүлэг нь доор *Non-`/api`
 > mounts*-д баримтжуулсан дээд түвшний `/admin` Hydra оператор гадаргуутай огт

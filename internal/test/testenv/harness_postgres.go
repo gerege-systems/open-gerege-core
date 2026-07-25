@@ -68,7 +68,11 @@ func startPostgres(t *testing.T, runMigrations bool) *pgxpool.Pool {
 	)
 
 	c, err := postgres.Run(ctx,
-		"postgres:16-alpine",
+		// pgvector-тэй image — migration 47 нь `CREATE EXTENSION vector`
+		// хийдэг тул extension-гүй image дээр интеграци тест унана.
+		// Тестэд collation хамаагүй тул албан ёсны Debian суурьтай
+		// image-ийг шууд ашиглана (compose нь alpine дээрээ эмхэтгэдэг).
+		"pgvector/pgvector:pg16",
 		postgres.WithDatabase(dbName),
 		postgres.WithUsername(dbUser),
 		postgres.WithPassword(dbPass),

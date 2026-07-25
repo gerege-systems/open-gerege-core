@@ -1859,6 +1859,36 @@ paths:
       summary: OpenID Connect discovery баримт
       tags:
       - oidc
+  /admin/ai/knowledge/reindex:
+    post:
+      description: ai_knowledge хүснэгтийн embedding дутуу эсвэл агуулга нь өөрчлөгдсөн
+        (hash зөрсөн) бичлэгүүдийг Gemini-ээр дахин вектор болгож хадгална. Мэдлэгийн
+        сангаа засварласны дараа дуудна — семантик хайлт шууд шинэчлэгдэнэ. GEMINI_API_KEY
+        тохируулаагүй бол 0 буцаана (алдаа биш).
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Embedded count
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+        "401":
+          description: Missing/invalid token
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+        "403":
+          description: Missing settings.manage permission
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+        "500":
+          description: Embedding failed
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      security:
+      - BearerAuth: []
+      summary: Мэдлэгийн сангийн embedding-ийг шинэчлэх
+      tags:
+      - admin
   /admin/ai/prompts:
     get:
       description: Тохируулдаг prompt давхаргуудыг (scope — хамрах хүрээ, instructions

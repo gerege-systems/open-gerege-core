@@ -216,6 +216,7 @@ GEMINI_API_KEY=                  # 留空 = 停用 AI（相关端点返回 500�
 GEMINI_MODEL=gemini-2.5-flash    # 可选覆盖（聊天 / STT / 翻译）
 GEMINI_TTS_MODEL=gemini-2.5-flash-preview-tts  # 可选覆盖（TTS）
 GEMINI_VOICE=Kore                # 可选的预置 TTS 音色
+GEMINI_EMBED_MODEL=text-embedding-004  # 知识库向量模型（768 维，须与 ai_knowledge.embedding 一致）
 GEMINI_API_BASE=                 # 可选覆盖（默认：Google generativelanguage v1beta）
 AI_SCOPE_PROMPT=                 # 当数据库 'scope' 提示词层为空时的兜底值
 

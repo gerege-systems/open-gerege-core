@@ -53,5 +53,7 @@ func (rt *adminRoute) Routes() {
 		manageSettings := middlewares.RequirePermission(rt.rbacUC, domain.PermSettingsManage)
 		r.With(manageSettings).Get("/ai/prompts", v1.Wrap(rt.aiHandler.ListPrompts))
 		r.With(manageSettings).Put("/ai/prompts/{key}", v1.Wrap(rt.aiHandler.SetPrompt))
+		// Мэдлэгийн сангийн вектор индексийг гараар шинэчлэх (агуулга засварласны дараа).
+		r.With(manageSettings).Post("/ai/knowledge/reindex", v1.Wrap(rt.aiHandler.ReindexKnowledge))
 	})
 }

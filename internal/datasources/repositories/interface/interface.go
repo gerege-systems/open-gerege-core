@@ -364,6 +364,15 @@ type AIRepository interface {
 	// буцаана (title/content ILIKE + tag тэнцэл). AI-ийн search_knowledge
 	// tool үүгээр ажилладаг.
 	SearchKnowledge(ctx context.Context, query string, limit int) ([]domain.AIKnowledge, error)
+	// SearchKnowledgeByVector нь query-ийн embedding-т хамгийн ойр бичлэгүүдийг
+	// cosine ойролцоолол (pgvector) -оор буцаана. Embedding хийгдээгүй мөрүүд
+	// орхигдоно; огт байхгүй бол хоосон жагсаалт (дуудагч ILIKE рүү унана).
+	SearchKnowledgeByVector(ctx context.Context, embedding []float32, limit int) ([]domain.AIKnowledge, error)
+	// ListKnowledgeForEmbedding нь embedding дутуу эсвэл агуулга нь өөрчлөгдсөн
+	// (hash зөрсөн) бичлэгүүдийг backfill-д зориулж буцаана.
+	ListKnowledgeForEmbedding(ctx context.Context, limit int) ([]domain.AIKnowledgeChunk, error)
+	// SaveKnowledgeEmbedding нь тооцоолсон векторыг hash-тай нь хамт хадгална.
+	SaveKnowledgeEmbedding(ctx context.Context, id int, embedding []float32, hash string) error
 }
 
 // AuditLogRow нь hash-chained audit_log хүснэгтийн нэг мөрийн уншсан хэлбэр —

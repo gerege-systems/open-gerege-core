@@ -262,3 +262,56 @@ func TestRun_FallbackIsLocalised(t *testing.T) {
 		})
 	}
 }
+
+// Хариултын олон янз байдал: ижил асуултад ижил үг хэллэг давтагдахгүй байх
+// prompt давхарга + sampling тохиргоо.
+func TestRun_VarietyLayer(t *testing.T) {
+	gen := &fakeGenerator{responses: []gemini.Response{textResponse("ok"), textResponse("ok")}}
+	// Rand-ыг детерминистик болгож дараалсан хувилбар сонгуулна.
+	var seq int
+	uc := NewUsecase(gen, gen, nil, nil, Config{Rand: func(n int) int {
+		v := seq % n
+		seq++
+		return v
+	}})
+
+	for i := 0; i < 2; i++ {
+		_, err := uc.Run(context.Background(), RunRequest{Prompt: "нэвтрэлт яаж хийх вэ?"})
+		require.NoError(t, err)
+	}
+	require.Len(t, gen.requests, 2)
+
+	first := gen.requests[0].SystemInstruction.Parts[0].Text
+	second := gen.requests[1].SystemInstruction.Parts[0].Text
+
+	// Давтагдлаас сэргийлэх дүрэм байнга орно...
+	assert.Contains(t, first, "[НАЙРУУЛГА]")
+	assert.Contains(t, first, varietyRule)
+	assert.Contains(t, second, varietyRule)
+	// ...харин найруулгын хувилбар хүсэлт бүрд өөр байна.
+	assert.Contains(t, first, styleHints[0])
+	assert.Contains(t, second, styleHints[1])
+	assert.NotEqual(t, first, second)
+
+	// Sampling — олон янз байдлыг model түвшинд ч өгнө.
+	cfg := gen.requests[0].GenerationConfig
+	require.NotNil(t, cfg)
+	require.NotNil(t, cfg.Temperature)
+	require.NotNil(t, cfg.TopP)
+	assert.InDelta(t, chatTemperature, *cfg.Temperature, 0.0001)
+	assert.InDelta(t, chatTopP, *cfg.TopP, 0.0001)
+}
+
+// Найруулга солигдох нь ФАКТЫГ өөрчлөх зөвшөөрөл биш — дүрэмд агуулга
+// тогтвортой байх шаардлага заавал орсон байна.
+func TestRun_VarietyKeepsFactsStable(t *testing.T) {
+	gen := &fakeGenerator{responses: []gemini.Response{textResponse("ok")}}
+	uc := NewUsecase(gen, gen, nil, nil, Config{})
+
+	_, err := uc.Run(context.Background(), RunRequest{Prompt: "x"})
+	require.NoError(t, err)
+
+	sys := gen.requests[0].SystemInstruction.Parts[0].Text
+	assert.Contains(t, sys, "БАРИМТ")
+	assert.Contains(t, sys, "зөвхөн найруулга")
+}

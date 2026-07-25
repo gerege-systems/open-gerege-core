@@ -386,14 +386,28 @@ func NewApp() (*App, error) {
 	// AI pipeline — Gemini REST client + function-calling tools. TTS нь
 	// audio гаргадаг тусдаа model тул өөр client-ээр явна. Repo нь DB-ээс
 	// тохируулдаг prompt давхаргууд + search_knowledge tool-ийн мэдлэгийн сан.
-	geminiClient := gemini.NewClient(config.AppConfig.GeminiAPIBase, config.AppConfig.GeminiAPIKey, config.AppConfig.GeminiModel)
+	geminiClient := gemini.NewClient(config.AppConfig.GeminiAPIBase, config.AppConfig.GeminiAPIKey, config.AppConfig.GeminiModel).
+		WithEmbedModel(config.AppConfig.GeminiEmbedModel)
 	geminiTTSClient := gemini.NewClient(config.AppConfig.GeminiAPIBase, config.AppConfig.GeminiAPIKey, config.AppConfig.GeminiTTSModel)
 	aiRepo := aipostgres.NewAIRepository(pool)
-	aiTools := append(ai.DefaultTools(), ai.KnowledgeSearchTool(aiRepo))
+	// search_knowledge нь эхлээд семантик (вектор) хайлт хийж, боломжгүй үед
+	// түлхүүр үгийн хайлт руу унана — embedder нь chat client-тэй ижил
+	// Gemini client (embedding model нь тусдаа).
+	aiTools := append(ai.DefaultTools(), ai.KnowledgeSearchTool(aiRepo, geminiClient))
 	aiUC := ai.NewUsecase(geminiClient, geminiTTSClient, aiRepo, aiTools, ai.Config{
 		Voice:       config.AppConfig.GeminiVoice,
 		ScopePrompt: config.AppConfig.AIScopePrompt,
+		Embedder:    geminiClient,
 	})
+
+	// Мэдлэгийн сангийн embedding-ийг арын дэвсгэрт гүйцээнэ: migration-аар
+	// шинэ/өөрчлөгдсөн бичлэг орж ирвэл эхний ачаалалтад вектор нь тооцоологдоно.
+	// Boot-ыг блоклохгүй; алдаа гарвал зөвхөн логдож, хайлт ILIKE-аар ажиллана.
+	go func() {
+		warmCtx, cancel := context.WithTimeout(context.Background(), 10*time.Minute)
+		defer cancel()
+		aiUC.WarmKnowledgeEmbeddings(warmCtx)
+	}()
 
 	// PDF гарын үсэг (PAdES) — eidmongolia /v3-ээр. Серверийн байнгын
 	// Document-Signer гэрчилгээ + түлхүүрийг файлаас (SIGN_SIGNER_*) уншина;

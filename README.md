@@ -207,6 +207,7 @@ GEMINI_API_KEY=                  # empty = AI disabled (endpoints return 500)
 GEMINI_MODEL=gemini-2.5-flash    # optional override (chat / STT / translate)
 GEMINI_TTS_MODEL=gemini-2.5-flash-preview-tts  # optional override (TTS)
 GEMINI_VOICE=Kore                # optional prebuilt TTS voice
+GEMINI_EMBED_MODEL=text-embedding-004  # knowledge-base embeddings (768 dims — must match ai_knowledge.embedding)
 GEMINI_API_BASE=                 # optional override (default: Google generativelanguage v1beta)
 AI_SCOPE_PROMPT=                 # AI scope fallback when the DB 'scope' prompt layer is empty
 

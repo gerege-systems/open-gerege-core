@@ -330,6 +330,7 @@ ID).
 | DELETE | `/admin/users/{id}` | 🛡️ `users.manage` | Delete a user. |
 | GET | `/admin/ai/prompts` | 🛡️ `settings.manage` | List the configurable AI prompt layers. |
 | PUT | `/admin/ai/prompts/{key}` | 🛡️ `settings.manage` | Update a prompt layer (`key` ∈ `scope` \| `instructions`). |
+| POST | `/admin/ai/knowledge/reindex` | 🛡️ `settings.manage` | Re-embed knowledge-base rows whose vector is missing or stale; returns `{ "embedded": n }`. No-op without `GEMINI_API_KEY`. |
 
 > **Naming note.** This in-app `/api/v1/admin` group is unrelated to the
 > top-level `/admin` Hydra operator surface documented under *Non-`/api`

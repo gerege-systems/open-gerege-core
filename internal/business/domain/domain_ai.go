@@ -32,4 +32,22 @@ type AIKnowledge struct {
 	Title   string
 	Content string
 	Tags    []string
+	// Slug нь тогтвортой танигч (seed-ийн upsert түлхүүр); Source нь агуулга
+	// хаанаас гаралтай (docs/backend/frontend) — хариултад эх сурвалж дурдах,
+	// засварлахад мөрдөх боломж өгнө.
+	Slug   string
+	Source string
+	// Score нь вектор хайлтын cosine ойролцоолол (0..1). Түлхүүр үгийн
+	// (ILIKE) fallback хайлтад 0 үлдэнэ.
+	Score float64
+}
+
+// AIKnowledgeChunk нь embedding хийгдэх ёстой нэг бичлэг (backfill).
+type AIKnowledgeChunk struct {
+	ID    int
+	Title string
+	// Content нь embed хийх бүтэн текст (гарчиг + агуулга).
+	Content string
+	// Hash нь агуулгын одоогийн hash — embedding-ийг хамт хадгална.
+	Hash string
 }
