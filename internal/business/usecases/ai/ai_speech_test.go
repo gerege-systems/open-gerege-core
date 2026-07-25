@@ -78,14 +78,42 @@ func TestSpeakTransientFailureIsUnavailable(t *testing.T) {
 	}
 }
 
-// Бусад алдаа (буруу хариу, тохиргооны алдаа г.м.) 500 хэвээр.
-func TestSpeakOtherFailureStaysInternal(t *testing.T) {
-	tts := &fakeGenerator{errs: []error{errors.New("boom")}}
+// TTS-ийн алдаанууд (аудиогүй хариу, model «унших» биш «хариулах» горимд орсны
+// 400 г.м.) нь тогтмол биш тул дахин оролдоод эцэст нь 503 болно — дуудагчид
+// «дараа дахин оролд» гэсэн зөв дохио өгнө. Бодит шалтгаан логд үлдэнэ.
+func TestSpeakFailureAfterRetriesIsUnavailable(t *testing.T) {
+	tts := &fakeGenerator{errs: []error{errors.New("boom"), errors.New("boom"), errors.New("boom")}}
 	uc := NewUsecase(&fakeGenerator{}, tts, nil, nil, Config{})
 
 	_, err := uc.Speak(context.Background(), SpeakRequest{Text: "сайн уу"})
 	require.Error(t, err)
+	assert.True(t, apperror.Is(err, apperror.ErrTypeUnavailable))
+	assert.Len(t, tts.requests, speakAttempts)
+}
+
+// STT дээр ангилал өөрчлөгдөөгүй — бодит алдаа 500 хэвээр.
+func TestTranscribeOtherFailureStaysInternal(t *testing.T) {
+	gen := &fakeGenerator{errs: []error{errors.New("boom")}}
+	uc := NewUsecase(gen, gen, nil, nil, Config{})
+
+	_, err := uc.Transcribe(context.Background(), TranscribeRequest{Audio: testAudio})
+	require.Error(t, err)
 	assert.True(t, apperror.Is(err, apperror.ErrTypeInternal))
+}
+
+// TTS-д илгээх текст нь «унш, бүү хариул» зааврыг агуулна — үүнгүй бол model
+// богино асуултыг уншихын оронд хариулах гэж оролддог (бодит 400).
+func TestSpeakSendsReadAloudInstruction(t *testing.T) {
+	pcm := []byte{0x01, 0x02}
+	tts := &fakeGenerator{responses: []gemini.Response{audioResponse("audio/L16;codec=pcm;rate=24000", pcm)}}
+	uc := NewUsecase(&fakeGenerator{}, tts, nil, nil, Config{})
+
+	_, err := uc.Speak(context.Background(), SpeakRequest{Text: "eID гэж юу вэ?"})
+	require.NoError(t, err)
+
+	sent := tts.requests[0].Contents[0].Parts[0].Text
+	assert.Contains(t, sent, "Do not answer it")
+	assert.Contains(t, sent, "eID гэж юу вэ?", "хэрэглэгчийн текст өөрчлөгдөхгүй")
 }
 
 func TestSpeakWrapsPCMAsWAV(t *testing.T) {

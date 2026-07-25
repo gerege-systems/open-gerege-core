@@ -55,12 +55,29 @@ func (uc *usecase) Transcribe(ctx context.Context, req TranscribeRequest) (Trans
 	return TranscribeResult{Text: resp.Text()}, nil
 }
 
-// speakAttempts — TTS model нь ХААЯА амжилттай (200) хариу буцаагаад дотор нь
-// аудио хийхгүй байдаг. Хэмжилтээр ижил текст нэг удаа хоосон, дараагийн
-// оролдлогод бүтэн ирдэг тул энэ нь агуулгын биш, түр зуурын алдаа —
-// хэрэглэгчид алдаа өгөхийн өмнө хэдэн удаа дахин оролдоно. Нэг дуудалт
-// 3-5 секунд тул AIRequestTimeout (50с)-д гурав багтана.
+// speakAttempts — TTS дуудалт үе үе бүтэлгүйтдэг (доорх speakInstruction-ийг
+// үзнэ үү) тул хэрэглэгчид алдаа өгөхийн өмнө хэдэн удаа дахин оролдоно.
+// Нэг дуудалт 3-5 секунд тул AIRequestTimeout (50с)-д гурав багтана.
 const speakAttempts = 3
+
+// speakInstruction нь TTS model-д «унш, бүү хариул» гэдгийг ил хэлнэ.
+//
+// Яагаад хэрэгтэй вэ: зөвхөн текстийг дангаар нь илгээхэд model нь богино
+// өгүүлбэр, ялангуяа асуултыг (ж: «eID гэж юу вэ?») УНШИХЫН оронд ХАРИУЛАХ
+// гэж оролддог. Тэр үед API нь аудиогүй хариу, эсвэл шууд алдаа буцаадаг:
+//
+//	400 "Model tried to generate text, but it should only be used for TTS.
+//	     Make sure your instructions are clear to only generate audio from a
+//	     given text transcript."
+//
+// Заавар нь Google-ийн баримтжуулсан хэв маяг («Say: …») — model зөвхөн
+// хоёр цэгийн дараах текстийг дуугаргана.
+const speakInstruction = "Read the following text aloud in its own language, " +
+	"exactly as written, with a natural and calm tone. Do not answer it, do not " +
+	"translate it, do not add or omit anything — only speak this text:\n\n"
+
+// wrapSpeakText нь зааврыг текстэд хавсаргана.
+func wrapSpeakText(text string) string { return speakInstruction + text }
 
 func (uc *usecase) Speak(ctx context.Context, req SpeakRequest) (SpeakResult, error) {
 	voice := req.Voice
@@ -68,7 +85,7 @@ func (uc *usecase) Speak(ctx context.Context, req SpeakRequest) (SpeakResult, er
 		voice = uc.cfg.Voice
 	}
 	geminiReq := gemini.Request{
-		Contents: []gemini.Content{{Role: "user", Parts: []gemini.Part{{Text: req.Text}}}},
+		Contents: []gemini.Content{{Role: "user", Parts: []gemini.Part{{Text: wrapSpeakText(req.Text)}}}},
 		GenerationConfig: &gemini.GenerationConfig{
 			ResponseModalities: []string{"AUDIO"},
 			SpeechConfig: &gemini.SpeechConfig{
@@ -79,23 +96,33 @@ func (uc *usecase) Speak(ctx context.Context, req SpeakRequest) (SpeakResult, er
 		},
 	}
 
+	var lastErr error
 	for attempt := 1; attempt <= speakAttempts; attempt++ {
 		resp, err := uc.ttsClient.GenerateContent(ctx, geminiReq)
-		if err != nil {
+		switch {
+		case err == nil:
+			if blob := resp.InlineAudio(); blob != nil {
+				return toWAV(*blob)
+			}
+			lastErr = errors.New("no audio in response")
+		case errors.Is(err, gemini.ErrNotConfigured), ctx.Err() != nil:
+			// Тохиргооны алдаа / хугацаа дууссан — дахин оролдох нь утгагүй.
 			return SpeakResult{}, speechError("ai speak", err)
+		default:
+			// Model «унших» биш «хариулах» горимд орсон үеийн 400 нь тогтмол
+			// биш — дахин оролдоход эдгэрдэг тул энд ч гэсэн дахин оролдоно.
+			lastErr = err
 		}
-		if blob := resp.InlineAudio(); blob != nil {
-			return toWAV(*blob)
-		}
-		logger.WarnWithContext(ctx, "ai: tts returned no audio, retrying", logger.Fields{
+		logger.WarnWithContext(ctx, "ai: tts attempt failed, retrying", logger.Fields{
 			constants.LoggerCategory: constants.LoggerCategoryAI,
 			"attempt":                attempt,
 			"attempts":               speakAttempts,
+			"error":                  lastErr.Error(),
 		})
 	}
-	// Бүх оролдлого хоосон — түр зуурын саатал (503), дотоод алдаа биш.
+	// Бүх оролдлого бүтэлгүй — түр зуурын саатал (503), дотоод алдаа биш.
 	return SpeakResult{}, apperror.UnavailableCause(
-		fmt.Errorf("ai speak: no audio in response after %d attempts", speakAttempts))
+		fmt.Errorf("ai speak: %d attempts failed: %w", speakAttempts, lastErr))
 }
 
 // toWAV нь TTS-ийн түүхий PCM гаралтыг browser тоглуулж чадах WAV болгоно;
