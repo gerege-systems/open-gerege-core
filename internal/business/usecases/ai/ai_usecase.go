@@ -28,6 +28,11 @@ type Usecase interface {
 	// (Degraded=true) намжаана; зөвхөн тохиргооны алдааг error болгоно.
 	Run(ctx context.Context, req RunRequest) (RunResult, error)
 
+	// RunStream нь Run-тэй ижил боловч эцсийн хариултыг хэсэг хэсгээр нь
+	// emit руу дамжуулна (SSE). Дуут мессежийн хуулбарыг эхний event-ээр
+	// өгнө — тусдаа STT дуудалт хийхгүй тул нэг дуудалтаар шийднэ.
+	RunStream(ctx context.Context, req RunRequest, emit func(StreamEvent) error) (RunResult, error)
+
 	// EmbedKnowledge нь мэдлэгийн сангийн embedding дутуу / хуучирсан
 	// бичлэгүүдийг вектор болгож хадгална. Буцаах утга нь шинэчлэгдсэн
 	// бичлэгийн тоо. Embedder тохируулаагүй бол 0, алдаагүй.
@@ -93,6 +98,9 @@ type (
 		Steps []Step
 		// Degraded нь Gemini амжилтгүй болж fallback мессеж буцаасныг заана.
 		Degraded bool
+		// Transcript нь дуут мессежийн текст хуулбар (streaming горимд
+		// хариулттай НЭГ дуудалтаар гардаг).
+		Transcript string
 	}
 
 	TranscribeRequest struct {

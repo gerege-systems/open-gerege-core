@@ -466,6 +466,24 @@ show what was actually heard instead of a "voice message" placeholder. When no
 speech is recognised the endpoint returns `200` with an empty `reply` and
 `degraded: true` (no second Gemini call).
 
+### POST `/public/ai/chat/stream` 🌐
+**No authentication.** The same request body, answered as **Server-Sent
+Events** (`text/event-stream`) — this is what the landing widget uses. Voice is
+handled in a **single** Gemini call: the model transcribes and answers in one
+pass, so there is no separate STT round-trip.
+
+| Event | Payload | Meaning |
+|-------|---------|---------|
+| `transcript` | `{"text": "…"}` | what the voice message said (once, before the answer) |
+| `delta` | `{"text": "…"}` | next slice of the answer |
+| `reset` | `{}` | discard deltas received so far (the model spoke before calling a tool) |
+| `done` | `{"degraded": false, "transcript": "…"}` | end of stream |
+| `error` | `{"message": "…"}` | the stream failed after headers were sent |
+
+The response sets `X-Accel-Buffering: no` so a reverse proxy does not buffer the
+stream into one chunk. Rate limit, payload caps, tool set and guardrails are
+identical to `/public/ai/chat`.
+
 ### POST `/public/ai/tts` 🌐
 **No authentication.** The "listen" button in the landing widget — turns one
 assistant reply into speech. Shares the `/public/ai/*` rate limiter (~6 req/min

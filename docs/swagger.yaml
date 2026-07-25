@@ -3928,6 +3928,44 @@ paths:
       summary: Нээлттэй AI туслах (нэвтрэлтгүй)
       tags:
       - ai
+  /public/ai/chat/stream:
+    post:
+      consumes:
+      - application/json
+      description: 'PublicChat-тай ижил боловч хариултыг хэсэг хэсгээр нь Server-Sent
+        Events-ээр илгээнэ (text/event-stream). Event-үүд: `transcript` (дуут мессежийн
+        текст хуулбар — НЭГ дуудалтаар хариулттай хамт гардаг, тусдаа STT дуудлага
+        байхгүй), `delta` (хариултын дараагийн хэсэг), `reset` (өмнөх delta-г хаях),
+        `done` (төгсгөл; degraded талбартай), `error`. Хязгаарууд PublicChat-тай ижил.'
+      parameters:
+      - description: Chat message (text and/or audio) + optional short history
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/template_internal_http_datatransfers_requests.AIPublicChatRequest'
+      produces:
+      - text/event-stream
+      responses:
+        "200":
+          description: SSE stream
+          schema:
+            type: string
+        "400":
+          description: Malformed JSON body / message and audio both missing
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+        "422":
+          description: Validation error
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+        "429":
+          description: Rate limit exceeded
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      summary: Нээлттэй AI чат — урсгалаар (SSE)
+      tags:
+      - ai
   /public/ai/tts:
     post:
       consumes:

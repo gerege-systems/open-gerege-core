@@ -141,13 +141,22 @@ an extra hardcoded prompt layer that tells the assistant it is talking to a
 visitor — never ask for personal data, never claim to see account records,
 point to signing in when the question needs one.
 
-The widget is voice-capable: **push-to-talk** (hold the mic, release to send)
-posts a short clip in the same `/public/ai/chat` call — the chat model is
-multimodal, so there is no separate STT step. Clips are capped at ~250 KB
-base64 (≈ 15 s), a quarter of what the authenticated chat accepts. Replies are
-text; a per-message "listen" button calls `POST /public/ai/tts` (text ≤ 800
-chars, server-chosen voice), so speech synthesis only ever runs when a visitor
-explicitly asks for it.
+The widget is voice-capable and streams. **Push-to-talk** (hold the big round
+button, release to send) posts a short clip — capped at ~250 KB base64 (≈ 15 s),
+a quarter of what the authenticated chat accepts — to
+`POST /public/ai/chat/stream`, which answers with Server-Sent Events. The chat
+model is multimodal, so **one** call both transcribes and answers: the first
+line of its output carries the transcript (an internal marker the server strips
+and sends as a `transcript` event), and the rest streams as `delta` events. That
+is why the widget shows what you said and starts printing the answer while the
+model is still writing.
+
+Spoken replies follow the same idea: the client cuts the streaming text at
+sentence boundaries and sends each finished sentence to `POST /public/ai/tts`
+(text ≤ 800 chars, server-chosen voice), playing them in order. Speaking starts
+after the first sentence instead of after the whole answer. Typed questions get
+a text answer only — synthesis runs when the visitor asked by voice or pressed
+the per-message "listen" button, never automatically for everyone.
 
 ## Knowledge base (RAG)
 

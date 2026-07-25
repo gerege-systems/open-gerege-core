@@ -204,6 +204,14 @@ type Generator interface {
 	GenerateContent(ctx context.Context, req Request) (Response, error)
 }
 
+// Streamer нь хариултыг хэсэг хэсгээр нь буцаадаг гадаргуу. Client үүнийг
+// хэрэгжүүлдэг; usecase нь дуудагдсан client streaming дэмждэг эсэхийг
+// төрлийн шалгалтаар (type assertion) мэдээд, эс дэмжвэл энгийн дуудалт руу
+// уналт хийнэ (тестийн хуурамч Generator-ууд ингэж ажиллана).
+type Streamer interface {
+	StreamGenerateContent(ctx context.Context, req Request, onText func(string) error) (Response, error)
+}
+
 // Client нь Gemini API руу залгадаг HTTP client.
 type Client struct {
 	base   string

@@ -3155,6 +3155,58 @@
                 }
             }
         },
+        "/public/ai/chat/stream": {
+            "post": {
+                "description": "PublicChat-тай ижил боловч хариултыг хэсэг хэсгээр нь Server-Sent Events-ээр илгээнэ (text/event-stream). Event-үүд: `transcript` (дуут мессежийн текст хуулбар — НЭГ дуудалтаар хариулттай хамт гардаг, тусдаа STT дуудлага байхгүй), `delta` (хариултын дараагийн хэсэг), `reset` (өмнөх delta-г хаях), `done` (төгсгөл; degraded талбартай), `error`. Хязгаарууд PublicChat-тай ижил.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "text/event-stream"
+                ],
+                "tags": [
+                    "ai"
+                ],
+                "summary": "Нээлттэй AI чат — урсгалаар (SSE)",
+                "parameters": [
+                    {
+                        "description": "Chat message (text and/or audio) + optional short history",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_datatransfers_requests.AIPublicChatRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "SSE stream",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Malformed JSON body / message and audio both missing",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    },
+                    "429": {
+                        "description": "Rate limit exceeded",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/public/ai/tts": {
             "post": {
                 "description": "Нүүр хуудасны нээлттэй чатын хариултыг дуут (audio/wav, base64) болгоно. Нэвтрэлт шаардахгүй; текст 800 тэмдэгтээр, IP тус бүрт минутанд ~6 хүсэлтээр хязгаарлагдана.",

@@ -42,6 +42,9 @@ func (rt *publicAIRoute) Routes() {
 		r.Use(rt.rateLimiter.Middleware())
 
 		r.Post("/chat", v1.Wrap(rt.handler.PublicChat))
+		// Урсгалаар (SSE) — виджет үүнийг хэрэглэнэ: хариулт бичигдэж
+		// байхад нь харагдана, дуут мессежийн хуулбар эхний event-ээр ирнэ.
+		r.Post("/chat/stream", v1.Wrap(rt.handler.PublicChatStream))
 		// «Сонсох» товч — хариултыг дуут болгоно (нэг дуудалт = нэг мессеж).
 		r.Post("/tts", v1.Wrap(rt.handler.PublicSpeak))
 	})
