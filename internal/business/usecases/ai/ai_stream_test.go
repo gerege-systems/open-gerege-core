@@ -91,8 +91,11 @@ func TestRunStream_ExtractsTranscript(t *testing.T) {
 	assert.Equal(t, "Та eID-ээр нэвтэрнэ.", res.Reply)
 	assert.NotContains(t, res.Reply, transcriptMarker)
 
-	// Audio байхад system prompt-д хуулбарын заавар орсон байх ёстой.
-	assert.Contains(t, gen.requests[0].SystemInstruction.Parts[0].Text, transcriptMarker)
+	// Audio байхад system prompt-д хуулбарын заавар + нэр томьёоны сануулга
+	// (ойролцоо дуудлагатай үгийн андуурлыг багасгана) орсон байх ёстой.
+	sys := gen.requests[0].SystemInstruction.Parts[0].Text
+	assert.Contains(t, sys, transcriptMarker)
+	assert.Contains(t, sys, "eID")
 }
 
 // Текст мессежид хуулбарын заавар нэмэгдэхгүй — илүү токен, илүү эрсдэл.
