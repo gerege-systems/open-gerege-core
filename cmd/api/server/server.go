@@ -464,6 +464,11 @@ func NewApp() (*App, error) {
 	// IP тус бүрт ~6/мин (burst 3). Энгийн зочин 2-3 асуулт тавихад хангалттай,
 	// харин скриптээр Gemini-г шавхах оролдлогод хатуу тааз тавина.
 	publicAIRateLimiter := middlewares.NewRateLimiter(rate.Limit(6.0/60.0), 3)
+	// Дуут хариултыг өгүүлбэр тус бүрээр нь дуугаргадаг тул НЭГ хариулт
+	// хэд хэдэн богино TTS дуудалт үүсгэнэ. Чатын лимитэд (6/мин) багтаахад
+	// хариулт дунд нь 429 иддэг байсан — тиймээс тусдаа, өгөөмөр лимит.
+	// Дуудалт бүр богино (≤800 тэмдэгт) тул зардал хяналттай хэвээр.
+	publicTTSRateLimiter := middlewares.NewRateLimiter(rate.Limit(20.0/60.0), 8)
 	// /eid/poll нь unauthenticated бөгөөд IdP-г 25с хүртэл long-poll хийж
 	// холболт барьдаг. 5/мин-ийн чанга хязгаарт орвол long-poll өөрөө 429
 	// болно. Иймд тусдаа СУЛ limiter — IP тус бүрт ~60/мин (burst 30): frontend
@@ -572,7 +577,7 @@ func NewApp() (*App, error) {
 		}
 		routes.NewAIRoute(api, aiUC, authMiddleware, aiRateLimiter).Routes()
 		// Нүүр хуудасны нээлттэй чат — нэвтрэлтгүй, чанга rate limit-тэй.
-		routes.NewPublicAIRoute(api, publicAIUC, publicAIRateLimiter).Routes()
+		routes.NewPublicAIRoute(api, publicAIUC, publicAIRateLimiter, publicTTSRateLimiter).Routes()
 		routes.NewAuditRoute(api, auditUC, authMiddleware).Routes()
 		routes.NewSecurityRoute(api, securityUC, authMiddleware).Routes()
 		routes.NewSiteRoute(api, siteUC, rbacUC, authMiddleware).Routes()

@@ -25,27 +25,38 @@ type publicAIRoute struct {
 	handler     aihandler.Handler
 	router      chi.Router
 	rateLimiter *middlewares.RateLimiter
+	// ttsLimiter нь дуут хариултын лимит — чатаас тусдаа бөгөөд өгөөмөр:
+	// нэг хариултыг өгүүлбэр тус бүрээр нь дуугаргадаг тул хэд хэдэн богино
+	// дуудалт үүсдэг (чатын лимитэд багтаавал хариулт дунд нь тасардаг).
+	ttsLimiter *middlewares.RateLimiter
 }
 
 // NewPublicAIRoute нь нээлттэй чатын route модулийг бүтээнэ. aiUC нь нийтэд
 // зориулсан (хязгаарлагдмал tool-той) usecase байх ёстой.
-func NewPublicAIRoute(router chi.Router, aiUC aiuc.Usecase, rateLimiter *middlewares.RateLimiter) *publicAIRoute {
+func NewPublicAIRoute(router chi.Router, aiUC aiuc.Usecase, rateLimiter, ttsLimiter *middlewares.RateLimiter) *publicAIRoute {
 	return &publicAIRoute{
 		handler:     aihandler.NewHandler(aiUC),
 		router:      router,
 		rateLimiter: rateLimiter,
+		ttsLimiter:  ttsLimiter,
 	}
 }
 
 func (rt *publicAIRoute) Routes() {
 	rt.router.Route("/v1/public/ai", func(r chi.Router) {
-		r.Use(rt.rateLimiter.Middleware())
+		r.Group(func(chat chi.Router) {
+			chat.Use(rt.rateLimiter.Middleware())
 
-		r.Post("/chat", v1.Wrap(rt.handler.PublicChat))
-		// Урсгалаар (SSE) — виджет үүнийг хэрэглэнэ: хариулт бичигдэж
-		// байхад нь харагдана, дуут мессежийн хуулбар эхний event-ээр ирнэ.
-		r.Post("/chat/stream", v1.Wrap(rt.handler.PublicChatStream))
-		// «Сонсох» товч — хариултыг дуут болгоно (нэг дуудалт = нэг мессеж).
-		r.Post("/tts", v1.Wrap(rt.handler.PublicSpeak))
+			chat.Post("/chat", v1.Wrap(rt.handler.PublicChat))
+			// Урсгалаар (SSE) — виджет үүнийг хэрэглэнэ: хариулт бичигдэж
+			// байхад нь харагдана, дуут мессежийн хуулбар эхний event-ээр ирнэ.
+			chat.Post("/chat/stream", v1.Wrap(rt.handler.PublicChatStream))
+		})
+
+		// Дуут гаралт нь өөрийн лимиттэй (дээрх тайлбарыг үзнэ үү).
+		r.Group(func(tts chi.Router) {
+			tts.Use(rt.ttsLimiter.Middleware())
+			tts.Post("/tts", v1.Wrap(rt.handler.PublicSpeak))
+		})
 	})
 }

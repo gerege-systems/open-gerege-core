@@ -486,8 +486,9 @@ identical to `/public/ai/chat`.
 
 ### POST `/public/ai/tts` 🌐
 **No authentication.** The "listen" button in the landing widget — turns one
-assistant reply into speech. Shares the `/public/ai/*` rate limiter (~6 req/min
-per IP), `text` ≤ 800 chars, and the voice is server-side (callers cannot pick a
+assistant reply into speech. Has its **own** rate limit (~20 req/min per IP, burst 8) — a spoken answer is
+synthesised sentence by sentence, so one reply makes several short calls and the
+chat limiter (~6/min) would cut it off mid-answer. `text` ≤ 800 chars, and the voice is server-side (callers cannot pick a
 model or voice).
 
 **Request** `{ "text": "…" }` · **Response `200`** — `data: { "mime": "audio/wav", "data": "<base64 WAV>" }`
