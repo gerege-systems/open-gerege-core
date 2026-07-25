@@ -66,6 +66,9 @@ func (h Handler) PublicChat(w http.ResponseWriter, r *http.Request) error {
 	if req.Audio != nil {
 		stt, sttErr := h.usecase.Transcribe(ctx, aiuc.TranscribeRequest{
 			Audio: aiuc.Audio{Mime: req.Audio.Mime, Data: req.Audio.Data},
+			// Зочид платформын тухай асуудаг тул нэр томьёог сануулна —
+			// «нэвтрэх»-ийг «нэрших» гэх мэт андуурлыг багасгана.
+			Vocabulary: aiuc.PlatformVocabulary,
 		})
 		if sttErr != nil {
 			return v1.RespondWithError(w, r, sttErr)

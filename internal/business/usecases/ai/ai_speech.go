@@ -38,9 +38,21 @@ const sttInstruction = "Чи яриа-текст (STT) хөрвүүлэгч. Ө�
 	"яг хэлсэн хэлээр нь, үг үсгийн алдаагүй, тайлбаргүйгээр зөвхөн текст болгон буцаа. " +
 	"Яриа сонсогдохгүй бол хоосон мөр буцаа."
 
+// PlatformVocabulary нь платформын чатад дуут мессеж хөрвүүлэхэд STT-д өгөх
+// нэр томьёоны жагсаалт. Хэрэглэгчид ихэвчлэн эдгээр сэдвээр асуудаг тул
+// ойролцоо дуудлагатай үгийн сонголтыг зөв тийш нь татна.
+const PlatformVocabulary = "Gerege, платформ, eID, цахим үнэмлэх, нэвтрэх, бүртгэл, " +
+	"нэвтрэлт, аюулгүй байдал, хамгаалалт, QR код, регистрийн дугаар, гарын үсэг, " +
+	"тамга, байгууллага, төрийн үйлчилгээ, лавлагаа, токен, нууцлал, SSO, API"
+
 func (uc *usecase) Transcribe(ctx context.Context, req TranscribeRequest) (TranscribeResult, error) {
+	instruction := sttInstruction
+	if req.Vocabulary != "" {
+		instruction += " Энэ бичлэг нь дараах сэдвийн хүрээнд байх магадлалтай тул " +
+			"ойролцоо дуудлагатай үг тааралдвал эдгээрийг илүүд үз: " + req.Vocabulary + "."
+	}
 	resp, err := uc.client.GenerateContent(ctx, gemini.Request{
-		SystemInstruction: &gemini.Content{Parts: []gemini.Part{{Text: sttInstruction}}},
+		SystemInstruction: &gemini.Content{Parts: []gemini.Part{{Text: instruction}}},
 		Contents: []gemini.Content{{
 			Role: "user",
 			Parts: []gemini.Part{

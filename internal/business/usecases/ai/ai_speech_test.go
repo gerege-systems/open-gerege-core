@@ -47,6 +47,23 @@ func TestTranscribe(t *testing.T) {
 	assert.True(t, hasAudio)
 }
 
+// Нэр томьёоны сануулга өгвөл STT-ийн зааварт орно (ойролцоо дуудлагатай
+// үгийн сонголтыг зөв тийш татна); өгөөгүй бол заавар өөрчлөгдөхгүй.
+func TestTranscribeVocabularyHint(t *testing.T) {
+	gen := &fakeGenerator{responses: []gemini.Response{textResponse("нэвтрэх"), textResponse("x")}}
+	uc := NewUsecase(gen, gen, nil, nil, Config{})
+
+	_, err := uc.Transcribe(context.Background(), TranscribeRequest{
+		Audio: testAudio, Vocabulary: PlatformVocabulary,
+	})
+	require.NoError(t, err)
+	assert.Contains(t, gen.requests[0].SystemInstruction.Parts[0].Text, "eID")
+
+	_, err = uc.Transcribe(context.Background(), TranscribeRequest{Audio: testAudio})
+	require.NoError(t, err)
+	assert.NotContains(t, gen.requests[1].SystemInstruction.Parts[0].Text, "eID")
+}
+
 func TestTranscribeError(t *testing.T) {
 	gen := &fakeGenerator{errs: []error{errors.New("boom")}}
 	uc := NewUsecase(gen, gen, nil, nil, Config{})
