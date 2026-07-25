@@ -232,12 +232,18 @@ func TestRun_UsesRequestLanguage(t *testing.T) {
 			// Зорилтот хэл дээрх заавар prompt-ын ТӨГСГӨЛД байх ёстой.
 			assert.True(t, strings.HasSuffix(prompt, langDirectives[tt.wantLang]),
 				"prompt нь %q-ээр төгсөх ёстой", langDirectives[tt.wantLang])
-			// Зөвхөн нэг хэлний дүрэм орсон байх ёстой.
+			// Зөвхөн нэг хэлний дүрэм орсон байх ёстой — өөр хэлний нэр ч,
+			// өөр хэлний заавар ч prompt-д огт байхгүй.
 			for code, name := range uiLangNames {
 				if code != tt.wantLang {
 					assert.NotContains(t, prompt, name)
+					assert.NotContains(t, prompt, langDirectives[code])
 				}
 			}
+			// Заавар нь эхний дүрэмд болон төгсгөлд — нийт хоёр удаа давтагдана
+			// (primacy + recency): system prompt монголоор бичигдсэн тул
+			// зорилтот хэл дээрх заавар л model-ыг барина.
+			assert.Equal(t, 2, strings.Count(prompt, langDirectives[tt.wantLang]))
 		})
 	}
 }

@@ -64,11 +64,15 @@ The system prompt is assembled per request from three layers
 | 3. Instructions | `ai_prompts` table (optional) | admin, at runtime | Tone, extra rules |
 
 - **Reply language** comes from the request's `lang` (the frontend sends the UI
-  language: `mn`/`en`/`zh`/`ru`; unknown or empty ⇒ `mn`). If the user writes in a
-  different language, the model follows the user. The `degraded` fallback message
-  is localized the same way. The rule is repeated as a final
-  `[ХЭЛ / LANGUAGE]` section written *in that language* — the whole prompt is in
-  Mongolian, so a native-language directive at the end keeps the model from drifting back.
+  language: `mn`/`en`/`zh`/`ru`; unknown or empty ⇒ `mn`). **The UI language wins:**
+  the language the user typed in, the conversation history, the knowledge base and
+  tool results never change it — sources in another language are translated into the
+  reply language. Only an explicit user request switches it. The `degraded` fallback
+  message is localized the same way. The directive is written *in the target language*
+  and appears twice — in the first rule and as the closing `[ХЭЛ / LANGUAGE]` section
+  (the rest of the prompt is Mongolian, so primacy + recency in the native language
+  keep the model from drifting). The frontend also drops history turns from a previous
+  language, so switching languages mid-chat starts a clean context.
 - Admin UI: **Admin → Settings**; API: `GET/PUT /api/v1/admin/ai/prompts/{key}`
   (`settings.manage` permission).
 - Prompts are cached for 60s; `SetPrompt` invalidates the cache, so changes
