@@ -1,6 +1,6 @@
 # AI 流水线（Gemini）
 
-> 🌐 **中文** · [English](AI_PIPELINE.md) · [Монгол](AI_PIPELINE_MN.md)
+> 🌐 **中文** · [English](AI_PIPELINE.md) · [Монгол](AI_PIPELINE_MN.md) · [Русский](AI_PIPELINE_RU.md)
 
 本文说明 AI 助手端到端的工作方式，以及如何扩展它。该流水线**不使用 SDK** —
 `pkg/gemini` 直接调用 Gemini REST API — 并与后端其余部分遵循同样的整洁架构分层。

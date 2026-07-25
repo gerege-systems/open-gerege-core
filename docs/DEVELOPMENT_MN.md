@@ -1,6 +1,6 @@
 # Development Guide
 
-> 🌐 [English](DEVELOPMENT.md) · **Монгол** · [中文](DEVELOPMENT_ZH.md)
+> 🌐 [English](DEVELOPMENT.md) · **Монгол** · [中文](DEVELOPMENT_ZH.md) · [Русский](DEVELOPMENT_RU.md)
 
 Энэ заавар нь хөгжүүлэгчдэд **Gerege Template Platform V3.0** (Цахим
 засаглалыг бүтээх суурь) кодын бааз — төр, хувийн хэвшлийн аливаа цахим үйлчилгээг дээр нь

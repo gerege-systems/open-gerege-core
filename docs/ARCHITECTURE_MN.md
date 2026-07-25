@@ -1,6 +1,6 @@
 # Architecture Overview
 
-> 🌐 [English](ARCHITECTURE.md) · **Монгол** · [中文](ARCHITECTURE_ZH.md)
+> 🌐 [English](ARCHITECTURE.md) · **Монгол** · [中文](ARCHITECTURE_ZH.md) · [Русский](ARCHITECTURE_RU.md)
 
 Энэ баримт нь **Gerege Template Platform V3.0** (Цахим үйлчилгээг бүтээх суурь)
 — төр, хувийн хэвшлийн аливаа цахим үйлчилгээг дээр нь босгох боломжтой production-д бэлэн

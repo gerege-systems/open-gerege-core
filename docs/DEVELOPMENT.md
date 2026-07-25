@@ -1,6 +1,6 @@
 # Development Guide
 
-> 🌐 **English** · [Монгол](DEVELOPMENT_MN.md) · [中文](DEVELOPMENT_ZH.md)
+> 🌐 **English** · [Монгол](DEVELOPMENT_MN.md) · [中文](DEVELOPMENT_ZH.md) · [Русский](DEVELOPMENT_RU.md)
 
 This guide helps developers set up and work with the **Gerege Template
 Platform V3.0** (Цахим үйлчилгээг бүтээх суурь) codebase — a production-ready

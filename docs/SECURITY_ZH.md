@@ -1,6 +1,6 @@
 # 安全态势 — Gerege Template Platform V3.0
 
-> 🌐 **中文** · [English](SECURITY.md) · 蒙古语说明请参见代码注释。漏洞上报流程见
+> 🌐 **中文** · [English](SECURITY.md) · [Русский](SECURITY_RU.md) · 蒙古语说明请参见代码注释。漏洞上报流程见
 > [`/SECURITY.md`](../../SECURITY.md)。
 
 本文将后端已实现的各项控制映射到项目的安全标准 — 依据 **OWASP ASVS / API Top 10、

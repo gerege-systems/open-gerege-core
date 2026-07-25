@@ -1,6 +1,6 @@
 # 架构总览
 
-> 🌐 **中文** · [English](ARCHITECTURE.md) · [Монгол](ARCHITECTURE_MN.md)
+> 🌐 **中文** · [English](ARCHITECTURE.md) · [Монгол](ARCHITECTURE_MN.md) · [Русский](ARCHITECTURE_RU.md)
 
 本文描述 **Gerege Template Platform V3.0**（Цахим үйлчилгээг бүтээх суурь，
 即「构建数字服务的基础」）的整体架构 — 一套可直接投入生产的基础平台，

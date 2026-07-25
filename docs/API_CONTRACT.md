@@ -1,6 +1,6 @@
 # API Contract
 
-> 🌐 **English** · [Монгол](API_CONTRACT_MN.md) · [中文](API_CONTRACT_ZH.md)
+> 🌐 **English** · [Монгол](API_CONTRACT_MN.md) · [中文](API_CONTRACT_ZH.md) · [Русский](API_CONTRACT_RU.md)
 
 REST API reference for the **Gerege Template Platform V3.0** (Цахим үйлчилгээг бүтээх суурь) — a production-ready foundation for
 building digital services (Clean-Architecture Go backend +

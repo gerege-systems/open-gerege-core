@@ -1,6 +1,6 @@
 # AI Pipeline (Gemini)
 
-> 🌐 **English** · [Монгол](AI_PIPELINE_MN.md) · [中文](AI_PIPELINE_ZH.md)
+> 🌐 **English** · [Монгол](AI_PIPELINE_MN.md) · [中文](AI_PIPELINE_ZH.md) · [Русский](AI_PIPELINE_RU.md)
 
 How the AI assistant works end-to-end, and how to extend it. The pipeline is
 **SDK-free** — `pkg/gemini` calls the Gemini REST API directly — and follows

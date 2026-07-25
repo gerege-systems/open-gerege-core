@@ -1,6 +1,6 @@
 # 开发指南
 
-> 🌐 **中文** · [English](DEVELOPMENT.md) · [Монгол](DEVELOPMENT_MN.md)
+> 🌐 **中文** · [English](DEVELOPMENT.md) · [Монгол](DEVELOPMENT_MN.md) · [Русский](DEVELOPMENT_RU.md)
 
 本指南帮助开发者搭建并使用 **Gerege Template Platform V3.0**
 （Цахим үйлчилгээг бүтээх суурь，即「构建数字服务的基础」）代码库 —

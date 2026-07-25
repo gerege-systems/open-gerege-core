@@ -1,6 +1,6 @@
 # API 契约
 
-> 🌐 **中文** · [English](API_CONTRACT.md) · [Монгол](API_CONTRACT_MN.md)
+> 🌐 **中文** · [English](API_CONTRACT.md) · [Монгол](API_CONTRACT_MN.md) · [Русский](API_CONTRACT_RU.md)
 
 **Gerege Template Platform V3.0**（Цахим үйлчилгээг бүтээх суурь）的 REST API 参考 —
 一套用于构建数字服务的生产就绪基础平台（整洁架构 Go 后端 + Next.js BFF + Gemini AI）。

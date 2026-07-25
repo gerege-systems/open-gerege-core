@@ -2,7 +2,7 @@
 
 > _一套基础 — 承载所有公共与私营服务。_
 
-> 🌐 **中文** · [English](README.md) · [Монгол](README_MN.md)
+> 🌐 **中文** · [English](README.md) · [Монгол](README_MN.md) · [Русский](README_RU.md)
 
 [![Go](https://img.shields.io/badge/Go-1.26-blue.svg)](https://golang.org/)
 [![chi](https://img.shields.io/badge/chi-v5-00ADD8.svg)](https://github.com/go-chi/chi)
@@ -13,7 +13,7 @@
 *任何*公共部门或私营部门的数字服务都可在其上构建。它把严谨的**整洁架构**内核
 与手写 **pgx SQL**（无 ORM）结合，并开箱附带一整套政务级能力：
 **eID Mongolia** 认证、**Google** 账户绑定、**PAdES** 文件签署、**Gemini AI** 流水线，
-以及纵深防御式的安全加固 — 全部支持多语言（mn/en/zh），且从第一天起即可观测。
+以及纵深防御式的安全加固 — 全部支持多语言（mn/en/zh/ru），且从第一天起即可观测。
 HTTP 层基于 **chi (net/http)**，数据层基于 **pgx (pgxpool) + PostgreSQL**，
 缓存基于 **Redis + Ristretto**。
 

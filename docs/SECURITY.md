@@ -1,6 +1,6 @@
 # Security Posture — Gerege Template Platform V3.0
 
-> 🌐 **English** · [中文](SECURITY_ZH.md) · Монгол тайлбарыг кодын комментуудаас
+> 🌐 **English** · [中文](SECURITY_ZH.md) · [Русский](SECURITY_RU.md) · Монгол тайлбарыг кодын комментуудаас
 > үзнэ үү. Эмзэг байдлыг мэдээлэх журмыг [`/SECURITY.md`](../../SECURITY.md)-аас үз.
 
 This document maps the backend's implemented controls to the project security
