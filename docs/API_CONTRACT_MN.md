@@ -1,6 +1,6 @@
 # API Contract
 
-> 🌐 [English](API_CONTRACT.md) · **Монгол**
+> 🌐 [English](API_CONTRACT.md) · **Монгол** · [中文](API_CONTRACT_ZH.md)
 
 **Gerege Template Platform V3.0** (Цахим үйлчилгээг бүтээх суурь)-ийн REST API
 лавлагаа — төр, хувийн хэвшлийн үйлчилгээг дээр нь босгох production-д бэлэн суурь

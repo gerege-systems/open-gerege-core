@@ -2,7 +2,7 @@
 
 > **Цахим үйлчилгээг бүтээх суурь** — _Нэг суурь — төр, хувийн хэвшлийн бүх үйлчилгээ._
 
-> 🌐 [English](README.md) · **Монгол**
+> 🌐 [English](README.md) · **Монгол** · [中文](README_ZH.md)
 
 [![Go](https://img.shields.io/badge/Go-1.26-blue.svg)](https://golang.org/)
 [![chi](https://img.shields.io/badge/chi-v5-00ADD8.svg)](https://github.com/go-chi/chi)

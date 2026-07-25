@@ -1,6 +1,6 @@
 # AI Pipeline (Gemini)
 
-> 🌐 [English](AI_PIPELINE.md) · **Монгол**
+> 🌐 [English](AI_PIPELINE.md) · **Монгол** · [中文](AI_PIPELINE_ZH.md)
 
 AI туслах хэрхэн ажилладаг, хэрхэн өргөтгөхийг эхнээс нь дуустал тайлбарлана.
 Pipeline нь **SDK-гүй** — `pkg/gemini` нь Gemini REST API-г шууд дууддаг —

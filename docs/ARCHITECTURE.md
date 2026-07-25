@@ -1,6 +1,6 @@
 # Architecture Overview
 
-> 🌐 **English** · [Монгол](ARCHITECTURE_MN.md)
+> 🌐 **English** · [Монгол](ARCHITECTURE_MN.md) · [中文](ARCHITECTURE_ZH.md)
 
 This document describes the high-level architecture of the **Gerege Template
 Platform V3.0** (Цахим үйлчилгээг бүтээх суурь) — a production-ready foundation on

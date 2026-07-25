@@ -2,7 +2,7 @@
 
 > _One foundation — every public and private service._
 
-> 🌐 **English** · [Монгол](README_MN.md)
+> 🌐 **English** · [Монгол](README_MN.md) · [中文](README_ZH.md)
 
 [![Go](https://img.shields.io/badge/Go-1.26-blue.svg)](https://golang.org/)
 [![chi](https://img.shields.io/badge/chi-v5-00ADD8.svg)](https://github.com/go-chi/chi)
