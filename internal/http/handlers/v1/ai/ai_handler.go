@@ -24,6 +24,49 @@ func NewHandler(usecase aiuc.Usecase) Handler {
 	return Handler{usecase: usecase}
 }
 
+// PublicChat godoc
+// @Summary      Нээлттэй AI туслах (нэвтрэлтгүй)
+// @Description  Нүүр хуудасны чат виджетэд зориулсан НЭВТРЭЛТГҮЙ чат. Зөвхөн текст (audio байхгүй), мессеж 1000 тэмдэгт, түүх 6 ээлж. Туслах нь платформын мэдлэгийн санд тулгуурлан хариулах бөгөөд хэрэглэгчийн бүртгэлийн өгөгдөлд ХАНДАХГҮЙ (тусдаа tool багц + нэмэлт guardrail). IP тус бүрт минутанд ~6 хүсэлт.
+// @Tags         ai
+// @Accept       json
+// @Produce      json
+// @Param        request  body      requests.AIPublicChatRequest  true  "Chat message + optional short history"
+// @Success      200      {object}  v1.BaseResponse{data=responses.AIChatResponse}  "AI reply"
+// @Failure      400      {object}  v1.BaseResponse  "Malformed JSON body"
+// @Failure      422      {object}  v1.BaseResponse  "Validation error"
+// @Failure      429      {object}  v1.BaseResponse  "Rate limit exceeded"
+// @Router       /public/ai/chat [post]
+func (h Handler) PublicChat(w http.ResponseWriter, r *http.Request) error {
+	ctx := r.Context()
+
+	var req requests.AIPublicChatRequest
+	if err := v1.DecodeBody(r, &req); err != nil {
+		return v1.NewErrorResponse(w, r, http.StatusBadRequest, "invalid request body")
+	}
+	if err := validators.ValidatePayloads(req); err != nil {
+		return v1.RespondWithError(w, r, err)
+	}
+
+	history := make([]aiuc.Turn, 0, len(req.History))
+	for _, t := range req.History {
+		history = append(history, aiuc.Turn{Role: t.Role, Text: t.Text})
+	}
+
+	// Anonymous=true нь system prompt дээр зочны хоригийг нэмнэ; usecase нь
+	// нийтэд аюулгүй tool багцтайгаар холбогдсон (server.go).
+	result, err := h.usecase.Run(ctx, aiuc.RunRequest{
+		Prompt:    req.Message,
+		History:   history,
+		Lang:      req.Lang,
+		Anonymous: true,
+	})
+	if err != nil {
+		return v1.RespondWithError(w, r, err)
+	}
+
+	return v1.NewSuccessResponse(w, r, http.StatusOK, "ai reply generated", responses.FromAIRunResult(result))
+}
+
 // Chat godoc
 // @Summary      AI туслахтай чатлах (текст/дуут мессеж)
 // @Description  Хэрэглэгчийн мессежийг (текст эсвэл audio — дуут мессежийг AI шууд ойлгоно) Gemini AI pipeline-аар боловсруулж Монгол хариулт буцаана. AI шаардлагатай үед backend tool-уудыг (function calling) ашигладаг; гүйцэтгэсэн алхмууд steps талбарт ил гарна. AI үйлчилгээ түр унавал degraded=true + fallback мессеж буцаана (5xx биш).

@@ -445,6 +445,23 @@ recorded segments here.
 (`target_lang`: required, e.g. `mn|en|ru|zh|ja|ko|de`)
 **Response `200`** — `data: { "source_text": "Сайн уу", "translated": "Hello", "audio": { … } }`.
 
+### POST `/public/ai/chat` 🌐
+**No authentication.** Powers the floating chat widget on the landing page, so
+anyone can ask about the platform before signing in. Same pipeline as
+`/ai/chat`, hardened for an open surface:
+
+| Guard | Value |
+|-------|-------|
+| Rate limit | ~6 req/min per IP (burst 3) — separate from the `/ai/*` limiter |
+| `message` | required, ≤ 1000 chars |
+| `history` | optional, ≤ 6 turns, ≤ 1000 chars each |
+| `lang` | optional — `mn` \| `en` \| `zh` \| `ru` |
+| Audio | **not accepted** (no uploads from an anonymous surface) |
+| Tools | knowledge-base search only — the usecase is wired with a restricted tool set, so no tool that reads user data is reachable |
+| Prompt | an extra hardcoded guardrail layer: never ask for personal data, never claim access to an account |
+
+**Response `200`** — identical shape to `/ai/chat` (`reply`, `steps`, `degraded`).
+
 > Prompt-layer configuration lives under **Admin — users & AI prompts** above
 > (`GET`/`PUT /api/v1/admin/ai/prompts`). The base guardrail layer is hardcoded
 > and never exposed.

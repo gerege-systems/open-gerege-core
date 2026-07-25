@@ -64,6 +64,40 @@ definitions:
         maxLength: 4000
         type: string
     type: object
+  template_internal_http_datatransfers_requests.AIPublicChatRequest:
+    properties:
+      history:
+        items:
+          $ref: '#/definitions/template_internal_http_datatransfers_requests.AIPublicChatTurn'
+        maxItems: 6
+        type: array
+      lang:
+        enum:
+        - mn
+        - en
+        - zh
+        - ru
+        type: string
+      message:
+        maxLength: 1000
+        type: string
+    required:
+    - message
+    type: object
+  template_internal_http_datatransfers_requests.AIPublicChatTurn:
+    properties:
+      role:
+        enum:
+        - user
+        - model
+        type: string
+      text:
+        maxLength: 1000
+        type: string
+    required:
+    - role
+    - text
+    type: object
   template_internal_http_datatransfers_requests.AISTTRequest:
     properties:
       audio:
@@ -3811,6 +3845,48 @@ paths:
       summary: OAuth2 token endpoint
       tags:
       - oidc
+  /public/ai/chat:
+    post:
+      consumes:
+      - application/json
+      description: Нүүр хуудасны чат виджетэд зориулсан НЭВТРЭЛТГҮЙ чат. Зөвхөн текст
+        (audio байхгүй), мессеж 1000 тэмдэгт, түүх 6 ээлж. Туслах нь платформын мэдлэгийн
+        санд тулгуурлан хариулах бөгөөд хэрэглэгчийн бүртгэлийн өгөгдөлд ХАНДАХГҮЙ
+        (тусдаа tool багц + нэмэлт guardrail). IP тус бүрт минутанд ~6 хүсэлт.
+      parameters:
+      - description: Chat message + optional short history
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/template_internal_http_datatransfers_requests.AIPublicChatRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: AI reply
+          schema:
+            allOf:
+            - $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/template_internal_http_datatransfers_responses.AIChatResponse'
+              type: object
+        "400":
+          description: Malformed JSON body
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+        "422":
+          description: Validation error
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+        "429":
+          description: Rate limit exceeded
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      summary: Нээлттэй AI туслах (нэвтрэлтгүй)
+      tags:
+      - ai
   /registry/catalog:
     get:
       parameters:

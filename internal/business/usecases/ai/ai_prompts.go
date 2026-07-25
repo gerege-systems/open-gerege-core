@@ -192,7 +192,20 @@ func (uc *usecase) styleHint() string {
 // systemInstruction нь гурван давхаргыг нэг system prompt болгож угсарна.
 // lang нь хэрэглэгчийн UI хэл (mn/en/zh/ru) — суурь давхаргын хэлний дүрэмд
 // л нөлөөлнө, бусад хамгаалалт хэвээр.
-func (uc *usecase) systemInstruction(ctx context.Context, lang, style string) string {
+// anonymousRule нь НЭВТРЭЭГҮЙ зочидтой (нүүр хуудасны чат виджет) ярихад
+// нэмэгддэг хориг. Нийтэд нээлттэй гадаргуу тул: (1) хувийн мэдээлэл бүү
+// асуу — зочин РД/утас/нууц үгээ бичих ёсгүй, (2) хэрэглэгчийн бүртгэлийн
+// өгөгдөлд хандахгүй тул мэдэж байгаа дүр бүү үзүүл, (3) бүртгэл шаардсан
+// зүйлд нэвтрэхийг зөвлө. Энэ нь кодод хатуу — DB-ээс тохируулагдахгүй.
+const anonymousRule = "Чи одоо НЭВТРЭЭГҮЙ зочинтой (нүүр хуудасны нээлттэй чат) ярьж байна. " +
+	"Зочны хувийн мэдээллийг (регистрийн дугаар, утас, и-мэйл, нууц үг, картын мэдээлэл) " +
+	"ХЭЗЭЭ Ч бүү асуу — хэрэв өөрөө бичвэл хадгалахгүй бөгөөд ашиглахгүй гэдгээ хэлж, " +
+	"чатад бүү давт. Чи түүний бүртгэл, баримт, лавлагаанд ХАНДАХ БОЛОМЖГҮЙ — " +
+	"«таны мэдээллийг харлаа» гэсэн утгатай зүйл бүү хэл. Хувийн бүртгэл шаардсан " +
+	"асуултад платформын нийтлэг мэдээллээр хариулаад, дэлгэрэнгүйг нэвтэрсний дараа " +
+	"үзэх боломжтойг эелдэгээр сануул."
+
+func (uc *usecase) systemInstruction(ctx context.Context, lang, style string, anonymous bool) string {
 	scope, instructions := uc.prompts(ctx)
 	var b strings.Builder
 	b.WriteString(baseInstruction(lang))
@@ -201,6 +214,10 @@ func (uc *usecase) systemInstruction(ctx context.Context, lang, style string) st
 	if instructions != "" {
 		b.WriteString("\n\n[НЭМЭЛТ ЗААВАР]\n")
 		b.WriteString(instructions)
+	}
+	if anonymous {
+		b.WriteString("\n\n[ЗОЧИН / НЭВТРЭЭГҮЙ]\n")
+		b.WriteString(anonymousRule)
 	}
 	// Найруулгын давхарга — агуулгад бус, хэлбэрт л нөлөөлнө.
 	b.WriteString("\n\n[НАЙРУУЛГА]\n")

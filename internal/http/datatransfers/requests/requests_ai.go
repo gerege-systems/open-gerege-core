@@ -30,6 +30,24 @@ type AIChatRequest struct {
 	Lang string `json:"lang" validate:"omitempty,oneof=mn en zh ru"`
 }
 
+// AIPublicChatRequest нь POST /public/ai/chat-ийн body — нүүр хуудасны
+// нээлттэй (нэвтрэлтгүй) чат виджет. Нэвтэрсэн чатаас ЯЛГААТАЙ нь:
+//   - audio байхгүй (нэргүй гадаргуугаас 700 KB upload авахгүй),
+//   - мессеж ба ээлж бүр 1000 тэмдэгт, түүх 6 ээлж — Gemini-ийн зардлыг
+//     нэргүй хэрэглэгчийн хувьд хатуу хязгаарлана.
+type AIPublicChatRequest struct {
+	Message string             `json:"message" validate:"required,max=1000"`
+	History []AIPublicChatTurn `json:"history" validate:"omitempty,max=6,dive"`
+	Lang    string             `json:"lang" validate:"omitempty,oneof=mn en zh ru"`
+}
+
+// AIPublicChatTurn нь нээлттэй чатын нэг ээлж — AIChatTurn-тэй ижил боловч
+// текстийн хязгаар богино (нэргүй гадаргуугийн зардлын хамгаалалт).
+type AIPublicChatTurn struct {
+	Role string `json:"role" validate:"required,oneof=user model"`
+	Text string `json:"text" validate:"required,max=1000"`
+}
+
 // AISTTRequest нь POST /ai/stt-ийн body — audio-г текст болгоно.
 type AISTTRequest struct {
 	Audio AIAudio `json:"audio" validate:"required"`

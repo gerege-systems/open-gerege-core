@@ -394,7 +394,18 @@ func NewApp() (*App, error) {
 	// түлхүүр үгийн хайлт руу унана — embedder нь chat client-тэй ижил
 	// Gemini client (embedding model нь тусдаа).
 	aiTools := append(ai.DefaultTools(), ai.KnowledgeSearchTool(aiRepo, geminiClient))
+	// Нүүр хуудасны НЭЭЛТТЭЙ чат (нэвтрэлтгүй) нь ТУСДАА tool багцтай: зөвхөн
+	// нийтэд аюулгүй мэдлэгийн сангийн хайлт. Хэрэглэгчийн өгөгдөлд хүрдэг
+	// tool нэмэгдвэл нэвтэрсэн чатад л очно — нэргүй зочинд ХЭЗЭЭ Ч биш.
+	publicAITools := []ai.ToolDef{ai.KnowledgeSearchTool(aiRepo, geminiClient)}
 	aiUC := ai.NewUsecase(geminiClient, geminiTTSClient, aiRepo, aiTools, ai.Config{
+		Voice:       config.AppConfig.GeminiVoice,
+		ScopePrompt: config.AppConfig.AIScopePrompt,
+		Embedder:    geminiClient,
+	})
+	// Нээлттэй чатын usecase — ижил model/prompt давхарга, гэхдээ tool багц нь
+	// хязгаарлагдмал. Embedding backfill-ыг зөвхөн aiUC хийнэ (нэг корпус).
+	publicAIUC := ai.NewUsecase(geminiClient, geminiTTSClient, aiRepo, publicAITools, ai.Config{
 		Voice:       config.AppConfig.GeminiVoice,
 		ScopePrompt: config.AppConfig.AIScopePrompt,
 		Embedder:    geminiClient,
@@ -449,6 +460,10 @@ func NewApp() (*App, error) {
 	// 10 болгов: live орчуулга ~8-10 chunk/мин илгээдэг тул эхний тэсрэлт 5-д
 	// багтахгүй, хууль ёсны stream 429 болж болзошгүй байв.
 	aiRateLimiter := middlewares.NewRateLimiter(rate.Limit(20.0/60.0), 10)
+	// Нүүрийн НЭЭЛТТЭЙ чат нь нэвтрэлтгүй тул зардлын хамгаалалт чангавтар:
+	// IP тус бүрт ~6/мин (burst 3). Энгийн зочин 2-3 асуулт тавихад хангалттай,
+	// харин скриптээр Gemini-г шавхах оролдлогод хатуу тааз тавина.
+	publicAIRateLimiter := middlewares.NewRateLimiter(rate.Limit(6.0/60.0), 3)
 	// /eid/poll нь unauthenticated бөгөөд IdP-г 25с хүртэл long-poll хийж
 	// холболт барьдаг. 5/мин-ийн чанга хязгаарт орвол long-poll өөрөө 429
 	// болно. Иймд тусдаа СУЛ limiter — IP тус бүрт ~60/мин (burst 30): frontend
@@ -556,6 +571,8 @@ func NewApp() (*App, error) {
 			routes.NewSuperAdminOnboardRoute(api, onboardingUC, authRateLimiter, pollRateLimiter).Routes()
 		}
 		routes.NewAIRoute(api, aiUC, authMiddleware, aiRateLimiter).Routes()
+		// Нүүр хуудасны нээлттэй чат — нэвтрэлтгүй, чанга rate limit-тэй.
+		routes.NewPublicAIRoute(api, publicAIUC, publicAIRateLimiter).Routes()
 		routes.NewAuditRoute(api, auditUC, authMiddleware).Routes()
 		routes.NewSecurityRoute(api, securityUC, authMiddleware).Routes()
 		routes.NewSiteRoute(api, siteUC, rbacUC, authMiddleware).Routes()

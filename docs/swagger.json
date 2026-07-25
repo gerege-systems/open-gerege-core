@@ -3091,6 +3091,70 @@
                 }
             }
         },
+        "/public/ai/chat": {
+            "post": {
+                "description": "Нүүр хуудасны чат виджетэд зориулсан НЭВТРЭЛТГҮЙ чат. Зөвхөн текст (audio байхгүй), мессеж 1000 тэмдэгт, түүх 6 ээлж. Туслах нь платформын мэдлэгийн санд тулгуурлан хариулах бөгөөд хэрэглэгчийн бүртгэлийн өгөгдөлд ХАНДАХГҮЙ (тусдаа tool багц + нэмэлт guardrail). IP тус бүрт минутанд ~6 хүсэлт.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ai"
+                ],
+                "summary": "Нээлттэй AI туслах (нэвтрэлтгүй)",
+                "parameters": [
+                    {
+                        "description": "Chat message + optional short history",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_datatransfers_requests.AIPublicChatRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "AI reply",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/template_internal_http_datatransfers_responses.AIChatResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Malformed JSON body",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    },
+                    "429": {
+                        "description": "Rate limit exceeded",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/registry/catalog": {
             "get": {
                 "produces": [
@@ -7546,6 +7610,54 @@
                 "content": {
                     "type": "string",
                     "maxLength": 4000
+                }
+            }
+        },
+        "template_internal_http_datatransfers_requests.AIPublicChatRequest": {
+            "type": "object",
+            "required": [
+                "message"
+            ],
+            "properties": {
+                "history": {
+                    "type": "array",
+                    "maxItems": 6,
+                    "items": {
+                        "$ref": "#/definitions/template_internal_http_datatransfers_requests.AIPublicChatTurn"
+                    }
+                },
+                "lang": {
+                    "type": "string",
+                    "enum": [
+                        "mn",
+                        "en",
+                        "zh",
+                        "ru"
+                    ]
+                },
+                "message": {
+                    "type": "string",
+                    "maxLength": 1000
+                }
+            }
+        },
+        "template_internal_http_datatransfers_requests.AIPublicChatTurn": {
+            "type": "object",
+            "required": [
+                "role",
+                "text"
+            ],
+            "properties": {
+                "role": {
+                    "type": "string",
+                    "enum": [
+                        "user",
+                        "model"
+                    ]
+                },
+                "text": {
+                    "type": "string",
+                    "maxLength": 1000
                 }
             }
         },

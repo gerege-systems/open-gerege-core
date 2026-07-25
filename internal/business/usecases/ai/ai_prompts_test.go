@@ -122,6 +122,36 @@ func TestSystemInstructionLayers(t *testing.T) {
 	assert.Contains(t, sys, "эх сурвалж")
 }
 
+// Нээлттэй (нэвтрэлтгүй) чатад зочны хориг нэмэгдэнэ; нэвтэрсэн чатад
+// нэмэгдэхгүй — ижил usecase хоёр горимд ажиллана.
+func TestSystemInstructionAnonymousLayer(t *testing.T) {
+	tests := []struct {
+		name      string
+		anonymous bool
+		wants     bool
+	}{
+		{name: "зочин", anonymous: true, wants: true},
+		{name: "нэвтэрсэн", anonymous: false, wants: false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			gen := &fakeGenerator{responses: []gemini.Response{textResponse("за")}}
+			uc := NewUsecase(gen, gen, nil, nil, Config{})
+
+			_, err := uc.Run(context.Background(), RunRequest{Prompt: "сайн уу", Anonymous: tt.anonymous})
+			require.NoError(t, err)
+
+			sys := gen.requests[0].SystemInstruction.Parts[0].Text
+			if tt.wants {
+				assert.Contains(t, sys, "[ЗОЧИН / НЭВТРЭЭГҮЙ]")
+				assert.Contains(t, sys, "регистрийн дугаар")
+			} else {
+				assert.NotContains(t, sys, "[ЗОЧИН / НЭВТРЭЭГҮЙ]")
+			}
+		})
+	}
+}
+
 func TestSystemInstructionFallbacks(t *testing.T) {
 	t.Run("env fallback when DB scope empty", func(t *testing.T) {
 		gen := &fakeGenerator{responses: []gemini.Response{textResponse("за")}}

@@ -126,6 +126,21 @@ Shipped tools:
   guardrails tell the model to call it *before* answering platform questions.
 - **`get_server_time`** — minimal demo (Ulaanbaatar time), zero dependencies.
 
+## Public (anonymous) chat
+
+The landing page carries a floating chat widget that works **without login**
+(`POST /public/ai/chat`, no bearer token). It reuses the same pipeline, wired
+as a **separate usecase instance** with a restricted tool set — knowledge-base
+search only. That separation is the security boundary: a tool that reads user
+data can be added to the authenticated assistant without ever becoming
+reachable by an anonymous visitor.
+
+Three more limits apply on this surface: a dedicated rate limiter (~6 req/min
+per IP, burst 3), no audio and short payloads (message ≤ 1000 chars, history
+≤ 6 turns), and an extra hardcoded prompt layer that tells the assistant it is
+talking to a visitor — never ask for personal data, never claim to see account
+records, point to signing in when the question needs one.
+
 ## Knowledge base (RAG)
 
 The platform's own knowledge lives in `ai_knowledge` — ~58 chunks written from

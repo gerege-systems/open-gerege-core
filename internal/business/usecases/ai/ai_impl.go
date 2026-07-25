@@ -120,7 +120,7 @@ func (uc *usecase) Run(ctx context.Context, req RunRequest) (RunResult, error) {
 	// Найруулгын хувилбарыг хүсэлт бүрд сонгоно — ижил асуулт үг үсгээрээ
 	// давтагдахгүй байх нэг талын хамгаалалт (нөгөө нь GenerationConfig).
 	geminiReq.SystemInstruction = &gemini.Content{
-		Parts: []gemini.Part{{Text: uc.systemInstruction(ctx, req.Lang, uc.styleHint())}},
+		Parts: []gemini.Part{{Text: uc.systemInstruction(ctx, req.Lang, uc.styleHint(), req.Anonymous)}},
 	}
 	geminiReq.Contents = contents
 	// Sampling — олон янз байдлыг өгнө. Агуулга биш найруулга л хэлбэлзэнэ:
