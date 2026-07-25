@@ -113,8 +113,8 @@ Shipped tools:
   matched by cosine distance in **pgvector** (`embedding <=> $1`, HNSW index),
   so a question phrased differently still finds the right chunk. The top-8
   candidates are then filtered **relative to the best hit**: anything further
-  than `relativeScoreMargin` (0.06) below it is dropped, and at most
-  `maxKnowledgeResults` (4) survive. Why relative: measured on this corpus,
+  than `relativeScoreMargin` (0.03) below it is dropped, keeping between
+  `minKnowledgeResults` (2) and `maxKnowledgeResults` (4) chunks. Why relative: measured on this corpus,
   even *unrelated* chunks sit at 0.64+ cosine similarity, so a fixed threshold
   (the old 0.55) filtered nothing; `minVectorScore` (0.35) is now only a garbage
   floor. It falls back to the `ILIKE` keyword query when no embedder is

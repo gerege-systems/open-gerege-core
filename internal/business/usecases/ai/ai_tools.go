@@ -42,6 +42,10 @@ const knowledgeTopK = 8
 // өгөх нь чимээ шуугиан нэмж, хариултыг ерөнхий болгодог.
 const maxKnowledgeResults = 4
 
+// minKnowledgeResults — босго хэт хатуу таарсан үед ч ядаж энэ тооны бичлэг
+// үлдээнэ (хоёр сэдвийг хамарсан асуултад хоёр дахь бүлэг хэрэгтэй болдог).
+const minKnowledgeResults = 2
+
 // relativeScoreMargin — ХАМААРЛЫГ ХАРЬЦУУЛСАН босго: хамгийн сайн таарцаас
 // энэ хэмжээгээр л доогуур бичлэгүүдийг үлдээнэ.
 //
@@ -50,7 +54,18 @@ const maxKnowledgeResults = 4
 // байсан (нэг сэдвийн хүрээний нэг хэв маягтай текстүүд тул). Иймд «0.55-аас
 // дээш бол хамааралтай» гэх төрлийн тогтмол босго юуг ч шүүхгүй. Харин
 // «шилдгээсээ хэр хол вэ» гэдэг нь тухайн асуултын хувьд утга учиртай.
-const relativeScoreMargin = 0.06
+//
+// Утгыг бодит корпус дээр хэмжиж сонгов (бүлэг бүрийг асуулт болгон,
+// хөрш бүрийн онооны тархалт):
+//
+//	margin 0.02 → дунджаар 2.0 бичлэг    margin 0.05 → 5.3
+//	margin 0.03 → дунджаар 3.0 бичлэг    margin 0.06 → 6.2 (58-аас 48 нь
+//	margin 0.04 → дунджаар 4.2 бичлэг                    дээд хязгаартаа тулна)
+//
+// 0.03 нь бодитоор ялгаж байгаа цорын ганц цэг — 0.06 бол бараг үргэлж
+// maxKnowledgeResults-д тулах тул шүүлт биш, зүгээр л таслалт болно.
+// Корпус томрох/өөрчлөгдөх үед энэ хэмжилтийг давтаж тааруул.
+const relativeScoreMargin = 0.03
 
 // ILIKE уналтын параметрүүд: хамгийн богино утга агуулсан үгийн урт,
 // нөхцөл тайрсан үндсийн урт, оролдох үгийн дээд тоо.
@@ -278,7 +293,11 @@ func filterByRelevance(hits []domain.AIKnowledge) []domain.AIKnowledge {
 	}
 	kept := make([]domain.AIKnowledge, 0, maxKnowledgeResults)
 	for _, it := range hits {
-		if it.Score < minVectorScore || it.Score < best-relativeScoreMargin {
+		if it.Score < minVectorScore {
+			break
+		}
+		// Босгоос доогуур ч гэсэн эхний minKnowledgeResults-ыг үлдээнэ.
+		if it.Score < best-relativeScoreMargin && len(kept) >= minKnowledgeResults {
 			break
 		}
 		kept = append(kept, it)

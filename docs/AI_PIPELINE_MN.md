@@ -112,8 +112,8 @@ aiTools := append(ai.DefaultTools(), ai.KnowledgeSearchTool(aiRepo), myTool)
   Асуултыг embed хийж (`gemini-embedding-001`, `RETRIEVAL_QUERY`)
   **pgvector**-ийн cosine зайгаар (`embedding <=> $1`, HNSW индекс) тааруулна —
   өөр үг хэллэгээр асуусан ч зөв бүлэг олдоно. Top-8 нэр дэвшигчээс **шилдэг
-  таарцтай харьцуулж** шүүнэ: `relativeScoreMargin` (0.06)-оос хол зөрсөнг
-  хаяад ихдээ `maxKnowledgeResults` (4)-ийг үлдээнэ. Яагаад харьцангуй вэ:
+  таарцтай харьцуулж** шүүнэ: `relativeScoreMargin` (0.03)-оос хол зөрсөнг
+  хаяад `minKnowledgeResults` (2)–`maxKnowledgeResults` (4) бичлэг үлдээнэ. Яагаад харьцангуй вэ:
   энэ корпус дээр хэмжихэд ХАМААРАЛГҮЙ хоёр бүлэг хүртэл 0.64+ cosine
   ижилсэлтэй байсан тул тогтмол босго (хуучин 0.55) юуг ч шүүхгүй байв;
   `minVectorScore` (0.35) нь одоо зөвхөн хог хаях шал. Embedder тохируулаагүй,

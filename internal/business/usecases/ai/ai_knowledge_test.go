@@ -120,7 +120,7 @@ func TestKnowledgeSearch_FallsBackToKeyword(t *testing.T) {
 func TestKnowledgeSearch_KeepsOnlyNearTopHits(t *testing.T) {
 	repo := &fakeAIRepo{vectorHits: []domain.AIKnowledge{
 		{ID: 1, Title: "Оновчтой", Score: 0.86},
-		{ID: 2, Title: "Мөн оновчтой", Score: 0.83},
+		{ID: 2, Title: "Мөн оновчтой", Score: 0.84},
 		{ID: 3, Title: "Хол зөрсөн", Score: 0.74},
 		{ID: 4, Title: "Огт өөр", Score: 0.70},
 	}}
@@ -134,6 +134,22 @@ func TestKnowledgeSearch_KeepsOnlyNearTopHits(t *testing.T) {
 	results := res["results"].([]map[string]any)
 	assert.Equal(t, "Оновчтой", results[0]["title"])
 	assert.Equal(t, "Мөн оновчтой", results[1]["title"])
+}
+
+// Босго хэт хатуу таарсан ч (2 дахь нь шилдгээсээ хол) ядаж
+// minKnowledgeResults бичлэг үлдэнэ — нэг бүлэг ихэвчлэн хагас хариулт.
+func TestKnowledgeSearch_KeepsMinimumResults(t *testing.T) {
+	repo := &fakeAIRepo{vectorHits: []domain.AIKnowledge{
+		{ID: 1, Title: "Хамгийн ойр", Score: 0.88},
+		{ID: 2, Title: "Хоёрдугаарт", Score: 0.71},
+		{ID: 3, Title: "Гуравдугаарт", Score: 0.70},
+	}}
+
+	res, err := KnowledgeSearchTool(repo, &fakeEmbedder{}).Execute(context.Background(),
+		map[string]any{"query": "асуулт"})
+
+	require.NoError(t, err)
+	assert.Equal(t, minKnowledgeResults, res["count"])
 }
 
 func TestKnowledgeSearch_CapsResultCount(t *testing.T) {

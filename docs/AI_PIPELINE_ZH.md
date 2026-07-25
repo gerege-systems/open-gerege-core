@@ -101,8 +101,8 @@ aiTools := append(ai.DefaultTools(), ai.KnowledgeSearchTool(aiRepo), myTool)
   问题会被向量化（`gemini-embedding-001`，`RETRIEVAL_QUERY`），并在 **pgvector**
   中按余弦距离匹配（`embedding <=> $1`，HNSW 索引），因此换个说法提问也能找到正确条目。
   随后对前 8 个候选按**与最佳命中的相对差距**过滤：低于最佳命中
-  `relativeScoreMargin`（0.06）以上的一律丢弃，最多保留
-  `maxKnowledgeResults`（4）条。为何用相对阈值：在本语料上实测，即使*毫不相关*
+  `relativeScoreMargin`（0.03）以上的一律丢弃，保留
+  `minKnowledgeResults`（2）至 `maxKnowledgeResults`（4）条。为何用相对阈值：在本语料上实测，即使*毫不相关*
   的两个条目余弦相似度也在 0.64 以上，因此固定阈值（原先的 0.55）什么都过滤不掉；
   `minVectorScore`（0.35）现在只是丢弃垃圾的下限。当未配置 embedder、向量化调用失败
   或过滤后无结果时，会回退到 `ILIKE` 关键词查询 — 由于模型被要求传入完整问句，
