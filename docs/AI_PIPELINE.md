@@ -66,7 +66,9 @@ The system prompt is assembled per request from three layers
 - **Reply language** comes from the request's `lang` (the frontend sends the UI
   language: `mn`/`en`/`zh`/`ru`; unknown or empty ⇒ `mn`). If the user writes in a
   different language, the model follows the user. The `degraded` fallback message
-  is localized the same way.
+  is localized the same way. The rule is repeated as a final
+  `[ХЭЛ / LANGUAGE]` section written *in that language* — the whole prompt is in
+  Mongolian, so a native-language directive at the end keeps the model from drifting back.
 - Admin UI: **Admin → Settings**; API: `GET/PUT /api/v1/admin/ai/prompts/{key}`
   (`settings.manage` permission).
 - Prompts are cached for 60s; `SetPrompt` invalidates the cache, so changes

@@ -42,6 +42,17 @@ var uiLangNames = map[string]string{
 	"ru": "Русский (Russian)",
 }
 
+// langDirectives нь хариултын хэлний зааврыг ТУХАЙН ХЭЛЭЭР өгнө. System
+// prompt бүхэлдээ монголоор бичигдсэн тул model монгол руу татагддаг —
+// зорилтот хэл дээрх шууд заавар үүнийг найдвартай давна. Энэ мөрийг
+// prompt-ын ХАМГИЙН СҮҮЛД давтаж тавина (recency).
+var langDirectives = map[string]string{
+	"mn": "Хариултаа үргэлж монгол хэлээр бич.",
+	"en": "Always write your reply in English.",
+	"zh": "请始终用简体中文回答，不要使用其他语言。",
+	"ru": "Всегда пиши ответ на русском языке.",
+}
+
 // normalizeLang нь хэлний кодыг цагаан жагсаалтад тулгана.
 func normalizeLang(lang string) string {
 	code := strings.ToLower(strings.TrimSpace(lang))
@@ -142,6 +153,10 @@ func (uc *usecase) systemInstruction(ctx context.Context, lang string) string {
 		b.WriteString("\n\n[НЭМЭЛТ ЗААВАР]\n")
 		b.WriteString(instructions)
 	}
+	// Хэлний заавар хамгийн сүүлд, зорилтот хэл дээрээ — scope/instructions
+	// монголоор бичигдсэн байсан ч хариултын хэл өөрчлөгдөхгүй.
+	b.WriteString("\n\n[ХЭЛ / LANGUAGE]\n")
+	b.WriteString(langDirectives[normalizeLang(lang)])
 	return b.String()
 }
 

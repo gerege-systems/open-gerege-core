@@ -6,6 +6,7 @@ package ai
 import (
 	"context"
 	"errors"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -228,6 +229,9 @@ func TestRun_UsesRequestLanguage(t *testing.T) {
 
 			prompt := gen.requests[0].SystemInstruction.Parts[0].Text
 			assert.Contains(t, prompt, uiLangNames[tt.wantLang])
+			// Зорилтот хэл дээрх заавар prompt-ын ТӨГСГӨЛД байх ёстой.
+			assert.True(t, strings.HasSuffix(prompt, langDirectives[tt.wantLang]),
+				"prompt нь %q-ээр төгсөх ёстой", langDirectives[tt.wantLang])
 			// Зөвхөн нэг хэлний дүрэм орсон байх ёстой.
 			for code, name := range uiLangNames {
 				if code != tt.wantLang {
