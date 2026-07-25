@@ -26,7 +26,7 @@ func NewHandler(usecase aiuc.Usecase) Handler {
 
 // PublicChat godoc
 // @Summary      Нээлттэй AI туслах (нэвтрэлтгүй)
-// @Description  Нүүр хуудасны чат виджетэд зориулсан НЭВТРЭЛТГҮЙ чат. Зөвхөн текст (audio байхгүй), мессеж 1000 тэмдэгт, түүх 6 ээлж. Туслах нь платформын мэдлэгийн санд тулгуурлан хариулах бөгөөд хэрэглэгчийн бүртгэлийн өгөгдөлд ХАНДАХГҮЙ (тусдаа tool багц + нэмэлт guardrail). IP тус бүрт минутанд ~6 хүсэлт.
+// @Description  Нүүр хуудасны чат виджетэд зориулсан НЭВТРЭЛТГҮЙ чат. Текст ба/эсвэл богино дуут мессеж (push-to-talk, ~250 KB base64 ≈ 15 сек), мессеж 1000 тэмдэгт, түүх 6 ээлж. Туслах нь платформын мэдлэгийн санд тулгуурлан хариулах бөгөөд хэрэглэгчийн бүртгэлийн өгөгдөлд ХАНДАХГҮЙ (тусдаа tool багц + нэмэлт guardrail). IP тус бүрт минутанд ~6 хүсэлт.
 // @Tags         ai
 // @Accept       json
 // @Produce      json
@@ -47,15 +47,25 @@ func (h Handler) PublicChat(w http.ResponseWriter, r *http.Request) error {
 		return v1.RespondWithError(w, r, err)
 	}
 
+	if req.Message == "" && req.Audio == nil {
+		return v1.NewErrorResponse(w, r, http.StatusBadRequest, "message or audio is required")
+	}
+
 	history := make([]aiuc.Turn, 0, len(req.History))
 	for _, t := range req.History {
 		history = append(history, aiuc.Turn{Role: t.Role, Text: t.Text})
+	}
+
+	var audio *aiuc.Audio
+	if req.Audio != nil {
+		audio = &aiuc.Audio{Mime: req.Audio.Mime, Data: req.Audio.Data}
 	}
 
 	// Anonymous=true нь system prompt дээр зочны хоригийг нэмнэ; usecase нь
 	// нийтэд аюулгүй tool багцтайгаар холбогдсон (server.go).
 	result, err := h.usecase.Run(ctx, aiuc.RunRequest{
 		Prompt:    req.Message,
+		Audio:     audio,
 		History:   history,
 		Lang:      req.Lang,
 		Anonymous: true,

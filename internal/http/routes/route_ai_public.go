@@ -42,5 +42,7 @@ func (rt *publicAIRoute) Routes() {
 		r.Use(rt.rateLimiter.Middleware())
 
 		r.Post("/chat", v1.Wrap(rt.handler.PublicChat))
+		// «Сонсох» товч — хариултыг дуут болгоно (нэг дуудалт = нэг мессеж).
+		r.Post("/tts", v1.Wrap(rt.handler.PublicSpeak))
 	})
 }

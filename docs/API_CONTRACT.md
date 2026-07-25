@@ -456,11 +456,19 @@ anyone can ask about the platform before signing in. Same pipeline as
 | `message` | required, ≤ 1000 chars |
 | `history` | optional, ≤ 6 turns, ≤ 1000 chars each |
 | `lang` | optional — `mn` \| `en` \| `zh` \| `ru` |
-| Audio | **not accepted** (no uploads from an anonymous surface) |
+| `audio` | optional push-to-talk clip — same mime whitelist as `/ai/chat`, but `data` base64 ≤ ~250 KB (≈ 15 s of opus). Either `message` or `audio` is required |
 | Tools | knowledge-base search only — the usecase is wired with a restricted tool set, so no tool that reads user data is reachable |
 | Prompt | an extra hardcoded guardrail layer: never ask for personal data, never claim access to an account |
 
 **Response `200`** — identical shape to `/ai/chat` (`reply`, `steps`, `degraded`).
+
+### POST `/public/ai/tts` 🌐
+**No authentication.** The "listen" button in the landing widget — turns one
+assistant reply into speech. Shares the `/public/ai/*` rate limiter (~6 req/min
+per IP), `text` ≤ 800 chars, and the voice is server-side (callers cannot pick a
+model or voice).
+
+**Request** `{ "text": "…" }` · **Response `200`** — `data: { "mime": "audio/wav", "data": "<base64 WAV>" }`
 
 > Prompt-layer configuration lives under **Admin — users & AI prompts** above
 > (`GET`/`PUT /api/v1/admin/ai/prompts`). The base guardrail layer is hardcoded

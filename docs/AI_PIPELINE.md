@@ -136,10 +136,18 @@ data can be added to the authenticated assistant without ever becoming
 reachable by an anonymous visitor.
 
 Three more limits apply on this surface: a dedicated rate limiter (~6 req/min
-per IP, burst 3), no audio and short payloads (message ≤ 1000 chars, history
-≤ 6 turns), and an extra hardcoded prompt layer that tells the assistant it is
-talking to a visitor — never ask for personal data, never claim to see account
-records, point to signing in when the question needs one.
+per IP, burst 3), short payloads (message ≤ 1000 chars, history ≤ 6 turns), and
+an extra hardcoded prompt layer that tells the assistant it is talking to a
+visitor — never ask for personal data, never claim to see account records,
+point to signing in when the question needs one.
+
+The widget is voice-capable: **push-to-talk** (hold the mic, release to send)
+posts a short clip in the same `/public/ai/chat` call — the chat model is
+multimodal, so there is no separate STT step. Clips are capped at ~250 KB
+base64 (≈ 15 s), a quarter of what the authenticated chat accepts. Replies are
+text; a per-message "listen" button calls `POST /public/ai/tts` (text ≤ 800
+chars, server-chosen voice), so speech synthesis only ever runs when a visitor
+explicitly asks for it.
 
 ## Knowledge base (RAG)
 

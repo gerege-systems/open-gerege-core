@@ -3095,7 +3095,7 @@ const docTemplate = `{
         },
         "/public/ai/chat": {
             "post": {
-                "description": "Нүүр хуудасны чат виджетэд зориулсан НЭВТРЭЛТГҮЙ чат. Зөвхөн текст (audio байхгүй), мессеж 1000 тэмдэгт, түүх 6 ээлж. Туслах нь платформын мэдлэгийн санд тулгуурлан хариулах бөгөөд хэрэглэгчийн бүртгэлийн өгөгдөлд ХАНДАХГҮЙ (тусдаа tool багц + нэмэлт guardrail). IP тус бүрт минутанд ~6 хүсэлт.",
+                "description": "Нүүр хуудасны чат виджетэд зориулсан НЭВТРЭЛТГҮЙ чат. Текст ба/эсвэл богино дуут мессеж (push-to-talk, ~250 KB base64 ≈ 15 сек), мессеж 1000 тэмдэгт, түүх 6 ээлж. Туслах нь платформын мэдлэгийн санд тулгуурлан хариулах бөгөөд хэрэглэгчийн бүртгэлийн өгөгдөлд ХАНДАХГҮЙ (тусдаа tool багц + нэмэлт guardrail). IP тус бүрт минутанд ~6 хүсэлт.",
                 "consumes": [
                     "application/json"
                 ],
@@ -3150,6 +3150,76 @@ const docTemplate = `{
                     },
                     "429": {
                         "description": "Rate limit exceeded",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/public/ai/tts": {
+            "post": {
+                "description": "Нүүр хуудасны нээлттэй чатын хариултыг дуут (audio/wav, base64) болгоно. Нэвтрэлт шаардахгүй; текст 800 тэмдэгтээр, IP тус бүрт минутанд ~6 хүсэлтээр хязгаарлагдана.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ai"
+                ],
+                "summary": "Нээлттэй TTS (нэвтрэлтгүй) — «сонсох» товч",
+                "parameters": [
+                    {
+                        "description": "Text",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_datatransfers_requests.AIPublicTTSRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "WAV audio (base64)",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/template_internal_http_datatransfers_responses.AIAudioOut"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Malformed JSON body",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    },
+                    "429": {
+                        "description": "Rate limit exceeded",
+                        "schema": {
+                            "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
+                        }
+                    },
+                    "503": {
+                        "description": "Upstream (Gemini) timed out or unavailable — retry",
                         "schema": {
                             "$ref": "#/definitions/template_internal_http_handlers_v1.BaseResponse"
                         }
@@ -7615,12 +7685,39 @@ const docTemplate = `{
                 }
             }
         },
-        "template_internal_http_datatransfers_requests.AIPublicChatRequest": {
+        "template_internal_http_datatransfers_requests.AIPublicAudio": {
             "type": "object",
             "required": [
-                "message"
+                "data",
+                "mime"
             ],
             "properties": {
+                "data": {
+                    "type": "string",
+                    "maxLength": 256000
+                },
+                "mime": {
+                    "type": "string",
+                    "enum": [
+                        "audio/webm",
+                        "audio/ogg",
+                        "audio/wav",
+                        "audio/mpeg",
+                        "audio/mp3",
+                        "audio/mp4",
+                        "audio/m4a",
+                        "audio/aac",
+                        "audio/flac"
+                    ]
+                }
+            }
+        },
+        "template_internal_http_datatransfers_requests.AIPublicChatRequest": {
+            "type": "object",
+            "properties": {
+                "audio": {
+                    "$ref": "#/definitions/template_internal_http_datatransfers_requests.AIPublicAudio"
+                },
                 "history": {
                     "type": "array",
                     "maxItems": 6,
@@ -7638,6 +7735,7 @@ const docTemplate = `{
                     ]
                 },
                 "message": {
+                    "description": "Message нь audio байхгүй үед заавал (handler шалгана) — push-to-talk\nгоримд зөвхөн audio ирнэ.",
                     "type": "string",
                     "maxLength": 1000
                 }
@@ -7660,6 +7758,18 @@ const docTemplate = `{
                 "text": {
                     "type": "string",
                     "maxLength": 1000
+                }
+            }
+        },
+        "template_internal_http_datatransfers_requests.AIPublicTTSRequest": {
+            "type": "object",
+            "required": [
+                "text"
+            ],
+            "properties": {
+                "text": {
+                    "type": "string",
+                    "maxLength": 800
                 }
             }
         },

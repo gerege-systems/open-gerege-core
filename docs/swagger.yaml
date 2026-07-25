@@ -64,8 +64,31 @@ definitions:
         maxLength: 4000
         type: string
     type: object
+  template_internal_http_datatransfers_requests.AIPublicAudio:
+    properties:
+      data:
+        maxLength: 256000
+        type: string
+      mime:
+        enum:
+        - audio/webm
+        - audio/ogg
+        - audio/wav
+        - audio/mpeg
+        - audio/mp3
+        - audio/mp4
+        - audio/m4a
+        - audio/aac
+        - audio/flac
+        type: string
+    required:
+    - data
+    - mime
+    type: object
   template_internal_http_datatransfers_requests.AIPublicChatRequest:
     properties:
+      audio:
+        $ref: '#/definitions/template_internal_http_datatransfers_requests.AIPublicAudio'
       history:
         items:
           $ref: '#/definitions/template_internal_http_datatransfers_requests.AIPublicChatTurn'
@@ -79,10 +102,11 @@ definitions:
         - ru
         type: string
       message:
+        description: |-
+          Message нь audio байхгүй үед заавал (handler шалгана) — push-to-talk
+          горимд зөвхөн audio ирнэ.
         maxLength: 1000
         type: string
-    required:
-    - message
     type: object
   template_internal_http_datatransfers_requests.AIPublicChatTurn:
     properties:
@@ -96,6 +120,14 @@ definitions:
         type: string
     required:
     - role
+    - text
+    type: object
+  template_internal_http_datatransfers_requests.AIPublicTTSRequest:
+    properties:
+      text:
+        maxLength: 800
+        type: string
+    required:
     - text
     type: object
   template_internal_http_datatransfers_requests.AISTTRequest:
@@ -3849,10 +3881,11 @@ paths:
     post:
       consumes:
       - application/json
-      description: Нүүр хуудасны чат виджетэд зориулсан НЭВТРЭЛТГҮЙ чат. Зөвхөн текст
-        (audio байхгүй), мессеж 1000 тэмдэгт, түүх 6 ээлж. Туслах нь платформын мэдлэгийн
-        санд тулгуурлан хариулах бөгөөд хэрэглэгчийн бүртгэлийн өгөгдөлд ХАНДАХГҮЙ
-        (тусдаа tool багц + нэмэлт guardrail). IP тус бүрт минутанд ~6 хүсэлт.
+      description: Нүүр хуудасны чат виджетэд зориулсан НЭВТРЭЛТГҮЙ чат. Текст ба/эсвэл
+        богино дуут мессеж (push-to-talk, ~250 KB base64 ≈ 15 сек), мессеж 1000 тэмдэгт,
+        түүх 6 ээлж. Туслах нь платформын мэдлэгийн санд тулгуурлан хариулах бөгөөд
+        хэрэглэгчийн бүртгэлийн өгөгдөлд ХАНДАХГҮЙ (тусдаа tool багц + нэмэлт guardrail).
+        IP тус бүрт минутанд ~6 хүсэлт.
       parameters:
       - description: Chat message + optional short history
         in: body
@@ -3885,6 +3918,51 @@ paths:
           schema:
             $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
       summary: Нээлттэй AI туслах (нэвтрэлтгүй)
+      tags:
+      - ai
+  /public/ai/tts:
+    post:
+      consumes:
+      - application/json
+      description: Нүүр хуудасны нээлттэй чатын хариултыг дуут (audio/wav, base64)
+        болгоно. Нэвтрэлт шаардахгүй; текст 800 тэмдэгтээр, IP тус бүрт минутанд ~6
+        хүсэлтээр хязгаарлагдана.
+      parameters:
+      - description: Text
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/template_internal_http_datatransfers_requests.AIPublicTTSRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: WAV audio (base64)
+          schema:
+            allOf:
+            - $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/template_internal_http_datatransfers_responses.AIAudioOut'
+              type: object
+        "400":
+          description: Malformed JSON body
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+        "422":
+          description: Validation error
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+        "429":
+          description: Rate limit exceeded
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+        "503":
+          description: Upstream (Gemini) timed out or unavailable — retry
+          schema:
+            $ref: '#/definitions/template_internal_http_handlers_v1.BaseResponse'
+      summary: Нээлттэй TTS (нэвтрэлтгүй) — «сонсох» товч
       tags:
       - ai
   /registry/catalog:
