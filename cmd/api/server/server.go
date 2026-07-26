@@ -634,6 +634,18 @@ func NewApp() (*App, error) {
 		routes.NewSiteRoute(api, siteUC, rbacUC, authMiddleware).Routes()
 		routes.NewThemeRoute(api, themeUC, rbacUC, authMiddleware).Routes()
 		routes.NewSignRoute(api, signUC, usersUC, assetsUC, authMiddleware).Routes()
+		// eID service proxy — бүртгэгдсэн апп (relying party)-ууд хэрэглэгчийнхээ
+		// access token-оор платформын eID service-үүдийг ДАМЖУУЛАН дуудна
+		// (/v1/eid/*). Платформ өөрийн eidmongolia RP creds-ээр татаж өгнө тул
+		// апп-д eID credential эзэмших шаардлагагүй.
+		//
+		// Service тус бүрийн зөвшөөрөл нь client-ийн allowed scope дахь
+		// "svc:<service>"-ээр илэрхийлэгдэнэ (admin gateway UI-аас апп-д service
+		// олгоход нэмэгддэг). Олгогдоогүй апп 403 авна. Gateway catalog-д
+		// идэвхгүй бол route-ууд өөрсдөө хаагдана.
+		eidProxyMW := middlewares.NewOAuthBearerMiddleware(oidcSvc, oauthClients, "svc:"+routes.EIDProxyServiceName)
+		eidOrgProxyMW := middlewares.NewOAuthBearerMiddleware(oidcSvc, oauthClients, "svc:"+routes.EIDOrgProxyServiceName)
+		routes.NewEIDProxyRoute(api, authUC, gatewayUC, eidProxyMW, eidOrgProxyMW).Routes()
 		// OIDC provider login/consent/logout.
 		routes.NewProviderRoute(api, providerUC, authMiddleware).Routes()
 	})

@@ -25,6 +25,21 @@ func (u *usecase) ListServices(ctx context.Context) ([]domain.GatewayService, er
 	return u.repo.ListServices(ctx)
 }
 
+// ServiceEnabled нь catalog дахь нэрээр service идэвхтэй эсэхийг буцаана. Catalog-д
+// олдоогүй бол true (fail-open) — ингэснээр seed хийгээгүй ч код-функц ажиллана.
+func (u *usecase) ServiceEnabled(ctx context.Context, name string) (bool, error) {
+	svcs, err := u.repo.ListServices(ctx)
+	if err != nil {
+		return false, err
+	}
+	for _, s := range svcs {
+		if s.Name == name {
+			return s.Enabled, nil
+		}
+	}
+	return true, nil
+}
+
 func (u *usecase) CreateService(ctx context.Context, in ServiceInput) (domain.GatewayService, error) {
 	svc, err := in.toDomain()
 	if err != nil {

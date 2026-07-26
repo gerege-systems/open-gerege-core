@@ -14,6 +14,10 @@ import (
 type Usecase interface {
 	// Services
 	ListServices(ctx context.Context) ([]domain.GatewayService, error)
+	// ServiceEnabled нь catalog дахь нэрээр service идэвхтэй эсэхийг буцаана —
+	// catalog-д олдоогүй бол true (fail-open), ингэснээр seed хийгээгүй ч
+	// кодын функц ажиллана.
+	ServiceEnabled(ctx context.Context, name string) (bool, error)
 	CreateService(ctx context.Context, in ServiceInput) (domain.GatewayService, error)
 	UpdateService(ctx context.Context, id string, in ServiceInput) (domain.GatewayService, error)
 	DeleteService(ctx context.Context, id string) error
