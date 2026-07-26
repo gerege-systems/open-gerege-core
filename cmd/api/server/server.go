@@ -10,6 +10,7 @@ import (
 	"os"
 	"os/signal"
 	"strings"
+	"sync"
 	"syscall"
 	"time"
 
@@ -99,6 +100,48 @@ import (
 // Апп өөрийн нэрээр дарж бичиж болно — NewApp дуудахаас өмнө тавина.
 var ServiceName = "gerege-platform"
 
+// bootstrapOnce нь Bootstrap-ыг зөвхөн нэг удаа гүйцэтгэнэ — нимгэн апп нь
+// core-ийн main-ыг давхарлан дуудсан ч аюулгүй.
+var (
+	bootstrapOnce sync.Once
+	bootstrapErr  error
+)
+
+// Bootstrap нь тохиргоо болон logger-ийг ачаална.
+//
+// NewApp үүнийг ӨӨРӨӨ дууддаг тул нимгэн апп мартах боломжгүй. (Өмнө нь
+// энэ нь cmd/api/main.go-ийн init()-д байсан бөгөөд суурийг модуль болгож
+// гаргахад аппууд үүнийг санамсаргүй орхивол config зөвхөн тэг утгатай
+// үлдэж, API эхлэхгүй байв.)
+func Bootstrap() error {
+	bootstrapOnce.Do(func() {
+		if err := config.InitializeAppConfig(); err != nil {
+			bootstrapErr = err
+			return
+		}
+		// Орчноос гарган авсан тохиргоогоор logger-ийг дахин эхлүүлнэ
+		// (production = JSON; dev = console).
+		_ = logger.InitDefault(loggerConfig(), logger.InstanceZap)
+		logger.Info("configuration loaded", logger.Fields{constants.LoggerCategory: constants.LoggerCategoryConfig})
+	})
+	return bootstrapErr
+}
+
+// loggerConfig нь орчны тохиргооноос logger-ийн тохиргоог гаргана.
+func loggerConfig() logger.Config {
+	cfg := logger.Config{
+		Level:         logger.LevelInfo,
+		EnableConsole: true,
+		AppName:       ServiceName,
+	}
+	if config.AppConfig.Environment == constants.EnvironmentProduction {
+		cfg.ConsoleJSONFormat = true
+	} else if config.AppConfig.Debug {
+		cfg.Level = logger.LevelDebug
+	}
+	return cfg
+}
+
 type App struct {
 	server              *http.Server
 	router              chi.Router
@@ -115,6 +158,12 @@ type App struct {
 }
 
 func NewApp() (*App, error) {
+	// Тохиргоо/logger-ийг эхлээд ачаална — нимгэн апп үүнийг мартвал
+	// config тэг утгатай үлдэж, DB URL/порт хоосон болно.
+	if err := Bootstrap(); err != nil {
+		return nil, fmt.Errorf("bootstrap config: %w", err)
+	}
+
 	ctx := context.Background()
 
 	// Tracer-ийг эхэлд тохируулна — ингэснээр дараагийн тохиргооноос

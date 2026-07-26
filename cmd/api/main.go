@@ -30,35 +30,15 @@ import (
 	"runtime"
 
 	"github.com/gerege-systems/platform-core/cmd/api/server"
-	"github.com/gerege-systems/platform-core/core/config"
 	"github.com/gerege-systems/platform-core/core/constants"
 	_ "github.com/gerege-systems/platform-core/docs" // OpenAPI тодорхойлолт, `make swag`-аар үүсгэгддэг
 	"github.com/gerege-systems/platform-core/pkg/logger"
 )
 
 func init() {
-	if err := config.InitializeAppConfig(); err != nil {
+	if err := server.Bootstrap(); err != nil {
 		logger.Fatal(err.Error(), logger.Fields{constants.LoggerCategory: constants.LoggerCategoryConfig})
 	}
-	// Орчноос (env) гарган авсан тохиргоогоор logger-ийг дахин эхлүүлнэ
-	// (production = JSON; dev = console). Package түвшний init() аль хэдийн
-	// зохистой анхдагч утга өгсөн тул энэ нь амжилтгүй болсон ч дээрх мөр лог бичиж чадна.
-	_ = logger.InitDefault(loggerConfig(), logger.InstanceZap)
-	logger.Info("configuration loaded", logger.Fields{constants.LoggerCategory: constants.LoggerCategoryConfig})
-}
-
-func loggerConfig() logger.Config {
-	cfg := logger.Config{
-		Level:         logger.LevelInfo,
-		EnableConsole: true,
-		AppName:       "gerege-template",
-	}
-	if config.AppConfig.Environment == constants.EnvironmentProduction {
-		cfg.ConsoleJSONFormat = true
-	} else if config.AppConfig.Debug {
-		cfg.Level = logger.LevelDebug
-	}
-	return cfg
 }
 
 func main() {
