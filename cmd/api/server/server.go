@@ -155,6 +155,7 @@ func loggerConfig() logger.Config {
 type App struct {
 	server              *http.Server
 	router              chi.Router
+	authMiddleware      func(http.Handler) http.Handler
 	pool                *pgxpool.Pool
 	redisCache          caches.RedisCache
 	tracerShutdown      observability.Shutdown
@@ -709,6 +710,7 @@ func NewApp() (*App, error) {
 	return &App{
 		server:              srv,
 		router:              r,
+		authMiddleware:      authMiddleware,
 		pool:                pool,
 		redisCache:          redisCache,
 		tracerShutdown:      shutdownTracer,
@@ -771,6 +773,12 @@ func (a *App) Router() chi.Router { return a.router }
 
 // Pool нь апп өөрийн repository-гоо байгуулахад хэрэглэх DB pool-ыг буцаана.
 func (a *App) Pool() *pgxpool.Pool { return a.pool }
+
+// AuthMiddleware нь суурийн JWT танилтын middleware-ийг буцаана — апп өөрийн
+// маршрутаа ижил session-оор хамгаалахад хэрэглэнэ:
+//
+//	app.Router().Route("/api/v1/wallet", wallet.Routes(app.AuthMiddleware()))
+func (a *App) AuthMiddleware() func(http.Handler) http.Handler { return a.authMiddleware }
 
 func (a *App) Run() (err error) {
 	srvLog := logger.WithFields(logger.Fields{constants.LoggerCategory: constants.LoggerCategoryServer})
