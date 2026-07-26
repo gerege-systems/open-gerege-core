@@ -46,7 +46,7 @@ func readLines(t *testing.T, path string) []string {
 }
 
 // readRange нь "эхлэл төгсгөл" хэлбэрийн RANGE файлыг задлана.
-func readRange(t *testing.T) (int, int) {
+func readRange(t *testing.T) (lo, hi int) {
 	t.Helper()
 	lines := readLines(t, filepath.Join(migrationsDir, "RANGE"))
 	if len(lines) != 1 {
@@ -60,7 +60,7 @@ func readRange(t *testing.T) (int, int) {
 	if err != nil {
 		t.Fatalf("RANGE эхлэл тоо биш: %v", err)
 	}
-	hi, err := strconv.Atoi(parts[1])
+	hi, err = strconv.Atoi(parts[1])
 	if err != nil {
 		t.Fatalf("RANGE төгсгөл тоо биш: %v", err)
 	}
