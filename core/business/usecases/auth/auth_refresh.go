@@ -166,9 +166,11 @@ func (uc *usecase) Refresh(ctx context.Context, req RefreshRequest) (resp LoginR
 	}
 
 	resp = LoginResponse{
-		User:         user,
-		AccessToken:  pair.AccessToken,
-		RefreshToken: pair.RefreshToken,
+		User:             user,
+		AccessToken:      pair.AccessToken,
+		RefreshToken:     pair.RefreshToken,
+		AccessExpiresAt:  pair.AccessExpiresAt,
+		RefreshExpiresAt: pair.RefreshExpiresAt,
 	}
 	return resp, nil
 }

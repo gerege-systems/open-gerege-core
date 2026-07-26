@@ -304,10 +304,12 @@ func (uc *usecase) EIDPoll(ctx context.Context, req EIDPollRequest) (resp EIDPol
 	}
 
 	resp = EIDPollResponse{
-		State:        eid.StateComplete,
-		User:         user,
-		AccessToken:  pair.AccessToken,
-		RefreshToken: pair.RefreshToken,
+		State:            eid.StateComplete,
+		User:             user,
+		AccessToken:      pair.AccessToken,
+		RefreshToken:     pair.RefreshToken,
+		AccessExpiresAt:  pair.AccessExpiresAt,
+		RefreshExpiresAt: pair.RefreshExpiresAt,
 	}
 	return resp, nil
 }

@@ -73,6 +73,7 @@ import (
 	userspostgres "github.com/gerege-systems/platform-core/core/datasources/repositories/postgres/users"
 	"github.com/gerege-systems/platform-core/core/datasources/rls"
 	V1Handler "github.com/gerege-systems/platform-core/core/http/handlers/v1"
+	authhandler "github.com/gerege-systems/platform-core/core/http/handlers/v1/auth"
 	"github.com/gerege-systems/platform-core/core/http/middlewares"
 	"github.com/gerege-systems/platform-core/core/http/routes"
 	"github.com/gerege-systems/platform-core/core/provider/adminapi"
@@ -99,6 +100,15 @@ import (
 // ServiceName нь telemetry (tracing/metrics)-д ашиглагдах үйлчилгээний нэр.
 // Апп өөрийн нэрээр дарж бичиж болно — NewApp дуудахаас өмнө тавина.
 var ServiceName = "gerege-platform"
+
+// WalletProvisioner нь гар утасны нэвтрэлт амжилттай болоход иргэний
+// түрийвчийг нээх/олох СОНГОЛТТОЙ дэгээ. Түрийвчтэй апп (жишээ нь
+// wallet-gerege-mn) үүнийг NewApp дуудахаас ӨМНӨ тавина:
+//
+//	server.WalletProvisioner = walletAdapter{uc}
+//
+// nil үлдвэл (суурь платформ) нэвтрэлт хэвийн ажиллах ч хариунд IBAN ирэхгүй.
+var WalletProvisioner authhandler.WalletProvisioner
 
 // bootstrapOnce нь Bootstrap-ыг зөвхөн нэг удаа гүйцэтгэнэ — нимгэн апп нь
 // core-ийн main-ыг давхарлан дуудсан ч аюулгүй.
@@ -599,7 +609,7 @@ func NewApp() (*App, error) {
 		api.Use(gwLogMW)
 
 		api.Get("/", routes.RootHandler)
-		routes.NewAuthRoute(api, authUC, auditUC, authMiddleware, authRateLimiter, pollRateLimiter).Routes()
+		routes.NewAuthRoute(api, authUC, auditUC, WalletProvisioner, authMiddleware, authRateLimiter, pollRateLimiter).Routes()
 		routes.NewUsersRoute(api, usersUC, authMiddleware, ssoEidProxy != nil).Routes()
 		routes.NewEIDProfileRoute(api, authUC, authMiddleware, govWriteRateLimiter).Routes()
 		routes.NewRBACRoute(api, rbacUC, auditUC, authMiddleware).Routes()

@@ -92,6 +92,15 @@ func NewSuccessResponse(w http.ResponseWriter, r *http.Request, statusCode int, 
 	})
 }
 
+// NewRawResponse нь дугтуйгүй (BaseResponse-гүй) ЦЭВЭР JSON бичнэ. Гар
+// утасны апп зэрэг өөрийн гэсэн хариултын бүтэц хүлээж буй хэрэглэгчдэд
+// зориулав.
+func NewRawResponse(w http.ResponseWriter, statusCode int, data interface{}) error {
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	w.WriteHeader(statusCode)
+	return json.NewEncoder(w).Encode(data)
+}
+
 // NewErrorResponse нь алдааны дугтуй бичнэ.
 func NewErrorResponse(w http.ResponseWriter, r *http.Request, statusCode int, errMsg string) error {
 	return writeJSON(w, statusCode, BaseResponse{

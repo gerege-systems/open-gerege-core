@@ -30,9 +30,16 @@ type authRoute struct {
 // эзэмшдэг тул тэдгээрийн cleanup goroutine-г graceful shutdown үед Stop()
 // хийж болно; auth middleware нь users route-той хуваалцагддаг. pollRateLimiter
 // нь /eid/poll-д зориулсан тусдаа сул хязгаарлагч (long-poll-ийг 429-дэхгүй).
-func NewAuthRoute(router chi.Router, authUC auth.Usecase, auditUC audit.Usecase, authMiddleware func(http.Handler) http.Handler, rateLimiter, pollRateLimiter *middlewares.RateLimiter) *authRoute {
+// walletProvisioner нь гар утасны нэвтрэлт амжилттай болоход иргэний
+// түрийвчийг нээх/олоход хэрэглэгдэнэ. nil байж болно (түрийвчгүй платформ) —
+// тэр үед нэвтрэлт хэвийн ажиллах ч хариунд IBAN ирэхгүй.
+func NewAuthRoute(router chi.Router, authUC auth.Usecase, auditUC audit.Usecase, walletProvisioner authhandler.WalletProvisioner, authMiddleware func(http.Handler) http.Handler, rateLimiter, pollRateLimiter *middlewares.RateLimiter) *authRoute {
+	handler := authhandler.NewHandlerWithAudit(authUC, auditUC)
+	if walletProvisioner != nil {
+		handler = handler.WithWallet(walletProvisioner)
+	}
 	return &authRoute{
-		handler:         authhandler.NewHandlerWithAudit(authUC, auditUC),
+		handler:         handler,
 		router:          router,
 		rateLimiter:     rateLimiter,
 		pollRateLimiter: pollRateLimiter,
@@ -68,6 +75,9 @@ func (rt *authRoute) Routes() {
 			// Session-ийн амьдралын мөчлөг — нэвтрэх аргаас үл хамаарна.
 			rl.Post("/refresh", v1.Wrap(rt.handler.Refresh))
 			rl.Post("/logout", v1.Wrap(rt.handler.Logout))
+			// Гар утасны апп — РД-аар нэвтрэлт эхлүүлэх (/eid/start-id-ийн
+			// апп-д зориулсан, дугтуйгүй хариулттай хувилбар).
+			rl.Post("/initiate", v1.Wrap(rt.handler.MobileInitiate))
 		})
 
 		// Нэвтэрсэн хэрэглэгч Google холболтоо САЛГАХ (integrations/dashboard
@@ -85,6 +95,9 @@ func (rt *authRoute) Routes() {
 		// тавина (body хязгаар + ServiceRLSContext бүлгийн түвшинд хэвээр).
 		r.Group(func(pl chi.Router) {
 			pl.Use(rt.pollRateLimiter.Middleware())
+			// Гар утасны апп-ын төлөв асуулт — /eid/poll-ийн адил урт
+			// хүлээлттэй тул СУЛ poll limiter-т хамааруулна.
+			pl.Get("/status/{sid}", v1.Wrap(rt.handler.MobileStatus))
 			pl.Post("/eid/poll", v1.Wrap(rt.handler.EIDPoll))
 		})
 	})

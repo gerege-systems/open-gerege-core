@@ -33,6 +33,10 @@ func NewSignRoute(router chi.Router, signUC signuc.Usecase, usersUC users.Usecas
 func (rt *signRoute) Routes() {
 	rt.router.Route("/v1/sign", func(r chi.Router) {
 		r.Use(rt.authMiddleware)
+		// Баримтгүй гарын үсэг — зөвхөн SHA-256 хэшид (гүйлгээ/шилжүүлгийн апп).
+		// Статик "status" сегмент нь доорх "{id}" wildcard-аас ӨМНӨ таарна.
+		r.Post("/initiate", v1.Wrap(rt.handler.InitiateDigest))
+		r.Get("/status/{sid}", v1.Wrap(rt.handler.DigestStatus))
 		r.Post("/init", v1.Wrap(rt.handler.Init))
 		r.Get("/{id}", v1.Wrap(rt.handler.Poll))
 		r.Get("/{id}/download", v1.Wrap(rt.handler.Download))

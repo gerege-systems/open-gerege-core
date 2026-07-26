@@ -134,6 +134,7 @@ func (uc *usecase) GoogleLogin(ctx context.Context, code, redirectURI string) (r
 		}
 		return GoogleLoginResponse{Linked: true, Login: LoginResponse{
 			User: user, AccessToken: pair.AccessToken, RefreshToken: pair.RefreshToken,
+			AccessExpiresAt: pair.AccessExpiresAt, RefreshExpiresAt: pair.RefreshExpiresAt,
 		}}, nil
 	}
 

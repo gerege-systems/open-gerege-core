@@ -76,8 +76,12 @@ type Config struct {
 }
 
 type usecase struct {
-	cache cache
-	cfg   Config
+	// signerErr нь Document-Signer ачаалагдаагүй шалтгаан. nil биш үед PDF
+	// татах (Download) боломжгүй; бусад бүх урсгал (InitDigest гэх мэт
+	// иргэний ӨӨРИЙН eID гарын үсэг) хэвийн ажиллана.
+	signerErr error
+	cache     cache
+	cfg       Config
 	// client — eidmongolia /v3 гэх мэт ДОТООД, тохируулсан endpoint-уудад.
 	client *http.Client
 	// assetClient — хэрэглэгчийн өгсөн тамга/гарын үсгийн зургийн URL-ийг татахад
@@ -92,6 +96,14 @@ type Usecase interface {
 	// Init — onBehalfOfOrg хоосон бол хувь хүний гарын үсэг; NTRMN-<РД> бол тухайн
 	// байгууллагын нэрийн өмнөөс (eidmongolia төлөөллийн эрхийг шалгана).
 	Init(ctx context.Context, regNo, fullName, filename string, pdf []byte, onBehalfOfOrg, signatureURL, stampURL string) (InitResult, error)
+
+	// InitDigest — ДУРЫН SHA-256 digest-д PIN2 гарын үсэг эхлүүлнэ (PDF-гүй).
+	// Гүйлгээ/шилжүүлгийн апп үүнийг ашиглана: апп нь канон агуулгын хэшийг
+	// илгээж, иргэн утсан дээрээ displayText-ийг хараад баталдаг.
+	InitDigest(ctx context.Context, regNo, fullName, digestHex, displayText string) (InitResult, error)
+	// VerifiedDigest — session ДУУССАН бөгөөд ownerRegNo-д харьяалагдаж
+	// байвал гарын үсэг зурагдсан digest-ийг base64-ээр буцаана.
+	VerifiedDigest(ctx context.Context, ownerRegNo, sessionID string) (string, error)
 	Poll(ctx context.Context, ownerRegNo, sessionID string) (string, error)
 	Download(ctx context.Context, ownerRegNo, sessionID string) (DownloadResult, error)
 }
@@ -153,15 +165,17 @@ func (u *usecase) loadState(ctx context.Context, id string) (signState, error) {
 // байнгын PEM; development: dev self-signed fallback) usecase буцаана.
 func NewUsecase(c cache, cfg Config) (Usecase, error) {
 	id, err := resolveSigner(cfg)
-	if err != nil {
-		return nil, fmt.Errorf("sign: signer init: %w", err)
-	}
+	// Document-Signer нь ЗӨВХӨН PDF-д серверийн PAdES гарын үсэг шигтгэхэд
+	// (Download) хэрэгтэй. Иргэний ӨӨРИЙН eID гарын үсгийн урсгалд (Init,
+	// InitDigest) серверийн signer огт оролцдоггүй тул signer байхгүй нь boot
+	// зогсоох шалтгаан БИШ: алдааг хадгалаад, PDF татах үед л буцаана.
 	return &usecase{
 		cache:       c,
 		cfg:         cfg,
 		client:      &http.Client{Timeout: 15 * time.Second},
 		assetClient: newAssetFetchClient(15 * time.Second),
 		signer:      id,
+		signerErr:   err,
 	}, nil
 }
 
@@ -305,7 +319,7 @@ func (u *usecase) Init(ctx context.Context, regNo, fullName, filename string, pd
 	sum := sha256.Sum256(pdfBytes)
 	digestB64 := base64.StdEncoding.EncodeToString(sum[:])
 
-	v3SessionID, vc, err := u.startV3Sign(ctx, toEtsi(regNo), digestB64, fullName, onBehalfOfOrg)
+	v3SessionID, vc, err := u.startV3Sign(ctx, toEtsi(regNo), digestB64, fullName, onBehalfOfOrg, "Gerege — баримтад гарын үсэг")
 	if err != nil {
 		// Төлөөллийн эрхгүй (403) г.м. domain алдааг ил гаргана; бусад нь дотоод.
 		if de, ok := err.(*apperror.DomainError); ok {
@@ -531,6 +545,13 @@ func (u *usecase) stampV3(ctx context.Context, v3SessionID, filename string, pdf
 // embedPAdES — серверийн Document-Signer-ээр PDF-д гарын үсгийн dictionary шигтгэнэ.
 // Гарын үсгийн нэр/шалтгаанд иргэний нэр/регистр + eID PIN2-ийн тэмдэглэгээ.
 func (u *usecase) embedPAdES(pdfBytes []byte, st signState) ([]byte, error) {
+	// Серверийн Document-Signer ачаалагдаагүй бол PDF-д PAdES шигтгэх
+	// боломжгүй. Энэ нь ЗӨВХӨН татах урсгалд хамаарна — иргэний eID гарын
+	// үсэг (Init/InitDigest) серверийн signer шаарддаггүй.
+	if u.signerErr != nil {
+		return nil, fmt.Errorf("document signer unavailable: %w", u.signerErr)
+	}
+
 	rdr, err := pdf.NewReader(bytes.NewReader(pdfBytes), int64(len(pdfBytes)))
 	if err != nil {
 		return nil, fmt.Errorf("pdf read: %w", err)
@@ -616,7 +637,7 @@ func (u *usecase) setRPAuth(req *http.Request) {
 	}
 }
 
-func (u *usecase) startV3Sign(ctx context.Context, etsi, digestB64, displayName, onBehalfOfOrg string) (sessionID, vc string, err error) {
+func (u *usecase) startV3Sign(ctx context.Context, etsi, digestB64, displayName, onBehalfOfOrg, displayText string) (sessionID, vc string, err error) {
 	body := map[string]any{
 		"relyingPartyUUID":  u.cfg.RPUUID,
 		"relyingPartyName":  u.cfg.RPName,
@@ -625,7 +646,7 @@ func (u *usecase) startV3Sign(ctx context.Context, etsi, digestB64, displayName,
 		"digest":            digestB64,
 		"hashType":          "SHA256",
 		"interactions": []map[string]string{
-			{"type": "displayTextAndPIN", "displayText60": "Gerege — баримтад гарын үсэг"},
+			{"type": "displayTextAndPIN", "displayText60": clampDisplayText(displayText)},
 		},
 	}
 	// onBehalfOf (NTRMN-<РД>) — байгууллагын нэрийн өмнөөс. Сервер төлөөллийн эрхийг

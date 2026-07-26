@@ -20,10 +20,20 @@ import (
 type Handler struct {
 	usecase auth.Usecase
 	auditUC audit.Usecase
+	// wallet нь гар утасны нэвтрэлт (MobileStatus) амжилттай болоход иргэний
+	// түрийвчийг нээх/олоход хэрэглэгдэнэ. nil байж болно — тэр үед хариунд
+	// IBAN ирэхгүй, нэвтрэлт өөрөө хэвийн үргэлжилнэ.
+	wallet WalletProvisioner
 }
 
 func NewHandler(usecase auth.Usecase) Handler {
 	return Handler{usecase: usecase}
+}
+
+// WithWallet нь handler-т түрийвч нээгчийг холбоно (сервер угсрах үед).
+func (h Handler) WithWallet(w WalletProvisioner) Handler {
+	h.wallet = w
+	return h
 }
 
 // NewHandlerWithAudit нь audit use case-ийг тарьж handler үүсгэнэ.

@@ -163,9 +163,11 @@ func (uc *usecase) Login(ctx context.Context, req LoginRequest) (resp LoginRespo
 	_ = uc.redisCache.Del(ctx, attemptsKey)
 
 	resp = LoginResponse{
-		User:         user,
-		AccessToken:  pair.AccessToken,
-		RefreshToken: pair.RefreshToken,
+		User:             user,
+		AccessToken:      pair.AccessToken,
+		RefreshToken:     pair.RefreshToken,
+		AccessExpiresAt:  pair.AccessExpiresAt,
+		RefreshExpiresAt: pair.RefreshExpiresAt,
 	}
 	return resp, nil
 }

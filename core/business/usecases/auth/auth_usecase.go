@@ -7,6 +7,7 @@ package auth
 
 import (
 	"context"
+	"time"
 
 	"github.com/gerege-systems/platform-core/core/business/domain"
 	"github.com/gerege-systems/platform-core/pkg/eid"
@@ -108,6 +109,10 @@ type (
 		User         domain.User
 		AccessToken  string
 		RefreshToken string
+		// Токенуудын дуусах хугацаа. Гар утасны апп нь access токен дуусахаас
+		// ӨМНӨ урьдчилан refresh хийхэд эдгээрийг хэрэглэдэг.
+		AccessExpiresAt  time.Time
+		RefreshExpiresAt time.Time
 	}
 
 	SendOTPRequest struct {
@@ -197,5 +202,9 @@ type (
 		MFAToken     string
 		AccessToken  string
 		RefreshToken string
+		// Токенуудын дуусах хугацаа. Гар утасны апп нь access токен дуусахаас
+		// ӨМНӨ урьдчилан refresh хийхэд эдгээрийг хэрэглэдэг.
+		AccessExpiresAt  time.Time
+		RefreshExpiresAt time.Time
 	}
 )
