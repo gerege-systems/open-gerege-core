@@ -6,6 +6,9 @@ import (
 	"context"
 	"flag"
 	"fmt"
+	"io/fs"
+	"os"
+	"strings"
 	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -14,6 +17,7 @@ import (
 	"github.com/gerege-systems/platform-core/core/constants"
 	"github.com/gerege-systems/platform-core/core/datasources/drivers"
 	"github.com/gerege-systems/platform-core/core/datasources/migration"
+	coremigrations "github.com/gerege-systems/platform-core/migrations"
 	"github.com/gerege-systems/platform-core/pkg/logger"
 )
 
@@ -27,9 +31,10 @@ const (
 	dbConnectDelay    = 2 * time.Second
 )
 
-// migrationsDir нь модулийн root-оос харьцангуй (make mig-up нь backend/-ээс
-// ажилладаг). SQL файлууд нь конвенцийн дагуу backend/migrations/-д байрлана.
-const migrationsDir = "migrations"
+// appMigrationsDir нь АППЫН өөрийн migration хавтас (ажлын директороос
+// харьцангуй). Суурийн migration-ууд хоёртын файлд шингээгдсэн тул энэ
+// хавтас байхгүй байх нь хэвийн — тухайн үед зөвхөн суурь ажиллана.
+const appMigrationsDir = "migrations"
 
 var (
 	up   bool
@@ -41,6 +46,22 @@ func init() {
 		logger.Fatal(err.Error(), logger.Fields{constants.LoggerCategory: constants.LoggerCategoryConfig})
 	}
 	logger.Info("configuration loaded", logger.Fields{constants.LoggerCategory: constants.LoggerCategoryConfig})
+}
+
+// migrationSources нь суурийн embed FS-ийг, дараа нь байвал аппын хавтсыг
+// өгнө. Runner нь бүгдийг нэг дараалалд, дугаараар эрэмбэлдэг тул
+// жагсаалтын дараалал эрэмбэд нөлөөлөхгүй — зөвхөн эх сурвалж нэмнэ.
+func migrationSources() []fs.FS {
+	srcs := []fs.FS{coremigrations.FS}
+	if entries, err := os.ReadDir(appMigrationsDir); err == nil {
+		for _, e := range entries {
+			if !e.IsDir() && strings.HasSuffix(e.Name(), ".sql") {
+				srcs = append(srcs, os.DirFS(appMigrationsDir))
+				break
+			}
+		}
+	}
+	return srcs
 }
 
 func main() {
@@ -55,7 +76,7 @@ func main() {
 	}
 	defer pool.Close()
 
-	runner := migration.New(pool, migrationsDir)
+	runner := migration.NewFS(pool, migrationSources()...)
 
 	if up {
 		// SQL файлууд (өргөтгөлүүд, partial-unique индексүүд,
