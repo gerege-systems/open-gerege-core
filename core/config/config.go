@@ -40,7 +40,12 @@ type Config struct {
 	// огт ашиглахгүй. VERIFY_API_KEY production-д заавал шаардлагатай.
 	VerifyAPIBase string `mapstructure:"VERIFY_API_BASE"`
 	VerifyAPIKey  string `mapstructure:"VERIFY_API_KEY"`
-	VerifyChannel string `mapstructure:"VERIFY_CHANNEL"`
+	// VerifyOptional=true үед VERIFY_API_KEY-гүйгээр production-д асахыг
+	// зөвшөөрнө. OTP хэрэглэдэггүй платформд (жишээ нь түрийвч) зориулав —
+	// OTP дуудагдвал pkg/verify нь "API key not configured" гэж ойлгомжтой
+	// алдаа буцаана. ЗӨВХӨН ухамсартай сонголт: анхдагчаар шаардлага хэвээр.
+	VerifyOptional bool   `mapstructure:"VERIFY_OPTIONAL"`
+	VerifyChannel  string `mapstructure:"VERIFY_CHANNEL"`
 
 	// Gerege Verify / XYP (xyp.dgov.mn) — улсын бүртгэлээс байгууллагын мэдээлэл
 	// авах лавлагаа API. HTTP Basic Auth (client_id:client_secret). Креденшлгүй бол
@@ -283,6 +288,7 @@ func InitializeAppConfig() error {
 	// ийн утгыг struct руу буулгахгүй (key нь config файл/default-оос
 	// бүртгэгдээгүй бол).
 	_ = viper.BindEnv("SUPERADMIN_EMAIL")
+	_ = viper.BindEnv("VERIFY_OPTIONAL")
 	// XYP (байгууллагын лавлагаа) креденшл — 12-factor орчинд зөвхөн environment-ээс
 	// ирж болзошгүй тул ил bind хийнэ (нууц; .env.example-д хоосон).
 	_ = viper.BindEnv("XYP_API_BASE")
@@ -382,8 +388,11 @@ func InitializeAppConfig() error {
 		}
 		// Бүх email/SMS OTP нь GeregeCloud Verify-ээр явдаг тул production-д
 		// VERIFY_API_KEY заавал шаардлагатай (эс бөгөөс OTP илгээх боломжгүй).
-		if AppConfig.VerifyAPIKey == "" {
-			return fmt.Errorf("VERIFY_API_KEY must be set in production (GeregeCloud Verify OTP)")
+		// OTP огт ашиглахгүй платформ VERIFY_OPTIONAL=true-гээр ухамсартай
+		// татгалзаж болно — тэр үед OTP дуудалт ажиллах үедээ алдаа буцаана.
+		if AppConfig.VerifyAPIKey == "" && !AppConfig.VerifyOptional {
+			return fmt.Errorf("VERIFY_API_KEY must be set in production (GeregeCloud Verify OTP); " +
+				"OTP ашиглахгүй бол VERIFY_OPTIONAL=true гэж ухамсартай татгалз")
 		}
 	default:
 		return fmt.Errorf("ENVIRONMENT must be 'development' or 'production', got %q", AppConfig.Environment)
