@@ -156,6 +156,8 @@ type App struct {
 	server              *http.Server
 	router              chi.Router
 	authMiddleware      func(http.Handler) http.Handler
+	usersUC             users.Usecase
+	signUC              sign.Usecase
 	pool                *pgxpool.Pool
 	redisCache          caches.RedisCache
 	tracerShutdown      observability.Shutdown
@@ -711,6 +713,8 @@ func NewApp() (*App, error) {
 		server:              srv,
 		router:              r,
 		authMiddleware:      authMiddleware,
+		usersUC:             usersUC,
+		signUC:              signUC,
 		pool:                pool,
 		redisCache:          redisCache,
 		tracerShutdown:      shutdownTracer,
@@ -779,6 +783,14 @@ func (a *App) Pool() *pgxpool.Pool { return a.pool }
 //
 //	app.Router().Route("/api/v1/wallet", wallet.Routes(app.AuthMiddleware()))
 func (a *App) AuthMiddleware() func(http.Handler) http.Handler { return a.authMiddleware }
+
+// Users нь суурийн хэрэглэгчийн usecase-ыг буцаана — апп өөрийн модульдаа
+// иргэний нэр/РД-г шийдэхэд хэрэглэнэ.
+func (a *App) Users() users.Usecase { return a.usersUC }
+
+// Sign нь суурийн гарын үсгийн usecase-ыг буцаана — апп нь VerifiedDigest-ээр
+// гүйлгээгээ иргэний eID гарын үсэгт уяхад хэрэглэнэ.
+func (a *App) Sign() sign.Usecase { return a.signUC }
 
 func (a *App) Run() (err error) {
 	srvLog := logger.WithFields(logger.Fields{constants.LoggerCategory: constants.LoggerCategoryServer})
