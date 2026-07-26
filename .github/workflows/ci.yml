@@ -1,0 +1,89 @@
+name: CI
+
+# Суурь код энэ репод амьдардаг тул платформуудын backend тестүүд ЭНД
+# ажиллана. Апп repo-ууд зөвхөн өөрсдийн нимгэн давхаргаа шалгана.
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+  workflow_dispatch:
+
+env:
+  GO_VERSION: '1.26'
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build · vet · unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Set up Go
+        uses: actions/setup-go@v6
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache: true
+          cache-dependency-path: go.sum
+
+      - name: gofmt check
+        run: |
+          unformatted="$(gofmt -l .)"
+          if [ -n "$unformatted" ]; then
+            echo "gofmt-аар форматлагдаагүй файлууд:"; echo "$unformatted"; exit 1
+          fi
+
+      - name: go vet
+        run: go vet ./...
+
+      - name: Integration test compile check (no Docker)
+        run: go vet -tags integration ./...
+
+      - name: Unit tests (race + coverage)
+        run: go test -race -coverprofile=coverage.out ./...
+
+      - name: Build binaries
+        run: |
+          go build ./cmd/api
+          go build ./cmd/migration
+          go build ./cmd/seed
+          go build ./cmd/healthcheck
+
+  integration:
+    name: Integration (Postgres · Redis)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Set up Go
+        uses: actions/setup-go@v6
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache: true
+          cache-dependency-path: go.sum
+
+      - name: Integration tests (testcontainers)
+        run: GOFLAGS=-mod=mod go test -tags=integration -timeout=20m ./...
+
+  lint:
+    name: golangci-lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Set up Go
+        uses: actions/setup-go@v6
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache: true
+          cache-dependency-path: go.sum
+
+      - name: Lint (unit + integration tags)
+        run: |
+          go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@latest
+          golangci-lint run ./...
+          golangci-lint run --build-tags=integration ./...
