@@ -10,6 +10,14 @@
 -- subquery дахин policy өдөөхгүй. Функц зөвхөн (org,user) хос байгаа эсэхийг
 -- boolean-оор буцаадаг тул elevated эрхтэй ажиллах нь аюулгүй.
 
+-- ЭХЛЭЭД рекурсив policy-уудыг устгана. Шалтгаан: доорх SQL функцийн биеийг
+-- PostgreSQL үүсгэх үедээ ТӨЛӨВЛӨДӨГ (check_function_bodies) бөгөөд төлөвлөх
+-- явцад идэвхтэй policy-ууд шалгагдаж "infinite recursion" алдаа өгдөг. Энэ нь
+-- superuser-ээр migration гүйцэтгэдэг орчинд харагддаггүй (RLS тойрогддог), харин
+-- эзэмшигч дүрээр (FORCE ROW LEVEL SECURITY) гүйцэтгэхэд шууд унадаг.
+DROP POLICY IF EXISTS organizations_member ON organizations;
+DROP POLICY IF EXISTS org_memberships_member_select ON organization_memberships;
+
 CREATE OR REPLACE FUNCTION app_is_org_member(p_org_id uuid, p_user_id uuid)
 RETURNS boolean
 LANGUAGE sql
@@ -22,8 +30,7 @@ AS $$
     );
 $$;
 
--- Recursive policy-уудыг функц ашигладаг болгож дахин үүсгэнэ.
-DROP POLICY IF EXISTS organizations_member ON organizations;
+-- Policy-уудыг функц ашигладаг болгож дахин үүсгэнэ.
 CREATE POLICY organizations_member ON organizations
     USING (
         current_setting('app.user_role', true) = 'user'
@@ -34,7 +41,6 @@ CREATE POLICY organizations_member ON organizations
         AND app_is_org_member(organizations.id, NULLIF(current_setting('app.user_id', true), '')::uuid)
     );
 
-DROP POLICY IF EXISTS org_memberships_member_select ON organization_memberships;
 CREATE POLICY org_memberships_member_select ON organization_memberships
     FOR SELECT
     USING (
