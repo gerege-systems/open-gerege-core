@@ -1,4 +1,3 @@
--- Gerege Template Platform V3.0
 -- RBAC: dynamic roles + a code-defined permission catalogue + role↔permission
 -- assignments. The 'admin' role is not given explicit rows — the rbac usecase
 -- resolves it to the FULL catalogue automatically. role ids are seeded to match

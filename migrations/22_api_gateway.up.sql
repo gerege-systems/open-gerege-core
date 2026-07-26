@@ -1,4 +1,3 @@
--- Gerege Template Platform V3.0
 -- API Gateway (нэгдсэн, эцсийн хэлбэр): upstream service-үүд + нэгдсэн
 -- 'applications' бүртгэл (gateway consumer + SSO RP-г НЭГ загварт нэгтгэсэн) +
 -- request-log telemetry. Application бүр = Hydra OAuth2 client; аппад зөвшөөрсөн

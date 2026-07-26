@@ -1,4 +1,3 @@
--- Gerege Template Platform V3.0
 -- Revert the inter-platform service-request relay + SLA monitor tables.
 
 DROP TABLE IF EXISTS relay_events;

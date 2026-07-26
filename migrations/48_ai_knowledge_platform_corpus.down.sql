@@ -1,4 +1,3 @@
--- Gerege Template Platform V3.0
 -- Gerege Systems Development Team болон Claude AI хамтран бүтээв, 2026.
 --
 -- Корпусыг устгана (slug-тай бичлэгүүд). 11-р migration-ий жишээ бичлэгүүдийг

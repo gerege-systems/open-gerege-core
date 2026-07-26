@@ -1,4 +1,3 @@
--- Gerege Template Platform V3.0
 -- Байгууллагын RLS policy-ийн infinite recursion засвар (SQLSTATE 42P17).
 --
 -- Migration 14-ийн `org_memberships_member_select` policy нь

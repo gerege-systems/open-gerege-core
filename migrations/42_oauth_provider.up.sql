@@ -1,4 +1,3 @@
--- Gerege Template Platform V3.0
 -- Өөрийн OAuth2/OIDC provider-ийн төлөв. Өмнө нь энэ бүхнийг Ory Hydra тусдаа
 -- `hydra` database-д (superuser холболттой, RLS-ээс гадуур) хадгалдаг байсан.
 -- Одоо үндсэн DB-д, RLS-ийн доор амьдарна.

@@ -1,4 +1,3 @@
--- Gerege Template Platform V3.0
 -- Ring System · R1 — Үйлчилгээний нэгдсэн регистр (Service Registry).
 --
 -- Төрийн бүх үйлчилгээний МАСТЕР ӨГӨГДӨЛ: CPSV-AP-д нийцсэн "үйлчилгээний

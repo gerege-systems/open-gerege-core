@@ -1,4 +1,3 @@
--- Gerege Template Platform V3.0
 -- Revert RBAC roles/permissions.
 
 ALTER TABLE users DROP CONSTRAINT IF EXISTS fk_users_role;

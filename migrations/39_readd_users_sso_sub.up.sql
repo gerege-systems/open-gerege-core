@@ -1,4 +1,3 @@
--- Gerege Template Platform V3.0
 -- Gerege SSO (sso.gerege.mn, OIDC) RP нэвтрэлтэд шаардлагатай sso_sub identity
 -- баганыг сэргээнэ. (Өмнөх 38 drop-migration-ийг буцаах — RP login дахин идэвхжив.)
 -- sso.gerege.mn нь "openid profile email" scope дор pairwise sub буцаадаг тул

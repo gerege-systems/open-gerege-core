@@ -1,4 +1,3 @@
--- Gerege Template Platform V3.0
 -- 44_gov_service_workflow-ийг буцаана: workflow талбар, timeline, life event,
 -- 'officer' RLS бодлого, шинэ эрхүүдийг устгаж каталогийн кодыг хуучин
 -- дур мэдсэн түлхүүрүүд рүү нь буцаана.

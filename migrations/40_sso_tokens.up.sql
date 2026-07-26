@@ -1,4 +1,3 @@
--- Gerege Template Platform V3.0
 -- sso_tokens: stores each citizen's dgov-SSO OAuth tokens so the app can call
 -- the SSO eID proxy (sso.gerege.mn/api/v1/eid/*) on their behalf. The access
 -- token is short-lived; the refresh token (offline_access) renews it. Both are

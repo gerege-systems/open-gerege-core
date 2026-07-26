@@ -1,4 +1,3 @@
--- Gerege Template Platform V3.0
 -- Organizations + membership: a net-new feature slice. `organizations` holds
 -- the legal-entity record (reg_no is case-insensitive unique via a lower()
 -- index); `organization_memberships` joins users to orgs with a per-org role

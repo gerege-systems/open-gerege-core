@@ -1,4 +1,3 @@
--- Gerege Template Platform V3.0
 -- Defense-in-depth for the GLOBAL config tables (RBAC catalogue + AI prompts /
 -- knowledge). These are not per-user tables, so they intentionally carry no
 -- Row-Level Security — which means the ONLY DB-level backstop against a missed

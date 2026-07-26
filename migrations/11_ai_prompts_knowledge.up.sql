@@ -1,4 +1,3 @@
--- Gerege Template Platform V3.0
 -- AI туслах: тохируулдаг prompt давхаргууд + AI-ийн хайдаг мэдлэгийн сан.
 --
 -- ai_prompts: suurь (base) дүрэм кодод хатуу бичигдсэн — энд зөвхөн

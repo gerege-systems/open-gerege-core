@@ -1,4 +1,3 @@
--- Gerege Template Platform V3.0
 -- 42_oauth_provider-ийг буцаана. Хамаарлын дарааллаар (FK) урвуугаар устгана.
 
 DROP TABLE IF EXISTS public.oauth_consents;
