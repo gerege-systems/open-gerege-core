@@ -9,7 +9,7 @@ import (
 	"testing"
 	"time"
 
-	"template/pkg/audit"
+	"github.com/gerege-systems/platform-core/pkg/audit"
 
 	"github.com/stretchr/testify/assert"
 )

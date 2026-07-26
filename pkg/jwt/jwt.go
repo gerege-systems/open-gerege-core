@@ -7,8 +7,8 @@ import (
 	"fmt"
 	"time"
 
-	"template/pkg/clock"
-	"template/pkg/logger"
+	"github.com/gerege-systems/platform-core/pkg/clock"
+	"github.com/gerege-systems/platform-core/pkg/logger"
 
 	golangJWT "github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"

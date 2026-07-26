@@ -5,7 +5,7 @@ package helpers_test
 import (
 	"testing"
 
-	"template/pkg/helpers"
+	"github.com/gerege-systems/platform-core/pkg/helpers"
 )
 
 func TestIsArrayContains(t *testing.T) {

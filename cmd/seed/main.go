@@ -5,11 +5,11 @@ package main
 import (
 	"context"
 
-	"template/cmd/seed/seeders"
-	"template/internal/config"
-	"template/internal/constants"
-	"template/internal/datasources/drivers"
-	"template/pkg/logger"
+	"github.com/gerege-systems/platform-core/cmd/seed/seeders"
+	"github.com/gerege-systems/platform-core/core/config"
+	"github.com/gerege-systems/platform-core/core/constants"
+	"github.com/gerege-systems/platform-core/core/datasources/drivers"
+	"github.com/gerege-systems/platform-core/pkg/logger"
 )
 
 func init() {

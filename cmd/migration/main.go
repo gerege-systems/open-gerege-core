@@ -10,11 +10,11 @@ import (
 
 	"github.com/jackc/pgx/v5/pgxpool"
 
-	"template/internal/config"
-	"template/internal/constants"
-	"template/internal/datasources/drivers"
-	"template/internal/datasources/migration"
-	"template/pkg/logger"
+	"github.com/gerege-systems/platform-core/core/config"
+	"github.com/gerege-systems/platform-core/core/constants"
+	"github.com/gerege-systems/platform-core/core/datasources/drivers"
+	"github.com/gerege-systems/platform-core/core/datasources/migration"
+	"github.com/gerege-systems/platform-core/pkg/logger"
 )
 
 // dbConnectAttempts / dbConnectDelay нь эхний DB холболтыг дахин оролдох

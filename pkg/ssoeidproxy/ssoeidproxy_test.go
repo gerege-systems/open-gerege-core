@@ -11,7 +11,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"template/pkg/eid"
+	"github.com/gerege-systems/platform-core/pkg/eid"
 )
 
 // newTestClient нь handler-тай httptest server дээр чиглэсэн client буцаана.

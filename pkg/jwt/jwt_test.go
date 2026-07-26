@@ -7,8 +7,8 @@ import (
 	"testing"
 	"time"
 
-	"template/pkg/clock"
-	"template/pkg/jwt"
+	"github.com/gerege-systems/platform-core/pkg/clock"
+	"github.com/gerege-systems/platform-core/pkg/jwt"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"

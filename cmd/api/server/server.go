@@ -17,88 +17,91 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"golang.org/x/time/rate"
 
-	docs "template/docs" // swagger тодорхойлолт, swaggo-оор init үед бүртгэгддэг
-	"template/internal/business/domain"
-	"template/internal/business/usecases/ai"
-	applicationsuc "template/internal/business/usecases/applications"
-	"template/internal/business/usecases/assets"
-	"template/internal/business/usecases/audit"
-	"template/internal/business/usecases/auth"
-	"template/internal/business/usecases/core"
-	"template/internal/business/usecases/gateway"
-	"template/internal/business/usecases/gov"
-	"template/internal/business/usecases/gspace"
-	"template/internal/business/usecases/integrations"
-	oidcuc "template/internal/business/usecases/oidc"
-	"template/internal/business/usecases/org"
-	provideruc "template/internal/business/usecases/provider"
-	"template/internal/business/usecases/rbac"
-	"template/internal/business/usecases/registry"
-	relayuc "template/internal/business/usecases/relay"
-	"template/internal/business/usecases/security"
-	"template/internal/business/usecases/sign"
-	siteuc "template/internal/business/usecases/site"
-	"template/internal/business/usecases/sso"
-	"template/internal/business/usecases/ssotoken"
-	"template/internal/business/usecases/superadmin"
-	onboarding "template/internal/business/usecases/superadmin_onboarding"
-	themeuc "template/internal/business/usecases/theme"
-	"template/internal/business/usecases/users"
-	"template/internal/config"
-	"template/internal/constants"
-	"template/internal/datasources/caches"
-	"template/internal/datasources/drivers"
-	repointerface "template/internal/datasources/repositories/interface"
-	aipostgres "template/internal/datasources/repositories/postgres/ai"
-	applicationspostgres "template/internal/datasources/repositories/postgres/applications"
-	auditpostgres "template/internal/datasources/repositories/postgres/audit"
-	gatewaypostgres "template/internal/datasources/repositories/postgres/gateway"
-	govpostgres "template/internal/datasources/repositories/postgres/gov"
-	oauthpostgres "template/internal/datasources/repositories/postgres/oauth"
-	orgpostgres "template/internal/datasources/repositories/postgres/org"
-	orgstamppostgres "template/internal/datasources/repositories/postgres/orgstamp"
-	platformsettings "template/internal/datasources/repositories/postgres/platformsettings"
-	rbacpostgres "template/internal/datasources/repositories/postgres/rbac"
-	recoverypostgres "template/internal/datasources/repositories/postgres/recovery"
-	registrypostgres "template/internal/datasources/repositories/postgres/registry"
-	relaypostgres "template/internal/datasources/repositories/postgres/relay"
-	securitypostgres "template/internal/datasources/repositories/postgres/security"
-	sitepostgres "template/internal/datasources/repositories/postgres/site"
-	ssotokenpostgres "template/internal/datasources/repositories/postgres/ssotoken"
-	ssouserpostgres "template/internal/datasources/repositories/postgres/ssouser"
-	superadminaccountpostgres "template/internal/datasources/repositories/postgres/superadminaccount"
-	superadmininvitepostgres "template/internal/datasources/repositories/postgres/superadmininvite"
-	themepostgres "template/internal/datasources/repositories/postgres/theme"
-	userintegrationspostgres "template/internal/datasources/repositories/postgres/userintegrations"
-	userspostgres "template/internal/datasources/repositories/postgres/users"
-	"template/internal/datasources/rls"
-	V1Handler "template/internal/http/handlers/v1"
-	"template/internal/http/middlewares"
-	"template/internal/http/routes"
-	"template/internal/provider/adminapi"
-	"template/internal/provider/adminkeys"
-	"template/internal/provider/devapps"
-	"template/internal/provider/signrelay"
-	"template/pkg/crypto"
-	"template/pkg/eid"
-	"template/pkg/gemini"
-	"template/pkg/google"
-	gspaceclient "template/pkg/gspace"
-	"template/pkg/jwt"
-	"template/pkg/logger"
-	"template/pkg/observability"
-	"template/pkg/oidc"
-	"template/pkg/ssoeidproxy"
-	"template/pkg/verify"
-	"template/pkg/xyp"
+	"github.com/gerege-systems/platform-core/core/business/domain"
+	"github.com/gerege-systems/platform-core/core/business/usecases/ai"
+	applicationsuc "github.com/gerege-systems/platform-core/core/business/usecases/applications"
+	"github.com/gerege-systems/platform-core/core/business/usecases/assets"
+	"github.com/gerege-systems/platform-core/core/business/usecases/audit"
+	"github.com/gerege-systems/platform-core/core/business/usecases/auth"
+	"github.com/gerege-systems/platform-core/core/business/usecases/core"
+	"github.com/gerege-systems/platform-core/core/business/usecases/gateway"
+	"github.com/gerege-systems/platform-core/core/business/usecases/gov"
+	"github.com/gerege-systems/platform-core/core/business/usecases/gspace"
+	"github.com/gerege-systems/platform-core/core/business/usecases/integrations"
+	oidcuc "github.com/gerege-systems/platform-core/core/business/usecases/oidc"
+	"github.com/gerege-systems/platform-core/core/business/usecases/org"
+	provideruc "github.com/gerege-systems/platform-core/core/business/usecases/provider"
+	"github.com/gerege-systems/platform-core/core/business/usecases/rbac"
+	"github.com/gerege-systems/platform-core/core/business/usecases/registry"
+	relayuc "github.com/gerege-systems/platform-core/core/business/usecases/relay"
+	"github.com/gerege-systems/platform-core/core/business/usecases/security"
+	"github.com/gerege-systems/platform-core/core/business/usecases/sign"
+	siteuc "github.com/gerege-systems/platform-core/core/business/usecases/site"
+	"github.com/gerege-systems/platform-core/core/business/usecases/sso"
+	"github.com/gerege-systems/platform-core/core/business/usecases/ssotoken"
+	"github.com/gerege-systems/platform-core/core/business/usecases/superadmin"
+	onboarding "github.com/gerege-systems/platform-core/core/business/usecases/superadmin_onboarding"
+	themeuc "github.com/gerege-systems/platform-core/core/business/usecases/theme"
+	"github.com/gerege-systems/platform-core/core/business/usecases/users"
+	"github.com/gerege-systems/platform-core/core/config"
+	"github.com/gerege-systems/platform-core/core/constants"
+	"github.com/gerege-systems/platform-core/core/datasources/caches"
+	"github.com/gerege-systems/platform-core/core/datasources/drivers"
+	repointerface "github.com/gerege-systems/platform-core/core/datasources/repositories/interface"
+	aipostgres "github.com/gerege-systems/platform-core/core/datasources/repositories/postgres/ai"
+	applicationspostgres "github.com/gerege-systems/platform-core/core/datasources/repositories/postgres/applications"
+	auditpostgres "github.com/gerege-systems/platform-core/core/datasources/repositories/postgres/audit"
+	gatewaypostgres "github.com/gerege-systems/platform-core/core/datasources/repositories/postgres/gateway"
+	govpostgres "github.com/gerege-systems/platform-core/core/datasources/repositories/postgres/gov"
+	oauthpostgres "github.com/gerege-systems/platform-core/core/datasources/repositories/postgres/oauth"
+	orgpostgres "github.com/gerege-systems/platform-core/core/datasources/repositories/postgres/org"
+	orgstamppostgres "github.com/gerege-systems/platform-core/core/datasources/repositories/postgres/orgstamp"
+	platformsettings "github.com/gerege-systems/platform-core/core/datasources/repositories/postgres/platformsettings"
+	rbacpostgres "github.com/gerege-systems/platform-core/core/datasources/repositories/postgres/rbac"
+	recoverypostgres "github.com/gerege-systems/platform-core/core/datasources/repositories/postgres/recovery"
+	registrypostgres "github.com/gerege-systems/platform-core/core/datasources/repositories/postgres/registry"
+	relaypostgres "github.com/gerege-systems/platform-core/core/datasources/repositories/postgres/relay"
+	securitypostgres "github.com/gerege-systems/platform-core/core/datasources/repositories/postgres/security"
+	sitepostgres "github.com/gerege-systems/platform-core/core/datasources/repositories/postgres/site"
+	ssotokenpostgres "github.com/gerege-systems/platform-core/core/datasources/repositories/postgres/ssotoken"
+	ssouserpostgres "github.com/gerege-systems/platform-core/core/datasources/repositories/postgres/ssouser"
+	superadminaccountpostgres "github.com/gerege-systems/platform-core/core/datasources/repositories/postgres/superadminaccount"
+	superadmininvitepostgres "github.com/gerege-systems/platform-core/core/datasources/repositories/postgres/superadmininvite"
+	themepostgres "github.com/gerege-systems/platform-core/core/datasources/repositories/postgres/theme"
+	userintegrationspostgres "github.com/gerege-systems/platform-core/core/datasources/repositories/postgres/userintegrations"
+	userspostgres "github.com/gerege-systems/platform-core/core/datasources/repositories/postgres/users"
+	"github.com/gerege-systems/platform-core/core/datasources/rls"
+	V1Handler "github.com/gerege-systems/platform-core/core/http/handlers/v1"
+	"github.com/gerege-systems/platform-core/core/http/middlewares"
+	"github.com/gerege-systems/platform-core/core/http/routes"
+	"github.com/gerege-systems/platform-core/core/provider/adminapi"
+	"github.com/gerege-systems/platform-core/core/provider/adminkeys"
+	"github.com/gerege-systems/platform-core/core/provider/devapps"
+	"github.com/gerege-systems/platform-core/core/provider/signrelay"
+	docs "github.com/gerege-systems/platform-core/docs" // swagger тодорхойлолт, swaggo-оор init үед бүртгэгддэг
+	"github.com/gerege-systems/platform-core/pkg/crypto"
+	"github.com/gerege-systems/platform-core/pkg/eid"
+	"github.com/gerege-systems/platform-core/pkg/gemini"
+	"github.com/gerege-systems/platform-core/pkg/google"
+	gspaceclient "github.com/gerege-systems/platform-core/pkg/gspace"
+	"github.com/gerege-systems/platform-core/pkg/jwt"
+	"github.com/gerege-systems/platform-core/pkg/logger"
+	"github.com/gerege-systems/platform-core/pkg/observability"
+	"github.com/gerege-systems/platform-core/pkg/oidc"
+	"github.com/gerege-systems/platform-core/pkg/ssoeidproxy"
+	"github.com/gerege-systems/platform-core/pkg/verify"
+	"github.com/gerege-systems/platform-core/pkg/xyp"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-const serviceName = "gerege-template"
+// ServiceName нь telemetry (tracing/metrics)-д ашиглагдах үйлчилгээний нэр.
+// Апп өөрийн нэрээр дарж бичиж болно — NewApp дуудахаас өмнө тавина.
+var ServiceName = "gerege-platform"
 
 type App struct {
 	server              *http.Server
+	router              chi.Router
 	pool                *pgxpool.Pool
 	redisCache          caches.RedisCache
 	tracerShutdown      observability.Shutdown
@@ -117,7 +120,7 @@ func NewApp() (*App, error) {
 	// Tracer-ийг эхэлд тохируулна — ингэснээр дараагийн тохиргооноос
 	// ялгарах span-ууд зөв provider руу очно.
 	shutdownTracer, err := observability.SetupTracing(ctx, observability.TracingConfig{
-		ServiceName: serviceName,
+		ServiceName: ServiceName,
 		Environment: config.AppConfig.Environment,
 		Exporter:    config.AppConfig.OTelExporter,
 		SampleRatio: config.AppConfig.OTelSampleRatio,
@@ -160,7 +163,7 @@ func NewApp() (*App, error) {
 	// RequestIDMiddleware түүнийг logger context руу холбохоос өмнө span
 	// context (trace_id) тогтоогддог.
 	r := chi.NewRouter()
-	r.Use(middlewares.TracingMiddleware(serviceName))
+	r.Use(middlewares.TracingMiddleware(ServiceName))
 	r.Use(middlewares.RequestIDMiddleware())
 	// RequestID-ийн дараа — ингэснээр panic-recovery хариунд request_id
 	// орж, доош урсгалын бүх middleware+handler-ийн panic баригдана.
@@ -634,6 +637,7 @@ func NewApp() (*App, error) {
 
 	return &App{
 		server:              srv,
+		router:              r,
 		pool:                pool,
 		redisCache:          redisCache,
 		tracerShutdown:      shutdownTracer,
@@ -685,6 +689,17 @@ func (a *App) startBackgroundWorkers(ctx context.Context) {
 		go tick(60*time.Second, func(c context.Context) { _ = a.govUC.SLASweep(c) })
 	}
 }
+
+// Router нь суурийн chi router-ыг буцаана. Апп нь Run() дуудахаас ӨМНӨ
+// өөрийн маршрутаа энд бүртгэнэ — жишээ нь:
+//
+//	app.Router().Route("/api/ring", ring.Routes(app.Pool()))
+//
+// Суурийн маршрутууд аль хэдийн бүртгэгдсэн тул зам давхцуулахгүй байхыг анхаар.
+func (a *App) Router() chi.Router { return a.router }
+
+// Pool нь апп өөрийн repository-гоо байгуулахад хэрэглэх DB pool-ыг буцаана.
+func (a *App) Pool() *pgxpool.Pool { return a.pool }
 
 func (a *App) Run() (err error) {
 	srvLog := logger.WithFields(logger.Fields{constants.LoggerCategory: constants.LoggerCategoryServer})

@@ -13,7 +13,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"template/pkg/totp"
+	"github.com/gerege-systems/platform-core/pkg/totp"
 )
 
 func TestGenerate(t *testing.T) {

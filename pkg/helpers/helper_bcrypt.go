@@ -5,7 +5,7 @@ package helpers
 import (
 	"errors"
 
-	"template/internal/config"
+	"github.com/gerege-systems/platform-core/core/config"
 
 	"golang.org/x/crypto/bcrypt"
 )

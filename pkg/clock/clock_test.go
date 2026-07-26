@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"template/pkg/clock"
+	"github.com/gerege-systems/platform-core/pkg/clock"
 
 	"github.com/stretchr/testify/assert"
 )

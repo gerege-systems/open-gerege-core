@@ -9,7 +9,7 @@ import (
 	"errors"
 	"testing"
 
-	"template/pkg/validators"
+	"github.com/gerege-systems/platform-core/pkg/validators"
 )
 
 func TestStrongPassword(t *testing.T) {

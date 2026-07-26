@@ -1,4 +1,4 @@
-module template
+module github.com/gerege-systems/platform-core
 
 go 1.26
 

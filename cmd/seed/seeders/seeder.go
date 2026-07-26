@@ -7,9 +7,9 @@ import (
 	"errors"
 	"time"
 
-	"template/internal/constants"
-	"template/internal/datasources/records"
-	"template/pkg/logger"
+	"github.com/gerege-systems/platform-core/core/constants"
+	"github.com/gerege-systems/platform-core/core/datasources/records"
+	"github.com/gerege-systems/platform-core/pkg/logger"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 )

@@ -29,11 +29,11 @@ package main
 import (
 	"runtime"
 
-	"template/cmd/api/server"
-	_ "template/docs" // OpenAPI тодорхойлолт, `make swag`-аар үүсгэгддэг
-	"template/internal/config"
-	"template/internal/constants"
-	"template/pkg/logger"
+	"github.com/gerege-systems/platform-core/cmd/api/server"
+	"github.com/gerege-systems/platform-core/core/config"
+	"github.com/gerege-systems/platform-core/core/constants"
+	_ "github.com/gerege-systems/platform-core/docs" // OpenAPI тодорхойлолт, `make swag`-аар үүсгэгддэг
+	"github.com/gerege-systems/platform-core/pkg/logger"
 )
 
 func init() {
