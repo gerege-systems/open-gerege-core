@@ -1,4 +1,3 @@
-// Gerege Template Platform V3.0
 // Gerege Systems Development Team болон Claude AI хамтран бүтээв, 2026.
 
 // Package google нь Google OAuth2 (OpenID Connect) client юм — SDK-гүй, REST.

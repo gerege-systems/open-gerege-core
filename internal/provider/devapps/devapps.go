@@ -1,4 +1,3 @@
-// eID based AI enabled Gerege Template Platform V3.0
 // Gerege Systems Development Team болон Claude AI хамтран бүтээв, 2026.
 
 // Package devapps нь developer.dgov.mn-ээр үүсгэсэн OAuth2 апп (RP)-уудын

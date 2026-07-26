@@ -1,4 +1,3 @@
-// Gerege Template Platform V3.0
 // Gerege Systems Development Team болон Claude AI хамтран бүтээв, 2026.
 
 // Package domain нь enterprise entity-үүдийг агуулдаг — Clean Architecture-ийн

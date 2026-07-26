@@ -1,4 +1,3 @@
-// Gerege Template Platform V3.0
 // Gerege Systems Development Team болон Claude AI хамтран бүтээв, 2026.
 
 // Package applications нь API Gateway consumer + SSO RP-ийг нэгтгэсэн

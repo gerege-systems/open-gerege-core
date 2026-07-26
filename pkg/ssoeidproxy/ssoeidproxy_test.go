@@ -1,4 +1,3 @@
-// Gerege Template Platform V3.0
 // Gerege Systems Development Team болон Claude AI хамтран бүтээв, 2026.
 
 // SSO eID proxy client unit тест: {data} дугтуй задлалт, snake_case wire →

@@ -1,4 +1,3 @@
-// Gerege Template Platform V3.0
 // Gerege Systems Development Team болон Claude AI хамтран бүтээв, 2026.
 
 // Package sso нь dgov SSO (sso.gerege.mn, OIDC) нэвтрэлтийн 2 дахь урсгал —

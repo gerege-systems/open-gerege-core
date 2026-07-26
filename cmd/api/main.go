@@ -1,4 +1,3 @@
-// Gerege Template Platform V3.0
 // Gerege Systems Development Team болон Claude AI хамтран бүтээв, 2026.
 
 // Package main нь Gerege Template Platform V3.0-ийн API эхлэх цэг юм.
@@ -12,7 +11,6 @@
 // @description     chi (net/http) + pgx (PostgreSQL) + Redis дээр суурилсан Clean Architecture бүхий Go backend. Нээлттэй эхийн snykk/go-rest-boilerplate (MIT, зохиогч Najib Fikri)-ээс үүсэлтэй; HTTP давхаргыг chi, өгөгдлийн давхаргыг pgx руу хөрвүүлсэн.
 // @termsOfService  https://github.com/snykk/go-rest-boilerplate
 //
-// @contact.name   Gerege Template Platform V3.0
 // @contact.url    https://github.com/snykk/go-rest-boilerplate
 //
 // @license.name  MIT

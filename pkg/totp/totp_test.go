@@ -1,4 +1,3 @@
-// Gerege Template Platform V3.0
 // Gerege Systems Development Team болон Claude AI хамтран бүтээв, 2026.
 
 // TOTP (RFC 6238) боодлын unit тест: secret үүсгэх → код баталгаажуулах,

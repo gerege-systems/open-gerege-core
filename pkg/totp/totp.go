@@ -1,4 +1,3 @@
-// Gerege Template Platform V3.0
 // Gerege Systems Development Team болон Claude AI хамтран бүтээв, 2026.
 
 // Package totp нь TOTP (RFC 6238) 2FA-ийн нимгэн боодол — secret үүсгэх,

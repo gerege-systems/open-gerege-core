@@ -1,6 +1,5 @@
 //go:build integration
 
-// Gerege Template Platform V3.0
 // Gerege Systems Development Team болон Claude AI хамтран бүтээв, 2026.
 
 // AI мэдлэгийн сангийн вектор хайлтын integration тест (жинхэнэ Postgres +
