@@ -88,7 +88,7 @@ Breaking өөрчлөлт → minor bump + шилжих заавар.
 go 1.26
 use (
     ./platform-core
-    ./template-dgov-mn/backend
+    ./gerege-platform-mn/backend
 )
 ```
 
