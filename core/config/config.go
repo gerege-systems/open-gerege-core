@@ -171,8 +171,10 @@ type Config struct {
 	SSOClientSecret string `mapstructure:"SSO_CLIENT_SECRET"`
 	SSORedirectURI  string `mapstructure:"SSO_REDIRECT_URI"`
 	SSOScope        string `mapstructure:"SSO_SCOPE"`
-	// SSONativeClientID нь mobile (PKCE, public) урсгалын client_id (хоосон бол
-	// default template-dgov-mn-ios).
+	// SSONativeClientID нь mobile (PKCE, public) урсгалын client_id. DEFAULT
+	// БАЙХГҮЙ — апп бүр IdP дээрээ бүртгүүлсэн ӨӨРИЙН public client-ээ зааж өгнө.
+	// Хоосон бол native нэвтрэлт (POST /sso/native) "sso native client not
+	// configured" гэж татгалзана; web урсгалд нөлөөгүй.
 	SSONativeClientID string `mapstructure:"SSO_NATIVE_CLIENT_ID"`
 	// SSOEidProxyBaseURL нь SSO-ий eID proxy-ийн суурь URL (жишээ
 	// https://sso.gerege.mn/rp/eid). Тохируулсан бол иргэний PKI самбар
@@ -492,9 +494,10 @@ func applyDefaults() {
 	if AppConfig.SSOScope == "" {
 		AppConfig.SSOScope = "openid profile email"
 	}
-	if AppConfig.SSONativeClientID == "" {
-		AppConfig.SSONativeClientID = "template-dgov-mn-ios"
-	}
+	// SSO_NATIVE_CLIENT_ID-д DEFAULT ӨГӨХГҮЙ. Өмнө нь энд `template-dgov-mn-ios`
+	// суудаг байсан нь тохируулаагүй апп-ыг ӨӨР апп-ийн client_id-гаар чимээгүй
+	// нэвтрүүлэх оролдлого хийлгэдэг байв. Одоо хоосон бол native урсгал
+	// тодорхой алдаа өгнө (sso_impl.go: CompleteNative).
 	// OTel-ийн sample ratio нь зөвхөн exporter тохируулагдсан БА оператор
 	// ratio-г тодорхой зааж өгөөгүй үед 1.0 утгыг анхдагчаар авна. Exporter
 	// байхгүй үед ratio нь хамаагүй (noop provider).

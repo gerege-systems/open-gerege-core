@@ -48,7 +48,7 @@ type usecase struct {
 }
 
 // NewUsecase нь SSO usecase угсарна. nativeClientID нь mobile (PKCE, public
-// client) урсгалын client_id (жишээ template-dgov-mn-ios) — хоосон бол native
+// client) урсгалын client_id — апп бүр өөрийнхөө бүртгэлтэйг өгнө; хоосон бол native
 // code-exchange идэвхгүй. tokenStorer нь SSO eID proxy-д зориулж токен хадгалах
 // (nil бол хадгалахгүй). accessMode нь платформын хандалтын горим уншигч (nil бол
 // public — хэн ч нэвтэрч болно).
