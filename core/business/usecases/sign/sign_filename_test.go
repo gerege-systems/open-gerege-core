@@ -9,33 +9,45 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"strings"
+	"sync"
 	"testing"
 )
 
-// captureSignBody нь /v3 sign notification-ийн body-г барьж авах fake сервер.
-func captureSignBody(t *testing.T, got *map[string]any) *httptest.Server {
+// captureSignBody нь /v3 sign notification-ийн body-г барьж авах fake сервер
+// болон барьсан body-г уншигч функцийг буцаана.
+func captureSignBody(t *testing.T) (*httptest.Server, func() map[string]any) {
 	t.Helper()
-	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		var body map[string]any
+	var (
+		mu   sync.Mutex
+		body map[string]any
+	)
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		var got map[string]any
 		raw, _ := io.ReadAll(r.Body)
-		_ = json.Unmarshal(raw, &body)
-		*got = body
+		_ = json.Unmarshal(raw, &got)
+		mu.Lock()
+		body = got
+		mu.Unlock()
 		_ = json.NewEncoder(w).Encode(map[string]any{"sessionID": "s", "vc": map[string]any{"value": "1234"}})
 	}))
+	return srv, func() map[string]any {
+		mu.Lock()
+		defer mu.Unlock()
+		return body
+	}
 }
 
 // TestInit_SendsFileName нь баримтын нэр /v3 body-д fileName болж дамжиж буйг
 // батална — үүнгүй бол нийтийн verify хуудсанд FILE NAME хоосон харагдана.
 func TestInit_SendsFileName(t *testing.T) {
-	var body map[string]any
-	srv := captureSignBody(t, &body)
+	srv, body := captureSignBody(t)
 	defer srv.Close()
 
 	u := newTestUsecase(t, srv.URL)
 	if _, err := u.Init(context.Background(), "УБ12345678", "Бат Болд", "Гэрээ-2026-07.pdf", []byte("%PDF"), "", "", ""); err != nil {
 		t.Fatalf("Init: %v", err)
 	}
-	if got, _ := body["fileName"].(string); got != "Гэрээ-2026-07.pdf" {
+	if got, _ := body()["fileName"].(string); got != "Гэрээ-2026-07.pdf" {
 		t.Fatalf("fileName = %q, want %q", got, "Гэрээ-2026-07.pdf")
 	}
 }
@@ -43,8 +55,7 @@ func TestInit_SendsFileName(t *testing.T) {
 // TestInitDigest_NoFileName нь баримтгүй (зөвхөн digest) урсгалд fileName талбар
 // ОГТ илгээгдэхгүйг батална — хоосон утга илгээвэл сервер таамаглахаа болино.
 func TestInitDigest_NoFileName(t *testing.T) {
-	var body map[string]any
-	srv := captureSignBody(t, &body)
+	srv, body := captureSignBody(t)
 	defer srv.Close()
 
 	u := newTestUsecase(t, srv.URL)
@@ -52,7 +63,7 @@ func TestInitDigest_NoFileName(t *testing.T) {
 	if _, err := u.InitDigest(context.Background(), "УБ12345678", "Бат Болд", digest, "50000 MNT → …1234"); err != nil {
 		t.Fatalf("InitDigest: %v", err)
 	}
-	if _, ok := body["fileName"]; ok {
+	if _, ok := body()["fileName"]; ok {
 		t.Fatal("digest урсгалд body-д fileName байх ёсгүй")
 	}
 }
