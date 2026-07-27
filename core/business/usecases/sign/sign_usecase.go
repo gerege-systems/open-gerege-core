@@ -319,7 +319,7 @@ func (u *usecase) Init(ctx context.Context, regNo, fullName, filename string, pd
 	sum := sha256.Sum256(pdfBytes)
 	digestB64 := base64.StdEncoding.EncodeToString(sum[:])
 
-	v3SessionID, vc, err := u.startV3Sign(ctx, toEtsi(regNo), digestB64, fullName, onBehalfOfOrg, "Gerege — баримтад гарын үсэг")
+	v3SessionID, vc, err := u.startV3Sign(ctx, toEtsi(regNo), digestB64, fullName, onBehalfOfOrg, "Gerege — баримтад гарын үсэг", filename)
 	if err != nil {
 		// Төлөөллийн эрхгүй (403) г.м. domain алдааг ил гаргана; бусад нь дотоод.
 		if de, ok := err.(*apperror.DomainError); ok {
@@ -637,7 +637,7 @@ func (u *usecase) setRPAuth(req *http.Request) {
 	}
 }
 
-func (u *usecase) startV3Sign(ctx context.Context, etsi, digestB64, displayName, onBehalfOfOrg, displayText string) (sessionID, vc string, err error) {
+func (u *usecase) startV3Sign(ctx context.Context, etsi, digestB64, displayName, onBehalfOfOrg, displayText, fileName string) (sessionID, vc string, err error) {
 	body := map[string]any{
 		"relyingPartyUUID":  u.cfg.RPUUID,
 		"relyingPartyName":  u.cfg.RPName,
@@ -653,6 +653,12 @@ func (u *usecase) startV3Sign(ctx context.Context, etsi, digestB64, displayName,
 	// session үүсэх үед шалгаж, эрхгүй бол 403 буцаана.
 	if onBehalfOfOrg != "" {
 		body["onBehalfOf"] = onBehalfOfOrg
+	}
+	// fileName — нийтийн verify хуудас (/verify/<sessionId>) болон RP-API-ийн
+	// file_name талбарт харагдах баримтын нэр. Заавал биш: илгээхгүй бол сервер
+	// хуучнаараа displayText-ээс таамаглах тул хоосон үед огт нэмэхгүй.
+	if fn := clampFileName(fileName); fn != "" {
+		body["fileName"] = fn
 	}
 	raw, _ := json.Marshal(body)
 	reqURL := strings.TrimRight(u.cfg.V3BaseURL, "/") + "/v3/signature/notification/etsi/" + url.PathEscape(etsi)

@@ -41,7 +41,9 @@ func (u *usecase) InitDigest(ctx context.Context, regNo, fullName, digestHex, di
 	}
 	digestB64 := base64.StdEncoding.EncodeToString(raw)
 
-	v3SessionID, vc, err := u.startV3Sign(ctx, toEtsi(regNo), digestB64, fullName, "", displayText)
+	// fileName хоосон — digest урсгалд баримт байхгүй (зөвхөн hash), тул
+	// verify хуудсанд харуулах файлын нэр ч байхгүй.
+	v3SessionID, vc, err := u.startV3Sign(ctx, toEtsi(regNo), digestB64, fullName, "", displayText, "")
 	if err != nil {
 		if de, ok := err.(*apperror.DomainError); ok {
 			return InitResult{}, de
@@ -129,4 +131,30 @@ func clampDisplayText(text string) string {
 		return string(runes[:60])
 	}
 	return text
+}
+
+// maxFileNameRunes нь eID-д илгээх fileName-ийн дээд урт (тэмдэгтээр). Нийтийн
+// verify хуудсанд багтаах, мөн хэт урт нэрээр хүсэлт өвдөхөөс сэргийлнэ.
+const maxFileNameRunes = 120
+
+// clampFileName нь upload-ын файлын нэрийг eID-ийн fileName талбарт тохируулна:
+// зам (client заримдаа бүтэн зам илгээдэг) болон удирдах тэмдэгтийг хасаж,
+// уртыг таслана. Утга үлдэхгүй бол хоосон буцаана — дуудагч тал талбарыг огт
+// нэмэхгүй бөгөөд сервер хуучнаараа displayText-ээс таамаглана.
+func clampFileName(name string) string {
+	if i := strings.LastIndexAny(name, `/\`); i >= 0 {
+		name = name[i+1:]
+	}
+	name = strings.Map(func(r rune) rune {
+		if r < 0x20 || r == 0x7f {
+			return -1
+		}
+		return r
+	}, name)
+	name = strings.TrimSpace(name)
+	runes := []rune(name)
+	if len(runes) > maxFileNameRunes {
+		return strings.TrimSpace(string(runes[:maxFileNameRunes]))
+	}
+	return name
 }
