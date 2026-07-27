@@ -1,0 +1,107 @@
+# Synthetic SSO нэвтрэлтийн шалгалт — флот даяар, 30 минут тутам.
+#
+# ЯАГААД: 2026-07-27-нд Hydra→өөрийн код шилжилтийн дараа хоёр SSO хоёулаа тэг
+# OAuth client-тэй үлдэж, 7 платформын нэвтрэлт `invalid_client` өгч байсныг хэн
+# ч анзаараагүй. CI нь build/test л хардаг, healthcheck нь /health л хардаг,
+# нүүр хуудас 200 буцаасаар байсан. Энэ workflow нь нэвтрэлтийн урсгалыг
+# БОДИТООР гүйлгэж, эвдэрвэл workflow улаан болж мэдэгдэнэ.
+#
+# Хамрах хүрээ: 9 платформын start→authorize→login_challenge + 3 provider-ийн
+# OIDC discovery. Нэвтрэлтийг дуусгахгүй (PIN/eID шаардана) — эвдрэлийн бодит
+# гарын үсэг тэр цэгээс өмнө илэрдэг.
+
+name: Synthetic SSO
+
+on:
+  schedule:
+    # 30 минут тутам (UTC). Флотын хэмжээнд эвдрэл 30 минутаас удаан
+    # анзаарагдахгүй байх нь зорилго.
+    - cron: '*/30 * * * *'
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/sso-login-probe.sh'
+      - '.github/workflows/synthetic-sso.yml'
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: synthetic-sso
+  cancel-in-progress: true
+
+jobs:
+  probe:
+    name: Нэвтрэлтийн урсгал
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+
+      # Эхлээд шалгалт өөрөө эвдрэлийг барих чадвартай эсэхийг батална —
+      # эс тэгвээс «бүгд ногоон» гэдэг нь утгагүй болно.
+      - name: Шалгалтын мэдрэмжийг батлах (self-test)
+        run: ./scripts/sso-login-probe.sh --self-test
+
+      - name: Флотын нэвтрэлтийг шалгах
+        id: probe
+        run: ./scripts/sso-login-probe.sh 2>&1 | tee /tmp/probe.log
+
+      # Унасан үед issue нээнэ/шинэчилнэ — email мэдэгдэл автоматаар очно.
+      - name: Унасан бол issue нээх
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            let log = '';
+            try { log = fs.readFileSync('/tmp/probe.log', 'utf8'); } catch (e) {}
+            const title = '🔴 SSO нэвтрэлт эвдэрсэн (synthetic шалгалт)';
+            const body = [
+              'Synthetic SSO шалгалт унав.',
+              '',
+              '```',
+              log.replace(/\u001b\[[0-9;]*m/g, '').slice(0, 4000),
+              '```',
+              '',
+              `Run: ${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
+              '',
+              'Хамгийн түгээмэл шалтгаан: SSO дээр OAuth client бүртгэл алга болсон',
+              '(`invalid_client`). Тухайн `client_id`-аар нь дахин бүртгэж, secret-ийг',
+              'апп дээр тавина.',
+            ].join('\n');
+            const { owner, repo } = context.repo;
+            const existing = await github.rest.issues.listForRepo({
+              owner, repo, state: 'open', labels: 'synthetic-sso',
+            });
+            if (existing.data.length > 0) {
+              await github.rest.issues.createComment({
+                owner, repo, issue_number: existing.data[0].number, body,
+              });
+            } else {
+              await github.rest.issues.create({
+                owner, repo, title, body, labels: ['synthetic-sso'],
+              });
+            }
+
+      # Сэргэсэн үед нээлттэй issue-г хаана.
+      - name: Сэргэсэн бол issue хаах
+        if: success()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const existing = await github.rest.issues.listForRepo({
+              owner, repo, state: 'open', labels: 'synthetic-sso',
+            });
+            for (const issue of existing.data) {
+              await github.rest.issues.createComment({
+                owner, repo, issue_number: issue.number,
+                body: '✅ Нэвтрэлт сэргэлээ — synthetic шалгалт ногоон болов.',
+              });
+              await github.rest.issues.update({
+                owner, repo, issue_number: issue.number, state: 'closed',
+              });
+            }
