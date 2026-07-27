@@ -15,13 +15,13 @@ import (
 
 // captureSignBody нь /v3 sign notification-ийн body-г барьж авах fake сервер
 // болон барьсан body-г уншигч функцийг буцаана.
-func captureSignBody(t *testing.T) (*httptest.Server, func() map[string]any) {
+func captureSignBody(t *testing.T) (srv *httptest.Server, capturedBody func() map[string]any) {
 	t.Helper()
 	var (
 		mu   sync.Mutex
 		body map[string]any
 	)
-	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	srv = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var got map[string]any
 		raw, _ := io.ReadAll(r.Body)
 		_ = json.Unmarshal(raw, &got)
