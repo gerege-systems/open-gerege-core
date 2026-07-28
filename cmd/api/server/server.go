@@ -29,6 +29,7 @@ import (
 	"github.com/gerege-systems/platform-core/core/business/usecases/gov"
 	"github.com/gerege-systems/platform-core/core/business/usecases/gspace"
 	"github.com/gerege-systems/platform-core/core/business/usecases/integrations"
+	languageuc "github.com/gerege-systems/platform-core/core/business/usecases/language"
 	oidcuc "github.com/gerege-systems/platform-core/core/business/usecases/oidc"
 	"github.com/gerege-systems/platform-core/core/business/usecases/org"
 	provideruc "github.com/gerege-systems/platform-core/core/business/usecases/provider"
@@ -54,6 +55,7 @@ import (
 	auditpostgres "github.com/gerege-systems/platform-core/core/datasources/repositories/postgres/audit"
 	gatewaypostgres "github.com/gerege-systems/platform-core/core/datasources/repositories/postgres/gateway"
 	govpostgres "github.com/gerege-systems/platform-core/core/datasources/repositories/postgres/gov"
+	languagepostgres "github.com/gerege-systems/platform-core/core/datasources/repositories/postgres/language"
 	oauthpostgres "github.com/gerege-systems/platform-core/core/datasources/repositories/postgres/oauth"
 	orgpostgres "github.com/gerege-systems/platform-core/core/datasources/repositories/postgres/org"
 	orgstamppostgres "github.com/gerege-systems/platform-core/core/datasources/repositories/postgres/orgstamp"
@@ -475,6 +477,12 @@ func NewApp() (*App, error) {
 		Embedder:    geminiClient,
 	})
 
+	// Интерфейсийн хэл — super admin хэл нэмж/хасч, орчуулгыг гараар эсвэл
+	// Gemini-ээр бөглөнө. Түлхүүрийн жагсаалт нь аппынх (frontend-д
+	// багцлагдсан); платформ зөвхөн утгыг хадгална. Нийтийн config, RLS-гүй.
+	languageRepo := languagepostgres.NewLanguageRepository(pool)
+	languageUC := languageuc.NewUsecase(languageRepo, languageuc.NewGeminiTranslator(geminiClient))
+
 	// Мэдлэгийн сангийн embedding-ийг арын дэвсгэрт гүйцээнэ: migration-аар
 	// шинэ/өөрчлөгдсөн бичлэг орж ирвэл эхний ачаалалтад вектор нь тооцоологдоно.
 	// Boot-ыг блоклохгүй; алдаа гарвал зөвхөн логдож, хайлт ILIKE-аар ажиллана.
@@ -646,6 +654,7 @@ func NewApp() (*App, error) {
 		routes.NewSecurityRoute(api, securityUC, authMiddleware).Routes()
 		routes.NewSiteRoute(api, siteUC, rbacUC, authMiddleware).Routes()
 		routes.NewThemeRoute(api, themeUC, rbacUC, authMiddleware).Routes()
+		routes.NewLanguageRoute(api, languageUC, authMiddleware).Routes()
 		routes.NewSignRoute(api, signUC, usersUC, assetsUC, authMiddleware).Routes()
 		// eID service proxy — бүртгэгдсэн апп (relying party)-ууд хэрэглэгчийнхээ
 		// access token-оор платформын eID service-үүдийг ДАМЖУУЛАН дуудна

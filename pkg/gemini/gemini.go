@@ -110,6 +110,12 @@ type GenerationConfig struct {
 	MaxOutputTokens    int           `json:"maxOutputTokens,omitempty"`
 	ResponseModalities []string      `json:"responseModalities,omitempty"`
 	SpeechConfig       *SpeechConfig `json:"speechConfig,omitempty"`
+	// ResponseMimeType нь "application/json" үед model чөлөөт текст биш
+	// зөвхөн JSON буцаана (code fence, тайлбаргүй) — задлан шинжлэх шаардлагагүй.
+	ResponseMimeType string `json:"responseMimeType,omitempty"`
+	// ResponseSchema нь ResponseMimeType=application/json үеийн гаралтын схем
+	// (OpenAPI-ийн дэд олонлог). Чөлөөт хэлбэр тул `any` — дуудагч бүтцээ өгнө.
+	ResponseSchema any `json:"responseSchema,omitempty"`
 }
 
 // SpeechConfig нь TTS дуу хоолойн сонголт.
