@@ -7,9 +7,9 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/gerege-systems/platform-core/core/apperror"
-	"github.com/gerege-systems/platform-core/core/business/usecases/users"
-	"github.com/gerege-systems/platform-core/pkg/logger"
+	"github.com/gerege-systems/public-gerege-core/core/apperror"
+	"github.com/gerege-systems/public-gerege-core/core/business/usecases/users"
+	"github.com/gerege-systems/public-gerege-core/pkg/logger"
 )
 
 // Refresh нь өгөгдсөн refresh токеныг баталгаажуулж, шинэ access+refresh хос

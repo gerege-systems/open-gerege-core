@@ -7,12 +7,12 @@ import (
 
 	"github.com/go-chi/chi/v5"
 
-	"github.com/gerege-systems/platform-core/core/business/domain"
-	rbacuc "github.com/gerege-systems/platform-core/core/business/usecases/rbac"
-	themeuc "github.com/gerege-systems/platform-core/core/business/usecases/theme"
-	v1 "github.com/gerege-systems/platform-core/core/http/handlers/v1"
-	themehandler "github.com/gerege-systems/platform-core/core/http/handlers/v1/theme"
-	"github.com/gerege-systems/platform-core/core/http/middlewares"
+	"github.com/gerege-systems/public-gerege-core/core/business/domain"
+	rbacuc "github.com/gerege-systems/public-gerege-core/core/business/usecases/rbac"
+	themeuc "github.com/gerege-systems/public-gerege-core/core/business/usecases/theme"
+	v1 "github.com/gerege-systems/public-gerege-core/core/http/handlers/v1"
+	themehandler "github.com/gerege-systems/public-gerege-core/core/http/handlers/v1/theme"
+	"github.com/gerege-systems/public-gerege-core/core/http/middlewares"
 )
 
 // themeRoute нь /themes/* бүлгийг холбоно. GET /themes/active нь нийтийн (landing

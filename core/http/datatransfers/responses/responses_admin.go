@@ -5,7 +5,7 @@ package responses
 import (
 	"time"
 
-	"github.com/gerege-systems/platform-core/core/business/domain"
+	"github.com/gerege-systems/public-gerege-core/core/business/domain"
 )
 
 // AdminUserResponse нь admin хэрэглэгч-удирдлагын жагсаалтын мөр. UserResponse-

@@ -8,10 +8,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/gerege-systems/platform-core/core/apperror"
-	"github.com/gerege-systems/platform-core/core/business/usecases/auth"
-	"github.com/gerege-systems/platform-core/core/business/usecases/users"
-	"github.com/gerege-systems/platform-core/pkg/verify"
+	"github.com/gerege-systems/public-gerege-core/core/apperror"
+	"github.com/gerege-systems/public-gerege-core/core/business/usecases/auth"
+	"github.com/gerege-systems/public-gerege-core/core/business/usecases/users"
+	"github.com/gerege-systems/public-gerege-core/pkg/verify"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"

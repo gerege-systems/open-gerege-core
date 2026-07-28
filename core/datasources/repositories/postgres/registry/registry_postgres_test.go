@@ -15,10 +15,10 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/gerege-systems/platform-core/core/business/domain"
-	repointerface "github.com/gerege-systems/platform-core/core/datasources/repositories/interface"
-	registrypg "github.com/gerege-systems/platform-core/core/datasources/repositories/postgres/registry"
-	"github.com/gerege-systems/platform-core/core/test/testenv"
+	"github.com/gerege-systems/public-gerege-core/core/business/domain"
+	repointerface "github.com/gerege-systems/public-gerege-core/core/datasources/repositories/interface"
+	registrypg "github.com/gerege-systems/public-gerege-core/core/datasources/repositories/postgres/registry"
+	"github.com/gerege-systems/public-gerege-core/core/test/testenv"
 )
 
 // newService нь тестийн жишиг паспорт үүсгэнэ.

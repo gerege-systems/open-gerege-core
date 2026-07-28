@@ -5,7 +5,7 @@ package _interface
 import (
 	"context"
 
-	"github.com/gerege-systems/platform-core/core/business/domain"
+	"github.com/gerege-systems/public-gerege-core/core/business/domain"
 )
 
 // RelayRepository нь platform-хоорондын хүсэлт дамжуулах + SLA хяналтын gateway.

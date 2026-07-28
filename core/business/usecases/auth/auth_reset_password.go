@@ -8,11 +8,11 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/gerege-systems/platform-core/core/apperror"
-	"github.com/gerege-systems/platform-core/core/business/domain"
-	"github.com/gerege-systems/platform-core/core/business/usecases/users"
-	"github.com/gerege-systems/platform-core/pkg/logger"
-	"github.com/gerege-systems/platform-core/pkg/verify"
+	"github.com/gerege-systems/public-gerege-core/core/apperror"
+	"github.com/gerege-systems/public-gerege-core/core/business/domain"
+	"github.com/gerege-systems/public-gerege-core/core/business/usecases/users"
+	"github.com/gerege-systems/public-gerege-core/pkg/logger"
+	"github.com/gerege-systems/public-gerege-core/pkg/verify"
 )
 
 // ResetPassword нь ForgotPassword-ийн илгээсэн OTP кодыг GeregeCloud Verify

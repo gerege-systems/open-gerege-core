@@ -16,10 +16,10 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/gerege-systems/platform-core/core/business/domain"
-	orgpg "github.com/gerege-systems/platform-core/core/datasources/repositories/postgres/org"
-	"github.com/gerege-systems/platform-core/core/datasources/rls"
-	"github.com/gerege-systems/platform-core/core/test/testenv"
+	"github.com/gerege-systems/public-gerege-core/core/business/domain"
+	orgpg "github.com/gerege-systems/public-gerege-core/core/datasources/repositories/postgres/org"
+	"github.com/gerege-systems/public-gerege-core/core/datasources/rls"
+	"github.com/gerege-systems/public-gerege-core/core/test/testenv"
 )
 
 func TestOrgRepositoryRLS_NoRecursion(t *testing.T) {

@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/gerege-systems/platform-core/pkg/logger"
+	"github.com/gerege-systems/public-gerege-core/pkg/logger"
 )
 
 // GetByID нь өгөгдсөн primary key-тэй хэрэглэгчийг буцаана. ID-аар хайх нь

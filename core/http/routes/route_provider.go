@@ -7,10 +7,10 @@ import (
 
 	"github.com/go-chi/chi/v5"
 
-	provideruc "github.com/gerege-systems/platform-core/core/business/usecases/provider"
-	v1 "github.com/gerege-systems/platform-core/core/http/handlers/v1"
-	providerhandler "github.com/gerege-systems/platform-core/core/http/handlers/v1/provider"
-	"github.com/gerege-systems/platform-core/core/http/middlewares"
+	provideruc "github.com/gerege-systems/public-gerege-core/core/business/usecases/provider"
+	v1 "github.com/gerege-systems/public-gerege-core/core/http/handlers/v1"
+	providerhandler "github.com/gerege-systems/public-gerege-core/core/http/handlers/v1/provider"
+	"github.com/gerege-systems/public-gerege-core/core/http/middlewares"
 )
 
 // providerRoute нь /v1/provider/* бүлгийг холбоно — dan-ийг OIDC provider

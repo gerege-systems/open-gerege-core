@@ -8,8 +8,8 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/gerege-systems/platform-core/core/constants"
-	"github.com/gerege-systems/platform-core/pkg/jwt"
+	"github.com/gerege-systems/public-gerege-core/core/constants"
+	"github.com/gerege-systems/public-gerege-core/pkg/jwt"
 )
 
 // CurrentUser нь баталгаажуулагдсан хүсэлтийн HTTP-давхаргын дүр төрх юм.

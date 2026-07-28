@@ -13,10 +13,10 @@ import (
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 
-	"github.com/gerege-systems/platform-core/core/apperror"
-	"github.com/gerege-systems/platform-core/core/business/usecases/security"
-	repointerface "github.com/gerege-systems/platform-core/core/datasources/repositories/interface"
-	"github.com/gerege-systems/platform-core/core/test/mocks"
+	"github.com/gerege-systems/public-gerege-core/core/apperror"
+	"github.com/gerege-systems/public-gerege-core/core/business/usecases/security"
+	repointerface "github.com/gerege-systems/public-gerege-core/core/datasources/repositories/interface"
+	"github.com/gerege-systems/public-gerege-core/core/test/mocks"
 )
 
 func newFixture(t *testing.T) (security.Usecase, *mocks.SecurityEventRepository) {

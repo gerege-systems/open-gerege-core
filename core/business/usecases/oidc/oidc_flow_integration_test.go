@@ -20,13 +20,13 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/stretchr/testify/require"
 
-	"github.com/gerege-systems/platform-core/core/business/domain"
-	oidcuc "github.com/gerege-systems/platform-core/core/business/usecases/oidc"
-	usersuc "github.com/gerege-systems/platform-core/core/business/usecases/users"
-	oauthpg "github.com/gerege-systems/platform-core/core/datasources/repositories/postgres/oauth"
-	userspg "github.com/gerege-systems/platform-core/core/datasources/repositories/postgres/users"
-	"github.com/gerege-systems/platform-core/core/test/testenv"
-	"github.com/gerege-systems/platform-core/pkg/secrethash"
+	"github.com/gerege-systems/public-gerege-core/core/business/domain"
+	oidcuc "github.com/gerege-systems/public-gerege-core/core/business/usecases/oidc"
+	usersuc "github.com/gerege-systems/public-gerege-core/core/business/usecases/users"
+	oauthpg "github.com/gerege-systems/public-gerege-core/core/datasources/repositories/postgres/oauth"
+	userspg "github.com/gerege-systems/public-gerege-core/core/datasources/repositories/postgres/users"
+	"github.com/gerege-systems/public-gerege-core/core/test/testenv"
+	"github.com/gerege-systems/public-gerege-core/pkg/secrethash"
 )
 
 const (

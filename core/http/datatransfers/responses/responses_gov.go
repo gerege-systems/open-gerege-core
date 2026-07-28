@@ -6,7 +6,7 @@ import (
 	"encoding/json"
 	"time"
 
-	"github.com/gerege-systems/platform-core/core/business/domain"
+	"github.com/gerege-systems/public-gerege-core/core/business/domain"
 )
 
 // ── Services ────────────────────────────────────────────────────────────────

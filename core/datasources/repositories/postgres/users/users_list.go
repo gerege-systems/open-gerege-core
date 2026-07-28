@@ -6,10 +6,10 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/gerege-systems/platform-core/core/business/domain"
-	"github.com/gerege-systems/platform-core/core/datasources/records"
-	repointerface "github.com/gerege-systems/platform-core/core/datasources/repositories/interface"
-	"github.com/gerege-systems/platform-core/pkg/logger"
+	"github.com/gerege-systems/public-gerege-core/core/business/domain"
+	"github.com/gerege-systems/public-gerege-core/core/datasources/records"
+	repointerface "github.com/gerege-systems/public-gerege-core/core/datasources/repositories/interface"
+	"github.com/gerege-systems/public-gerege-core/pkg/logger"
 
 	"github.com/jackc/pgx/v5"
 )

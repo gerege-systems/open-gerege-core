@@ -1,16 +1,28 @@
-# platform-core
+# public-gerege-core
 
-> Gerege / dgov платформуудын **дундын суурь Go модуль** —
+> Gerege / dgov платформуудын **нээлттэй суурь Go модуль** —
 > Clean Architecture backend, eID/SSO танилт, RBAC, API gateway, AI pipeline.
 
 ```
-module github.com/gerege-systems/platform-core
+module github.com/gerege-systems/public-gerege-core
 ```
 
-Энэ репо нь `template-dgov-mn/backend`-ээс **түүхтэй нь хамт** салгаж авсан
-(`git subtree split`) бөгөөд олон платформын хамтын хамаарал болно:
-`template-dgov-mn`, `template-gerege-mn`, `ring-dgov-mn`, `hurdan-dgov-mn`,
-`developer-*`, `gerege-platform-mn`, `sso-*`.
+## Хоёр цөмийн загвар
+
+Энэ репо нь **суурь (base)** цөм. Түүнээс удамшсан хаалттай цөм тусад нь байна:
+
+| Цөм | Хэн хэрэглэдэг | Агуулга |
+|---|---|---|
+| **`public-gerege-core`** (энэ репо) | **gov урсгал** — `template-dgov-mn`, `ring-dgov-mn`, `hurdan-dgov-mn`, `sso-dgov-mn`, `developer-dgov-mn` | Суурь чадвар бүхэлдээ |
+| [`private-gerege-core`](https://github.com/gerege-systems/private-gerege-core) | **gerege урсгал** — `template-gerege-mn`, `gerege-platform-mn`, `gerege-app-mn`, `gerege-pos-mn`, `gerege-kiosk-mn`, `wallet-gerege-mn`, `developer-gerege-mn` | Энэ цөмийг `go.mod`-оор **удамшиж**, дээр нь Gerege-ийн нэмэлт чадвар |
+
+**Урсгалын чиг:** энэ репод өөрчлөлт орох бүрд `private-gerege-core` нь
+өдөр бүр автоматаар шинэ хувилбар руу шилжинэ (тэнд `core-autosync.yml`).
+Урвуу чиглэл байхгүй — private-ийн код энд **буцаж ирэхгүй**.
+
+> Түүх: энэ репо нь `platform-core`-ийн шууд залгамжлагч (`template-dgov-mn/backend`-ээс
+> `git subtree split`-ээр гарсан бүх түүхийг хадгалсан). Хуучин
+> `gerege-systems/platform-core` архивлагдана.
 
 Яагаад: өмнө нь суурь код 8 репод **хуулбарлагдаж**, шинэчлэлт бүрийг гараар
 зөөдөг байсан (~85% давхардал). Одоо нэг эх сурвалж, хувилбартай.
@@ -58,7 +70,7 @@ Gemini-ээр бөглөнө (`languages` + `translations`, migration 49).
 ```go
 package main
 
-import "github.com/gerege-systems/platform-core/cmd/api/server"
+import "github.com/gerege-systems/public-gerege-core/cmd/api/server"
 
 func main() {
     server.ServiceName = "ring-dgov" // telemetry-д харагдах нэр

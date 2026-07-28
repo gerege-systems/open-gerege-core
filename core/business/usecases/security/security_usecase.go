@@ -10,8 +10,8 @@ import (
 	"context"
 	"strings"
 
-	"github.com/gerege-systems/platform-core/core/apperror"
-	repointerface "github.com/gerege-systems/platform-core/core/datasources/repositories/interface"
+	"github.com/gerege-systems/public-gerege-core/core/apperror"
+	repointerface "github.com/gerege-systems/public-gerege-core/core/datasources/repositories/interface"
 )
 
 // Usecase нь security event-ийн оролтын хил юм.

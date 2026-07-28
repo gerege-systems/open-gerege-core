@@ -10,10 +10,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/gerege-systems/platform-core/core/apperror"
-	"github.com/gerege-systems/platform-core/core/business/domain"
-	repointerface "github.com/gerege-systems/platform-core/core/datasources/repositories/interface"
-	"github.com/gerege-systems/platform-core/pkg/logger"
+	"github.com/gerege-systems/public-gerege-core/core/apperror"
+	"github.com/gerege-systems/public-gerege-core/core/business/domain"
+	repointerface "github.com/gerege-systems/public-gerege-core/core/datasources/repositories/interface"
+	"github.com/gerege-systems/public-gerege-core/pkg/logger"
 )
 
 // simulateHoldDur нь demo simulator доод platform-ыг "ажиллаж байгаа мэт"

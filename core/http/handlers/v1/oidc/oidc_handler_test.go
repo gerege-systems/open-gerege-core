@@ -13,10 +13,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/gerege-systems/platform-core/core/apperror"
-	"github.com/gerege-systems/platform-core/core/business/domain"
-	oidcuc "github.com/gerege-systems/platform-core/core/business/usecases/oidc"
-	oidchandler "github.com/gerege-systems/platform-core/core/http/handlers/v1/oidc"
+	"github.com/gerege-systems/public-gerege-core/core/apperror"
+	"github.com/gerege-systems/public-gerege-core/core/business/domain"
+	oidcuc "github.com/gerege-systems/public-gerege-core/core/business/usecases/oidc"
+	oidchandler "github.com/gerege-systems/public-gerege-core/core/http/handlers/v1/oidc"
 )
 
 const testIssuer = "https://sso.gerege.mn"

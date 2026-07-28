@@ -8,8 +8,8 @@ import (
 	"errors"
 	"time"
 
-	"github.com/gerege-systems/platform-core/core/constants"
-	"github.com/gerege-systems/platform-core/pkg/logger"
+	"github.com/gerege-systems/public-gerege-core/core/constants"
+	"github.com/gerege-systems/public-gerege-core/pkg/logger"
 
 	"github.com/redis/go-redis/extra/redisotel/v9"
 	"github.com/redis/go-redis/v9"

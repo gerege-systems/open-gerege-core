@@ -5,7 +5,7 @@ package users
 import (
 	"context"
 
-	"github.com/gerege-systems/platform-core/core/business/domain"
+	"github.com/gerege-systems/public-gerege-core/core/business/domain"
 )
 
 // GetByGoogleSub нь холбогдсон Google account (sub)-аар хэрэглэгчийг олно

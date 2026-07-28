@@ -5,10 +5,10 @@ package routes
 import (
 	"github.com/go-chi/chi/v5"
 
-	onboarding "github.com/gerege-systems/platform-core/core/business/usecases/superadmin_onboarding"
-	v1 "github.com/gerege-systems/platform-core/core/http/handlers/v1"
-	superadminonboardhandler "github.com/gerege-systems/platform-core/core/http/handlers/v1/superadminonboard"
-	"github.com/gerege-systems/platform-core/core/http/middlewares"
+	onboarding "github.com/gerege-systems/public-gerege-core/core/business/usecases/superadmin_onboarding"
+	v1 "github.com/gerege-systems/public-gerege-core/core/http/handlers/v1"
+	superadminonboardhandler "github.com/gerege-systems/public-gerege-core/core/http/handlers/v1/superadminonboard"
+	"github.com/gerege-systems/public-gerege-core/core/http/middlewares"
 )
 
 // superadminOnboardRoute нь /v1/auth/superadmin/* бүлгийг холбоно: урилгаар

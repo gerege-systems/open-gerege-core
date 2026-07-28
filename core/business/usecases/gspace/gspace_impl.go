@@ -7,8 +7,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/gerege-systems/platform-core/core/apperror"
-	gsclient "github.com/gerege-systems/platform-core/pkg/gspace"
+	"github.com/gerege-systems/public-gerege-core/core/apperror"
+	gsclient "github.com/gerege-systems/public-gerege-core/pkg/gspace"
 )
 
 type usecase struct {

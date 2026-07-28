@@ -5,10 +5,10 @@ package routes
 import (
 	"github.com/go-chi/chi/v5"
 
-	ssouc "github.com/gerege-systems/platform-core/core/business/usecases/sso"
-	v1 "github.com/gerege-systems/platform-core/core/http/handlers/v1"
-	ssohandler "github.com/gerege-systems/platform-core/core/http/handlers/v1/sso"
-	"github.com/gerege-systems/platform-core/core/http/middlewares"
+	ssouc "github.com/gerege-systems/public-gerege-core/core/business/usecases/sso"
+	v1 "github.com/gerege-systems/public-gerege-core/core/http/handlers/v1"
+	ssohandler "github.com/gerege-systems/public-gerege-core/core/http/handlers/v1/sso"
+	"github.com/gerege-systems/public-gerege-core/core/http/middlewares"
 )
 
 // ssoRoute нь /sso/* бүлгийг холбоно — dgov SSO (OIDC) нэвтрэлтийн 2 дахи

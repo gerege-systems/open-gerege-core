@@ -10,9 +10,9 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/gerege-systems/platform-core/core/apperror"
-	"github.com/gerege-systems/platform-core/pkg/eid"
-	"github.com/gerege-systems/platform-core/pkg/logger"
+	"github.com/gerege-systems/public-gerege-core/core/apperror"
+	"github.com/gerege-systems/public-gerege-core/pkg/eid"
+	"github.com/gerege-systems/public-gerege-core/pkg/logger"
 )
 
 // eidPollTimeoutMs нь IdP-ийн session long-poll-ийн хүлээх дээд хугацаа (мс) —

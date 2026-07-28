@@ -6,14 +6,14 @@ import (
 	"encoding/json"
 	"net/http"
 
-	authuc "github.com/gerege-systems/platform-core/core/business/usecases/auth"
-	"github.com/gerege-systems/platform-core/core/datasources/rls"
-	"github.com/gerege-systems/platform-core/core/http/datatransfers/requests"
-	"github.com/gerege-systems/platform-core/core/http/datatransfers/responses"
-	v1 "github.com/gerege-systems/platform-core/core/http/handlers/v1"
-	"github.com/gerege-systems/platform-core/pkg/audit"
-	"github.com/gerege-systems/platform-core/pkg/logger"
-	"github.com/gerege-systems/platform-core/pkg/validators"
+	authuc "github.com/gerege-systems/public-gerege-core/core/business/usecases/auth"
+	"github.com/gerege-systems/public-gerege-core/core/datasources/rls"
+	"github.com/gerege-systems/public-gerege-core/core/http/datatransfers/requests"
+	"github.com/gerege-systems/public-gerege-core/core/http/datatransfers/responses"
+	v1 "github.com/gerege-systems/public-gerege-core/core/http/handlers/v1"
+	"github.com/gerege-systems/public-gerege-core/pkg/audit"
+	"github.com/gerege-systems/public-gerege-core/pkg/logger"
+	"github.com/gerege-systems/public-gerege-core/pkg/validators"
 )
 
 // EIDStart godoc

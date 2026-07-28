@@ -6,12 +6,12 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/gerege-systems/platform-core/core/apperror"
-	"github.com/gerege-systems/platform-core/core/business/domain"
-	"github.com/gerege-systems/platform-core/core/datasources/rls"
-	"github.com/gerege-systems/platform-core/pkg/logger"
-	"github.com/gerege-systems/platform-core/pkg/recovery"
-	"github.com/gerege-systems/platform-core/pkg/totp"
+	"github.com/gerege-systems/public-gerege-core/core/apperror"
+	"github.com/gerege-systems/public-gerege-core/core/business/domain"
+	"github.com/gerege-systems/public-gerege-core/core/datasources/rls"
+	"github.com/gerege-systems/public-gerege-core/pkg/logger"
+	"github.com/gerege-systems/public-gerege-core/pkg/recovery"
+	"github.com/gerege-systems/public-gerege-core/pkg/totp"
 )
 
 // TOTPInit нь шидтэний 4 дэх алхам: шинэ TOTP secret үүсгэж pending session-д

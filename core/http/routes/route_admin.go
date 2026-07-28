@@ -7,14 +7,14 @@ import (
 
 	"github.com/go-chi/chi/v5"
 
-	"github.com/gerege-systems/platform-core/core/business/domain"
-	aiuc "github.com/gerege-systems/platform-core/core/business/usecases/ai"
-	rbacuc "github.com/gerege-systems/platform-core/core/business/usecases/rbac"
-	"github.com/gerege-systems/platform-core/core/business/usecases/users"
-	v1 "github.com/gerege-systems/platform-core/core/http/handlers/v1"
-	adminhandler "github.com/gerege-systems/platform-core/core/http/handlers/v1/admin"
-	aihandler "github.com/gerege-systems/platform-core/core/http/handlers/v1/ai"
-	"github.com/gerege-systems/platform-core/core/http/middlewares"
+	"github.com/gerege-systems/public-gerege-core/core/business/domain"
+	aiuc "github.com/gerege-systems/public-gerege-core/core/business/usecases/ai"
+	rbacuc "github.com/gerege-systems/public-gerege-core/core/business/usecases/rbac"
+	"github.com/gerege-systems/public-gerege-core/core/business/usecases/users"
+	v1 "github.com/gerege-systems/public-gerege-core/core/http/handlers/v1"
+	adminhandler "github.com/gerege-systems/public-gerege-core/core/http/handlers/v1/admin"
+	aihandler "github.com/gerege-systems/public-gerege-core/core/http/handlers/v1/ai"
+	"github.com/gerege-systems/public-gerege-core/core/http/middlewares"
 )
 
 // adminRoute нь /admin/* удирдлагын бүлгийг холбоно. Хэрэглэгчийн удирдлага

@@ -7,8 +7,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/gerege-systems/platform-core/core/apperror"
-	"github.com/gerege-systems/platform-core/pkg/logger"
+	"github.com/gerege-systems/public-gerege-core/core/apperror"
+	"github.com/gerege-systems/public-gerege-core/pkg/logger"
 )
 
 // UpdatePassword нь аль хэдийн hash хийсэн нууц үг + хүчингүй болгох timestamp-ийг

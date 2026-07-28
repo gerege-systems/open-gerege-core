@@ -13,9 +13,9 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 
-	"github.com/gerege-systems/platform-core/core/apperror"
-	"github.com/gerege-systems/platform-core/core/business/domain"
-	repointerface "github.com/gerege-systems/platform-core/core/datasources/repositories/interface"
+	"github.com/gerege-systems/public-gerege-core/core/apperror"
+	"github.com/gerege-systems/public-gerege-core/core/business/domain"
+	repointerface "github.com/gerege-systems/public-gerege-core/core/datasources/repositories/interface"
 )
 
 type siteRepository struct {

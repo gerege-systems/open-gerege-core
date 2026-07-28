@@ -5,8 +5,8 @@ package responses
 import (
 	"time"
 
-	"github.com/gerege-systems/platform-core/core/business/domain"
-	languageuc "github.com/gerege-systems/platform-core/core/business/usecases/language"
+	"github.com/gerege-systems/public-gerege-core/core/business/domain"
+	languageuc "github.com/gerege-systems/public-gerege-core/core/business/usecases/language"
 )
 
 // LanguageResponse нь интерфейсийн хэлийг frontend-д буцаах хэлбэр.

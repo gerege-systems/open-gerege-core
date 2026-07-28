@@ -16,9 +16,9 @@ import (
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
 
-	"github.com/gerege-systems/platform-core/core/apperror"
-	"github.com/gerege-systems/platform-core/core/business/domain"
-	repointerface "github.com/gerege-systems/platform-core/core/datasources/repositories/interface"
+	"github.com/gerege-systems/public-gerege-core/core/apperror"
+	"github.com/gerege-systems/public-gerege-core/core/business/domain"
+	repointerface "github.com/gerege-systems/public-gerege-core/core/datasources/repositories/interface"
 )
 
 // pgUniqueViolation нь Postgres-ийн unique_violation-ийн SQLSTATE код.

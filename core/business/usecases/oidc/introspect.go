@@ -6,10 +6,10 @@ import (
 	"context"
 	"errors"
 
-	"github.com/gerege-systems/platform-core/core/apperror"
-	"github.com/gerege-systems/platform-core/core/business/domain"
-	usersuc "github.com/gerege-systems/platform-core/core/business/usecases/users"
-	"github.com/gerege-systems/platform-core/core/datasources/rls"
+	"github.com/gerege-systems/public-gerege-core/core/apperror"
+	"github.com/gerege-systems/public-gerege-core/core/business/domain"
+	usersuc "github.com/gerege-systems/public-gerege-core/core/business/usecases/users"
+	"github.com/gerege-systems/public-gerege-core/core/datasources/rls"
 )
 
 var errUserLookupMissing = errors.New("oidc: userinfo requires a user lookup")

@@ -11,8 +11,8 @@ package mocks
 import (
 	"context"
 
-	"github.com/gerege-systems/platform-core/core/business/domain"
-	"github.com/gerege-systems/platform-core/core/business/usecases/users"
+	"github.com/gerege-systems/public-gerege-core/core/business/domain"
+	"github.com/gerege-systems/public-gerege-core/core/business/usecases/users"
 
 	mock "github.com/stretchr/testify/mock"
 )

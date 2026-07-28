@@ -15,10 +15,10 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	repointerface "github.com/gerege-systems/platform-core/core/datasources/repositories/interface"
-	securitypg "github.com/gerege-systems/platform-core/core/datasources/repositories/postgres/security"
-	"github.com/gerege-systems/platform-core/core/datasources/rls"
-	"github.com/gerege-systems/platform-core/core/test/testenv"
+	repointerface "github.com/gerege-systems/public-gerege-core/core/datasources/repositories/interface"
+	securitypg "github.com/gerege-systems/public-gerege-core/core/datasources/repositories/postgres/security"
+	"github.com/gerege-systems/public-gerege-core/core/datasources/rls"
+	"github.com/gerege-systems/public-gerege-core/core/test/testenv"
 )
 
 const testUserID = "11111111-1111-4111-8111-111111111111"

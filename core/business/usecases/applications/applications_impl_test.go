@@ -6,8 +6,8 @@ import (
 	"context"
 	"testing"
 
-	"github.com/gerege-systems/platform-core/core/business/domain"
-	"github.com/gerege-systems/platform-core/pkg/secrethash"
+	"github.com/gerege-systems/public-gerege-core/core/business/domain"
+	"github.com/gerege-systems/public-gerege-core/pkg/secrethash"
 )
 
 // fakeRepo нь serviceScopeResolver-ийн санах-ой хувилбар (gateway service scope

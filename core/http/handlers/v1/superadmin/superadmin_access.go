@@ -5,9 +5,9 @@ package superadmin
 import (
 	"net/http"
 
-	"github.com/gerege-systems/platform-core/core/http/datatransfers/requests"
-	v1 "github.com/gerege-systems/platform-core/core/http/handlers/v1"
-	"github.com/gerege-systems/platform-core/pkg/validators"
+	"github.com/gerege-systems/public-gerege-core/core/http/datatransfers/requests"
+	v1 "github.com/gerege-systems/public-gerege-core/core/http/handlers/v1"
+	"github.com/gerege-systems/public-gerege-core/pkg/validators"
 )
 
 // GetAccessMode godoc

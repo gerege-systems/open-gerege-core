@@ -7,9 +7,9 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/gerege-systems/platform-core/core/apperror"
-	"github.com/gerege-systems/platform-core/core/business/domain"
-	"github.com/gerege-systems/platform-core/pkg/logger"
+	"github.com/gerege-systems/public-gerege-core/core/apperror"
+	"github.com/gerege-systems/public-gerege-core/core/business/domain"
+	"github.com/gerege-systems/public-gerege-core/pkg/logger"
 )
 
 // Google нь шидтэний 1 дэх алхам: OAuth code-ийг Google профайл руу солиж,

@@ -7,13 +7,13 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/gerege-systems/platform-core/core/business/domain"
-	oidcuc "github.com/gerege-systems/platform-core/core/business/usecases/oidc"
-	"github.com/gerege-systems/platform-core/core/constants"
-	"github.com/gerege-systems/platform-core/core/datasources/rls"
-	V1Handler "github.com/gerege-systems/platform-core/core/http/handlers/v1"
-	"github.com/gerege-systems/platform-core/pkg/jwt"
-	"github.com/gerege-systems/platform-core/pkg/logger"
+	"github.com/gerege-systems/public-gerege-core/core/business/domain"
+	oidcuc "github.com/gerege-systems/public-gerege-core/core/business/usecases/oidc"
+	"github.com/gerege-systems/public-gerege-core/core/constants"
+	"github.com/gerege-systems/public-gerege-core/core/datasources/rls"
+	V1Handler "github.com/gerege-systems/public-gerege-core/core/http/handlers/v1"
+	"github.com/gerege-systems/public-gerege-core/pkg/jwt"
+	"github.com/gerege-systems/public-gerege-core/pkg/logger"
 )
 
 // OAuthBearerMiddleware нь бүртгэгдсэн апп (relying party)-ийн access token-оор

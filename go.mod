@@ -1,4 +1,4 @@
-module github.com/gerege-systems/platform-core
+module github.com/gerege-systems/public-gerege-core
 
 go 1.26
 

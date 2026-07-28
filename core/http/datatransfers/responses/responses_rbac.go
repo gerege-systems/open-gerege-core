@@ -3,8 +3,8 @@
 package responses
 
 import (
-	"github.com/gerege-systems/platform-core/core/business/domain"
-	rbacuc "github.com/gerege-systems/platform-core/core/business/usecases/rbac"
+	"github.com/gerege-systems/public-gerege-core/core/business/domain"
+	rbacuc "github.com/gerege-systems/public-gerege-core/core/business/usecases/rbac"
 )
 
 // RoleResponse нь нэг role-ийг (оноосон permission-уудтай нь) клиентэд буцаана.

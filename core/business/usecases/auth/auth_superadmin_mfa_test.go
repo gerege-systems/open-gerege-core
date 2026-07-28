@@ -19,11 +19,11 @@ import (
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 
-	"github.com/gerege-systems/platform-core/core/business/domain"
-	"github.com/gerege-systems/platform-core/core/business/usecases/auth"
-	"github.com/gerege-systems/platform-core/core/business/usecases/users"
-	"github.com/gerege-systems/platform-core/pkg/eid"
-	"github.com/gerege-systems/platform-core/pkg/google"
+	"github.com/gerege-systems/public-gerege-core/core/business/domain"
+	"github.com/gerege-systems/public-gerege-core/core/business/usecases/auth"
+	"github.com/gerege-systems/public-gerege-core/core/business/usecases/users"
+	"github.com/gerege-systems/public-gerege-core/pkg/eid"
+	"github.com/gerege-systems/public-gerege-core/pkg/google"
 )
 
 // superadminMFAUser нь MFA идэвхжүүлсэн super admin.

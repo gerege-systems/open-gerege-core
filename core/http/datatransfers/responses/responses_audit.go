@@ -5,7 +5,7 @@ package responses
 import (
 	"time"
 
-	repointerface "github.com/gerege-systems/platform-core/core/datasources/repositories/interface"
+	repointerface "github.com/gerege-systems/public-gerege-core/core/datasources/repositories/interface"
 )
 
 // AuditLogResponse нь hash-chained audit_log-ийн нэг мөрийг клиентэд (admin)

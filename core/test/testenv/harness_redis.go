@@ -12,7 +12,7 @@ import (
 	"github.com/testcontainers/testcontainers-go"
 	tcredis "github.com/testcontainers/testcontainers-go/modules/redis"
 
-	"github.com/gerege-systems/platform-core/core/datasources/caches"
+	"github.com/gerege-systems/public-gerege-core/core/datasources/caches"
 )
 
 // StartRedis нь устгагдах Redis контейнер асааж, түүн рүү чиглэсэн

@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/gerege-systems/platform-core/pkg/logger"
+	"github.com/gerege-systems/public-gerege-core/pkg/logger"
 
 	"github.com/go-chi/chi/v5/middleware"
 )

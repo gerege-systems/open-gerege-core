@@ -11,8 +11,8 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/redis/go-redis/v9"
 
-	"github.com/gerege-systems/platform-core/core/constants"
-	"github.com/gerege-systems/platform-core/pkg/logger"
+	"github.com/gerege-systems/public-gerege-core/core/constants"
+	"github.com/gerege-systems/public-gerege-core/pkg/logger"
 )
 
 type HealthHandler struct {

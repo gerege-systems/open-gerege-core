@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/gerege-systems/platform-core/pkg/logger"
+	"github.com/gerege-systems/public-gerege-core/pkg/logger"
 )
 
 // GetByNationalID нь eID-ийн national_id-ээр хэрэглэгчийг буцаана. GetByID-тэй

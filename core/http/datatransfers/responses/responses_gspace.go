@@ -5,7 +5,7 @@ package responses
 import (
 	"time"
 
-	gspaceuc "github.com/gerege-systems/platform-core/core/business/usecases/gspace"
+	gspaceuc "github.com/gerege-systems/public-gerege-core/core/business/usecases/gspace"
 )
 
 // GSpaceFileResponse нь Gerege Space дахь нэг файл.

@@ -10,7 +10,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/gerege-systems/platform-core/pkg/logger"
+	"github.com/gerege-systems/public-gerege-core/pkg/logger"
 
 	"golang.org/x/time/rate"
 )

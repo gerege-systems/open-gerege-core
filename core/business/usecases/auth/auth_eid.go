@@ -11,13 +11,13 @@ import (
 	"strings"
 	"time"
 
-	"github.com/gerege-systems/platform-core/core/apperror"
-	"github.com/gerege-systems/platform-core/core/business/domain"
-	"github.com/gerege-systems/platform-core/core/business/usecases/users"
-	"github.com/gerege-systems/platform-core/pkg/eid"
-	"github.com/gerege-systems/platform-core/pkg/logger"
-	"github.com/gerege-systems/platform-core/pkg/ssoeidproxy"
-	"github.com/gerege-systems/platform-core/pkg/xyp"
+	"github.com/gerege-systems/public-gerege-core/core/apperror"
+	"github.com/gerege-systems/public-gerege-core/core/business/domain"
+	"github.com/gerege-systems/public-gerege-core/core/business/usecases/users"
+	"github.com/gerege-systems/public-gerege-core/pkg/eid"
+	"github.com/gerege-systems/public-gerege-core/pkg/logger"
+	"github.com/gerege-systems/public-gerege-core/pkg/ssoeidproxy"
+	"github.com/gerege-systems/public-gerege-core/pkg/xyp"
 )
 
 // SSOEidProxy нь dgov SSO-ий eID proxy-г иргэний Bearer access token-оор уншина

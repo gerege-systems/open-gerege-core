@@ -17,10 +17,10 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	repointerface "github.com/gerege-systems/platform-core/core/datasources/repositories/interface"
-	auditpg "github.com/gerege-systems/platform-core/core/datasources/repositories/postgres/audit"
-	"github.com/gerege-systems/platform-core/core/test/testenv"
-	pkgaudit "github.com/gerege-systems/platform-core/pkg/audit"
+	repointerface "github.com/gerege-systems/public-gerege-core/core/datasources/repositories/interface"
+	auditpg "github.com/gerege-systems/public-gerege-core/core/datasources/repositories/postgres/audit"
+	"github.com/gerege-systems/public-gerege-core/core/test/testenv"
+	pkgaudit "github.com/gerege-systems/public-gerege-core/pkg/audit"
 )
 
 func TestAuditChain(t *testing.T) {

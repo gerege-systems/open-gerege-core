@@ -8,7 +8,7 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/gerege-systems/platform-core/core/constants"
+	"github.com/gerege-systems/public-gerege-core/core/constants"
 
 	"github.com/spf13/viper"
 )

@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/gerege-systems/platform-core/pkg/helpers"
+	"github.com/gerege-systems/public-gerege-core/pkg/helpers"
 )
 
 func TestGenerateHash(t *testing.T) {

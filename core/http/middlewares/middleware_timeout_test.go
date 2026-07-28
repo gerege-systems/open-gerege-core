@@ -11,7 +11,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/gerege-systems/platform-core/core/http/middlewares"
+	"github.com/gerege-systems/public-gerege-core/core/http/middlewares"
 )
 
 // deadlineOf нь handler-т ирсэн context-ийн үлдсэн хугацааг буцаана.

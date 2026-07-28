@@ -9,8 +9,8 @@ import (
 
 	mock "github.com/stretchr/testify/mock"
 
-	audituc "github.com/gerege-systems/platform-core/core/business/usecases/audit"
-	repointerface "github.com/gerege-systems/platform-core/core/datasources/repositories/interface"
+	audituc "github.com/gerege-systems/public-gerege-core/core/business/usecases/audit"
+	repointerface "github.com/gerege-systems/public-gerege-core/core/datasources/repositories/interface"
 )
 
 // AuditUsecase нь audit.Usecase-ийн mock юм.

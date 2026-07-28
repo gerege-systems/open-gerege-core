@@ -9,8 +9,8 @@ import (
 	"context"
 	"time"
 
-	"github.com/gerege-systems/platform-core/core/business/domain"
-	"github.com/gerege-systems/platform-core/pkg/eid"
+	"github.com/gerege-systems/public-gerege-core/core/business/domain"
+	"github.com/gerege-systems/public-gerege-core/pkg/eid"
 )
 
 // Usecase нь HTTP handler-ийн харьцдаг оролтын хил (input boundary) юм. Method

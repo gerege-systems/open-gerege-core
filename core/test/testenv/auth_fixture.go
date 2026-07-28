@@ -13,16 +13,16 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/gerege-systems/platform-core/core/business/usecases/auth"
-	"github.com/gerege-systems/platform-core/core/business/usecases/users"
-	"github.com/gerege-systems/platform-core/core/config"
-	"github.com/gerege-systems/platform-core/core/datasources/caches"
-	userspostgres "github.com/gerege-systems/platform-core/core/datasources/repositories/postgres/users"
-	"github.com/gerege-systems/platform-core/pkg/eid"
-	"github.com/gerege-systems/platform-core/pkg/google"
-	"github.com/gerege-systems/platform-core/pkg/helpers"
-	"github.com/gerege-systems/platform-core/pkg/jwt"
-	"github.com/gerege-systems/platform-core/pkg/verify"
+	"github.com/gerege-systems/public-gerege-core/core/business/usecases/auth"
+	"github.com/gerege-systems/public-gerege-core/core/business/usecases/users"
+	"github.com/gerege-systems/public-gerege-core/core/config"
+	"github.com/gerege-systems/public-gerege-core/core/datasources/caches"
+	userspostgres "github.com/gerege-systems/public-gerege-core/core/datasources/repositories/postgres/users"
+	"github.com/gerege-systems/public-gerege-core/pkg/eid"
+	"github.com/gerege-systems/public-gerege-core/pkg/google"
+	"github.com/gerege-systems/public-gerege-core/pkg/helpers"
+	"github.com/gerege-systems/public-gerege-core/pkg/jwt"
+	"github.com/gerege-systems/public-gerege-core/pkg/verify"
 )
 
 // AuthFixture нь end-to-end тестүүдэд ашиглагддаг бүрэн холбогдсон auth

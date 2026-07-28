@@ -15,7 +15,7 @@ package language
 import (
 	"context"
 
-	"github.com/gerege-systems/platform-core/core/business/domain"
+	"github.com/gerege-systems/public-gerege-core/core/business/domain"
 )
 
 // Translator нь багц орчуулгын гадаад үйлчилгээ (үйлдвэрлэлд Gemini).

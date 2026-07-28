@@ -7,13 +7,13 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/gerege-systems/platform-core/core/apperror"
-	"github.com/gerege-systems/platform-core/core/business/domain"
-	"github.com/gerege-systems/platform-core/core/business/usecases/auth"
-	"github.com/gerege-systems/platform-core/core/datasources/rls"
-	"github.com/gerege-systems/platform-core/pkg/logger"
-	"github.com/gerege-systems/platform-core/pkg/recovery"
-	"github.com/gerege-systems/platform-core/pkg/totp"
+	"github.com/gerege-systems/public-gerege-core/core/apperror"
+	"github.com/gerege-systems/public-gerege-core/core/business/domain"
+	"github.com/gerege-systems/public-gerege-core/core/business/usecases/auth"
+	"github.com/gerege-systems/public-gerege-core/core/datasources/rls"
+	"github.com/gerege-systems/public-gerege-core/pkg/logger"
+	"github.com/gerege-systems/public-gerege-core/pkg/recovery"
+	"github.com/gerege-systems/public-gerege-core/pkg/totp"
 )
 
 // SuperadminMFA нь MFA-тай super admin нэвтрэлтийн 2 дахь (сүүлийн) шат.

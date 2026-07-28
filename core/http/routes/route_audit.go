@@ -7,10 +7,10 @@ import (
 
 	"github.com/go-chi/chi/v5"
 
-	audituc "github.com/gerege-systems/platform-core/core/business/usecases/audit"
-	v1 "github.com/gerege-systems/platform-core/core/http/handlers/v1"
-	audithandler "github.com/gerege-systems/platform-core/core/http/handlers/v1/audit"
-	"github.com/gerege-systems/platform-core/core/http/middlewares"
+	audituc "github.com/gerege-systems/public-gerege-core/core/business/usecases/audit"
+	v1 "github.com/gerege-systems/public-gerege-core/core/http/handlers/v1"
+	audithandler "github.com/gerege-systems/public-gerege-core/core/http/handlers/v1/audit"
+	"github.com/gerege-systems/public-gerege-core/core/http/middlewares"
 )
 
 // auditRoute нь /v1/audit/* бүлгийг холбоно. Бүх endpoint нь нэвтрэлт +

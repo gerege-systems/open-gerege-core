@@ -8,7 +8,7 @@ package config
 import (
 	"testing"
 
-	"github.com/gerege-systems/platform-core/core/constants"
+	"github.com/gerege-systems/public-gerege-core/core/constants"
 )
 
 func TestTrustedProxiesList(t *testing.T) {

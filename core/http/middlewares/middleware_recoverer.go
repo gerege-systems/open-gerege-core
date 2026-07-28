@@ -7,9 +7,9 @@ import (
 	"net/http"
 	"runtime/debug"
 
-	"github.com/gerege-systems/platform-core/core/constants"
-	V1Handler "github.com/gerege-systems/platform-core/core/http/handlers/v1"
-	"github.com/gerege-systems/platform-core/pkg/logger"
+	"github.com/gerege-systems/public-gerege-core/core/constants"
+	V1Handler "github.com/gerege-systems/public-gerege-core/core/http/handlers/v1"
+	"github.com/gerege-systems/public-gerege-core/pkg/logger"
 )
 
 // RecovererMiddleware нь доош урсгал дахь handler/middleware-ийн panic-ийг

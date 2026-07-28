@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/gerege-systems/platform-core/pkg/gemini"
+	"github.com/gerege-systems/public-gerege-core/pkg/gemini"
 )
 
 // geminiTranslator нь Translator-ийн үйлдвэрлэлийн хэрэгжилт — Gemini-ийн

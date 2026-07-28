@@ -8,11 +8,11 @@ import (
 	"fmt"
 	"math/rand/v2"
 
-	"github.com/gerege-systems/platform-core/core/apperror"
-	"github.com/gerege-systems/platform-core/core/constants"
-	repointerface "github.com/gerege-systems/platform-core/core/datasources/repositories/interface"
-	"github.com/gerege-systems/platform-core/pkg/gemini"
-	"github.com/gerege-systems/platform-core/pkg/logger"
+	"github.com/gerege-systems/public-gerege-core/core/apperror"
+	"github.com/gerege-systems/public-gerege-core/core/constants"
+	repointerface "github.com/gerege-systems/public-gerege-core/core/datasources/repositories/interface"
+	"github.com/gerege-systems/public-gerege-core/pkg/gemini"
+	"github.com/gerege-systems/public-gerege-core/pkg/logger"
 )
 
 // fallbackReplies нь Gemini бүх оролдлогын дараа ч амжилтгүй үед хэрэглэгчид

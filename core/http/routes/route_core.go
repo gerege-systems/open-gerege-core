@@ -7,12 +7,12 @@ import (
 
 	"github.com/go-chi/chi/v5"
 
-	"github.com/gerege-systems/platform-core/core/business/domain"
-	coreuc "github.com/gerege-systems/platform-core/core/business/usecases/core"
-	rbacuc "github.com/gerege-systems/platform-core/core/business/usecases/rbac"
-	v1 "github.com/gerege-systems/platform-core/core/http/handlers/v1"
-	corehandler "github.com/gerege-systems/platform-core/core/http/handlers/v1/core"
-	"github.com/gerege-systems/platform-core/core/http/middlewares"
+	"github.com/gerege-systems/public-gerege-core/core/business/domain"
+	coreuc "github.com/gerege-systems/public-gerege-core/core/business/usecases/core"
+	rbacuc "github.com/gerege-systems/public-gerege-core/core/business/usecases/rbac"
+	v1 "github.com/gerege-systems/public-gerege-core/core/http/handlers/v1"
+	corehandler "github.com/gerege-systems/public-gerege-core/core/http/handlers/v1/core"
+	"github.com/gerege-systems/public-gerege-core/core/http/middlewares"
 )
 
 // coreRoute нь Gerege Core (core.gerege.mn)-ийн хайлтын /core/* бүлгийг холбоно.

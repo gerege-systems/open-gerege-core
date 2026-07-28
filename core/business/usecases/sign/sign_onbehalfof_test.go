@@ -12,7 +12,7 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/gerege-systems/platform-core/core/apperror"
+	"github.com/gerege-systems/public-gerege-core/core/apperror"
 )
 
 // memCache — sign usecase-ийн cache интерфэйсийн санах ойн хэрэгжилт (тест).

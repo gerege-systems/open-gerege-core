@@ -7,7 +7,7 @@ import (
 	"errors"
 	"strings"
 
-	"github.com/gerege-systems/platform-core/core/apperror"
+	"github.com/gerege-systems/public-gerege-core/core/apperror"
 
 	"github.com/jackc/pgx/v5"
 )

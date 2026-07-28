@@ -7,10 +7,10 @@ import (
 
 	"github.com/go-chi/chi/v5"
 
-	securityuc "github.com/gerege-systems/platform-core/core/business/usecases/security"
-	v1 "github.com/gerege-systems/platform-core/core/http/handlers/v1"
-	securityhandler "github.com/gerege-systems/platform-core/core/http/handlers/v1/security"
-	"github.com/gerege-systems/platform-core/core/http/middlewares"
+	securityuc "github.com/gerege-systems/public-gerege-core/core/business/usecases/security"
+	v1 "github.com/gerege-systems/public-gerege-core/core/http/handlers/v1"
+	securityhandler "github.com/gerege-systems/public-gerege-core/core/http/handlers/v1/security"
+	"github.com/gerege-systems/public-gerege-core/core/http/middlewares"
 )
 
 // securityRoute нь /v1/security/* бүлгийг холбоно. POST /events нь нэвтэрсэн

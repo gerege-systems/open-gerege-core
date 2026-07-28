@@ -19,8 +19,8 @@ import (
 	"fmt"
 	"strings"
 
-	repointerface "github.com/gerege-systems/platform-core/core/datasources/repositories/interface"
-	pkgaudit "github.com/gerege-systems/platform-core/pkg/audit"
+	repointerface "github.com/gerege-systems/public-gerege-core/core/datasources/repositories/interface"
+	pkgaudit "github.com/gerege-systems/public-gerege-core/pkg/audit"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"

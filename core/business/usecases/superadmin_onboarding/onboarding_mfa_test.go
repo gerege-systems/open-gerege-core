@@ -16,14 +16,14 @@ import (
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 
-	"github.com/gerege-systems/platform-core/core/apperror"
-	"github.com/gerege-systems/platform-core/core/business/domain"
-	onboarding "github.com/gerege-systems/platform-core/core/business/usecases/superadmin_onboarding"
-	"github.com/gerege-systems/platform-core/core/test/mocks"
-	"github.com/gerege-systems/platform-core/pkg/crypto"
-	"github.com/gerege-systems/platform-core/pkg/jwt"
-	"github.com/gerege-systems/platform-core/pkg/recovery"
-	"github.com/gerege-systems/platform-core/pkg/totp"
+	"github.com/gerege-systems/public-gerege-core/core/apperror"
+	"github.com/gerege-systems/public-gerege-core/core/business/domain"
+	onboarding "github.com/gerege-systems/public-gerege-core/core/business/usecases/superadmin_onboarding"
+	"github.com/gerege-systems/public-gerege-core/core/test/mocks"
+	"github.com/gerege-systems/public-gerege-core/pkg/crypto"
+	"github.com/gerege-systems/public-gerege-core/pkg/jwt"
+	"github.com/gerege-systems/public-gerege-core/pkg/recovery"
+	"github.com/gerege-systems/public-gerege-core/pkg/totp"
 )
 
 // testEncKey нь тестийн TOTP secret шифрлэх түлхүүр (production-д INTEGRATION_ENC_KEY).

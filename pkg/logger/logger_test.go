@@ -6,7 +6,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/gerege-systems/platform-core/pkg/logger"
+	"github.com/gerege-systems/public-gerege-core/pkg/logger"
 )
 
 func TestLoggerUsage(t *testing.T) {

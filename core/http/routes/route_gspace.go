@@ -7,10 +7,10 @@ import (
 
 	"github.com/go-chi/chi/v5"
 
-	gspaceuc "github.com/gerege-systems/platform-core/core/business/usecases/gspace"
-	v1 "github.com/gerege-systems/platform-core/core/http/handlers/v1"
-	gspacehandler "github.com/gerege-systems/platform-core/core/http/handlers/v1/gspace"
-	"github.com/gerege-systems/platform-core/core/http/middlewares"
+	gspaceuc "github.com/gerege-systems/public-gerege-core/core/business/usecases/gspace"
+	v1 "github.com/gerege-systems/public-gerege-core/core/http/handlers/v1"
+	gspacehandler "github.com/gerege-systems/public-gerege-core/core/http/handlers/v1/gspace"
+	"github.com/gerege-systems/public-gerege-core/core/http/middlewares"
 )
 
 // gspaceRoute нь "Gerege Space" (апп-ын өөрийн SFTP хадгалалт)-ын /v1/gspace/*

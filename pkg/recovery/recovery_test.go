@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/gerege-systems/platform-core/pkg/recovery"
+	"github.com/gerege-systems/public-gerege-core/pkg/recovery"
 )
 
 // codeShape нь "XXXX-XXXX" (base32 том үсэг + 2-7) хэлбэрийг шалгана.

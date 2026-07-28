@@ -14,7 +14,7 @@ package superadmin
 import (
 	"context"
 
-	"github.com/gerege-systems/platform-core/core/business/domain"
+	"github.com/gerege-systems/public-gerege-core/core/business/domain"
 )
 
 // Usecase нь оролтын хил (input boundary). Method бүр Request struct авч,

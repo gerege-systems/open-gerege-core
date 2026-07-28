@@ -16,10 +16,10 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/gerege-systems/platform-core/core/business/domain"
-	aipg "github.com/gerege-systems/platform-core/core/datasources/repositories/postgres/ai"
-	"github.com/gerege-systems/platform-core/core/test/testenv"
-	"github.com/gerege-systems/platform-core/pkg/gemini"
+	"github.com/gerege-systems/public-gerege-core/core/business/domain"
+	aipg "github.com/gerege-systems/public-gerege-core/core/datasources/repositories/postgres/ai"
+	"github.com/gerege-systems/public-gerege-core/core/test/testenv"
+	"github.com/gerege-systems/public-gerege-core/pkg/gemini"
 )
 
 // unitVector нь өгөгдсөн эхний хоёр хэмжээст утгатай, үлдсэн нь тэг нэгж

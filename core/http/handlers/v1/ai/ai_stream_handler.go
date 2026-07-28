@@ -7,12 +7,12 @@ import (
 	"fmt"
 	"net/http"
 
-	aiuc "github.com/gerege-systems/platform-core/core/business/usecases/ai"
-	"github.com/gerege-systems/platform-core/core/constants"
-	"github.com/gerege-systems/platform-core/core/http/datatransfers/requests"
-	v1 "github.com/gerege-systems/platform-core/core/http/handlers/v1"
-	"github.com/gerege-systems/platform-core/pkg/logger"
-	"github.com/gerege-systems/platform-core/pkg/validators"
+	aiuc "github.com/gerege-systems/public-gerege-core/core/business/usecases/ai"
+	"github.com/gerege-systems/public-gerege-core/core/constants"
+	"github.com/gerege-systems/public-gerege-core/core/http/datatransfers/requests"
+	v1 "github.com/gerege-systems/public-gerege-core/core/http/handlers/v1"
+	"github.com/gerege-systems/public-gerege-core/pkg/logger"
+	"github.com/gerege-systems/public-gerege-core/pkg/validators"
 )
 
 // PublicChatStream godoc

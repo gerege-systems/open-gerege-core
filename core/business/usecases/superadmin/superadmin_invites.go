@@ -6,8 +6,8 @@ import (
 	"context"
 	"net/mail"
 
-	"github.com/gerege-systems/platform-core/core/apperror"
-	"github.com/gerege-systems/platform-core/core/business/domain"
+	"github.com/gerege-systems/public-gerege-core/core/apperror"
+	"github.com/gerege-systems/public-gerege-core/core/business/domain"
 )
 
 // ListInvites нь бүх урилгыг (хүлээгдэж буй + ашигласан) буцаана.

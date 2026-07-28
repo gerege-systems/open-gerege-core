@@ -13,12 +13,12 @@ import (
 
 	"github.com/jackc/pgx/v5/pgxpool"
 
-	"github.com/gerege-systems/platform-core/core/config"
-	"github.com/gerege-systems/platform-core/core/constants"
-	"github.com/gerege-systems/platform-core/core/datasources/drivers"
-	"github.com/gerege-systems/platform-core/core/datasources/migration"
-	coremigrations "github.com/gerege-systems/platform-core/migrations"
-	"github.com/gerege-systems/platform-core/pkg/logger"
+	"github.com/gerege-systems/public-gerege-core/core/config"
+	"github.com/gerege-systems/public-gerege-core/core/constants"
+	"github.com/gerege-systems/public-gerege-core/core/datasources/drivers"
+	"github.com/gerege-systems/public-gerege-core/core/datasources/migration"
+	coremigrations "github.com/gerege-systems/public-gerege-core/migrations"
+	"github.com/gerege-systems/public-gerege-core/pkg/logger"
 )
 
 // dbConnectAttempts / dbConnectDelay нь эхний DB холболтыг дахин оролдох

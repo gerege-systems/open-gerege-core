@@ -7,10 +7,10 @@ import (
 
 	"github.com/go-chi/chi/v5"
 
-	superadminuc "github.com/gerege-systems/platform-core/core/business/usecases/superadmin"
-	v1 "github.com/gerege-systems/platform-core/core/http/handlers/v1"
-	superadminhandler "github.com/gerege-systems/platform-core/core/http/handlers/v1/superadmin"
-	"github.com/gerege-systems/platform-core/core/http/middlewares"
+	superadminuc "github.com/gerege-systems/public-gerege-core/core/business/usecases/superadmin"
+	v1 "github.com/gerege-systems/public-gerege-core/core/http/handlers/v1"
+	superadminhandler "github.com/gerege-systems/public-gerege-core/core/http/handlers/v1/superadmin"
+	"github.com/gerege-systems/public-gerege-core/core/http/middlewares"
 )
 
 // superadminRoute нь /superadmin/* бүлгийг холбоно — админ хэрэглэгчдийг

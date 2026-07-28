@@ -6,8 +6,8 @@
 package auth
 
 import (
-	"github.com/gerege-systems/platform-core/core/business/usecases/audit"
-	"github.com/gerege-systems/platform-core/core/business/usecases/auth"
+	"github.com/gerege-systems/public-gerege-core/core/business/usecases/audit"
+	"github.com/gerege-systems/public-gerege-core/core/business/usecases/auth"
 )
 
 // Handler нь auth-handler-ийн нэгтгэл; endpoint бүрийн method-ууд

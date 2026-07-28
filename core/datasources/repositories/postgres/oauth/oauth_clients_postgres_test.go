@@ -14,10 +14,10 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/gerege-systems/platform-core/core/apperror"
-	"github.com/gerege-systems/platform-core/core/business/domain"
-	oauthpg "github.com/gerege-systems/platform-core/core/datasources/repositories/postgres/oauth"
-	"github.com/gerege-systems/platform-core/core/test/testenv"
+	"github.com/gerege-systems/public-gerege-core/core/apperror"
+	"github.com/gerege-systems/public-gerege-core/core/business/domain"
+	oauthpg "github.com/gerege-systems/public-gerege-core/core/datasources/repositories/postgres/oauth"
+	"github.com/gerege-systems/public-gerege-core/core/test/testenv"
 )
 
 func seedClient() domain.OAuthClient {

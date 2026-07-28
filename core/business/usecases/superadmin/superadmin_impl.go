@@ -7,12 +7,12 @@ import (
 	"errors"
 	"strings"
 
-	"github.com/gerege-systems/platform-core/core/apperror"
-	"github.com/gerege-systems/platform-core/core/business/domain"
-	"github.com/gerege-systems/platform-core/core/business/usecases/audit"
-	"github.com/gerege-systems/platform-core/core/business/usecases/users"
-	repointerface "github.com/gerege-systems/platform-core/core/datasources/repositories/interface"
-	"github.com/gerege-systems/platform-core/pkg/logger"
+	"github.com/gerege-systems/public-gerege-core/core/apperror"
+	"github.com/gerege-systems/public-gerege-core/core/business/domain"
+	"github.com/gerege-systems/public-gerege-core/core/business/usecases/audit"
+	"github.com/gerege-systems/public-gerege-core/core/business/usecases/users"
+	repointerface "github.com/gerege-systems/public-gerege-core/core/datasources/repositories/interface"
+	"github.com/gerege-systems/public-gerege-core/pkg/logger"
 )
 
 // Audit action-ууд (hash-chained audit log). category нь бүгд "superadmin".

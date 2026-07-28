@@ -8,8 +8,8 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/gerege-systems/platform-core/core/constants"
-	"github.com/gerege-systems/platform-core/pkg/jwt"
+	"github.com/gerege-systems/public-gerege-core/core/constants"
+	"github.com/gerege-systems/public-gerege-core/pkg/jwt"
 )
 
 // withClaim нь auth middleware-ийн доош нийтэлдэг claim-г дуурайн context-д

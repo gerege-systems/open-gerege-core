@@ -9,7 +9,7 @@ package sso
 import (
 	"context"
 
-	"github.com/gerege-systems/platform-core/core/business/domain"
+	"github.com/gerege-systems/public-gerege-core/core/business/domain"
 )
 
 // UserStore нь SSO иргэнийг users хүснэгтэд upsert хийх repo (postgres/ssouser).

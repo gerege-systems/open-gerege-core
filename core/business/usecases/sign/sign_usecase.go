@@ -47,8 +47,8 @@ import (
 	pdfcpumodel "github.com/pdfcpu/pdfcpu/pkg/pdfcpu/model"
 	pdfcputypes "github.com/pdfcpu/pdfcpu/pkg/pdfcpu/types"
 
-	"github.com/gerege-systems/platform-core/core/apperror"
-	"github.com/gerege-systems/platform-core/pkg/logger"
+	"github.com/gerege-systems/public-gerege-core/core/apperror"
+	"github.com/gerege-systems/public-gerege-core/pkg/logger"
 )
 
 // cache нь caches.RedisCache-тэй тааруулсан нарийн интерфэйс (string round-trip;

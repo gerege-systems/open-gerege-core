@@ -7,9 +7,9 @@ import (
 
 	"github.com/go-chi/chi/v5"
 
-	registryuc "github.com/gerege-systems/platform-core/core/business/usecases/registry"
-	v1 "github.com/gerege-systems/platform-core/core/http/handlers/v1"
-	registryhandler "github.com/gerege-systems/platform-core/core/http/handlers/v1/registry"
+	registryuc "github.com/gerege-systems/public-gerege-core/core/business/usecases/registry"
+	v1 "github.com/gerege-systems/public-gerege-core/core/http/handlers/v1"
+	registryhandler "github.com/gerege-systems/public-gerege-core/core/http/handlers/v1/registry"
 )
 
 // catalogRoute нь Ring System · R1 — иргэн рүү харсан НИЙТИЙН үйлчилгээний

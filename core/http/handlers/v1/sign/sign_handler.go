@@ -11,12 +11,12 @@ import (
 
 	"github.com/go-chi/chi/v5"
 
-	"github.com/gerege-systems/platform-core/core/apperror"
-	assetsuc "github.com/gerege-systems/platform-core/core/business/usecases/assets"
-	signuc "github.com/gerege-systems/platform-core/core/business/usecases/sign"
-	"github.com/gerege-systems/platform-core/core/business/usecases/users"
-	httpauth "github.com/gerege-systems/platform-core/core/http/auth"
-	v1 "github.com/gerege-systems/platform-core/core/http/handlers/v1"
+	"github.com/gerege-systems/public-gerege-core/core/apperror"
+	assetsuc "github.com/gerege-systems/public-gerege-core/core/business/usecases/assets"
+	signuc "github.com/gerege-systems/public-gerege-core/core/business/usecases/sign"
+	"github.com/gerege-systems/public-gerege-core/core/business/usecases/users"
+	httpauth "github.com/gerege-systems/public-gerege-core/core/http/auth"
+	v1 "github.com/gerege-systems/public-gerege-core/core/http/handlers/v1"
 )
 
 const maxUpload = 26 << 20 // 25 MB + overhead

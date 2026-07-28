@@ -7,12 +7,12 @@ import (
 
 	"github.com/go-chi/chi/v5"
 
-	"github.com/gerege-systems/platform-core/core/business/domain"
-	gatewayuc "github.com/gerege-systems/platform-core/core/business/usecases/gateway"
-	rbacuc "github.com/gerege-systems/platform-core/core/business/usecases/rbac"
-	v1 "github.com/gerege-systems/platform-core/core/http/handlers/v1"
-	gatewayhandler "github.com/gerege-systems/platform-core/core/http/handlers/v1/gateway"
-	"github.com/gerege-systems/platform-core/core/http/middlewares"
+	"github.com/gerege-systems/public-gerege-core/core/business/domain"
+	gatewayuc "github.com/gerege-systems/public-gerege-core/core/business/usecases/gateway"
+	rbacuc "github.com/gerege-systems/public-gerege-core/core/business/usecases/rbac"
+	v1 "github.com/gerege-systems/public-gerege-core/core/http/handlers/v1"
+	gatewayhandler "github.com/gerege-systems/public-gerege-core/core/http/handlers/v1/gateway"
+	"github.com/gerege-systems/public-gerege-core/core/http/middlewares"
 )
 
 // gatewayRoute нь /gateway/* бүлгийг холбоно. Бүх endpoint нь 'gateway.manage'
