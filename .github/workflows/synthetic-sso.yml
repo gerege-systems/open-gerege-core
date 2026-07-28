@@ -38,7 +38,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
 
       # Эхлээд шалгалт өөрөө эвдрэлийг барих чадвартай эсэхийг батална —
       # эс тэгвээс «бүгд ногоон» гэдэг нь утгагүй болно.
@@ -52,7 +52,7 @@ jobs:
       # Унасан үед issue нээнэ/шинэчилнэ — email мэдэгдэл автоматаар очно.
       - name: Унасан бол issue нээх
         if: failure()
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         with:
           script: |
             const fs = require('fs');
@@ -89,7 +89,7 @@ jobs:
       # Сэргэсэн үед нээлттэй issue-г хаана.
       - name: Сэргэсэн бол issue хаах
         if: success()
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         with:
           script: |
             const { owner, repo } = context.repo;
