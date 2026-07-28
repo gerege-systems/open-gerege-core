@@ -28,6 +28,31 @@ module github.com/gerege-systems/platform-core
 > `internal/` биш `core/` гэж нэрлэсэн шалтгаан: Go-ийн `internal` дүрмээр
 > модулиас гадуур import хийх боломжгүй болно.
 
+### Интерфейсийн хэл (v0.5.0-оос)
+
+Super admin нь хэлийг **ажиллаж байх үед** нэмж/хасч, орчуулгыг гараар эсвэл
+Gemini-ээр бөглөнө (`languages` + `translations`, migration 49).
+
+Хариуцлагын хуваарь: **түлхүүрийн жагсаалт нь аппын өөрийнх** (frontend-д
+багцлагдсан dictionary), платформ нь тэдгээрийн **утгыг** л хадгална. Иймд
+суурь нь тухайн аппын түлхүүрийг мэдэхгүй ерөнхий хэвээр үлдэж, DB хоосон/
+унасан үед апп багцлагдсан утгаараа ажилласаар байна. Автомат орчуулгын үед
+апп эх dictionary-гаа хамт илгээнэ.
+
+| Endpoint | Хандалт |
+|---|---|
+| `GET /v1/languages/enabled` | нийтийн |
+| `GET /v1/languages/{code}/dictionary` | нийтийн |
+| `GET`·`POST /v1/languages` | super admin |
+| `PATCH`·`DELETE /v1/languages/{code}` | super admin |
+| `PUT /v1/languages/{code}/translations` | super admin |
+| `POST /v1/languages/{code}/translate` | super admin (Gemini) |
+
+- `mn`/`en`/`zh`/`ru` нь `is_builtin` — устгах боломжгүй, зөвхөн унтраана.
+- Шинэ хэл **унтраалттай** үүснэ; орчуулгыг бөглөсний дараа идэвхжүүлнэ.
+- Гараар засагдсан (`manual`) утгыг автомат орчуулга хэзээ ч дарж бичихгүй.
+- Байрлуулагч (`{name}`, `{0}`) алдагдсан AI орчуулга суухгүй.
+
 ## Апп хэрхэн хэрэглэх вэ
 
 ```go
