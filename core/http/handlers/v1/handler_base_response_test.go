@@ -38,6 +38,7 @@ func TestRespondWithErrorStatusMapping(t *testing.T) {
 		{"conflict → 409", apperror.Conflict("dup"), http.StatusConflict},
 		{"bad request → 400", apperror.BadRequest("bad"), http.StatusBadRequest},
 		{"internal → 500", apperror.Internal("x"), http.StatusInternalServerError},
+		{"unavailable → 503", apperror.Unavailable("тохируулаагүй"), http.StatusServiceUnavailable},
 		{"plain error → 500", errAny("boom"), http.StatusInternalServerError},
 	}
 	for _, tc := range cases {
@@ -69,6 +70,41 @@ func TestRespondWithErrorHidesInternalCause(t *testing.T) {
 	}
 	if got := rec.Body.String(); contains(got, "hunter2") || contains(got, "10.0.0.5") {
 		t.Errorf("дотоод cause хариунд алдагдсан: %s", got)
+	}
+}
+
+// 503 нь 5xx боловч мессежээ ХАДГАЛНА. Unavailable-ийн текстийг зохиогч нь
+// өөрөө бичдэг тул алдагдах нууц байхгүй; урьд нь энэ мессеж «internal server
+// error» болж дардаг байсан тул «XYP тохируулагдаагүй» гэх мэт тохиргооны
+// цоорхой хэрэглэгч/операторт эвдрэл мэт харагддаг байв.
+func TestRespondWithErrorKeepsUnavailableMessage(t *testing.T) {
+	const msg = "Байгууллагын лавлагаа (XYP) тохируулагдаагүй"
+	rec := httptest.NewRecorder()
+	r := httptest.NewRequest(http.MethodPost, "/users/me/eid/organizations", http.NoBody)
+	_ = v1.RespondWithError(rec, r, apperror.Unavailable(msg))
+
+	if rec.Code != http.StatusServiceUnavailable {
+		t.Fatalf("status = %d, want 503", rec.Code)
+	}
+	body := decodeBody(t, rec)
+	if got, _ := body["message"].(string); got != msg {
+		t.Fatalf("мессеж = %q, want %q", got, msg)
+	}
+}
+
+// UnavailableCause нь тогтсон, аюулгүй мессежээ гаргаад доод түвшний cause-ийг
+// зөвхөн логт үлдээнэ — 503 дээр мессеж хадгалагддаг болсон ч cause алдагдахгүй.
+func TestRespondWithErrorHidesUnavailableCause(t *testing.T) {
+	secret := errAny("dial tcp 10.0.0.5:443: i/o timeout (key=hunter2)")
+	rec := httptest.NewRecorder()
+	r := httptest.NewRequest(http.MethodGet, "/", http.NoBody)
+	_ = v1.RespondWithError(rec, r, apperror.UnavailableCause(secret))
+
+	if rec.Code != http.StatusServiceUnavailable {
+		t.Fatalf("status = %d, want 503", rec.Code)
+	}
+	if got := rec.Body.String(); contains(got, "hunter2") || contains(got, "10.0.0.5") {
+		t.Errorf("доод түвшний cause хариунд алдагдсан: %s", got)
 	}
 }
 

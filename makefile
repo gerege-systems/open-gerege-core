@@ -1,4 +1,9 @@
-MOCKERY_BIN := $(GOPATH)/bin/mockery
+# GOPATH нь shell-ийн орчинд ихэвчлэн ТОХИРУУЛАГДААГҮЙ байдаг (go нь өөрөө
+# анхдагчаар ~/go хэрэглэдэг тул хэрэглэгчид гараар өгөх шаардлагагүй). Тэр
+# үед $(GOPATH)/bin/swag нь `/bin/swag` болж хувирч, `make swag` нь
+# "No such file or directory"-оор унадаг байв — тиймээс go-оос нь асууна.
+GOBIN_DIR := $(shell go env GOPATH)/bin
+MOCKERY_BIN := $(GOBIN_DIR)/mockery
 
 # Local-dev targets устгасан: код local-д ажилладаггүй, бүгд server деер
 # тестлэгддэг. Migration нь auth.dgov.mn-ийн migrator service-ээр төвлөрсөн
@@ -29,7 +34,7 @@ test-cover: ## Run tests with coverage report
 	go tool cover -html=coverage.out -o coverage.html
 
 swag: ## Regenerate OpenAPI spec (docs/) from godoc annotations (requires: go install github.com/swaggo/swag/cmd/swag@latest)
-	$(GOPATH)/bin/swag init -g cmd/api/main.go --output docs --parseDependency --parseInternal
+	$(GOBIN_DIR)/swag init -g cmd/api/main.go --output docs --parseDependency --parseInternal
 
 mock: ## Generate mock for an interface (usage: make mock interface=Name dir=path filename=mock_name.go)
 	@echo "Generating mocks for interface $(interface) in directory $(dir)..."

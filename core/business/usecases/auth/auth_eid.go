@@ -340,7 +340,8 @@ func (uc *usecase) eidPersonEtsi(ctx context.Context, userID string) (string, er
 }
 
 // mapPKIErr нь eID PKI дуудлагын алдааг HTTP-д буулгана: PKI_READ эрхгүй (403)
-// бол Forbidden (frontend "эрх хүлээгдэж байна" харуулна), бусад бол Internal.
+// бол Forbidden (frontend "эрх хүлээгдэж байна" харуулна), proxy унтраалттай
+// бол Unavailable (503 — эвдрэл биш, түр байдал), бусад бол Internal.
 func mapPKIErr(err error) error {
 	switch {
 	case errors.Is(err, eid.ErrPKINotPermitted):
@@ -348,7 +349,7 @@ func mapPKIErr(err error) error {
 	case errors.Is(err, ssoeidproxy.ErrTokenExpired):
 		return apperror.Unauthorized("eID мэдээлэл авахын тулд SSO-гоор дахин нэвтэрнэ үү")
 	case errors.Is(err, ssoeidproxy.ErrProxyDisabled):
-		return apperror.Internal("eID үйлчилгээ түр боломжгүй байна")
+		return apperror.Unavailable("eID үйлчилгээ түр боломжгүй байна")
 	default:
 		return apperror.InternalCause(fmt.Errorf("eid pki: %w", err))
 	}
@@ -410,8 +411,11 @@ func (uc *usecase) RegisterEIDOrganization(ctx context.Context, userID, regNo st
 	if etsi == "" {
 		return nil, apperror.Forbidden("Байгууллага холбохын тулд eID-ээр нэвтэрсэн байх шаардлагатай")
 	}
+	// XYP тохируулаагүй нь эвдрэл БИШ, тохиргооны цоорхой — 503-аар, бодит
+	// мессежтэйгээр буцаана (500 нь мессежээ алдаж «internal server error»
+	// болдог тул оператор шалтгааныг нь харахгүй).
 	if uc.xyp == nil {
-		return nil, apperror.Internal("Байгууллагын лавлагаа (XYP) тохируулагдаагүй")
+		return nil, apperror.Unavailable("Байгууллагын лавлагаа (XYP) тохируулагдаагүй")
 	}
 	org, lookupErr := uc.xyp.Lookup(ctx, regNo)
 	if lookupErr != nil {
@@ -419,7 +423,7 @@ func (uc *usecase) RegisterEIDOrganization(ctx context.Context, userID, regNo st
 			return nil, apperror.NotFound("Энэ регистрийн дугаартай байгууллага олдсонгүй")
 		}
 		if errors.Is(lookupErr, xyp.ErrNotConfigured) {
-			return nil, apperror.Internal("Байгууллагын лавлагаа (XYP) тохируулагдаагүй")
+			return nil, apperror.Unavailable("Байгууллагын лавлагаа (XYP) тохируулагдаагүй")
 		}
 		return nil, apperror.InternalCause(fmt.Errorf("xyp lookup: %w", lookupErr))
 	}
