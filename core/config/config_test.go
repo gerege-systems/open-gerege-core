@@ -63,6 +63,36 @@ func TestSslModeOf(t *testing.T) {
 	}
 }
 
+// LoginMode нь нэвтрэх гадаргууг сонгодог тул алдаа нь «буруу нүүр хуудас»
+// хэлбэрээр л илэрнэ (тест унахгүй). Иймд гарах дүрмийг ил тэмдэглэв.
+func TestLoginMode(t *testing.T) {
+	cases := []struct {
+		name      string
+		authMode  string
+		ssoClient string
+		want      string
+	}{
+		// Тодорхой заасан утга нь бүхнээс дээгүүр — SSO_CLIENT_ID тохируулсан
+		// атлаа өөрөө нэвтрүүлдэг платформ (гинжин SSO) байж болно.
+		{"тодорхой provider", "provider", "some-client", AuthModeProvider},
+		{"тодорхой client", "client", "", AuthModeClient},
+		{"том/жижиг үсэг, зай хамаагүй", "  PROVIDER ", "some-client", AuthModeProvider},
+		// Хоосон бол SSO_CLIENT_ID-аас гарна — AUTH_MODE-г мэдэхгүй одоогийн
+		// deploy-ууд зан төлвөө хэвээр хадгална.
+		{"хоосон + SSO client бүртгэлтэй → client", "", "template-gerege", AuthModeClient},
+		{"хоосон + SSO client байхгүй → provider", "", "", AuthModeProvider},
+		{"хоосон + зөвхөн зай → provider", "", "   ", AuthModeProvider},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			c := &Config{AuthMode: tc.authMode, SSOClientID: tc.ssoClient}
+			if got := c.LoginMode(); got != tc.want {
+				t.Errorf("LoginMode() = %q, want %q", got, tc.want)
+			}
+		})
+	}
+}
+
 func equalSlice(a, b []string) bool {
 	if len(a) != len(b) {
 		return false
