@@ -164,6 +164,7 @@ func RespondWithError(w http.ResponseWriter, r *http.Request, err error) error {
 		fields := logger.Fields{
 			constants.LoggerCategory: constants.LoggerCategoryHTTP,
 			"path":                   r.URL.Path,
+			"status":                 status,
 		}
 		var domErr *apperror.DomainError
 		if errors.As(err, &domErr) && domErr.Cause != nil {
@@ -175,7 +176,22 @@ func RespondWithError(w http.ResponseWriter, r *http.Request, err error) error {
 			fields["request_id"] = rid
 		}
 		logger.Error("internal error while handling request", fields)
-		message = "internal server error"
+
+		// Мессежийг зөвхөн ЖИНХЭНЭ дотоод алдаа (500) дээр нуана — тэнд
+		// `message` нь боогдсон сангийн алдаа (DSN, хост, нууц үг) байж
+		// болзошгүй.
+		//
+		// 503 (ErrTypeUnavailable)-ийг ОРУУЛАХГҮЙ: түүний мессежийг зохиогч нь
+		// өөрөө бичдэг (Unavailable нь тодорхой текст, UnavailableCause нь
+		// тогтсон аюулгүй текст тавиад бодит cause-ийг зөвхөн логт үлдээдэг),
+		// тиймээс алдагдах нууц байхгүй. Өмнө нь энэ нөхцөл 5xx бүрийг барьдаг
+		// байсан тул «Байгууллагын лавлагаа (XYP) тохируулагдаагүй» гэх мэт
+		// зориуд бичсэн мессежүүд хэрэглэгчид хүрдэггүй, «internal server
+		// error» болж хувирдаг байв — тохиргооны цоорхойг эвдрэл мэт харуулж,
+		// оношлоход лог ухах шаардлага үүсгэдэг байлаа.
+		if status == http.StatusInternalServerError {
+			message = "internal server error"
+		}
 	}
 
 	return NewErrorResponse(w, r, status, message)

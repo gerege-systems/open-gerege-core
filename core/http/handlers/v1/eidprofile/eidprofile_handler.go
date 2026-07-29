@@ -70,6 +70,7 @@ func (h Handler) Organizations(w http.ResponseWriter, r *http.Request) error {
 // @Failure      400  {object}  v1.BaseResponse  "Invalid body"
 // @Failure      403  {object}  v1.BaseResponse  "Not authorized to represent this organization"
 // @Failure      404  {object}  v1.BaseResponse  "Organization not found"
+// @Failure      503  {object}  v1.BaseResponse  "XYP lookup not configured"
 // @Router       /users/me/eid/organizations [post]
 func (h Handler) AddOrganization(w http.ResponseWriter, r *http.Request) error {
 	const funcName = "AddEIDOrganization"

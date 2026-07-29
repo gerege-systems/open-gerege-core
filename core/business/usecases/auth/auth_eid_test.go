@@ -294,3 +294,27 @@ func TestEIDPoll(t *testing.T) {
 		requireDomainType(t, err, apperror.ErrTypeInternal)
 	})
 }
+
+// XYP (улсын бүртгэлийн лавлагаа) тохируулаагүй бол «Байгууллага холбох» нь
+// ЭВДЭРСЭН биш — тохиргоо дутуу. Тиймээс Internal (500, мессеж нь HTTP
+// давхаргад «internal server error» болж алга болдог) БИШ, Unavailable (503,
+// мессеж хэвээрээ) байх ёстой.
+func TestRegisterEIDOrganizationWithoutXYP(t *testing.T) {
+	t.Run("XYP тохируулаагүй → Unavailable", func(t *testing.T) {
+		f := newFixture(t) // newFixture нь xyp-г nil-ээр өгдөг
+		user := eidUser()
+		f.users.On("GetByID", mock.Anything, users.GetByIDRequest{ID: user.ID}).
+			Return(users.GetByIDResponse{User: user}, nil).Once()
+
+		_, err := f.usecase.RegisterEIDOrganization(context.Background(), user.ID, "6235972")
+		requireDomainType(t, err, apperror.ErrTypeUnavailable)
+		assert.Contains(t, err.Error(), "XYP")
+	})
+
+	t.Run("регистрийн дугаар хоосон бол XYP-д хүрэлгүй BadRequest", func(t *testing.T) {
+		f := newFixture(t)
+
+		_, err := f.usecase.RegisterEIDOrganization(context.Background(), "eid-user-1", "   ")
+		requireDomainType(t, err, apperror.ErrTypeBadRequest)
+	})
+}
