@@ -17,12 +17,25 @@ import (
 	"github.com/gerege-systems/public-gerege-core/pkg/validators"
 )
 
-type Handler struct {
-	usecase siteuc.Usecase
+// AuthSurface нь нэвтрэх гадаргууны боот үеийн тохиргоо. Утгыг нь server.go
+// config-оос бүрдүүлж дамжуулна — handler давхарга config-оос ХАМААРАХГҮЙ
+// (энэ багцын бусад handler мөн адил).
+type AuthSurface struct {
+	// Mode — "provider" (платформ өөрөө нэвтрүүлнэ) эсвэл "client" (дээд SSO).
+	Mode string
+	// SSOIssuer — client горимд дээд IdP-ийн нийтийн issuer.
+	SSOIssuer string
+	// Provider — платформ өөрөө OIDC issuer мөн эсэх.
+	Provider bool
 }
 
-func NewHandler(usecase siteuc.Usecase) Handler {
-	return Handler{usecase: usecase}
+type Handler struct {
+	usecase siteuc.Usecase
+	auth    AuthSurface
+}
+
+func NewHandler(usecase siteuc.Usecase, auth AuthSurface) Handler {
+	return Handler{usecase: usecase, auth: auth}
 }
 
 // GetAppearance godoc
@@ -38,6 +51,21 @@ func (h Handler) GetAppearance(w http.ResponseWriter, r *http.Request) error {
 		return v1.RespondWithError(w, r, err)
 	}
 	return v1.NewSuccessResponse(w, r, http.StatusOK, "appearance fetched", responses.ToSiteAppearance(a))
+}
+
+// GetAuth godoc
+// @Summary Нэвтрэх гадаргууны горимыг унших
+// @Description Нүүр хуудас болон /login нь нэвтрэх картыг өөрөө үзүүлэх ('provider') үү, эсвэл дээд SSO руу шилжүүлэх ('client') үү. Нэвтрэлт шаардахгүй.
+// @Tags site
+// @Produce json
+// @Success 200 {object} v1.BaseResponse{data=responses.SiteAuthResponse}
+// @Router /site/auth [get]
+func (h Handler) GetAuth(w http.ResponseWriter, r *http.Request) error {
+	return v1.NewSuccessResponse(w, r, http.StatusOK, "auth mode fetched", responses.SiteAuthResponse{
+		Mode:      h.auth.Mode,
+		SSOIssuer: h.auth.SSOIssuer,
+		Provider:  h.auth.Provider,
+	})
 }
 
 // SetAppearance godoc

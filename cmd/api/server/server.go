@@ -76,6 +76,7 @@ import (
 	"github.com/gerege-systems/public-gerege-core/core/datasources/rls"
 	V1Handler "github.com/gerege-systems/public-gerege-core/core/http/handlers/v1"
 	authhandler "github.com/gerege-systems/public-gerege-core/core/http/handlers/v1/auth"
+	sitehandler "github.com/gerege-systems/public-gerege-core/core/http/handlers/v1/site"
 	"github.com/gerege-systems/public-gerege-core/core/http/middlewares"
 	"github.com/gerege-systems/public-gerege-core/core/http/routes"
 	"github.com/gerege-systems/public-gerege-core/core/provider/adminapi"
@@ -652,7 +653,17 @@ func NewApp() (*App, error) {
 		routes.NewPublicAIRoute(api, publicAIUC, publicAIRateLimiter, publicTTSRateLimiter).Routes()
 		routes.NewAuditRoute(api, auditUC, authMiddleware).Routes()
 		routes.NewSecurityRoute(api, securityUC, authMiddleware).Routes()
-		routes.NewSiteRoute(api, siteUC, rbacUC, authMiddleware).Routes()
+		// Нэвтрэх гадаргууны горимыг config-оос нэг удаа уншиж handler руу өгнө
+		// (handler давхарга config-оос хамаардаггүй). client горимд л дээд
+		// IdP-ийн issuer-ыг мэдэгдэнэ — provider горимд утга учиргүй.
+		authSurface := sitehandler.AuthSurface{
+			Mode:     config.AppConfig.LoginMode(),
+			Provider: config.AppConfig.ProviderConfigured(),
+		}
+		if authSurface.Mode == config.AuthModeClient {
+			authSurface.SSOIssuer = config.AppConfig.SSOIssuer
+		}
+		routes.NewSiteRoute(api, siteUC, rbacUC, authMiddleware, authSurface).Routes()
 		routes.NewThemeRoute(api, themeUC, rbacUC, authMiddleware).Routes()
 		routes.NewLanguageRoute(api, languageUC, authMiddleware).Routes()
 		routes.NewSignRoute(api, signUC, usersUC, assetsUC, authMiddleware).Routes()

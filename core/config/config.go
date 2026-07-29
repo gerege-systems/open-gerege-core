@@ -206,7 +206,31 @@ type Config struct {
 	SSOAdminAPIKeys string `mapstructure:"SSO_ADMIN_API_KEYS"`
 	// SSOAdminSubs нь superadmin эрхтэй eid_sub-уудын CSV.
 	SSOAdminSubs string `mapstructure:"SSO_ADMIN_SUBS"`
+
+	// --- НЭВТРЭХ ГАДАРГУУ ---
+	// AuthMode нь энэ платформ дээр ЭЦСИЙН ХЭРЭГЛЭГЧ хэрхэн нэвтрэхийг заана:
+	//
+	//   provider — платформ өөрөө нэвтрүүлнэ. Нүүр хуудас болон /login дээр
+	//              нэвтрэх карт (eID РД/QR · нууц үг · Google) шууд гарна.
+	//   client   — гадаад SSO руу шилжүүлнэ (/api/auth/sso/start → SSO_ISSUER).
+	//
+	// Энэ нь issuer эсэхээс ТУСДАА тэнхлэг: платформ өөрөө OIDC provider байх
+	// эсэхийг OAUTH_ISSUER + SSO_STATE_KEY (ProviderConfigured) шийднэ. Иймд
+	// «бусад аппыг нэвтрүүлдэг, гэхдээ өөрөө дээд IdP-д тулгуурладаг» гинжин
+	// байдал ч илэрхийлэгдэнэ.
+	//
+	// Хоосон бол SSO_CLIENT_ID-аас гарна (LoginMode) — тохируулаагүй бүх
+	// одоогийн deploy зан төлвөө хэвээр хадгална.
+	AuthMode string `mapstructure:"AUTH_MODE"`
 }
+
+// Нэвтрэх гадаргууны горим (AUTH_MODE).
+const (
+	// AuthModeProvider — платформ өөрөө нэвтрүүлнэ (нэвтрэх карт нүүрэн дээр).
+	AuthModeProvider = "provider"
+	// AuthModeClient — гадаад SSO provider руу шилжүүлж нэвтрүүлнэ.
+	AuthModeClient = "client"
+)
 
 // SSOFirstPartyClientsList нь SSO_FIRSTPARTY_CLIENTS-г таслалаар салгаж slice болгоно.
 func (c *Config) SSOFirstPartyClientsList() []string { return splitCSVConfig(c.SSOFirstPartyClients) }
@@ -227,6 +251,25 @@ func (c *Config) Issuer() string {
 // ProviderConfigured нь OIDC provider-ийн гол тохиргоо бүрдсэн эсэхийг мэдээлнэ.
 func (c *Config) ProviderConfigured() bool {
 	return c.Issuer() != "" && len(c.SSOStateKey) >= 32
+}
+
+// LoginMode нь нэвтрэх гадаргууны горимыг ("provider" | "client") буцаана.
+//
+// AUTH_MODE тодорхой зааж өгсөн бол түүнийг дагана. Хоосон (эсвэл танигдахгүй)
+// бол SSO_CLIENT_ID-аас гарна: тохируулсан бол гадаад SSO-гийн client, эс
+// бөгөөс платформ өөрөө нэвтрүүлнэ. Ингэснээр AUTH_MODE-г огт мэдэхгүй одоогийн
+// deploy-ууд зан төлвөө яг хэвээр хадгална.
+func (c *Config) LoginMode() string {
+	switch strings.ToLower(strings.TrimSpace(c.AuthMode)) {
+	case AuthModeProvider:
+		return AuthModeProvider
+	case AuthModeClient:
+		return AuthModeClient
+	}
+	if strings.TrimSpace(c.SSOClientID) != "" {
+		return AuthModeClient
+	}
+	return AuthModeProvider
 }
 
 // splitCSVConfig нь таслалаар салгаж, хоосон/зайг арилгаж slice болгоно.
@@ -314,6 +357,9 @@ func InitializeAppConfig() error {
 	_ = viper.BindEnv("SIGN_RELAY_TOKEN")
 	_ = viper.BindEnv("SSO_EID_PROXY_BASE_URL")
 	_ = viper.BindEnv("RELAY_DEMO_MODE")
+	// Нэвтрэх гадаргууны горим — орчин-тусгай (ижил образ provider эсвэл client
+	// болж боот хийнэ) тул ил bind хийнэ.
+	_ = viper.BindEnv("AUTH_MODE")
 	// .env файл байхгүй байх нь алдаа БИШ — контейнер / 12-factor орчинд
 	// тохиргоог зөвхөн environment-ээс уншина. Зөвхөн жинхэнэ задлан унших
 	// (parse) алдааг л буцаана.
@@ -398,6 +444,16 @@ func InitializeAppConfig() error {
 		}
 	default:
 		return fmt.Errorf("ENVIRONMENT must be 'development' or 'production', got %q", AppConfig.Environment)
+	}
+
+	// AUTH_MODE-ийн үсгийн алдааг ЧИМЭЭГҮЙ уналт болгохгүй: буруу утга нь
+	// LoginMode-ийг анхдагч руу нь буцаах бөгөөд платформ хүлээгдэж байснаас
+	// ӨӨР нэвтрэх гадаргуутай боот хийнэ (жишээ нь SSO client байх ёстой атлаа
+	// нүүрэн дээрээ нэвтрэх карт гаргана). Иймд эхлэхээс нь татгалзана.
+	if m := strings.ToLower(strings.TrimSpace(AppConfig.AuthMode)); m != "" &&
+		m != AuthModeProvider && m != AuthModeClient {
+		return fmt.Errorf("AUTH_MODE must be %q or %q (or empty to derive from SSO_CLIENT_ID), got %q",
+			AuthModeProvider, AuthModeClient, AppConfig.AuthMode)
 	}
 
 	return nil
