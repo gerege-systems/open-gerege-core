@@ -52,19 +52,58 @@ func TestInit_SendsFileName(t *testing.T) {
 	}
 }
 
-// TestInitDigest_NoFileName нь баримтгүй (зөвхөн digest) урсгалд fileName талбар
-// ОГТ илгээгдэхгүйг батална — хоосон утга илгээвэл сервер таамаглахаа болино.
+// TestInitDigest_NoFileName — RP нэр өгөөгүй бол fileName талбар ОГТ
+// илгээгдэхгүй. Хоосон мөр илгээвэл сервер interaction текстээс таамаглахаа
+// болино, тиймээс "байхгүй" ба "хоосон" хоёрыг ялгах нь чухал.
 func TestInitDigest_NoFileName(t *testing.T) {
 	srv, body := captureSignBody(t)
 	defer srv.Close()
 
 	u := newTestUsecase(t, srv.URL)
 	digest := strings.Repeat("ab", 32)
-	if _, err := u.InitDigest(context.Background(), "УБ12345678", "Бат Болд", digest, "50000 MNT → …1234"); err != nil {
+	if _, err := u.InitDigest(context.Background(), "УБ12345678", "Бат Болд", digest, "50000 MNT → …1234", ""); err != nil {
 		t.Fatalf("InitDigest: %v", err)
 	}
 	if _, ok := body()["fileName"]; ok {
-		t.Fatal("digest урсгалд body-д fileName байх ёсгүй")
+		t.Fatal("нэр өгөөгүй үед body-д fileName байх ёсгүй")
+	}
+}
+
+// TestInitDigest_WithDocumentName — RP нэр өгвөл ТЭР ЧИГЭЭР нь дамжина.
+//
+// Өмнө нь digest урсгал ямагт хоосон илгээдэг байсан тул нийтийн verify хуудас
+// «—» харуулдаг байв: RP-ийн ерөнхий interaction текст («Gerege — баримтад
+// гарын үсэг») нь серверийн нөөц аргын хайдаг «зурах: » тэмдэглэгээг
+// агуулдаггүй.
+func TestInitDigest_WithDocumentName(t *testing.T) {
+	srv, body := captureSignBody(t)
+	defer srv.Close()
+
+	u := newTestUsecase(t, srv.URL)
+	digest := strings.Repeat("ab", 32)
+	if _, err := u.InitDigest(context.Background(), "УБ12345678", "Бат Болд", digest,
+		"50000 MNT → …1234", "Шилжүүлэг_2026-07-30"); err != nil {
+		t.Fatalf("InitDigest: %v", err)
+	}
+	if got, _ := body()["fileName"].(string); got != "Шилжүүлэг_2026-07-30" {
+		t.Fatalf("fileName = %q, want %q", got, "Шилжүүлэг_2026-07-30")
+	}
+}
+
+// TestInitDigest_DocumentNameClamped — нэр нь PDF урсгалтай ижил цэвэрлэгээнд
+// орно (зам таслах, урт хязгаарлах).
+func TestInitDigest_DocumentNameClamped(t *testing.T) {
+	srv, body := captureSignBody(t)
+	defer srv.Close()
+
+	u := newTestUsecase(t, srv.URL)
+	digest := strings.Repeat("ab", 32)
+	if _, err := u.InitDigest(context.Background(), "УБ12345678", "Бат Болд", digest,
+		"текст", "/tmp/upload/Гэрээ.pdf"); err != nil {
+		t.Fatalf("InitDigest: %v", err)
+	}
+	if got, _ := body()["fileName"].(string); got != "Гэрээ.pdf" {
+		t.Fatalf("fileName = %q, want %q", got, "Гэрээ.pdf")
 	}
 }
 

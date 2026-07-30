@@ -100,7 +100,11 @@ type Usecase interface {
 	// InitDigest — ДУРЫН SHA-256 digest-д PIN2 гарын үсэг эхлүүлнэ (PDF-гүй).
 	// Гүйлгээ/шилжүүлгийн апп үүнийг ашиглана: апп нь канон агуулгын хэшийг
 	// илгээж, иргэн утсан дээрээ displayText-ийг хараад баталдаг.
-	InitDigest(ctx context.Context, regNo, fullName, digestHex, displayText string) (InitResult, error)
+	//
+	// docName — нийтийн verify хуудсанд харагдах баримтын нэр (сонголттой).
+	// Хоосон бол огт илгээхгүй; тэр үед eID сервер interaction текстээс
+	// («… зурах: <нэр>») таамаглахыг оролдоно.
+	InitDigest(ctx context.Context, regNo, fullName, digestHex, displayText, docName string) (InitResult, error)
 	// VerifiedDigest — session ДУУССАН бөгөөд ownerRegNo-д харьяалагдаж
 	// байвал гарын үсэг зурагдсан digest-ийг base64-ээр буцаана.
 	VerifiedDigest(ctx context.Context, ownerRegNo, sessionID string) (string, error)
