@@ -31,7 +31,7 @@ const digestSize = 32
 //	     POST /v1/sign/initiate {document_hash_hex, display_text}
 //	иргэн: утсан дээрээ дүн + хүлээн авагчийг хараад PIN2
 //	сервер: POST /v1/transfer/iban үед хэшийг ДАХИН тооцоолж тулгана
-func (u *usecase) InitDigest(ctx context.Context, regNo, fullName, digestHex, displayText string) (InitResult, error) {
+func (u *usecase) InitDigest(ctx context.Context, regNo, fullName, digestHex, displayText, docName string) (InitResult, error) {
 	if strings.TrimSpace(regNo) == "" {
 		return InitResult{}, apperror.Unauthorized("регистр тодорхойгүй")
 	}
@@ -41,9 +41,14 @@ func (u *usecase) InitDigest(ctx context.Context, regNo, fullName, digestHex, di
 	}
 	digestB64 := base64.StdEncoding.EncodeToString(raw)
 
-	// fileName хоосон — digest урсгалд баримт байхгүй (зөвхөн hash), тул
-	// verify хуудсанд харуулах файлын нэр ч байхгүй.
-	v3SessionID, vc, err := u.startV3Sign(ctx, toEtsi(regNo), digestB64, fullName, "", displayText, "")
+	// docName — RP нь юунд гарын үсэг зуруулж байгаагаа МЭДДЭГ (гэрээний нэр,
+	// «Шилжүүлэг» г.м.) тул түүнийг ил дамжуулна. Өмнө нь энд ямагт хоосон
+	// явдаг байсан бөгөөд серверийн нөөц арга (interaction текстээс «зурах: »-
+	// ийн дараах хэсгийг татах) нь digest урсгалын ерөнхий текст дээр юу ч
+	// олдоггүй тул нийтийн verify хуудас «—» харуулдаг байв.
+	//
+	// Хоосон үлдээвэл зан төлөв хэвээр: startV3Sign нь талбарыг огт нэмэхгүй.
+	v3SessionID, vc, err := u.startV3Sign(ctx, toEtsi(regNo), digestB64, fullName, "", displayText, docName)
 	if err != nil {
 		if de, ok := err.(*apperror.DomainError); ok {
 			return InitResult{}, de

@@ -49,7 +49,7 @@ type digestStatusResponse struct {
 // @Accept       json
 // @Produce      json
 // @Security     BearerAuth
-// @Param        payload  body  object  true  "document_hash_hex + display_text"
+// @Param        payload  body  object  true  "document_hash_hex + display_text (+ document_name)"
 // @Success      200  {object}  map[string]interface{}  "sid + verification_code"
 // @Failure      400  {object}  v1.BaseResponse  "хэш формат буруу / регистр олдсонгүй"
 // @Failure      401  {object}  v1.BaseResponse  "unauthorized"
@@ -76,7 +76,10 @@ func (h Handler) InitiateDigest(w http.ResponseWriter, r *http.Request) error {
 		return v1.RespondWithError(w, r, err)
 	}
 
-	result, err := h.sign.InitDigest(r.Context(), regNo, ures.User.FullName(), req.DocumentHashHex, req.DisplayText)
+	// document_name нь ХҮСЭЛТЭД аль хэдийн байсан ч хаана ч дамждаггүй байв —
+	// RP илгээсэн ч verify хуудсанд хүрдэггүй байсны шалтгаан яг энэ.
+	result, err := h.sign.InitDigest(r.Context(), regNo, ures.User.FullName(),
+		req.DocumentHashHex, req.DisplayText, req.DocumentName)
 	if err != nil {
 		return v1.RespondWithError(w, r, err)
 	}
