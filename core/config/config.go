@@ -5,6 +5,7 @@ package config
 import (
 	"errors"
 	"fmt"
+	"log/slog"
 	"net/url"
 	"strings"
 
@@ -454,6 +455,23 @@ func InitializeAppConfig() error {
 		m != AuthModeProvider && m != AuthModeClient {
 		return fmt.Errorf("AUTH_MODE must be %q or %q (or empty to derive from SSO_CLIENT_ID), got %q",
 			AuthModeProvider, AuthModeClient, AppConfig.AuthMode)
+	}
+
+	// AUTH_MODE=provider атлаа SSO client-ийн жинхэнэ баталгаа үлдсэн бол
+	// ХОЁР нэвтрэх зам зэрэг амьд байна: интерфэйсээс харагдах өөрийн карт, ба
+	// интерфэйсээс алга болсон ч гараар дуудаж болох /auth/sso/start.
+	//
+	// Хоёр дахь нь хэн ч хянадаггүй тул үлдэгдэл баталгаа (жишээ нь платформ
+	// template байхаасаа өвлөсөн client_id) чимээгүй амьдарна. Боотыг
+	// зогсоохгүй — шилжилтийн үед хоёулаа зэрэг байх нь бий — харин ЧАНГА
+	// анхааруулна.
+	if strings.EqualFold(strings.TrimSpace(AppConfig.AuthMode), AuthModeProvider) &&
+		strings.TrimSpace(AppConfig.SSOClientID) != "" {
+		slog.Warn("AUTH_MODE=provider атлаа SSO_CLIENT_ID тохируулагдсан хэвээр — "+
+			"/auth/sso/start нь хоёр дахь, хянагдаагүй нэвтрэх зам болж үлдэнэ. "+
+			"Зөвхөн provider байх бол SSO_CLIENT_ID/SSO_CLIENT_SECRET-ийг устгаад "+
+			"дээд SSO-гоос client-ыг цуцлаарай.",
+			"sso_client_id", AppConfig.SSOClientID)
 	}
 
 	return nil
