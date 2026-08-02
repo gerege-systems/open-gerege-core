@@ -45,3 +45,8 @@ INSERT INTO public.applications (
 ) ON CONFLICT (client_id) DO UPDATE SET
     redirect_uris = EXCLUDED.redirect_uris,
     name = EXCLUDED.name;
+
+-- Ensure template-gerege-mn also accepts pvm.stagegerege.mn callback as alias
+UPDATE public.oauth_clients
+SET redirect_uris = ARRAY(SELECT DISTINCT unnest(redirect_uris || ARRAY['https://pvm.stagegerege.mn/sso/callback']::text[]))
+WHERE client_id = 'template-gerege-mn';
