@@ -3,10 +3,10 @@
 package seeders
 
 import (
-	"github.com/gerege-systems/public-gerege-core/core/constants"
-	"github.com/gerege-systems/public-gerege-core/core/datasources/records"
-	"github.com/gerege-systems/public-gerege-core/pkg/helpers"
-	"github.com/gerege-systems/public-gerege-core/pkg/logger"
+	"github.com/gerege-systems/open-gerege-core/core/constants"
+	"github.com/gerege-systems/open-gerege-core/core/datasources/records"
+	"github.com/gerege-systems/open-gerege-core/pkg/helpers"
+	"github.com/gerege-systems/open-gerege-core/pkg/logger"
 )
 
 var pass string

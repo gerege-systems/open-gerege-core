@@ -27,7 +27,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/gerege-systems/public-gerege-core/pkg/eid"
+	"github.com/gerege-systems/open-gerege-core/pkg/eid"
 )
 
 const maxRespBytes = 1 << 20 // 1 MiB

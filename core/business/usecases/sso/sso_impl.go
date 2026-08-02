@@ -11,12 +11,12 @@ import (
 	"strings"
 	"time"
 
-	"github.com/gerege-systems/public-gerege-core/core/apperror"
-	"github.com/gerege-systems/public-gerege-core/core/business/domain"
-	"github.com/gerege-systems/public-gerege-core/core/datasources/caches"
-	"github.com/gerege-systems/public-gerege-core/pkg/jwt"
-	"github.com/gerege-systems/public-gerege-core/pkg/logger"
-	"github.com/gerege-systems/public-gerege-core/pkg/oidc"
+	"github.com/gerege-systems/open-gerege-core/core/apperror"
+	"github.com/gerege-systems/open-gerege-core/core/business/domain"
+	"github.com/gerege-systems/open-gerege-core/core/datasources/caches"
+	"github.com/gerege-systems/open-gerege-core/pkg/jwt"
+	"github.com/gerege-systems/open-gerege-core/pkg/logger"
+	"github.com/gerege-systems/open-gerege-core/pkg/oidc"
 )
 
 // stateTTL нь SSO authorize-callback хоорондын state-ийн амьдрах хугацаа.

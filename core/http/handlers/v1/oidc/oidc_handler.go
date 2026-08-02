@@ -15,10 +15,10 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/gerege-systems/public-gerege-core/core/apperror"
-	"github.com/gerege-systems/public-gerege-core/core/business/domain"
-	oidcuc "github.com/gerege-systems/public-gerege-core/core/business/usecases/oidc"
-	"github.com/gerege-systems/public-gerege-core/pkg/logger"
+	"github.com/gerege-systems/open-gerege-core/core/apperror"
+	"github.com/gerege-systems/open-gerege-core/core/business/domain"
+	oidcuc "github.com/gerege-systems/open-gerege-core/core/business/usecases/oidc"
+	"github.com/gerege-systems/open-gerege-core/pkg/logger"
 )
 
 type Handler struct {

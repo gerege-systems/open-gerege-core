@@ -9,7 +9,7 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/gerege-systems/public-gerege-core/pkg/validators"
+	"github.com/gerege-systems/open-gerege-core/pkg/validators"
 )
 
 func TestStrongPassword(t *testing.T) {

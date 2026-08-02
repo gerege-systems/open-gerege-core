@@ -5,8 +5,8 @@ package middlewares
 import (
 	"net/http"
 
-	"github.com/gerege-systems/public-gerege-core/core/config"
-	"github.com/gerege-systems/public-gerege-core/core/constants"
+	"github.com/gerege-systems/open-gerege-core/core/config"
+	"github.com/gerege-systems/open-gerege-core/core/constants"
 )
 
 // SecurityHeadersMiddleware нь хариу болгон дээр жижиг боловч өндөр

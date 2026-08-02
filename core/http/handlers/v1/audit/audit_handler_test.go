@@ -14,11 +14,11 @@ import (
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 
-	audituc "github.com/gerege-systems/public-gerege-core/core/business/usecases/audit"
-	repointerface "github.com/gerege-systems/public-gerege-core/core/datasources/repositories/interface"
-	v1 "github.com/gerege-systems/public-gerege-core/core/http/handlers/v1"
-	audithandler "github.com/gerege-systems/public-gerege-core/core/http/handlers/v1/audit"
-	"github.com/gerege-systems/public-gerege-core/core/test/mocks"
+	audituc "github.com/gerege-systems/open-gerege-core/core/business/usecases/audit"
+	repointerface "github.com/gerege-systems/open-gerege-core/core/datasources/repositories/interface"
+	v1 "github.com/gerege-systems/open-gerege-core/core/http/handlers/v1"
+	audithandler "github.com/gerege-systems/open-gerege-core/core/http/handlers/v1/audit"
+	"github.com/gerege-systems/open-gerege-core/core/test/mocks"
 )
 
 func TestAuditListPagination(t *testing.T) {

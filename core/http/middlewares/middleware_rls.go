@@ -5,8 +5,8 @@ package middlewares
 import (
 	"net/http"
 
-	"github.com/gerege-systems/public-gerege-core/core/datasources/rls"
-	httpauth "github.com/gerege-systems/public-gerege-core/core/http/auth"
+	"github.com/gerege-systems/open-gerege-core/core/datasources/rls"
+	httpauth "github.com/gerege-systems/open-gerege-core/core/http/auth"
 )
 
 // ServiceRLSContext нь хүсэлтийн context-г RLS-ийн "service" үүргээр тэмдэглэнэ.

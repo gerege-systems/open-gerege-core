@@ -12,9 +12,9 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/gerege-systems/public-gerege-core/core/apperror"
-	"github.com/gerege-systems/public-gerege-core/core/business/usecases/auth"
-	"github.com/gerege-systems/public-gerege-core/core/test/testenv"
+	"github.com/gerege-systems/open-gerege-core/core/apperror"
+	"github.com/gerege-systems/open-gerege-core/core/business/usecases/auth"
+	"github.com/gerege-systems/open-gerege-core/core/test/testenv"
 )
 
 func TestE2E_ChangePassword_OldPasswordRejected(t *testing.T) {

@@ -5,9 +5,9 @@ package routes
 import (
 	"net/http"
 
-	integrationsuc "github.com/gerege-systems/public-gerege-core/core/business/usecases/integrations"
-	v1 "github.com/gerege-systems/public-gerege-core/core/http/handlers/v1"
-	integrationshandler "github.com/gerege-systems/public-gerege-core/core/http/handlers/v1/integrations"
+	integrationsuc "github.com/gerege-systems/open-gerege-core/core/business/usecases/integrations"
+	v1 "github.com/gerege-systems/open-gerege-core/core/http/handlers/v1"
+	integrationshandler "github.com/gerege-systems/open-gerege-core/core/http/handlers/v1/integrations"
 
 	"github.com/go-chi/chi/v5"
 )

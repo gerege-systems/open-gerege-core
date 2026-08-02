@@ -7,10 +7,10 @@ import (
 
 	"github.com/go-chi/chi/v5"
 
-	authuc "github.com/gerege-systems/public-gerege-core/core/business/usecases/auth"
-	v1 "github.com/gerege-systems/public-gerege-core/core/http/handlers/v1"
-	eidprofilehandler "github.com/gerege-systems/public-gerege-core/core/http/handlers/v1/eidprofile"
-	"github.com/gerege-systems/public-gerege-core/core/http/middlewares"
+	authuc "github.com/gerege-systems/open-gerege-core/core/business/usecases/auth"
+	v1 "github.com/gerege-systems/open-gerege-core/core/http/handlers/v1"
+	eidprofilehandler "github.com/gerege-systems/open-gerege-core/core/http/handlers/v1/eidprofile"
+	"github.com/gerege-systems/open-gerege-core/core/http/middlewares"
 )
 
 // eidProfileRoute нь нэвтэрсэн хэрэглэгчийн eID нэмэлт мэдээллийг

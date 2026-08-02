@@ -7,12 +7,12 @@ import (
 
 	"github.com/go-chi/chi/v5"
 
-	"github.com/gerege-systems/public-gerege-core/core/business/domain"
-	rbacuc "github.com/gerege-systems/public-gerege-core/core/business/usecases/rbac"
-	relayuc "github.com/gerege-systems/public-gerege-core/core/business/usecases/relay"
-	v1 "github.com/gerege-systems/public-gerege-core/core/http/handlers/v1"
-	relayhandler "github.com/gerege-systems/public-gerege-core/core/http/handlers/v1/relay"
-	"github.com/gerege-systems/public-gerege-core/core/http/middlewares"
+	"github.com/gerege-systems/open-gerege-core/core/business/domain"
+	rbacuc "github.com/gerege-systems/open-gerege-core/core/business/usecases/rbac"
+	relayuc "github.com/gerege-systems/open-gerege-core/core/business/usecases/relay"
+	v1 "github.com/gerege-systems/open-gerege-core/core/http/handlers/v1"
+	relayhandler "github.com/gerege-systems/open-gerege-core/core/http/handlers/v1/relay"
+	"github.com/gerege-systems/open-gerege-core/core/http/middlewares"
 )
 
 // relayRoute нь /relay/* бүлгийг холбоно. Бүх endpoint нь JWT + relay эрх

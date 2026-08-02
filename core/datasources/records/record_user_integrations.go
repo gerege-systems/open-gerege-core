@@ -5,7 +5,7 @@ package records
 import (
 	"time"
 
-	"github.com/gerege-systems/public-gerege-core/core/business/domain"
+	"github.com/gerege-systems/open-gerege-core/core/business/domain"
 )
 
 // UserIntegrations нь user_integrations хүснэгтийн pgx record. `db` tag-ууд нь

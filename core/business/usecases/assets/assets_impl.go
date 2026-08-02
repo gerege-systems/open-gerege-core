@@ -7,10 +7,10 @@ import (
 	"errors"
 	"strings"
 
-	"github.com/gerege-systems/public-gerege-core/core/apperror"
-	"github.com/gerege-systems/public-gerege-core/core/business/usecases/users"
-	repointerface "github.com/gerege-systems/public-gerege-core/core/datasources/repositories/interface"
-	"github.com/gerege-systems/public-gerege-core/pkg/eid"
+	"github.com/gerege-systems/open-gerege-core/core/apperror"
+	"github.com/gerege-systems/open-gerege-core/core/business/usecases/users"
+	repointerface "github.com/gerege-systems/open-gerege-core/core/datasources/repositories/interface"
+	"github.com/gerege-systems/open-gerege-core/pkg/eid"
 )
 
 type usecase struct {

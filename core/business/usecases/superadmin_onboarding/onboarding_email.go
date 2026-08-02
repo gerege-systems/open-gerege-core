@@ -7,10 +7,10 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/gerege-systems/public-gerege-core/core/apperror"
-	"github.com/gerege-systems/public-gerege-core/pkg/logger"
-	"github.com/gerege-systems/public-gerege-core/pkg/observability"
-	"github.com/gerege-systems/public-gerege-core/pkg/verify"
+	"github.com/gerege-systems/open-gerege-core/core/apperror"
+	"github.com/gerege-systems/open-gerege-core/pkg/logger"
+	"github.com/gerege-systems/open-gerege-core/pkg/observability"
+	"github.com/gerege-systems/open-gerege-core/pkg/verify"
 )
 
 // EmailSend нь шидтэний 3 дахь алхам: УРИЛГЫН и-мэйл рүү OTP илгээнэ.

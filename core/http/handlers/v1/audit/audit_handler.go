@@ -9,10 +9,10 @@ import (
 	"net/http"
 	"strconv"
 
-	audituc "github.com/gerege-systems/public-gerege-core/core/business/usecases/audit"
-	repointerface "github.com/gerege-systems/public-gerege-core/core/datasources/repositories/interface"
-	"github.com/gerege-systems/public-gerege-core/core/http/datatransfers/responses"
-	v1 "github.com/gerege-systems/public-gerege-core/core/http/handlers/v1"
+	audituc "github.com/gerege-systems/open-gerege-core/core/business/usecases/audit"
+	repointerface "github.com/gerege-systems/open-gerege-core/core/datasources/repositories/interface"
+	"github.com/gerege-systems/open-gerege-core/core/http/datatransfers/responses"
+	v1 "github.com/gerege-systems/open-gerege-core/core/http/handlers/v1"
 )
 
 // Handler нь audit-домэйн endpoint-уудыг үйлчилнэ — зөвхөн audit.Usecase руу дууддаг.

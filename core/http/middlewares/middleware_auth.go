@@ -8,13 +8,13 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/gerege-systems/public-gerege-core/core/business/usecases/auth"
-	"github.com/gerege-systems/public-gerege-core/core/constants"
-	"github.com/gerege-systems/public-gerege-core/core/datasources/caches"
-	"github.com/gerege-systems/public-gerege-core/core/datasources/rls"
-	V1Handler "github.com/gerege-systems/public-gerege-core/core/http/handlers/v1"
-	"github.com/gerege-systems/public-gerege-core/pkg/jwt"
-	"github.com/gerege-systems/public-gerege-core/pkg/logger"
+	"github.com/gerege-systems/open-gerege-core/core/business/usecases/auth"
+	"github.com/gerege-systems/open-gerege-core/core/constants"
+	"github.com/gerege-systems/open-gerege-core/core/datasources/caches"
+	"github.com/gerege-systems/open-gerege-core/core/datasources/rls"
+	V1Handler "github.com/gerege-systems/open-gerege-core/core/http/handlers/v1"
+	"github.com/gerege-systems/open-gerege-core/pkg/jwt"
+	"github.com/gerege-systems/open-gerege-core/pkg/logger"
 )
 
 type AuthMiddleware struct {

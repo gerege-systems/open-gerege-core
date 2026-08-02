@@ -5,7 +5,7 @@ package _interface
 import (
 	"context"
 
-	"github.com/gerege-systems/public-gerege-core/core/business/domain"
+	"github.com/gerege-systems/open-gerege-core/core/business/domain"
 )
 
 // LanguageRepository нь интерфейсийн хэл (languages) ба тэдгээрийн орчуулга

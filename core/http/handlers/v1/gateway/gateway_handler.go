@@ -9,11 +9,11 @@ import (
 	"net/http"
 	"strconv"
 
-	gatewayuc "github.com/gerege-systems/public-gerege-core/core/business/usecases/gateway"
-	"github.com/gerege-systems/public-gerege-core/core/http/datatransfers/requests"
-	"github.com/gerege-systems/public-gerege-core/core/http/datatransfers/responses"
-	v1 "github.com/gerege-systems/public-gerege-core/core/http/handlers/v1"
-	"github.com/gerege-systems/public-gerege-core/pkg/validators"
+	gatewayuc "github.com/gerege-systems/open-gerege-core/core/business/usecases/gateway"
+	"github.com/gerege-systems/open-gerege-core/core/http/datatransfers/requests"
+	"github.com/gerege-systems/open-gerege-core/core/http/datatransfers/responses"
+	v1 "github.com/gerege-systems/open-gerege-core/core/http/handlers/v1"
+	"github.com/gerege-systems/open-gerege-core/pkg/validators"
 
 	"github.com/go-chi/chi/v5"
 )

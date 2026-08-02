@@ -11,12 +11,12 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/gerege-systems/public-gerege-core/core/apperror"
-	"github.com/gerege-systems/public-gerege-core/core/business/domain"
-	repointerface "github.com/gerege-systems/public-gerege-core/core/datasources/repositories/interface"
-	postgresrepo "github.com/gerege-systems/public-gerege-core/core/datasources/repositories/postgres/users"
-	"github.com/gerege-systems/public-gerege-core/core/datasources/rls"
-	"github.com/gerege-systems/public-gerege-core/core/test/testenv"
+	"github.com/gerege-systems/open-gerege-core/core/apperror"
+	"github.com/gerege-systems/open-gerege-core/core/business/domain"
+	repointerface "github.com/gerege-systems/open-gerege-core/core/datasources/repositories/interface"
+	postgresrepo "github.com/gerege-systems/open-gerege-core/core/datasources/repositories/postgres/users"
+	"github.com/gerege-systems/open-gerege-core/core/datasources/rls"
+	"github.com/gerege-systems/open-gerege-core/core/test/testenv"
 )
 
 // TestRLS_UsersEnforcement нь Postgres Row-Level Security бодлогууд non-superuser

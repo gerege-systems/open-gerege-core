@@ -7,11 +7,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/gerege-systems/public-gerege-core/core/business/domain"
-	"github.com/gerege-systems/public-gerege-core/core/business/usecases/auth"
-	"github.com/gerege-systems/public-gerege-core/core/test/mocks"
-	"github.com/gerege-systems/public-gerege-core/pkg/google"
-	"github.com/gerege-systems/public-gerege-core/pkg/helpers"
+	"github.com/gerege-systems/open-gerege-core/core/business/domain"
+	"github.com/gerege-systems/open-gerege-core/core/business/usecases/auth"
+	"github.com/gerege-systems/open-gerege-core/core/test/mocks"
+	"github.com/gerege-systems/open-gerege-core/pkg/google"
+	"github.com/gerege-systems/open-gerege-core/pkg/helpers"
 
 	"golang.org/x/crypto/bcrypt"
 )

@@ -5,7 +5,7 @@
 // auth-шаардлагатай — хэрэглэгч зөвхөн өөрийн холболтыг удирдана.
 package integrations
 
-import integrationsuc "github.com/gerege-systems/public-gerege-core/core/business/usecases/integrations"
+import integrationsuc "github.com/gerege-systems/open-gerege-core/core/business/usecases/integrations"
 
 type Handler struct {
 	usecase integrationsuc.Usecase

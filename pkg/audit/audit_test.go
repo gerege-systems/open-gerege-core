@@ -9,7 +9,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/gerege-systems/public-gerege-core/pkg/audit"
+	"github.com/gerege-systems/open-gerege-core/pkg/audit"
 
 	"github.com/stretchr/testify/assert"
 )

@@ -5,7 +5,7 @@ package middlewares
 import (
 	"net/http"
 
-	V1Handler "github.com/gerege-systems/public-gerege-core/core/http/handlers/v1"
+	V1Handler "github.com/gerege-systems/open-gerege-core/core/http/handlers/v1"
 )
 
 // Нийтлэг body-хэмжээний дээд хязгаарууд. Route-ууд хүлээж авдаг

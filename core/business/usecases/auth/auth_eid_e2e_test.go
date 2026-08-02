@@ -26,16 +26,16 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/gerege-systems/public-gerege-core/core/business/usecases/auth"
-	"github.com/gerege-systems/public-gerege-core/core/business/usecases/users"
-	"github.com/gerege-systems/public-gerege-core/core/config"
-	"github.com/gerege-systems/public-gerege-core/core/datasources/caches"
-	userspostgres "github.com/gerege-systems/public-gerege-core/core/datasources/repositories/postgres/users"
-	"github.com/gerege-systems/public-gerege-core/core/test/testenv"
-	"github.com/gerege-systems/public-gerege-core/pkg/eid"
-	"github.com/gerege-systems/public-gerege-core/pkg/google"
-	"github.com/gerege-systems/public-gerege-core/pkg/jwt"
-	"github.com/gerege-systems/public-gerege-core/pkg/verify"
+	"github.com/gerege-systems/open-gerege-core/core/business/usecases/auth"
+	"github.com/gerege-systems/open-gerege-core/core/business/usecases/users"
+	"github.com/gerege-systems/open-gerege-core/core/config"
+	"github.com/gerege-systems/open-gerege-core/core/datasources/caches"
+	userspostgres "github.com/gerege-systems/open-gerege-core/core/datasources/repositories/postgres/users"
+	"github.com/gerege-systems/open-gerege-core/core/test/testenv"
+	"github.com/gerege-systems/open-gerege-core/pkg/eid"
+	"github.com/gerege-systems/open-gerege-core/pkg/google"
+	"github.com/gerege-systems/open-gerege-core/pkg/jwt"
+	"github.com/gerege-systems/open-gerege-core/pkg/verify"
 )
 
 // fakeEIDServer нь eID Mongolia v3 RP API-гийн бодит wire хэлбэрийг дуурайна.

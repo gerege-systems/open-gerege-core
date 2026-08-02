@@ -9,9 +9,9 @@ package provider
 import (
 	"net/http"
 
-	"github.com/gerege-systems/public-gerege-core/core/business/usecases/provider"
-	"github.com/gerege-systems/public-gerege-core/core/http/auth"
-	v1 "github.com/gerege-systems/public-gerege-core/core/http/handlers/v1"
+	"github.com/gerege-systems/open-gerege-core/core/business/usecases/provider"
+	"github.com/gerege-systems/open-gerege-core/core/http/auth"
+	v1 "github.com/gerege-systems/open-gerege-core/core/http/handlers/v1"
 )
 
 type Handler struct {

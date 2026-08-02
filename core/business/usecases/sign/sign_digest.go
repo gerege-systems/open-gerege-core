@@ -8,8 +8,8 @@ import (
 	"encoding/hex"
 	"strings"
 
-	"github.com/gerege-systems/public-gerege-core/core/apperror"
-	"github.com/gerege-systems/public-gerege-core/pkg/logger"
+	"github.com/gerege-systems/open-gerege-core/core/apperror"
+	"github.com/gerege-systems/open-gerege-core/pkg/logger"
 )
 
 // digestSize нь SHA-256-ийн байтын урт. Бид ЗӨВХӨН SHA-256 digest-д гарын

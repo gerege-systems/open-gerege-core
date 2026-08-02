@@ -7,12 +7,12 @@ import (
 
 	"github.com/go-chi/chi/v5"
 
-	"github.com/gerege-systems/public-gerege-core/core/business/domain"
-	audituc "github.com/gerege-systems/public-gerege-core/core/business/usecases/audit"
-	rbacuc "github.com/gerege-systems/public-gerege-core/core/business/usecases/rbac"
-	v1 "github.com/gerege-systems/public-gerege-core/core/http/handlers/v1"
-	rbachandler "github.com/gerege-systems/public-gerege-core/core/http/handlers/v1/rbac"
-	"github.com/gerege-systems/public-gerege-core/core/http/middlewares"
+	"github.com/gerege-systems/open-gerege-core/core/business/domain"
+	audituc "github.com/gerege-systems/open-gerege-core/core/business/usecases/audit"
+	rbacuc "github.com/gerege-systems/open-gerege-core/core/business/usecases/rbac"
+	v1 "github.com/gerege-systems/open-gerege-core/core/http/handlers/v1"
+	rbachandler "github.com/gerege-systems/open-gerege-core/core/http/handlers/v1/rbac"
+	"github.com/gerege-systems/open-gerege-core/core/http/middlewares"
 )
 
 // rbacRoute нь /rbac/* бүлгийг холбоно. /rbac/me нь нэвтэрсэн хэрэглэгч бүрт

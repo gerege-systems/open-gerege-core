@@ -6,7 +6,7 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/gerege-systems/public-gerege-core/pkg/logger"
+	"github.com/gerege-systems/open-gerege-core/pkg/logger"
 
 	"github.com/google/uuid"
 	"go.opentelemetry.io/otel/trace"

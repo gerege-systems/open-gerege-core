@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/gerege-systems/public-gerege-core/core/apperror"
+	"github.com/gerege-systems/open-gerege-core/core/apperror"
 )
 
 func mapRepoError(err error, op string) error {

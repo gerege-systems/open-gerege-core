@@ -7,10 +7,10 @@ import (
 
 	"github.com/go-chi/chi/v5"
 
-	languageuc "github.com/gerege-systems/public-gerege-core/core/business/usecases/language"
-	v1 "github.com/gerege-systems/public-gerege-core/core/http/handlers/v1"
-	languagehandler "github.com/gerege-systems/public-gerege-core/core/http/handlers/v1/language"
-	"github.com/gerege-systems/public-gerege-core/core/http/middlewares"
+	languageuc "github.com/gerege-systems/open-gerege-core/core/business/usecases/language"
+	v1 "github.com/gerege-systems/open-gerege-core/core/http/handlers/v1"
+	languagehandler "github.com/gerege-systems/open-gerege-core/core/http/handlers/v1/language"
+	"github.com/gerege-systems/open-gerege-core/core/http/middlewares"
 )
 
 // languageRoute нь /languages/* бүлгийг холбоно.

@@ -29,10 +29,10 @@ package main
 import (
 	"runtime"
 
-	"github.com/gerege-systems/public-gerege-core/cmd/api/server"
-	"github.com/gerege-systems/public-gerege-core/core/constants"
-	_ "github.com/gerege-systems/public-gerege-core/docs" // OpenAPI тодорхойлолт, `make swag`-аар үүсгэгддэг
-	"github.com/gerege-systems/public-gerege-core/pkg/logger"
+	"github.com/gerege-systems/open-gerege-core/cmd/api/server"
+	"github.com/gerege-systems/open-gerege-core/core/constants"
+	_ "github.com/gerege-systems/open-gerege-core/docs" // OpenAPI тодорхойлолт, `make swag`-аар үүсгэгддэг
+	"github.com/gerege-systems/open-gerege-core/pkg/logger"
 )
 
 func init() {

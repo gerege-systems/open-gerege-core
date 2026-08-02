@@ -10,10 +10,10 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/gerege-systems/public-gerege-core/core/constants"
-	"github.com/gerege-systems/public-gerege-core/core/http/middlewares"
-	"github.com/gerege-systems/public-gerege-core/core/test/mocks"
-	"github.com/gerege-systems/public-gerege-core/pkg/jwt"
+	"github.com/gerege-systems/open-gerege-core/core/constants"
+	"github.com/gerege-systems/open-gerege-core/core/http/middlewares"
+	"github.com/gerege-systems/open-gerege-core/core/test/mocks"
+	"github.com/gerege-systems/open-gerege-core/pkg/jwt"
 
 	"github.com/redis/go-redis/v9"
 	"github.com/stretchr/testify/assert"

@@ -7,8 +7,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/gerege-systems/public-gerege-core/core/business/domain"
-	repointerface "github.com/gerege-systems/public-gerege-core/core/datasources/repositories/interface"
+	"github.com/gerege-systems/open-gerege-core/core/business/domain"
+	repointerface "github.com/gerege-systems/open-gerege-core/core/datasources/repositories/interface"
 )
 
 // fakeRepo нь GovRepository-ийн санах-ой хувилбар. Зөвхөн энэ тестийн хөндөх

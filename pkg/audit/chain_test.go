@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/gerege-systems/public-gerege-core/pkg/audit"
+	"github.com/gerege-systems/open-gerege-core/pkg/audit"
 )
 
 // at нь тогтвортой тестийн цаг (микросекунд хүртэл тайрсан — Postgres-ийн

@@ -10,7 +10,7 @@ import (
 
 	mock "github.com/stretchr/testify/mock"
 
-	repointerface "github.com/gerege-systems/public-gerege-core/core/datasources/repositories/interface"
+	repointerface "github.com/gerege-systems/open-gerege-core/core/datasources/repositories/interface"
 )
 
 // SecurityEventRepository нь repointerface.SecurityEventRepository-ийн mock юм.

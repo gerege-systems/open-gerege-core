@@ -7,12 +7,12 @@ import (
 
 	"github.com/go-chi/chi/v5"
 
-	"github.com/gerege-systems/public-gerege-core/core/business/domain"
-	applicationsuc "github.com/gerege-systems/public-gerege-core/core/business/usecases/applications"
-	rbacuc "github.com/gerege-systems/public-gerege-core/core/business/usecases/rbac"
-	v1 "github.com/gerege-systems/public-gerege-core/core/http/handlers/v1"
-	applicationshandler "github.com/gerege-systems/public-gerege-core/core/http/handlers/v1/applications"
-	"github.com/gerege-systems/public-gerege-core/core/http/middlewares"
+	"github.com/gerege-systems/open-gerege-core/core/business/domain"
+	applicationsuc "github.com/gerege-systems/open-gerege-core/core/business/usecases/applications"
+	rbacuc "github.com/gerege-systems/open-gerege-core/core/business/usecases/rbac"
+	v1 "github.com/gerege-systems/open-gerege-core/core/http/handlers/v1"
+	applicationshandler "github.com/gerege-systems/open-gerege-core/core/http/handlers/v1/applications"
+	"github.com/gerege-systems/open-gerege-core/core/http/middlewares"
 )
 
 // applicationsRoute нь /applications/* бүлгийг холбоно. Бүх endpoint нь

@@ -10,11 +10,11 @@ import (
 
 	"github.com/go-chi/chi/v5"
 
-	applicationsuc "github.com/gerege-systems/public-gerege-core/core/business/usecases/applications"
-	"github.com/gerege-systems/public-gerege-core/core/http/datatransfers/requests"
-	"github.com/gerege-systems/public-gerege-core/core/http/datatransfers/responses"
-	v1 "github.com/gerege-systems/public-gerege-core/core/http/handlers/v1"
-	"github.com/gerege-systems/public-gerege-core/pkg/validators"
+	applicationsuc "github.com/gerege-systems/open-gerege-core/core/business/usecases/applications"
+	"github.com/gerege-systems/open-gerege-core/core/http/datatransfers/requests"
+	"github.com/gerege-systems/open-gerege-core/core/http/datatransfers/responses"
+	v1 "github.com/gerege-systems/open-gerege-core/core/http/handlers/v1"
+	"github.com/gerege-systems/open-gerege-core/pkg/validators"
 )
 
 type Handler struct {

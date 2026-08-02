@@ -9,7 +9,7 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/gerege-systems/public-gerege-core/pkg/helpers"
+	"github.com/gerege-systems/open-gerege-core/pkg/helpers"
 
 	"github.com/go-playground/validator/v10"
 )

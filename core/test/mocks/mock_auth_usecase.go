@@ -10,8 +10,8 @@ package mocks
 import (
 	"context"
 
-	"github.com/gerege-systems/public-gerege-core/core/business/usecases/auth"
-	"github.com/gerege-systems/public-gerege-core/pkg/eid"
+	"github.com/gerege-systems/open-gerege-core/core/business/usecases/auth"
+	"github.com/gerege-systems/open-gerege-core/pkg/eid"
 
 	mock "github.com/stretchr/testify/mock"
 )

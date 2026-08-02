@@ -12,9 +12,9 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/gerege-systems/public-gerege-core/core/apperror"
-	v1 "github.com/gerege-systems/public-gerege-core/core/http/handlers/v1"
-	"github.com/gerege-systems/public-gerege-core/pkg/validators"
+	"github.com/gerege-systems/open-gerege-core/core/apperror"
+	v1 "github.com/gerege-systems/open-gerege-core/core/http/handlers/v1"
+	"github.com/gerege-systems/open-gerege-core/pkg/validators"
 )
 
 func decodeBody(t *testing.T, rec *httptest.ResponseRecorder) map[string]any {

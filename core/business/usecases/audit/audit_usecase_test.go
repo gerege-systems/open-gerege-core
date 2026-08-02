@@ -11,11 +11,11 @@ import (
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 
-	audituc "github.com/gerege-systems/public-gerege-core/core/business/usecases/audit"
-	repointerface "github.com/gerege-systems/public-gerege-core/core/datasources/repositories/interface"
-	"github.com/gerege-systems/public-gerege-core/core/datasources/rls"
-	"github.com/gerege-systems/public-gerege-core/core/test/mocks"
-	pkgaudit "github.com/gerege-systems/public-gerege-core/pkg/audit"
+	audituc "github.com/gerege-systems/open-gerege-core/core/business/usecases/audit"
+	repointerface "github.com/gerege-systems/open-gerege-core/core/datasources/repositories/interface"
+	"github.com/gerege-systems/open-gerege-core/core/datasources/rls"
+	"github.com/gerege-systems/open-gerege-core/core/test/mocks"
+	pkgaudit "github.com/gerege-systems/open-gerege-core/pkg/audit"
 )
 
 const actorID = "11111111-1111-1111-1111-111111111111"

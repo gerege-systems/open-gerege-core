@@ -16,10 +16,10 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/gerege-systems/public-gerege-core/core/apperror"
-	"github.com/gerege-systems/public-gerege-core/core/business/domain"
-	oidcuc "github.com/gerege-systems/public-gerege-core/core/business/usecases/oidc"
-	usersuc "github.com/gerege-systems/public-gerege-core/core/business/usecases/users"
+	"github.com/gerege-systems/open-gerege-core/core/apperror"
+	"github.com/gerege-systems/open-gerege-core/core/business/domain"
+	oidcuc "github.com/gerege-systems/open-gerege-core/core/business/usecases/oidc"
+	usersuc "github.com/gerege-systems/open-gerege-core/core/business/usecases/users"
 )
 
 // UserLookup нь subject (user ID)-ээр иргэний record-ыг авах минимал хараат

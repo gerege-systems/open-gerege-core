@@ -5,10 +5,10 @@ package routes
 import (
 	"github.com/go-chi/chi/v5"
 
-	aiuc "github.com/gerege-systems/public-gerege-core/core/business/usecases/ai"
-	v1 "github.com/gerege-systems/public-gerege-core/core/http/handlers/v1"
-	aihandler "github.com/gerege-systems/public-gerege-core/core/http/handlers/v1/ai"
-	"github.com/gerege-systems/public-gerege-core/core/http/middlewares"
+	aiuc "github.com/gerege-systems/open-gerege-core/core/business/usecases/ai"
+	v1 "github.com/gerege-systems/open-gerege-core/core/http/handlers/v1"
+	aihandler "github.com/gerege-systems/open-gerege-core/core/http/handlers/v1/ai"
+	"github.com/gerege-systems/open-gerege-core/core/http/middlewares"
 )
 
 // publicAIRoute нь НЭВТРЭЛТГҮЙ чат гадаргуу (/v1/public/ai/*) — нүүр

@@ -12,10 +12,10 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/gerege-systems/public-gerege-core/core/apperror"
-	"github.com/gerege-systems/public-gerege-core/core/business/domain"
-	"github.com/gerege-systems/public-gerege-core/core/business/usecases/language"
-	"github.com/gerege-systems/public-gerege-core/pkg/gemini"
+	"github.com/gerege-systems/open-gerege-core/core/apperror"
+	"github.com/gerege-systems/open-gerege-core/core/business/domain"
+	"github.com/gerege-systems/open-gerege-core/core/business/usecases/language"
+	"github.com/gerege-systems/open-gerege-core/pkg/gemini"
 )
 
 // fakeRepo нь LanguageRepository-ийн санах ойн хэрэгжилт. Mockery-гүй — зан

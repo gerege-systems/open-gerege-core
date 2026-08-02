@@ -11,9 +11,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/gerege-systems/public-gerege-core/core/apperror"
-	"github.com/gerege-systems/public-gerege-core/core/business/domain"
-	"github.com/gerege-systems/public-gerege-core/pkg/logger"
+	"github.com/gerege-systems/open-gerege-core/core/apperror"
+	"github.com/gerege-systems/open-gerege-core/core/business/domain"
+	"github.com/gerege-systems/open-gerege-core/pkg/logger"
 )
 
 // deliverWebhook нь envelope-ийг peer platform-ын endpoint руу HMAC гарын үсэгтэй

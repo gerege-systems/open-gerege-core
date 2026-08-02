@@ -11,12 +11,12 @@ import (
 	"net/url"
 	"strings"
 
-	gspaceuc "github.com/gerege-systems/public-gerege-core/core/business/usecases/gspace"
-	httpauth "github.com/gerege-systems/public-gerege-core/core/http/auth"
-	"github.com/gerege-systems/public-gerege-core/core/http/datatransfers/requests"
-	"github.com/gerege-systems/public-gerege-core/core/http/datatransfers/responses"
-	v1 "github.com/gerege-systems/public-gerege-core/core/http/handlers/v1"
-	"github.com/gerege-systems/public-gerege-core/pkg/validators"
+	gspaceuc "github.com/gerege-systems/open-gerege-core/core/business/usecases/gspace"
+	httpauth "github.com/gerege-systems/open-gerege-core/core/http/auth"
+	"github.com/gerege-systems/open-gerege-core/core/http/datatransfers/requests"
+	"github.com/gerege-systems/open-gerege-core/core/http/datatransfers/responses"
+	v1 "github.com/gerege-systems/open-gerege-core/core/http/handlers/v1"
+	"github.com/gerege-systems/open-gerege-core/pkg/validators"
 )
 
 // gspaceUploadBodyMax нь /v1/gspace/upload-ийн JSON body-ийн дээд хэмжээ.

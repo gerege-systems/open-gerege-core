@@ -11,10 +11,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/gerege-systems/public-gerege-core/core/apperror"
-	"github.com/gerege-systems/public-gerege-core/core/business/domain"
-	usersuc "github.com/gerege-systems/public-gerege-core/core/business/usecases/users"
-	"github.com/gerege-systems/public-gerege-core/pkg/secrethash"
+	"github.com/gerege-systems/open-gerege-core/core/apperror"
+	"github.com/gerege-systems/open-gerege-core/core/business/domain"
+	usersuc "github.com/gerege-systems/open-gerege-core/core/business/usecases/users"
+	"github.com/gerege-systems/open-gerege-core/pkg/secrethash"
 )
 
 // ── token-д зориулсан хуурамч хадгалалт ─────────────────────────────────────
