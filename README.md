@@ -13,30 +13,26 @@ module github.com/gerege-systems/open-gerege-core
 
 ```
 open-gerege-core            ← ЭНЭ РЕПО (Go модуль)
-   ├─► private-gerege-core ──► gerege урсгалын 7 платформ
-   └─► gov урсгалын 5 платформ (шууд)
+   ├─► gov урсгалын платформ ×5    (шууд go.mod хамаарал)
+   └─► gerege урсгалын платформ ×7 (шууд go.mod хамаарал)
 ```
 
 **Механизм:** `go.mod` — git fork биш. Шинэчлэлт нэг мөрийн хувилбар солилтоор тарна, тиймээс merge conflict үүсэхгүй.
 
 ---
 
-## Хоёр цөмийн загвар
+## 🏛 Бүх платформд шууд хэрэглэгдэх нээлттэй цөм
 
-Энэ репо нь **суурь (base)** цөм. Түүнээс удамшсан хаалттай цөм тусад нь байна:
+> **Шинэчлэл (2026-08-02):** Өмнө нь дунд нь байсан `private-gerege-core` давхаргыг гинжнээс хасаж архивласан. Төр болон Gerege урсгалын бүх backend одоо энэ `open-gerege-core` модулиас шууд хамаарна.
 
-| Цөм | Хэн хэрэглэдэг | Агуулга |
+| Урсгал | Платформууд | Цөмийн хамаарал |
 |---|---|---|
-| **`open-gerege-core`** (энэ репо) | **gov урсгал** — `template-dgov-mn`, `ring-dgov-mn`, `hurdan-dgov-mn`, `sso-dgov-mn`, `developer-dgov-mn` | Суурь чадвар бүхэлдээ |
-| [`private-gerege-core`](https://github.com/gerege-systems/private-gerege-core) | **gerege урсгал** — `template-gerege-mn`, `gerege-platform-mn`, `gerege-app-mn`, `gerege-pos-mn`, `gerege-kiosk-mn`, `wallet-gerege-mn`, `developer-gerege-mn` | Энэ цөмийг `go.mod`-оор **удамшиж**, дээр нь Gerege-ийн нэмэлт чадвар |
-
-**Урсгалын чиг:** энэ репод өөрчлөлт орох бүрд `private-gerege-core` нь
-өдөр бүр автоматаар шинэ хувилбар руу шилжинэ (тэнд `core-autosync.yml`).
-Урвуу чиглэл байхгүй — private-ийн код энд **буцаж ирэхгүй**.
+| **gov урсгал** | `template-dgov-mn`, `ring-dgov-mn`, `hurdan-dgov-mn`, `sso-dgov-mn`, `developer-dgov-mn` | `open-gerege-core` (шууд) |
+| **gerege урсгал** | `template-gerege-mn`, `gerege-platform-mn`, `gerege-app-mn`, `gerege-pos-mn`, `gerege-kiosk-mn`, `wallet-gerege-mn`, `developer-gerege-mn`, `sso-gerege-mn` | `open-gerege-core` (шууд) |
 
 > Түүх: энэ репо нь `platform-core`-ийн шууд залгамжлагч (`template-dgov-mn/backend`-ээс
 > `git subtree split`-ээр гарсан бүх түүхийг хадгалсан). Хуучин
-> `gerege-systems/platform-core` архивлагдана.
+> `gerege-systems/platform-core` архивлагдсан.
 
 Яагаад: өмнө нь суурь код 8 репод **хуулбарлагдаж**, шинэчлэлт бүрийг гараар
 зөөдөг байсан (~85% давхардал). Одоо нэг эх сурвалж, хувилбартай.
