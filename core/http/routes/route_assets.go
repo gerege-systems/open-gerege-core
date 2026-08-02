@@ -7,10 +7,10 @@ import (
 
 	"github.com/go-chi/chi/v5"
 
-	assetsuc "github.com/gerege-systems/public-gerege-core/core/business/usecases/assets"
-	v1 "github.com/gerege-systems/public-gerege-core/core/http/handlers/v1"
-	assetshandler "github.com/gerege-systems/public-gerege-core/core/http/handlers/v1/assets"
-	"github.com/gerege-systems/public-gerege-core/core/http/middlewares"
+	assetsuc "github.com/gerege-systems/open-gerege-core/core/business/usecases/assets"
+	v1 "github.com/gerege-systems/open-gerege-core/core/http/handlers/v1"
+	assetshandler "github.com/gerege-systems/open-gerege-core/core/http/handlers/v1/assets"
+	"github.com/gerege-systems/open-gerege-core/core/http/middlewares"
 )
 
 // assetsRoute нь гарын үсэг (хувь хүн) ба байгууллагын тамганы дардасын зургийн

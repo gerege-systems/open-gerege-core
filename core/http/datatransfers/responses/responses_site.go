@@ -5,7 +5,7 @@ package responses
 import (
 	"time"
 
-	"github.com/gerege-systems/public-gerege-core/core/business/domain"
+	"github.com/gerege-systems/open-gerege-core/core/business/domain"
 )
 
 // SiteAppearanceResponse нь сайтын харагдацын default-ыг frontend-д буцаах

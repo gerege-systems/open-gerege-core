@@ -13,9 +13,9 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/gerege-systems/public-gerege-core/core/datasources/migration"
-	"github.com/gerege-systems/public-gerege-core/core/test/testenv"
-	"github.com/gerege-systems/public-gerege-core/pkg/logger"
+	"github.com/gerege-systems/open-gerege-core/core/datasources/migration"
+	"github.com/gerege-systems/open-gerege-core/core/test/testenv"
+	"github.com/gerege-systems/open-gerege-core/pkg/logger"
 )
 
 // writeMigration нь dir дотор зохиомол migration хосыг үүсгэдэг жижиг

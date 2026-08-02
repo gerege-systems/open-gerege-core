@@ -5,9 +5,9 @@ package integrations
 import (
 	"net/http"
 
-	httpauth "github.com/gerege-systems/public-gerege-core/core/http/auth"
-	"github.com/gerege-systems/public-gerege-core/core/http/datatransfers/responses"
-	v1 "github.com/gerege-systems/public-gerege-core/core/http/handlers/v1"
+	httpauth "github.com/gerege-systems/open-gerege-core/core/http/auth"
+	"github.com/gerege-systems/open-gerege-core/core/http/datatransfers/responses"
+	v1 "github.com/gerege-systems/open-gerege-core/core/http/handlers/v1"
 
 	"github.com/go-chi/chi/v5"
 )

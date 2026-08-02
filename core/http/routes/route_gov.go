@@ -7,11 +7,11 @@ import (
 
 	"github.com/go-chi/chi/v5"
 
-	"github.com/gerege-systems/public-gerege-core/core/business/domain"
-	govuc "github.com/gerege-systems/public-gerege-core/core/business/usecases/gov"
-	v1 "github.com/gerege-systems/public-gerege-core/core/http/handlers/v1"
-	govhandler "github.com/gerege-systems/public-gerege-core/core/http/handlers/v1/gov"
-	"github.com/gerege-systems/public-gerege-core/core/http/middlewares"
+	"github.com/gerege-systems/open-gerege-core/core/business/domain"
+	govuc "github.com/gerege-systems/open-gerege-core/core/business/usecases/gov"
+	v1 "github.com/gerege-systems/open-gerege-core/core/http/handlers/v1"
+	govhandler "github.com/gerege-systems/open-gerege-core/core/http/handlers/v1/gov"
+	"github.com/gerege-systems/open-gerege-core/core/http/middlewares"
 )
 
 // govRoute нь иргэний "Төрийн үйлчилгээ" порталын /gov/* бүлгийг холбоно. Бүгд

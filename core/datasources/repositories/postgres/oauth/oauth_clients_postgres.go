@@ -17,8 +17,8 @@ import (
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
 
-	"github.com/gerege-systems/public-gerege-core/core/apperror"
-	"github.com/gerege-systems/public-gerege-core/core/business/domain"
+	"github.com/gerege-systems/open-gerege-core/core/apperror"
+	"github.com/gerege-systems/open-gerege-core/core/business/domain"
 )
 
 type clientRepository struct {

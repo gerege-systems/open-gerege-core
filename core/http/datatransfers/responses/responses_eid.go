@@ -5,7 +5,7 @@ package responses
 import (
 	"time"
 
-	"github.com/gerege-systems/public-gerege-core/pkg/eid"
+	"github.com/gerege-systems/open-gerege-core/pkg/eid"
 )
 
 // OrgRepresentationResponse нь иргэний төлөөлдөг нэг байгууллага.

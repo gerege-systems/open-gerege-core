@@ -10,11 +10,11 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 
-	"github.com/gerege-systems/public-gerege-core/core/apperror"
-	"github.com/gerege-systems/public-gerege-core/core/business/domain"
-	usersuc "github.com/gerege-systems/public-gerege-core/core/business/usecases/users"
-	"github.com/gerege-systems/public-gerege-core/core/datasources/rls"
-	"github.com/gerege-systems/public-gerege-core/pkg/secrethash"
+	"github.com/gerege-systems/open-gerege-core/core/apperror"
+	"github.com/gerege-systems/open-gerege-core/core/business/domain"
+	usersuc "github.com/gerege-systems/open-gerege-core/core/business/usecases/users"
+	"github.com/gerege-systems/open-gerege-core/core/datasources/rls"
+	"github.com/gerege-systems/open-gerege-core/pkg/secrethash"
 )
 
 // Token-ийн наслалт. Access token богино (RP-үүд refresh-ээр сунгана); refresh

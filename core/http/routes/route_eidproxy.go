@@ -5,10 +5,10 @@ package routes
 import (
 	"net/http"
 
-	authuc "github.com/gerege-systems/public-gerege-core/core/business/usecases/auth"
-	gatewayuc "github.com/gerege-systems/public-gerege-core/core/business/usecases/gateway"
-	v1 "github.com/gerege-systems/public-gerege-core/core/http/handlers/v1"
-	eidprofilehandler "github.com/gerege-systems/public-gerege-core/core/http/handlers/v1/eidprofile"
+	authuc "github.com/gerege-systems/open-gerege-core/core/business/usecases/auth"
+	gatewayuc "github.com/gerege-systems/open-gerege-core/core/business/usecases/gateway"
+	v1 "github.com/gerege-systems/open-gerege-core/core/http/handlers/v1"
+	eidprofilehandler "github.com/gerege-systems/open-gerege-core/core/http/handlers/v1/eidprofile"
 
 	"github.com/go-chi/chi/v5"
 )

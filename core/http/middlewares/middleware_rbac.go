@@ -6,9 +6,9 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/gerege-systems/public-gerege-core/core/business/domain"
-	httpauth "github.com/gerege-systems/public-gerege-core/core/http/auth"
-	V1Handler "github.com/gerege-systems/public-gerege-core/core/http/handlers/v1"
+	"github.com/gerege-systems/open-gerege-core/core/business/domain"
+	httpauth "github.com/gerege-systems/open-gerege-core/core/http/auth"
+	V1Handler "github.com/gerege-systems/open-gerege-core/core/http/handlers/v1"
 )
 
 // PermissionResolver нь нэг role-ийн эрхүүдийг буцаана (rbac.Usecase үүнийг

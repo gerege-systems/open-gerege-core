@@ -11,10 +11,10 @@ import (
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 
-	"github.com/gerege-systems/public-gerege-core/core/apperror"
-	"github.com/gerege-systems/public-gerege-core/core/business/domain"
-	"github.com/gerege-systems/public-gerege-core/core/business/usecases/org"
-	"github.com/gerege-systems/public-gerege-core/core/test/mocks"
+	"github.com/gerege-systems/open-gerege-core/core/apperror"
+	"github.com/gerege-systems/open-gerege-core/core/business/domain"
+	"github.com/gerege-systems/open-gerege-core/core/business/usecases/org"
+	"github.com/gerege-systems/open-gerege-core/core/test/mocks"
 )
 
 // fixture нь тест тус бүрийн холболт юм. Тест бүр цэвэр mock авахын тулд

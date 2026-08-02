@@ -10,17 +10,17 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/gerege-systems/public-gerege-core/core/apperror"
-	"github.com/gerege-systems/public-gerege-core/core/business/domain"
-	"github.com/gerege-systems/public-gerege-core/core/business/usecases/auth"
-	"github.com/gerege-systems/public-gerege-core/core/datasources/caches"
-	repointerface "github.com/gerege-systems/public-gerege-core/core/datasources/repositories/interface"
-	"github.com/gerege-systems/public-gerege-core/pkg/crypto"
-	"github.com/gerege-systems/public-gerege-core/pkg/eid"
-	"github.com/gerege-systems/public-gerege-core/pkg/google"
-	"github.com/gerege-systems/public-gerege-core/pkg/jwt"
-	"github.com/gerege-systems/public-gerege-core/pkg/logger"
-	"github.com/gerege-systems/public-gerege-core/pkg/verify"
+	"github.com/gerege-systems/open-gerege-core/core/apperror"
+	"github.com/gerege-systems/open-gerege-core/core/business/domain"
+	"github.com/gerege-systems/open-gerege-core/core/business/usecases/auth"
+	"github.com/gerege-systems/open-gerege-core/core/datasources/caches"
+	repointerface "github.com/gerege-systems/open-gerege-core/core/datasources/repositories/interface"
+	"github.com/gerege-systems/open-gerege-core/pkg/crypto"
+	"github.com/gerege-systems/open-gerege-core/pkg/eid"
+	"github.com/gerege-systems/open-gerege-core/pkg/google"
+	"github.com/gerege-systems/open-gerege-core/pkg/jwt"
+	"github.com/gerege-systems/open-gerege-core/pkg/logger"
+	"github.com/gerege-systems/open-gerege-core/pkg/verify"
 )
 
 // GoogleClient нь Google OAuth code солих хэрэгцээт хэсэг (auth-ийнхтэй ижил

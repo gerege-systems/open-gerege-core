@@ -10,8 +10,8 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 
-	"github.com/gerege-systems/public-gerege-core/core/apperror"
-	"github.com/gerege-systems/public-gerege-core/core/business/domain"
+	"github.com/gerege-systems/open-gerege-core/core/apperror"
+	"github.com/gerege-systems/open-gerege-core/core/business/domain"
 )
 
 // keyRepository нь id_token гарын үсгийн түлхүүрүүдийг хадгална. oauth_clients-

@@ -3,7 +3,7 @@
 package records
 
 import (
-	"github.com/gerege-systems/public-gerege-core/core/business/domain"
+	"github.com/gerege-systems/open-gerege-core/core/business/domain"
 )
 
 // ToV1Domain нь Organizations record-ийг domain.Organization руу буулгана.

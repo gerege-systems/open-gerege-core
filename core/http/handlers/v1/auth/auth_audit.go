@@ -7,8 +7,8 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/gerege-systems/public-gerege-core/pkg/audit"
-	"github.com/gerege-systems/public-gerege-core/pkg/logger"
+	"github.com/gerege-systems/open-gerege-core/pkg/audit"
+	"github.com/gerege-systems/open-gerege-core/pkg/logger"
 )
 
 // auditFromRequest нь audit Event-ийн HTTP-context хэсгийг (IP,

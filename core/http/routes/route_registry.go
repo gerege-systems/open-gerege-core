@@ -7,12 +7,12 @@ import (
 
 	"github.com/go-chi/chi/v5"
 
-	"github.com/gerege-systems/public-gerege-core/core/business/domain"
-	rbacuc "github.com/gerege-systems/public-gerege-core/core/business/usecases/rbac"
-	registryuc "github.com/gerege-systems/public-gerege-core/core/business/usecases/registry"
-	v1 "github.com/gerege-systems/public-gerege-core/core/http/handlers/v1"
-	registryhandler "github.com/gerege-systems/public-gerege-core/core/http/handlers/v1/registry"
-	"github.com/gerege-systems/public-gerege-core/core/http/middlewares"
+	"github.com/gerege-systems/open-gerege-core/core/business/domain"
+	rbacuc "github.com/gerege-systems/open-gerege-core/core/business/usecases/rbac"
+	registryuc "github.com/gerege-systems/open-gerege-core/core/business/usecases/registry"
+	v1 "github.com/gerege-systems/open-gerege-core/core/http/handlers/v1"
+	registryhandler "github.com/gerege-systems/open-gerege-core/core/http/handlers/v1/registry"
+	"github.com/gerege-systems/open-gerege-core/core/http/middlewares"
 )
 
 // registryRoute нь Ring System · R1 — Үйлчилгээний нэгдсэн регистрийн

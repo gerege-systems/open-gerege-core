@@ -9,9 +9,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/gerege-systems/public-gerege-core/core/business/domain"
-	"github.com/gerege-systems/public-gerege-core/core/business/usecases/auth"
-	"github.com/gerege-systems/public-gerege-core/core/http/datatransfers/responses"
+	"github.com/gerege-systems/open-gerege-core/core/business/domain"
+	"github.com/gerege-systems/open-gerege-core/core/business/usecases/auth"
+	"github.com/gerege-systems/open-gerege-core/core/http/datatransfers/responses"
 )
 
 func sampleUser() domain.User {

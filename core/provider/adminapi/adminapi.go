@@ -31,11 +31,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/gerege-systems/public-gerege-core/core/apperror"
-	"github.com/gerege-systems/public-gerege-core/core/business/domain"
-	"github.com/gerege-systems/public-gerege-core/core/provider/adminkeys"
-	"github.com/gerege-systems/public-gerege-core/core/provider/devapps"
-	"github.com/gerege-systems/public-gerege-core/pkg/secrethash"
+	"github.com/gerege-systems/open-gerege-core/core/apperror"
+	"github.com/gerege-systems/open-gerege-core/core/business/domain"
+	"github.com/gerege-systems/open-gerege-core/core/provider/adminkeys"
+	"github.com/gerege-systems/open-gerege-core/core/provider/devapps"
+	"github.com/gerege-systems/open-gerege-core/pkg/secrethash"
 )
 
 // clientStore нь OAuth2 client (RP) бүртгэлийн хадгалалт — oauth_clients

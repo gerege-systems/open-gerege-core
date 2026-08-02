@@ -7,14 +7,14 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/gerege-systems/public-gerege-core/core/business/usecases/users"
-	"github.com/gerege-systems/public-gerege-core/core/datasources/caches"
-	"github.com/gerege-systems/public-gerege-core/pkg/eid"
-	"github.com/gerege-systems/public-gerege-core/pkg/google"
-	"github.com/gerege-systems/public-gerege-core/pkg/jwt"
-	"github.com/gerege-systems/public-gerege-core/pkg/logger"
-	"github.com/gerege-systems/public-gerege-core/pkg/verify"
-	"github.com/gerege-systems/public-gerege-core/pkg/xyp"
+	"github.com/gerege-systems/open-gerege-core/core/business/usecases/users"
+	"github.com/gerege-systems/open-gerege-core/core/datasources/caches"
+	"github.com/gerege-systems/open-gerege-core/pkg/eid"
+	"github.com/gerege-systems/open-gerege-core/pkg/google"
+	"github.com/gerege-systems/open-gerege-core/pkg/jwt"
+	"github.com/gerege-systems/open-gerege-core/pkg/logger"
+	"github.com/gerege-systems/open-gerege-core/pkg/verify"
+	"github.com/gerege-systems/open-gerege-core/pkg/xyp"
 )
 
 // usecase нь хамаарлууд болон method хоорондын төлөвийг агуулдаг. Нэг зан

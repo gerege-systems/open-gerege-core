@@ -5,7 +5,7 @@ package _interface
 import (
 	"context"
 
-	"github.com/gerege-systems/public-gerege-core/core/business/domain"
+	"github.com/gerege-systems/open-gerege-core/core/business/domain"
 )
 
 // RegistryFilter нь паспортын жагсаалтын шүүлтүүр. Хоосон талбар = шүүхгүй.

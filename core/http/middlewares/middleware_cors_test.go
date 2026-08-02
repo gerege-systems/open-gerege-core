@@ -7,7 +7,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/gerege-systems/public-gerege-core/core/http/middlewares"
+	"github.com/gerege-systems/open-gerege-core/core/http/middlewares"
 
 	"github.com/stretchr/testify/assert"
 )

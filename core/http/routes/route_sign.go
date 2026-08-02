@@ -5,11 +5,11 @@ package routes
 import (
 	"net/http"
 
-	assetsuc "github.com/gerege-systems/public-gerege-core/core/business/usecases/assets"
-	signuc "github.com/gerege-systems/public-gerege-core/core/business/usecases/sign"
-	"github.com/gerege-systems/public-gerege-core/core/business/usecases/users"
-	v1 "github.com/gerege-systems/public-gerege-core/core/http/handlers/v1"
-	signhandler "github.com/gerege-systems/public-gerege-core/core/http/handlers/v1/sign"
+	assetsuc "github.com/gerege-systems/open-gerege-core/core/business/usecases/assets"
+	signuc "github.com/gerege-systems/open-gerege-core/core/business/usecases/sign"
+	"github.com/gerege-systems/open-gerege-core/core/business/usecases/users"
+	v1 "github.com/gerege-systems/open-gerege-core/core/http/handlers/v1"
+	signhandler "github.com/gerege-systems/open-gerege-core/core/http/handlers/v1/sign"
 
 	"github.com/go-chi/chi/v5"
 )

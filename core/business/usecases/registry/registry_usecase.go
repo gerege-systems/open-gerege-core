@@ -9,8 +9,8 @@ package registry
 import (
 	"context"
 
-	"github.com/gerege-systems/public-gerege-core/core/business/domain"
-	repointerface "github.com/gerege-systems/public-gerege-core/core/datasources/repositories/interface"
+	"github.com/gerege-systems/open-gerege-core/core/business/domain"
+	repointerface "github.com/gerege-systems/open-gerege-core/core/datasources/repositories/interface"
 )
 
 // ListFilter нь паспортын жагсаалтын шүүлтүүр (HTTP query-гээс).

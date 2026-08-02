@@ -3,7 +3,7 @@
 package requests
 
 import (
-	"github.com/gerege-systems/public-gerege-core/core/business/domain"
+	"github.com/gerege-systems/open-gerege-core/core/business/domain"
 )
 
 // RegisterRequest нь POST /auth/register-ийн body юм.

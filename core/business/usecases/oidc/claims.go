@@ -5,7 +5,7 @@ package oidc
 import (
 	"strings"
 
-	"github.com/gerege-systems/public-gerege-core/core/business/domain"
+	"github.com/gerege-systems/open-gerege-core/core/business/domain"
 )
 
 // ClaimsForScopes нь олгосон scope-оос хамааран иргэний claims-ыг гаргана.

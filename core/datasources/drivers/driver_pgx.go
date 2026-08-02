@@ -11,9 +11,9 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/gerege-systems/public-gerege-core/core/config"
-	"github.com/gerege-systems/public-gerege-core/core/constants"
-	"github.com/gerege-systems/public-gerege-core/pkg/logger"
+	"github.com/gerege-systems/open-gerege-core/core/config"
+	"github.com/gerege-systems/open-gerege-core/core/constants"
+	"github.com/gerege-systems/open-gerege-core/pkg/logger"
 
 	"github.com/exaring/otelpgx"
 	"github.com/jackc/pgx/v5/pgxpool"

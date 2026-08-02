@@ -10,11 +10,11 @@ import (
 	"time"
 	"unicode"
 
-	"github.com/gerege-systems/public-gerege-core/core/business/domain"
-	"github.com/gerege-systems/public-gerege-core/core/constants"
-	repointerface "github.com/gerege-systems/public-gerege-core/core/datasources/repositories/interface"
-	"github.com/gerege-systems/public-gerege-core/pkg/gemini"
-	"github.com/gerege-systems/public-gerege-core/pkg/logger"
+	"github.com/gerege-systems/open-gerege-core/core/business/domain"
+	"github.com/gerege-systems/open-gerege-core/core/constants"
+	repointerface "github.com/gerege-systems/open-gerege-core/core/datasources/repositories/interface"
+	"github.com/gerege-systems/open-gerege-core/pkg/gemini"
+	"github.com/gerege-systems/open-gerege-core/pkg/logger"
 )
 
 // ToolFunc нь backend дээр ажиллах функц. Model args-ийг шийднэ, backend

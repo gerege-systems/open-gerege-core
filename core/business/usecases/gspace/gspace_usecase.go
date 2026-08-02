@@ -7,7 +7,7 @@ package gspace
 import (
 	"context"
 
-	gsclient "github.com/gerege-systems/public-gerege-core/pkg/gspace"
+	gsclient "github.com/gerege-systems/open-gerege-core/pkg/gspace"
 )
 
 // Overview — хэрэглэгчийн Gerege Space-ийн товч (файлууд + ашиглалт/квот).

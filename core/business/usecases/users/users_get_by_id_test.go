@@ -7,9 +7,9 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/gerege-systems/public-gerege-core/core/apperror"
-	"github.com/gerege-systems/public-gerege-core/core/business/domain"
-	"github.com/gerege-systems/public-gerege-core/core/business/usecases/users"
+	"github.com/gerege-systems/open-gerege-core/core/apperror"
+	"github.com/gerege-systems/open-gerege-core/core/business/domain"
+	"github.com/gerege-systems/open-gerege-core/core/business/usecases/users"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"

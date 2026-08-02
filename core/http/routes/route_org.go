@@ -7,10 +7,10 @@ import (
 
 	"github.com/go-chi/chi/v5"
 
-	audituc "github.com/gerege-systems/public-gerege-core/core/business/usecases/audit"
-	orguc "github.com/gerege-systems/public-gerege-core/core/business/usecases/org"
-	v1 "github.com/gerege-systems/public-gerege-core/core/http/handlers/v1"
-	orghandler "github.com/gerege-systems/public-gerege-core/core/http/handlers/v1/org"
+	audituc "github.com/gerege-systems/open-gerege-core/core/business/usecases/audit"
+	orguc "github.com/gerege-systems/open-gerege-core/core/business/usecases/org"
+	v1 "github.com/gerege-systems/open-gerege-core/core/http/handlers/v1"
+	orghandler "github.com/gerege-systems/open-gerege-core/core/http/handlers/v1/org"
 )
 
 // orgRoute нь /v1/org/* бүлгийг холбоно — байгууллага болон гишүүнчлэлийн бүх

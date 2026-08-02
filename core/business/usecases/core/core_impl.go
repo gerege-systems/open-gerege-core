@@ -13,7 +13,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/gerege-systems/public-gerege-core/core/apperror"
+	"github.com/gerege-systems/open-gerege-core/core/apperror"
 )
 
 const maxRespBytes = 4 << 20 // 4 MiB

@@ -5,11 +5,11 @@ package routes
 import (
 	"net/http"
 
-	"github.com/gerege-systems/public-gerege-core/core/business/usecases/audit"
-	"github.com/gerege-systems/public-gerege-core/core/business/usecases/auth"
-	v1 "github.com/gerege-systems/public-gerege-core/core/http/handlers/v1"
-	authhandler "github.com/gerege-systems/public-gerege-core/core/http/handlers/v1/auth"
-	"github.com/gerege-systems/public-gerege-core/core/http/middlewares"
+	"github.com/gerege-systems/open-gerege-core/core/business/usecases/audit"
+	"github.com/gerege-systems/open-gerege-core/core/business/usecases/auth"
+	v1 "github.com/gerege-systems/open-gerege-core/core/http/handlers/v1"
+	authhandler "github.com/gerege-systems/open-gerege-core/core/http/handlers/v1/auth"
+	"github.com/gerege-systems/open-gerege-core/core/http/middlewares"
 
 	"github.com/go-chi/chi/v5"
 )

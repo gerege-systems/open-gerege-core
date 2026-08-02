@@ -3,7 +3,7 @@
 package mocks
 
 import (
-	jwt "github.com/gerege-systems/public-gerege-core/pkg/jwt"
+	jwt "github.com/gerege-systems/open-gerege-core/pkg/jwt"
 	mock "github.com/stretchr/testify/mock"
 )
 

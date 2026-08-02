@@ -9,7 +9,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/gerege-systems/public-gerege-core/core/apperror"
+	"github.com/gerege-systems/open-gerege-core/core/apperror"
 )
 
 func TestConstructorsSetType(t *testing.T) {

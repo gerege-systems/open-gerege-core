@@ -5,7 +5,7 @@ package middlewares
 import (
 	"net/http"
 
-	"github.com/gerege-systems/public-gerege-core/pkg/observability"
+	"github.com/gerege-systems/open-gerege-core/pkg/observability"
 
 	"github.com/go-chi/chi/v5/middleware"
 	semconv "go.opentelemetry.io/otel/semconv/v1.26.0"

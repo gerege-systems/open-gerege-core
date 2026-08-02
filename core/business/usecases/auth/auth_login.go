@@ -7,11 +7,11 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/gerege-systems/public-gerege-core/core/apperror"
-	"github.com/gerege-systems/public-gerege-core/core/business/domain"
-	"github.com/gerege-systems/public-gerege-core/core/business/usecases/users"
-	"github.com/gerege-systems/public-gerege-core/pkg/helpers"
-	"github.com/gerege-systems/public-gerege-core/pkg/logger"
+	"github.com/gerege-systems/open-gerege-core/core/apperror"
+	"github.com/gerege-systems/open-gerege-core/core/business/domain"
+	"github.com/gerege-systems/open-gerege-core/core/business/usecases/users"
+	"github.com/gerege-systems/open-gerege-core/pkg/helpers"
+	"github.com/gerege-systems/open-gerege-core/pkg/logger"
 )
 
 // Login нь credential-ийг шалгаж, шинэ access+refresh токен хосыг буцаана.

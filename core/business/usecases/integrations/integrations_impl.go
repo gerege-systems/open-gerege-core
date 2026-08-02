@@ -7,9 +7,9 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/gerege-systems/public-gerege-core/core/apperror"
-	"github.com/gerege-systems/public-gerege-core/core/business/domain"
-	repointerface "github.com/gerege-systems/public-gerege-core/core/datasources/repositories/interface"
+	"github.com/gerege-systems/open-gerege-core/core/apperror"
+	"github.com/gerege-systems/open-gerege-core/core/business/domain"
+	repointerface "github.com/gerege-systems/open-gerege-core/core/datasources/repositories/interface"
 )
 
 // validProviders нь хүлээн зөвшөөрөх провайдерын id-ууд. Frontend-ийн

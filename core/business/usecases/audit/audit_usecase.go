@@ -11,11 +11,11 @@ import (
 	"context"
 	"time"
 
-	"github.com/gerege-systems/public-gerege-core/core/apperror"
-	repointerface "github.com/gerege-systems/public-gerege-core/core/datasources/repositories/interface"
-	"github.com/gerege-systems/public-gerege-core/core/datasources/rls"
-	"github.com/gerege-systems/public-gerege-core/pkg/audit"
-	"github.com/gerege-systems/public-gerege-core/pkg/logger"
+	"github.com/gerege-systems/open-gerege-core/core/apperror"
+	repointerface "github.com/gerege-systems/open-gerege-core/core/datasources/repositories/interface"
+	"github.com/gerege-systems/open-gerege-core/core/datasources/rls"
+	"github.com/gerege-systems/open-gerege-core/pkg/audit"
+	"github.com/gerege-systems/open-gerege-core/pkg/logger"
 )
 
 // Usecase нь audit log-ийн оролтын хил юм.

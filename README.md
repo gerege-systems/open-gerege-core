@@ -1,10 +1,10 @@
-# public-gerege-core
+# open-gerege-core
 
 > Gerege / dgov платформуудын **нээлттэй суурь Go модуль** —
 > Clean Architecture backend, eID/SSO танилт, RBAC, API gateway, AI pipeline.
 
 ```
-module github.com/gerege-systems/public-gerege-core
+module github.com/gerege-systems/open-gerege-core
 ```
 
 ## 🧬 Удамшлын гинж
@@ -12,7 +12,7 @@ module github.com/gerege-systems/public-gerege-core
 Энэ репо флотын удамшлын мод дотор дараах байрлалтай:
 
 ```
-public-gerege-core            ← ЭНЭ РЕПО (Go модуль)
+open-gerege-core            ← ЭНЭ РЕПО (Go модуль)
    ├─► private-gerege-core ──► gerege урсгалын 7 платформ
    └─► gov урсгалын 5 платформ (шууд)
 ```
@@ -27,7 +27,7 @@ public-gerege-core            ← ЭНЭ РЕПО (Go модуль)
 
 | Цөм | Хэн хэрэглэдэг | Агуулга |
 |---|---|---|
-| **`public-gerege-core`** (энэ репо) | **gov урсгал** — `template-dgov-mn`, `ring-dgov-mn`, `hurdan-dgov-mn`, `sso-dgov-mn`, `developer-dgov-mn` | Суурь чадвар бүхэлдээ |
+| **`open-gerege-core`** (энэ репо) | **gov урсгал** — `template-dgov-mn`, `ring-dgov-mn`, `hurdan-dgov-mn`, `sso-dgov-mn`, `developer-dgov-mn` | Суурь чадвар бүхэлдээ |
 | [`private-gerege-core`](https://github.com/gerege-systems/private-gerege-core) | **gerege урсгал** — `template-gerege-mn`, `gerege-platform-mn`, `gerege-app-mn`, `gerege-pos-mn`, `gerege-kiosk-mn`, `wallet-gerege-mn`, `developer-gerege-mn` | Энэ цөмийг `go.mod`-оор **удамшиж**, дээр нь Gerege-ийн нэмэлт чадвар |
 
 **Урсгалын чиг:** энэ репод өөрчлөлт орох бүрд `private-gerege-core` нь
@@ -84,7 +84,7 @@ Gemini-ээр бөглөнө (`languages` + `translations`, migration 49).
 ```go
 package main
 
-import "github.com/gerege-systems/public-gerege-core/cmd/api/server"
+import "github.com/gerege-systems/open-gerege-core/cmd/api/server"
 
 func main() {
     server.ServiceName = "ring-dgov" // telemetry-д харагдах нэр

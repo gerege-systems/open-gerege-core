@@ -5,7 +5,7 @@ package responses
 import (
 	"time"
 
-	"github.com/gerege-systems/public-gerege-core/core/business/usecases/integrations"
+	"github.com/gerege-systems/open-gerege-core/core/business/usecases/integrations"
 )
 
 // IntegrationResponse нь нэг холбосон провайдерын аюулгүй далайц — токен

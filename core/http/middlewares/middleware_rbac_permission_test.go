@@ -12,8 +12,8 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/gerege-systems/public-gerege-core/core/business/domain"
-	"github.com/gerege-systems/public-gerege-core/pkg/jwt"
+	"github.com/gerege-systems/open-gerege-core/core/business/domain"
+	"github.com/gerege-systems/open-gerege-core/pkg/jwt"
 )
 
 // stubResolver нь PermissionResolver-ийн хамгийн жижиг fake: roleID→эрхүүд

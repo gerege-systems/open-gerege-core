@@ -8,12 +8,12 @@ import (
 	"net/http"
 	"strings"
 
-	aiuc "github.com/gerege-systems/public-gerege-core/core/business/usecases/ai"
-	"github.com/gerege-systems/public-gerege-core/core/http/datatransfers/requests"
-	"github.com/gerege-systems/public-gerege-core/core/http/datatransfers/responses"
-	v1 "github.com/gerege-systems/public-gerege-core/core/http/handlers/v1"
-	"github.com/gerege-systems/public-gerege-core/pkg/logger"
-	"github.com/gerege-systems/public-gerege-core/pkg/validators"
+	aiuc "github.com/gerege-systems/open-gerege-core/core/business/usecases/ai"
+	"github.com/gerege-systems/open-gerege-core/core/http/datatransfers/requests"
+	"github.com/gerege-systems/open-gerege-core/core/http/datatransfers/responses"
+	v1 "github.com/gerege-systems/open-gerege-core/core/http/handlers/v1"
+	"github.com/gerege-systems/open-gerege-core/pkg/logger"
+	"github.com/gerege-systems/open-gerege-core/pkg/validators"
 )
 
 type Handler struct {

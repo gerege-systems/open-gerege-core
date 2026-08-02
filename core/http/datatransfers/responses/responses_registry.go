@@ -6,8 +6,8 @@ import (
 	"encoding/json"
 	"time"
 
-	"github.com/gerege-systems/public-gerege-core/core/business/domain"
-	registryuc "github.com/gerege-systems/public-gerege-core/core/business/usecases/registry"
+	"github.com/gerege-systems/open-gerege-core/core/business/domain"
+	registryuc "github.com/gerege-systems/open-gerege-core/core/business/usecases/registry"
 )
 
 // Ring System · R1 — Үйлчилгээний нэгдсэн регистрийн хариу DTO-ууд.

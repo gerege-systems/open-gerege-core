@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/gerege-systems/public-gerege-core/pkg/gemini"
+	"github.com/gerege-systems/open-gerege-core/pkg/gemini"
 )
 
 // fakeStreamer нь Generator + Streamer хоёуланг хэрэгжүүлнэ: өгсөн текстийг

@@ -7,12 +7,12 @@ import (
 
 	"github.com/go-chi/chi/v5"
 
-	"github.com/gerege-systems/public-gerege-core/core/business/domain"
-	rbacuc "github.com/gerege-systems/public-gerege-core/core/business/usecases/rbac"
-	siteuc "github.com/gerege-systems/public-gerege-core/core/business/usecases/site"
-	v1 "github.com/gerege-systems/public-gerege-core/core/http/handlers/v1"
-	sitehandler "github.com/gerege-systems/public-gerege-core/core/http/handlers/v1/site"
-	"github.com/gerege-systems/public-gerege-core/core/http/middlewares"
+	"github.com/gerege-systems/open-gerege-core/core/business/domain"
+	rbacuc "github.com/gerege-systems/open-gerege-core/core/business/usecases/rbac"
+	siteuc "github.com/gerege-systems/open-gerege-core/core/business/usecases/site"
+	v1 "github.com/gerege-systems/open-gerege-core/core/http/handlers/v1"
+	sitehandler "github.com/gerege-systems/open-gerege-core/core/http/handlers/v1/site"
+	"github.com/gerege-systems/open-gerege-core/core/http/middlewares"
 )
 
 // siteRoute нь /site/* бүлгийг холбоно. GET /site/appearance нь нийтийн

@@ -12,8 +12,8 @@ import (
 
 	mock "github.com/stretchr/testify/mock"
 
-	repointerface "github.com/gerege-systems/public-gerege-core/core/datasources/repositories/interface"
-	"github.com/gerege-systems/public-gerege-core/pkg/audit"
+	repointerface "github.com/gerege-systems/open-gerege-core/core/datasources/repositories/interface"
+	"github.com/gerege-systems/open-gerege-core/pkg/audit"
 )
 
 // AuditRepository нь repointerface.AuditRepository-ийн mock юм.

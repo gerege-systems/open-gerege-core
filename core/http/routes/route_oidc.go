@@ -5,8 +5,8 @@ package routes
 import (
 	"github.com/go-chi/chi/v5"
 
-	oidcuc "github.com/gerege-systems/public-gerege-core/core/business/usecases/oidc"
-	oidchandler "github.com/gerege-systems/public-gerege-core/core/http/handlers/v1/oidc"
+	oidcuc "github.com/gerege-systems/open-gerege-core/core/business/usecases/oidc"
+	oidchandler "github.com/gerege-systems/open-gerege-core/core/http/handlers/v1/oidc"
 )
 
 // oidcRoute нь өөрийн OAuth2/OIDC provider-ийн НИЙТИЙН endpoint-уудыг холбоно.
