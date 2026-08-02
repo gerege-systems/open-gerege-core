@@ -42,14 +42,16 @@ PLATFORMS=(
   "template.gerege.mn"
   "developer.gerege.mn"
   "geregeapp.mn"
-  "geregepos.mn"
-  "geregekiosk.mn"
+  "pos.gerege.mn"
+  "kiosk.gerege.mn"
+  "pvm.stagegerege.mn"
 )
 
 # OIDC provider-ууд — discovery нь амьд эсэх (хямд, нэмэлт дохио).
 PROVIDERS=(
   "sso.dgov.mn"
   "sso.gerege.mn"
+  "sso.stagegerege.mn"
   "gerege.mn"
 )
 
