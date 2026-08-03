@@ -341,11 +341,16 @@ func (uc *usecase) eidPersonEtsi(ctx context.Context, userID string) (string, er
 
 // mapPKIErr нь eID PKI дуудлагын алдааг HTTP-д буулгана: PKI_READ эрхгүй (403)
 // бол Forbidden (frontend "эрх хүлээгдэж байна" харуулна), proxy унтраалттай
-// бол Unavailable (503 — эвдрэл биш, түр байдал), бусад бол Internal.
+// эсвэл RP танилт бүтэлгүй бол Unavailable (503 — эвдрэл биш, түр байдал),
+// бусад бол Internal.
 func mapPKIErr(err error) error {
 	switch {
 	case errors.Is(err, eid.ErrPKINotPermitted):
 		return apperror.Forbidden("eID PKI хандах эрх (PKI_READ) олгогдоогүй байна")
+	case errors.Is(err, eid.ErrPKIRPRejected):
+		// RP бүртгэл/секрет зөрсөн — иргэнд хэлэх зүйл алга, шалтгаан нь зөвхөн
+		// логт (UnavailableCause) үлдэж, operator-т харагдана.
+		return apperror.UnavailableCause(err)
 	case errors.Is(err, ssoeidproxy.ErrTokenExpired):
 		return apperror.Unauthorized("eID мэдээлэл авахын тулд SSO-гоор дахин нэвтэрнэ үү")
 	case errors.Is(err, ssoeidproxy.ErrProxyDisabled):

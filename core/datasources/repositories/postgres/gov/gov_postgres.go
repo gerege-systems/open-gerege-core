@@ -319,21 +319,50 @@ func (r *govRepository) CreateApplicationWithOutput(
 }
 
 // SetApplicationStatus нь одоогоор зөвхөн цуцлахад (cancelled) ашиглагдана.
-// Аль хэдийн шийдэгдсэн (approved/rejected/completed) эсвэл цуцлагдсан хүсэлтийг
-// дахин цуцлахгүйн тулд зөвхөн идэвхтэй эх төлвөөс (submitted/in_review) шилжинэ
-// (CancelAppointment/PayPayment-ийн загвартай нийцтэй).
+// Зөвшөөрөгдсөн эх төлвийг domain.GovCanTransition-оос АВНА — migration 44-ийн
+// дараа нээлттэй төлөв нь submitted/in_review төдийгүй registered ба
+// info_required ч болсон тул SQL-д гараар бичсэн жагсаалт хоцрогдож,
+// «Бүртгэгдсэн» хүсэлтийг иргэн цуцлах гэхэд 404 өгдөг байв.
+//
+// Мөрийг FOR UPDATE-аар түгжиж уншсны дараа шилжүүлнэ — зэрэг ирсэн хоёр
+// шийдвэрийн уралдаанд нэг нь л амжилттай болно. Цуцлалт нь эцсийн үр дүнг
+// «иргэн татав» (withdrawn) болгож, timeline-д ул мөр үлдээнэ.
 func (r *govRepository) SetApplicationStatus(ctx context.Context, userID, id, status string) error {
 	return r.withRLS(ctx, func(tx pgx.Tx) error {
-		tag, err := tx.Exec(ctx,
-			`UPDATE gov_applications SET status = $3, updated_at = now()
-			 WHERE id = $1 AND user_id = $2 AND status IN ('submitted','in_review')`, id, userID, status)
-		if err != nil {
+		var from string
+		if err := tx.QueryRow(ctx,
+			`SELECT status FROM gov_applications WHERE id = $1 AND user_id = $2 FOR UPDATE`,
+			id, userID).Scan(&from); err != nil {
+			if errors.Is(err, pgx.ErrNoRows) {
+				return apperror.NotFound("application not found")
+			}
 			return err
 		}
-		if tag.RowsAffected() == 0 {
-			return apperror.NotFound("active application not found")
+		if !domain.GovCanTransition(from, status) {
+			return apperror.Conflict("хүсэлт энэ төлвөөс шилжих боломжгүй")
 		}
-		return nil
+
+		result := ""
+		if status == domain.GovStatusCancelled {
+			result = domain.GovResultWithdrawn
+		}
+		if _, err := tx.Exec(ctx,
+			`UPDATE gov_applications
+			    SET status = $3,
+			        result = CASE WHEN $4 = '' THEN result ELSE $4 END,
+			        updated_at = now()
+			  WHERE id = $1 AND user_id = $2`, id, userID, status, result); err != nil {
+			return err
+		}
+
+		detail := ""
+		if status == domain.GovStatusCancelled {
+			detail = "Иргэн хүсэлтээ цуцлав"
+		}
+		return appendEventTx(ctx, tx, &domain.GovApplicationEvent{
+			ApplicationID: id, ActorID: &userID, ActorRole: "user",
+			FromStatus: from, ToStatus: status, Type: "cancelled", Detail: detail,
+		}, userID)
 	})
 }
 

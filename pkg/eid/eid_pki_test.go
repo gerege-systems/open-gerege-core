@@ -1,7 +1,8 @@
 // Gerege Systems Development Team болон Claude AI хамтран бүтээв, 2026.
 
 // Иргэний PKI самбар endpoint-уудын (summary/certificates/devices/activity)
-// client unit тест: wire задлалт, 403 → ErrPKINotPermitted, path + query.
+// client unit тест: wire задлалт, 401 → ErrPKIRPRejected, 403 → ErrPKINotPermitted,
+// path + query.
 package eid
 
 import (
@@ -92,6 +93,25 @@ func TestPKIForbiddenMapsToSentinel(t *testing.T) {
 	} {
 		if err := call(); !errors.Is(err, ErrPKINotPermitted) {
 			t.Errorf("403 → ErrPKINotPermitted хүлээсэн, авсан %v", err)
+		}
+	}
+}
+
+// RP бүртгэл устсан/секрет зөрсөн үед eID 401 буцаадаг — үүнийг тусад нь
+// ялгаж чадах ёстой (дуудагч 500 биш 503 болгож буулгана).
+func TestPKIUnauthorizedMapsToSentinel(t *testing.T) {
+	c, _ := newTestClient(t, func(w http.ResponseWriter, _ *http.Request) {
+		w.WriteHeader(http.StatusUnauthorized)
+		_, _ = io.WriteString(w, `{"error":"RP API secret буруу"}`)
+	})
+	for _, call := range []func() error{
+		func() error { _, e := c.PersonSummary(context.Background(), "PNOMN-X"); return e },
+		func() error { _, e := c.PersonCertificates(context.Background(), "PNOMN-X"); return e },
+		func() error { _, e := c.PersonDevices(context.Background(), "PNOMN-X"); return e },
+		func() error { _, e := c.PersonActivity(context.Background(), "PNOMN-X", 20, 0); return e },
+	} {
+		if err := call(); !errors.Is(err, ErrPKIRPRejected) {
+			t.Errorf("401 → ErrPKIRPRejected хүлээсэн, авсан %v", err)
 		}
 	}
 }

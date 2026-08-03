@@ -26,6 +26,12 @@ import (
 // үүнийг "эрх хүлээгдэж байна" төлөв болгон харуулж болно (алдаа биш).
 var ErrPKINotPermitted = errors.New("eid: RP lacks PKI_READ permission")
 
+// ErrPKIRPRejected нь RP-ийн танилт eID талд бүтэлгүй болсныг (401) илэрхийлнэ:
+// RP бүртгэл устсан/идэвхгүй эсвэл EID_RP_SECRET зөрсөн. Энэ бол тохиргооны
+// цоорхой болохоос иргэний өгөгдлийн асуудал биш тул дуудагч үүнийг 500 биш,
+// «түр боломжгүй» (503) болгон харуулна.
+var ErrPKIRPRejected = errors.New("eid: RP credentials rejected by eID")
+
 // ErrNotRepresentative нь AddRepresentation-д иргэн тухайн байгууллагыг төлөөлөх
 // эрхгүй (РД нь affiliate жагсаалтад алга) үед 403-аар буцна. Дуудагч үүнийг
 // "энэ байгууллагыг төлөөлөх эрхгүй" (Forbidden) болгон харуулна.
@@ -185,13 +191,16 @@ type PersonSummary struct {
 	RepresentationCount int            `json:"representationCount"`
 }
 
-// getPKI нь PKI endpoint-ыг дуудаж хариуг v рүү задлана. 403 бол
-// ErrPKINotPermitted, 404 бол ErrInitiateRejected-гүйгээр зүгээр хоосон
-// (дуудагч nil шалгана).
+// getPKI нь PKI endpoint-ыг дуудаж хариуг v рүү задлана. 401 бол
+// ErrPKIRPRejected, 403 бол ErrPKINotPermitted, 404 бол ErrInitiateRejected-гүйгээр
+// зүгээр хоосон (дуудагч nil шалгана).
 func getPKI[T any](ctx context.Context, c *client, path string, v *T) error {
 	raw, status, err := c.get(ctx, path)
 	if err != nil {
 		return err
+	}
+	if status == http.StatusUnauthorized {
+		return ErrPKIRPRejected
 	}
 	if status == http.StatusForbidden {
 		return ErrPKINotPermitted
