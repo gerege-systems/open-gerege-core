@@ -26,25 +26,39 @@ INSERT INTO public.oauth_clients (
     redirect_uris = EXCLUDED.redirect_uris,
     client_name = EXCLUDED.client_name;
 
-INSERT INTO public.applications (
-    client_id,
-    name,
-    app_type,
-    tags,
-    redirect_uris,
-    enabled,
-    created_by
-) VALUES (
-    'pvm-stagegerege-mn',
-    'pvm.stagegerege.mn',
-    'web',
-    ARRAY['rp', 'stage']::text[],
-    ARRAY['https://pvm.stagegerege.mn/sso/callback']::text[],
-    true,
-    'seed-rp'
-) ON CONFLICT (client_id) DO UPDATE SET
-    redirect_uris = EXCLUDED.redirect_uris,
-    name = EXCLUDED.name;
+-- `public.applications` нь Hydra-гийн үеийн ХУУЧИН overlay хүснэгт. Хэрэглэгч
+-- платформууд түүнийг өөрсдийн migration-аар УСТГАСАН байж болно (жишээ нь
+-- gerege-platform-mn-ий `1003_drop_legacy_applications` — client-ууд одоо
+-- зөвхөн `oauth_clients`-д амьдардаг). Тэдгээр дээр болзолгүй INSERT нь
+--
+--     ERROR: relation "public.applications" does not exist (SQLSTATE 42P01)
+--
+-- өгч migration-ыг унагаадаг тул deploy БҮХЭЛДЭЭ гацна (2026-08-03-нд
+-- gerege-platform-mn дээр хэмжигдсэн). Иймд хүснэгт БАЙГАА тохиолдолд Л бичнэ.
+DO $$
+BEGIN
+    IF to_regclass('public.applications') IS NOT NULL THEN
+        INSERT INTO public.applications (
+            client_id,
+            name,
+            app_type,
+            tags,
+            redirect_uris,
+            enabled,
+            created_by
+        ) VALUES (
+            'pvm-stagegerege-mn',
+            'pvm.stagegerege.mn',
+            'web',
+            ARRAY['rp', 'stage']::text[],
+            ARRAY['https://pvm.stagegerege.mn/sso/callback']::text[],
+            true,
+            'seed-rp'
+        ) ON CONFLICT (client_id) DO UPDATE SET
+            redirect_uris = EXCLUDED.redirect_uris,
+            name = EXCLUDED.name;
+    END IF;
+END $$;
 
 -- Ensure template-gerege-mn also accepts pvm.stagegerege.mn callback as alias
 UPDATE public.oauth_clients
