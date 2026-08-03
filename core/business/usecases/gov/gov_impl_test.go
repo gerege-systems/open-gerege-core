@@ -4,9 +4,11 @@ package gov
 
 import (
 	"context"
+	"errors"
 	"testing"
 	"time"
 
+	"github.com/gerege-systems/open-gerege-core/core/apperror"
 	"github.com/gerege-systems/open-gerege-core/core/business/domain"
 	repointerface "github.com/gerege-systems/open-gerege-core/core/datasources/repositories/interface"
 )
@@ -23,6 +25,12 @@ type fakeRepo struct {
 	withOutputRef *domain.GovReference
 	notifications []domain.GovNotification
 	decision      *repointerface.GovDecisionInput
+	events        []domain.GovApplicationEvent
+	statusSet     []string // SetApplicationStatus-д дамжсан төлвүүд
+
+	// тохируулж болох алдаанууд
+	statusErr error
+	eventErr  error
 }
 
 func (f *fakeRepo) GetService(context.Context, string) (domain.GovService, error) {
@@ -87,7 +95,10 @@ func (f *fakeRepo) ListApplications(context.Context, string) ([]domain.GovApplic
 func (f *fakeRepo) GetApplication(context.Context, string, string) (domain.GovApplication, error) {
 	return domain.GovApplication{}, nil
 }
-func (f *fakeRepo) SetApplicationStatus(context.Context, string, string, string) error { return nil }
+func (f *fakeRepo) SetApplicationStatus(_ context.Context, _, _, status string) error {
+	f.statusSet = append(f.statusSet, status)
+	return f.statusErr
+}
 func (f *fakeRepo) QueueStats(context.Context, string) (domain.GovQueueStats, error) {
 	return domain.GovQueueStats{}, nil
 }
@@ -103,7 +114,11 @@ func (f *fakeRepo) RequestMoreInfo(context.Context, string, string, string) (dom
 func (f *fakeRepo) ResumeFromInfo(context.Context, string, string) (domain.GovApplication, error) {
 	return domain.GovApplication{}, nil
 }
-func (f *fakeRepo) AppendApplicationEvent(context.Context, *domain.GovApplicationEvent) error {
+func (f *fakeRepo) AppendApplicationEvent(_ context.Context, e *domain.GovApplicationEvent) error {
+	if f.eventErr != nil {
+		return f.eventErr
+	}
+	f.events = append(f.events, *e)
 	return nil
 }
 func (f *fakeRepo) ListApplicationEvents(context.Context, string) ([]domain.GovApplicationEvent, error) {
@@ -341,4 +356,41 @@ func TestListQueueRejectsForeignAssignee(t *testing.T) {
 
 func (f *fakeRepo) CompleteApplication(_ context.Context, id, _ string, _ *domain.GovNotification) (domain.GovApplication, error) {
 	return domain.GovApplication{ID: id, Status: domain.GovStatusCompleted}, nil
+}
+
+// Цуцлалт нь төлвийг cancelled болгож, timeline-д ул мөр үлдээнэ.
+func TestCancelApplicationRecordsTimeline(t *testing.T) {
+	f := &fakeRepo{}
+	if err := newUC(f).CancelApplication(context.Background(), "u1", "a1"); err != nil {
+		t.Fatal(err)
+	}
+	if len(f.statusSet) != 1 || f.statusSet[0] != domain.GovStatusCancelled {
+		t.Fatalf("statusSet = %v", f.statusSet)
+	}
+	if len(f.events) != 1 || f.events[0].Type != "cancelled" || f.events[0].ActorRole != "user" {
+		t.Fatalf("events = %+v", f.events)
+	}
+}
+
+// Timeline-д бичих эрх байхгүй (иргэний RLS дүрд WITH CHECK (false)) байсан ч
+// цуцлалт өөрөө амжилттай болсон тул иргэнд алдаа буцаахгүй.
+func TestCancelApplicationSurvivesTimelineFailure(t *testing.T) {
+	f := &fakeRepo{eventErr: errors.New("rls: new row violates row-level security policy")}
+	if err := newUC(f).CancelApplication(context.Background(), "u1", "a1"); err != nil {
+		t.Fatalf("timeline алдаа цуцлалтыг унагаах ёсгүй: %v", err)
+	}
+	if len(f.statusSet) != 1 {
+		t.Fatalf("statusSet = %v", f.statusSet)
+	}
+}
+
+// Цуцлалт өөрөө бүтэлгүй бол алдаа иргэнд хүрнэ (нуугдахгүй).
+func TestCancelApplicationPropagatesRepoError(t *testing.T) {
+	f := &fakeRepo{statusErr: apperror.Conflict("хүсэлт энэ төлвөөс шилжих боломжгүй")}
+	if err := newUC(f).CancelApplication(context.Background(), "u1", "a1"); err == nil {
+		t.Fatal("алдаа хүлээсэн")
+	}
+	if len(f.events) != 0 {
+		t.Fatalf("бүтэлгүй цуцлалтад timeline бичигдэх ёсгүй: %+v", f.events)
+	}
 }

@@ -326,7 +326,13 @@ func (r *govRepository) CreateApplicationWithOutput(
 //
 // Мөрийг FOR UPDATE-аар түгжиж уншсны дараа шилжүүлнэ — зэрэг ирсэн хоёр
 // шийдвэрийн уралдаанд нэг нь л амжилттай болно. Цуцлалт нь эцсийн үр дүнг
-// «иргэн татав» (withdrawn) болгож, timeline-д ул мөр үлдээнэ.
+// «иргэн татав» (withdrawn) болгоно.
+//
+// Timeline бичлэгийг ЭНД бичихгүй: gov_application_events-ийн иргэний бодлого
+// нь WITH CHECK (false) (migration 44 — timeline-г зөвхөн систем/менежер
+// бичнэ) тул иргэний RLS дүрээр INSERT хийвэл транзакц бүхэлдээ унана.
+// Usecase давхарга нь ул мөрийг тусад нь, унаж болох (non-fatal) байдлаар
+// бичнэ.
 func (r *govRepository) SetApplicationStatus(ctx context.Context, userID, id, status string) error {
 	return r.withRLS(ctx, func(tx pgx.Tx) error {
 		var from string
@@ -346,23 +352,13 @@ func (r *govRepository) SetApplicationStatus(ctx context.Context, userID, id, st
 		if status == domain.GovStatusCancelled {
 			result = domain.GovResultWithdrawn
 		}
-		if _, err := tx.Exec(ctx,
+		_, err := tx.Exec(ctx,
 			`UPDATE gov_applications
 			    SET status = $3,
 			        result = CASE WHEN $4 = '' THEN result ELSE $4 END,
 			        updated_at = now()
-			  WHERE id = $1 AND user_id = $2`, id, userID, status, result); err != nil {
-			return err
-		}
-
-		detail := ""
-		if status == domain.GovStatusCancelled {
-			detail = "Иргэн хүсэлтээ цуцлав"
-		}
-		return appendEventTx(ctx, tx, &domain.GovApplicationEvent{
-			ApplicationID: id, ActorID: &userID, ActorRole: "user",
-			FromStatus: from, ToStatus: status, Type: "cancelled", Detail: detail,
-		}, userID)
+			  WHERE id = $1 AND user_id = $2`, id, userID, status, result)
+		return err
 	})
 }
 

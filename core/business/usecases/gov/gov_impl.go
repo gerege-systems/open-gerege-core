@@ -172,7 +172,14 @@ func (uc *usecase) applyManual(ctx context.Context, svc domain.GovService, app d
 }
 
 func (uc *usecase) CancelApplication(ctx context.Context, userID, id string) error {
-	return uc.repo.SetApplicationStatus(ctx, userID, id, domain.GovStatusCancelled)
+	if err := uc.repo.SetApplicationStatus(ctx, userID, id, domain.GovStatusCancelled); err != nil {
+		return err
+	}
+	// Ул мөрийг тусад нь бичнэ — иргэний RLS дүр timeline-д бичих эрхгүй тул
+	// энэ нь унаж болно (uc.event нь алдааг логдоод үргэлжилнэ). Цуцлалт нь
+	// аль хэдийн commit болсон учир иргэнд алдаа буцаах нь буруу байх байв.
+	uc.event(ctx, id, userID, "user", domain.GovStatusCancelled, "cancelled", "Иргэн хүсэлтээ цуцлав")
+	return nil
 }
 
 func (uc *usecase) ApplicationTimeline(ctx context.Context, userID, id string) ([]domain.GovApplicationEvent, error) {
