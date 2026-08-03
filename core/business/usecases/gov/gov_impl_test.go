@@ -394,3 +394,78 @@ func TestCancelApplicationPropagatesRepoError(t *testing.T) {
 		t.Fatalf("бүтэлгүй цуцлалтад timeline бичигдэх ёсгүй: %+v", f.events)
 	}
 }
+
+// ── Үүсгэх замын timeline (2026-08-03) ──────────────────────────────────────
+//
+// Хүсэлт үүсгэх ул мөрийг repository транзакц дотор бичдэг байсан нь
+// цуцлалттай ЯГ ижил алдаа байв: gov_application_events дээрх иргэний бодлого
+// нь WITH CHECK (false) тул RLS хатуу орчинд INSERT транзакцийг бүхэлд нь
+// унагааж, `POST /api/gov/applications` нь 500 өгдөг байсан (прод дээр
+// хэмжигдсэн). Одоо ул мөр usecase давхаргаас, унаж болох байдлаар бичигдэнэ.
+
+func TestApplyManualRecordsTimeline(t *testing.T) {
+	f := &fakeRepo{svc: domain.GovService{
+		ID: "svc-2", Code: "MN-0451-001", Name: "Жолооны үнэмлэх сунгах",
+		Fulfilment: domain.GovFulfilmentManual, SLAHours: 120,
+		Enabled: true, Lifecycle: "active",
+	}}
+	if _, err := newUC(f).Apply(context.Background(), "user-1", ApplyRequest{ServiceID: "svc-2"}); err != nil {
+		t.Fatalf("Apply: %v", err)
+	}
+	if len(f.events) != 1 {
+		t.Fatalf("timeline бичлэг = %d, хүсэн хүлээсэн 1: %+v", len(f.events), f.events)
+	}
+	if f.events[0].Type != "created" || f.events[0].ActorRole != "user" {
+		t.Errorf("event = %+v", f.events[0])
+	}
+}
+
+func TestApplyAutoRecordsTimeline(t *testing.T) {
+	f := &fakeRepo{svc: domain.GovService{
+		ID: "svc-1", Code: "MN-0133-001", Name: "Иргэний үнэмлэхийн лавлагаа",
+		Fulfilment: domain.GovFulfilmentAuto, OutputRefType: "reference",
+		Enabled: true, Lifecycle: "active",
+	}}
+	if _, err := newUC(f).Apply(context.Background(), "user-1", ApplyRequest{ServiceID: "svc-1"}); err != nil {
+		t.Fatalf("Apply: %v", err)
+	}
+	if len(f.events) != 1 || f.events[0].Type != "auto_fulfilled" {
+		t.Fatalf("events = %+v", f.events)
+	}
+}
+
+// Энэ бол гол баталгаа: timeline бичих эрхгүй байх нь хүсэлт үүсэхийг
+// УНАГААХ ЁСГҮЙ. Урвуу тохиолдол нь прод дээр 500 өгч байсан алдаа мөн.
+func TestApplyManualSurvivesTimelineFailure(t *testing.T) {
+	f := &fakeRepo{
+		eventErr: errors.New("rls: new row violates row-level security policy"),
+		svc: domain.GovService{
+			ID: "svc-2", Code: "MN-0451-001", Name: "Жолооны үнэмлэх сунгах",
+			Fulfilment: domain.GovFulfilmentManual, SLAHours: 120,
+			Enabled: true, Lifecycle: "active",
+		}}
+	res, err := newUC(f).Apply(context.Background(), "user-1", ApplyRequest{ServiceID: "svc-2"})
+	if err != nil {
+		t.Fatalf("timeline алдаа хүсэлт үүсгэхийг унагаах ёсгүй: %v", err)
+	}
+	if res.Application.ID == "" {
+		t.Fatal("хүсэлт буцаагдаагүй")
+	}
+}
+
+func TestApplyAutoSurvivesTimelineFailure(t *testing.T) {
+	f := &fakeRepo{
+		eventErr: errors.New("rls: new row violates row-level security policy"),
+		svc: domain.GovService{
+			ID: "svc-1", Code: "MN-0133-001", Name: "Иргэний үнэмлэхийн лавлагаа",
+			Fulfilment: domain.GovFulfilmentAuto, OutputRefType: "reference",
+			Enabled: true, Lifecycle: "active",
+		}}
+	res, err := newUC(f).Apply(context.Background(), "user-1", ApplyRequest{ServiceID: "svc-1"})
+	if err != nil {
+		t.Fatalf("timeline алдаа шууд олголтыг унагаах ёсгүй: %v", err)
+	}
+	if !res.AutoIssued {
+		t.Fatal("AutoIssued=true байх ёстой")
+	}
+}

@@ -237,6 +237,11 @@ func insertApplication(ctx context.Context, tx pgx.Tx, in *domain.GovApplication
 		in.DecisionNote, in.Tacit))
 }
 
+// Timeline бичлэгийг ЭНД бичихгүй — цуцлалттай ижил шалтгаан (доорх
+// SetApplicationStatus дээрх тайлбарыг үз): gov_application_events дээрх
+// иргэний бодлого нь WITH CHECK (false) тул иргэний RLS дүрээр INSERT хийвэл
+// транзакц бүхэлдээ унаж, хүсэлт огт үүсэхгүй болно. Usecase давхарга нь ул
+// мөрийг тусад нь, унаж болох (non-fatal) байдлаар бичнэ.
 func (r *govRepository) CreateApplication(ctx context.Context, in *domain.GovApplication) (domain.GovApplication, error) {
 	var out domain.GovApplication
 	err := r.withRLS(ctx, func(tx pgx.Tx) error {
@@ -245,11 +250,7 @@ func (r *govRepository) CreateApplication(ctx context.Context, in *domain.GovApp
 			return scanErr
 		}
 		out = a
-		return appendEventTx(ctx, tx, &domain.GovApplicationEvent{
-			ApplicationID: a.ID, ActorID: &a.UserID, ActorRole: "user",
-			ToStatus: a.Status, Type: "created",
-			Detail: "Хүсэлт илгээгдэв",
-		}, a.UserID)
+		return nil
 	})
 	return out, err
 }
@@ -304,14 +305,9 @@ func (r *govRepository) CreateApplicationWithOutput(
 			}
 		}
 
-		if err := appendEventTx(ctx, tx, &domain.GovApplicationEvent{
-			ApplicationID: a.ID, ActorID: &a.UserID, ActorRole: "user",
-			ToStatus: a.Status, Type: "auto_fulfilled",
-			Detail: "Бүртгэлээс шууд олгогдов (хүний оролцоогүй)",
-		}, a.UserID); err != nil {
-			return err
-		}
-
+		// Timeline бичлэг ЭНД БАЙХГҮЙ — CreateApplication дээрх тайлбарыг үз.
+		// Лавлага, мэдэгдэл хоёр нь атомт хэвээр (иргэн тэдгээрт бичих
+		// эрхтэй); зөвхөн ул мөр л usecase давхаргад шилжсэн.
 		outApp = a
 		return nil
 	})

@@ -139,6 +139,12 @@ func (uc *usecase) applyAuto(ctx context.Context, svc domain.GovService, app dom
 	if err != nil {
 		return ApplyResult{}, err
 	}
+	// Ул мөрийг тусад нь бичнэ — иргэний RLS дүр timeline-д бичих эрхгүй тул
+	// энэ нь унаж болно (uc.event нь алдааг логдоод үргэлжилнэ). Хүсэлт болон
+	// лавлага аль хэдийн commit болсон учир иргэнд алдаа буцаах нь буруу.
+	uc.event(ctx, outApp.ID, outApp.UserID, "user", outApp.Status, "auto_fulfilled",
+		"Бүртгэлээс шууд олгогдов (хүний оролцоогүй)")
+
 	res := ApplyResult{Application: outApp, AutoIssued: true}
 	if ref != nil {
 		res.Reference = &outRef
@@ -160,6 +166,10 @@ func (uc *usecase) applyManual(ctx context.Context, svc domain.GovService, app d
 	if err != nil {
 		return ApplyResult{}, err
 	}
+	// Ул мөрийг тусад нь бичнэ — иргэний RLS дүр timeline-д бичих эрхгүй тул
+	// энэ нь унаж болно (uc.event нь алдааг логдоод үргэлжилнэ). Хүсэлт аль
+	// хэдийн commit болсон учир иргэнд алдаа буцаах нь буруу байх байв.
+	uc.event(ctx, out.ID, out.UserID, "user", out.Status, "created", "Хүсэлт илгээгдэв")
 
 	// Art.6(2)(b) — гаралт шууд олгогдоогүй тул хүлээн авсан тухай мэдэгдэл.
 	body := "Таны " + svc.Name + " хүсэлт бүртгэгдлээ. Лавлах дугаар: " + out.ReferenceNo + "."
