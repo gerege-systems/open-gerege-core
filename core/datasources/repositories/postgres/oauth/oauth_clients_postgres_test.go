@@ -131,8 +131,25 @@ func TestOAuthClientRepository(t *testing.T) {
 
 		list, err := repo.List(ctx)
 		require.NoError(t, err)
-		require.Len(t, list, 2)
-		assert.Equal(t, "template-dgov-mn", list[0].ClientID, "newest client should sort first")
+
+		// Migration-аар суудаг seed client-ууд (51-ийн pvm-stagegerege-mn г.м.)
+		// энэ жагсаалтад хамт ирнэ. Тиймээс нийт тоог ХАТУУ бичихгүй —
+		// эс бөгөөс шинэ seed migration нэмэгдэх бүрд энэ тест унана
+		// (2026-08-03-нд яг ингэж унасан). Шалгах зүйл нь эрэмбэ.
+		pos := make(map[string]int, len(list))
+		for i, c := range list {
+			pos[c.ClientID] = i
+		}
+		require.Contains(t, pos, "ring-dgov-mn")
+		require.Contains(t, pos, "template-dgov-mn")
+		assert.Less(t, pos["template-dgov-mn"], pos["ring-dgov-mn"],
+			"newest client should sort first")
+
+		// ORDER BY created_at DESC-ыг бүх мөр дээр батална.
+		for i := 1; i < len(list); i++ {
+			assert.False(t, list[i-1].CreatedAt.Before(list[i].CreatedAt),
+				"list must be ordered by created_at DESC")
+		}
 	})
 
 	t.Run("delete", func(t *testing.T) {
