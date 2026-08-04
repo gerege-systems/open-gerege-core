@@ -97,6 +97,8 @@ import (
 	"github.com/gerege-systems/open-gerege-core/pkg/verify"
 	"github.com/gerege-systems/open-gerege-core/pkg/xyp"
 
+	"github.com/gerege-systems/open-gerege-core/kernel/module"
+
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -170,7 +172,8 @@ type App struct {
 	govWriteRateLimiter *middlewares.RateLimiter
 	relayUC             relayuc.Usecase // SLA worker + demo simulator (background)
 	relayDemo           bool
-	govUC               gov.Usecase // gov SLA sweep (background)
+	govUC               gov.Usecase      // gov SLA sweep (background)
+	modules             *module.Registry // модулийн бүртгэл + идэвхийн төлөв
 }
 
 func NewApp() (*App, error) {
@@ -181,6 +184,22 @@ func NewApp() (*App, error) {
 	}
 
 	ctx := context.Background()
+
+	// Модулийн бүртгэл — builtin манифестууд + MODULES_DISABLED env.
+	// Core модуль эсвэл бүртгэлгүй ID унтраах гэвэл boot-ыг шууд унагаана:
+	// тохиргооны алдааг чимээгүй үл тоох нь далд эвдрэл болдог.
+	modReg := module.Builtin()
+	if err := modReg.ApplyDisabledList(config.AppConfig.ModulesDisabled); err != nil {
+		return nil, fmt.Errorf("MODULES_DISABLED: %w", err)
+	}
+	for _, s := range modReg.List() {
+		if !s.Enabled {
+			logger.Info("модуль унтраалттай", logger.Fields{
+				constants.LoggerCategory: constants.LoggerCategoryServer,
+				"module":                 s.Manifest.ID,
+			})
+		}
+	}
 
 	// Tracer-ийг эхэлд тохируулна — ингэснээр дараагийн тохиргооноос
 	// ялгарах span-ууд зөв provider руу очно.
@@ -619,8 +638,12 @@ func NewApp() (*App, error) {
 
 	r.Route("/api", func(api chi.Router) {
 		api.Use(gwLogMW)
+		// Модулийн gate — идэвхгүй модулийн бүх route 404. Телеметрийн ДАРАА
+		// байрлана: хаагдсан хүсэлт ч gateway логт харагдана.
+		api.Use(module.Gate(modReg))
 
 		api.Get("/", routes.RootHandler)
+		routes.NewPlatformRoute(api, modReg).Routes()
 		routes.NewAuthRoute(api, authUC, auditUC, WalletProvisioner, authMiddleware, authRateLimiter, pollRateLimiter).Routes()
 		routes.NewUsersRoute(api, usersUC, authMiddleware, ssoEidProxy != nil).Routes()
 		routes.NewEIDProfileRoute(api, authUC, authMiddleware, govWriteRateLimiter).Routes()
@@ -745,6 +768,7 @@ func NewApp() (*App, error) {
 		relayUC:             relayUC,
 		relayDemo:           config.AppConfig.RelayDemoMode,
 		govUC:               govUC,
+		modules:             modReg,
 	}, nil
 }
 
@@ -797,6 +821,10 @@ func (a *App) Router() chi.Router { return a.router }
 
 // Pool нь апп өөрийн repository-гоо байгуулахад хэрэглэх DB pool-ыг буцаана.
 func (a *App) Pool() *pgxpool.Pool { return a.pool }
+
+// Modules нь модулийн бүртгэлийг буцаана — нимгэн апп өөрийн модулиа
+// нэмж бүртгэх/идэвхийг нь шалгахад хэрэглэнэ.
+func (a *App) Modules() *module.Registry { return a.modules }
 
 // AuthMiddleware нь суурийн JWT танилтын middleware-ийг буцаана — апп өөрийн
 // маршрутаа ижил session-оор хамгаалахад хэрэглэнэ:
