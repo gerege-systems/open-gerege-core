@@ -25,7 +25,6 @@ import (
 	"github.com/gerege-systems/open-gerege-core/core/business/usecases/gateway"
 	languageuc "github.com/gerege-systems/open-gerege-core/core/business/usecases/language"
 	oidcuc "github.com/gerege-systems/open-gerege-core/core/business/usecases/oidc"
-	"github.com/gerege-systems/open-gerege-core/core/business/usecases/org"
 	"github.com/gerege-systems/open-gerege-core/core/business/usecases/rbac"
 	"github.com/gerege-systems/open-gerege-core/core/business/usecases/security"
 	"github.com/gerege-systems/open-gerege-core/core/business/usecases/sign"
@@ -45,7 +44,6 @@ import (
 	gatewaypostgres "github.com/gerege-systems/open-gerege-core/core/datasources/repositories/postgres/gateway"
 	languagepostgres "github.com/gerege-systems/open-gerege-core/core/datasources/repositories/postgres/language"
 	oauthpostgres "github.com/gerege-systems/open-gerege-core/core/datasources/repositories/postgres/oauth"
-	orgpostgres "github.com/gerege-systems/open-gerege-core/core/datasources/repositories/postgres/org"
 	orgstamppostgres "github.com/gerege-systems/open-gerege-core/core/datasources/repositories/postgres/orgstamp"
 	platformsettings "github.com/gerege-systems/open-gerege-core/core/datasources/repositories/postgres/platformsettings"
 	rbacpostgres "github.com/gerege-systems/open-gerege-core/core/datasources/repositories/postgres/rbac"
@@ -91,6 +89,7 @@ import (
 	govmod "github.com/gerege-systems/open-gerege-core/modules/gov"
 	gspacemod "github.com/gerege-systems/open-gerege-core/modules/gspace"
 	integrationsmod "github.com/gerege-systems/open-gerege-core/modules/integrations"
+	orgmod "github.com/gerege-systems/open-gerege-core/modules/org"
 	platformmod "github.com/gerege-systems/open-gerege-core/modules/platform"
 	providermod "github.com/gerege-systems/open-gerege-core/modules/provider"
 	registrymod "github.com/gerege-systems/open-gerege-core/modules/registry"
@@ -207,6 +206,7 @@ func platformModules() []module.Module {
 		govmod.New(),
 		gspacemod.New(),
 		integrationsmod.New(),
+		orgmod.New(),
 		platformmod.New(),
 		providermod.New(),
 		registrymod.New(),
@@ -402,8 +402,6 @@ func NewApp() (*App, error) {
 	rbacUC := rbac.NewUsecase(rbacRepo)
 
 	// Organizations — байгууллага + гишүүнчлэл (RLS-тэй; бичих эрх usecase-д).
-	orgRepo := orgpostgres.NewOrgRepository(pool)
-	orgUC := org.NewUsecase(orgRepo)
 
 	// Gov портал (gov) — modules/gov дотор угсарна (route + SLA sweep worker).
 
@@ -672,7 +670,6 @@ func NewApp() (*App, error) {
 		routes.NewUsersRoute(api, usersUC, authMiddleware, ssoEidProxy != nil).Routes()
 		routes.NewEIDProfileRoute(api, authUC, authMiddleware, govWriteRateLimiter).Routes()
 		routes.NewRBACRoute(api, rbacUC, auditUC, authMiddleware).Routes()
-		routes.NewOrgRoute(api, orgUC, auditUC, authMiddleware).Routes()
 		routes.NewAssetsRoute(api, assetsUC, authMiddleware, govWriteRateLimiter).Routes()
 		routes.NewSSORoute(api, ssoUC).Routes()
 		routes.NewAdminRoute(api, usersUC, rbacUC, aiUC, authMiddleware).Routes()
