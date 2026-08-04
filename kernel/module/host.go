@@ -65,6 +65,14 @@ const (
 	// platform модуль үүгээр асаах/унтраах үйлдлээ гүйцэтгэнэ. Kernel-ийн
 	// төлөв тул зөвхөн platform модульд утга учиртай.
 	ServiceModuleRegistry = "module.registry"
+	// ServiceEID — eid.Client (иргэний eID үйлчилгээний client). Kernel
+	// түвшний хуваалцсан нөөц: танилт, гарын үсэг, asset хэд хэдэн модульд
+	// хэрэгтэй тул тус бүр дахин үүсгэхгүй.
+	ServiceEID = "eid"
+	// ServiceUserRepo — repointerface.UserRepository. Ерөнхийдөө модулиуд
+	// usecase-ээр харилцана; assets нь eID профайлын талбаруудыг шууд
+	// уншдаг тул ОНЦГОЙ тохиолдлоор repo-г шаардана.
+	ServiceUserRepo = "users.repo"
 	// ServiceModuleStore — platformuc.Store (модулийн төлвийн persistence).
 	// Boot дээрх RestoreDisabled нь gate суухаас ӨМНӨ ажиллах ёстой тул
 	// store-ыг server.go үүсгэж, admin API-д зориулж энд дамжуулна.

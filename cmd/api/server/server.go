@@ -19,7 +19,6 @@ import (
 
 	"github.com/gerege-systems/open-gerege-core/core/business/domain"
 	"github.com/gerege-systems/open-gerege-core/core/business/usecases/ai"
-	"github.com/gerege-systems/open-gerege-core/core/business/usecases/assets"
 	"github.com/gerege-systems/open-gerege-core/core/business/usecases/audit"
 	"github.com/gerege-systems/open-gerege-core/core/business/usecases/auth"
 	"github.com/gerege-systems/open-gerege-core/core/business/usecases/gateway"
@@ -38,7 +37,6 @@ import (
 	repointerface "github.com/gerege-systems/open-gerege-core/core/datasources/repositories/interface"
 	gatewaypostgres "github.com/gerege-systems/open-gerege-core/core/datasources/repositories/postgres/gateway"
 	oauthpostgres "github.com/gerege-systems/open-gerege-core/core/datasources/repositories/postgres/oauth"
-	orgstamppostgres "github.com/gerege-systems/open-gerege-core/core/datasources/repositories/postgres/orgstamp"
 	platformsettings "github.com/gerege-systems/open-gerege-core/core/datasources/repositories/postgres/platformsettings"
 	recoverypostgres "github.com/gerege-systems/open-gerege-core/core/datasources/repositories/postgres/recovery"
 	ssotokenpostgres "github.com/gerege-systems/open-gerege-core/core/datasources/repositories/postgres/ssotoken"
@@ -72,6 +70,7 @@ import (
 	"github.com/gerege-systems/open-gerege-core/kernel/module"
 	aimod "github.com/gerege-systems/open-gerege-core/modules/ai"
 	applicationsmod "github.com/gerege-systems/open-gerege-core/modules/applications"
+	assetsmod "github.com/gerege-systems/open-gerege-core/modules/assets"
 	auditmod "github.com/gerege-systems/open-gerege-core/modules/audit"
 	corefindmod "github.com/gerege-systems/open-gerege-core/modules/corefind"
 	eidproxymod "github.com/gerege-systems/open-gerege-core/modules/eidproxy"
@@ -197,6 +196,7 @@ func platformModules() []module.Module {
 		// алга" гэж алдаа өгч boot унана (чимээгүй nil биш).
 		auditmod.New(),
 		rbacmod.New(),
+		assetsmod.New(),
 
 		// ── Core: хэрэглэгч талын модулиуд ─────────────────────────────
 		orgmod.New(),
@@ -430,8 +430,6 @@ func NewApp() (*App, error) {
 	// Гуравдагч интеграци (integrations) ба Gerege Space (gspace) — өөрсдийн
 	// modules/<id>/module.go дотор угсарна (Phase 1 modular wiring).
 	// Гарын үсэг (хувь хүн) + байгууллагын тамга (ADMIN) — зураг Google Drive-д, URL DB-д.
-	orgStampRepo := orgstamppostgres.NewOrgStampRepository(pool)
-	assetsUC := assets.NewUsecase(usersUC, userRepo, orgStampRepo, eidClient)
 
 	// Audit (hash-гинжтэй лог) + security events — modules/audit.
 
@@ -614,12 +612,13 @@ func NewApp() (*App, error) {
 				module.ServiceUsers:            usersUC,
 				module.ServiceWriteRateLimiter: govWriteRateLimiter,
 				module.ServiceRedis:            redisCache,
-				module.ServiceAssets:           assetsUC,
 				module.ServiceGateway:          gatewayUC,
 				module.ServiceGeminiChat:       geminiClient,
 				module.ServiceGeminiTTS:        geminiTTSClient,
 				module.ServiceAuth:             authUC,
 				module.ServiceOIDCService:      oidcSvc,
+				module.ServiceEID:              eidClient,
+				module.ServiceUserRepo:         userRepo,
 				module.ServiceModuleRegistry:   modReg,
 				module.ServiceModuleStore:      platformModulesStore,
 			},
@@ -661,7 +660,6 @@ func NewApp() (*App, error) {
 		routes.NewAuthRoute(api, authUC, auditUC, WalletProvisioner, authMiddleware, authRateLimiter, pollRateLimiter).Routes()
 		routes.NewUsersRoute(api, usersUC, authMiddleware, ssoEidProxy != nil).Routes()
 		routes.NewEIDProfileRoute(api, authUC, authMiddleware, govWriteRateLimiter).Routes()
-		routes.NewAssetsRoute(api, assetsUC, authMiddleware, govWriteRateLimiter).Routes()
 		routes.NewSSORoute(api, ssoUC).Routes()
 		routes.NewAdminRoute(api, usersUC, rbacUC, aiUC, authMiddleware).Routes()
 		routes.NewSuperAdminRoute(api, superadminUC, authMiddleware).Routes()
