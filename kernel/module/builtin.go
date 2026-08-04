@@ -127,7 +127,7 @@ func Builtin() *Registry {
 		Manifest{
 			ID: "eidproxy", Name: "eID service proxy (RP дамжуулалт)", Kind: KindBusiness,
 			DependsOn:     []string{"auth", "provider"},
-			RoutePrefixes: []string{"/api/v1/eid/", "/api/v1/eid-org/"},
+			RoutePrefixes: []string{"/api/v1/eid/", "/api/v1/eid-org/", "/api/v1/eid-auth/"},
 			UIPrefixes:    []string{"/me/eid/"},
 		},
 	)

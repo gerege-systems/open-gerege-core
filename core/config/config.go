@@ -190,6 +190,15 @@ type Config struct {
 	// шууд eidmongolia (EID_BASE_URL) зам. offline_access scope + хадгалагдсан
 	// SSO refresh token шаардана.
 	SSOEidProxyBaseURL string `mapstructure:"SSO_EID_PROXY_BASE_URL"`
+	// SSOEidAuthBaseURL нь SSO-ий eID НЭВТРЭЛТИЙН proxy-ийн суурь URL (жишээ
+	// https://sso.gerege.mn/rp/eid-auth). Тохируулсан бол супер админ бүртгэлийн
+	// eID алхам нь шууд eidmongolia-ий оронд SSO-гоор дамжина — энэ платформ eID
+	// RP креденшл эзэмших шаардлагагүй. SSO_CLIENT_ID/SECRET-ээр (аппын
+	// client_credentials токен) баталгаажна; тэдгээр нь хоосон бол шууд зам.
+	//
+	// SSO_EID_PROXY_BASE_URL-ээс ЯЛГААТАЙ: тэр нь иргэний токеноор PKI УНШИНА;
+	// энэ нь иргэнийг ШИНЭЭР танихад (нэвтрэлт эхлүүлэх/poll) хэрэглэгдэнэ.
+	SSOEidAuthBaseURL string `mapstructure:"SSO_EID_AUTH_BASE_URL"`
 
 	// RelayDemoMode нь platform-хоорондын хүсэлт дамжуулах feature-ийн demo
 	// simulator-ыг идэвхжүүлнэ — доод platform-уудын нэрийн өмнөөс хариу үүсгэж,

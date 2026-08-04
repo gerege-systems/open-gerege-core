@@ -326,6 +326,31 @@ definitions:
     - name
     - reg_no
     type: object
+  github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.EIDAuthPollRequest:
+    properties:
+      session_id:
+        maxLength: 128
+        type: string
+    required:
+    - session_id
+    type: object
+  github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.EIDAuthStartByNationalIDRequest:
+    properties:
+      callbackUrl:
+        maxLength: 512
+        type: string
+      national_id:
+        maxLength: 32
+        type: string
+    required:
+    - national_id
+    type: object
+  github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.EIDAuthStartRequest:
+    properties:
+      callbackUrl:
+        maxLength: 512
+        type: string
+    type: object
   github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.EIDOrgRegisterRequest:
     properties:
       reg_no:
@@ -1231,6 +1256,45 @@ definitions:
         type: array
       total:
         type: integer
+    type: object
+  github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.EIDAuthIdentityResponse:
+    properties:
+      civil_id:
+        type: string
+      document_number:
+        type: string
+      full_name:
+        type: string
+      given_name:
+        type: string
+      given_name_en:
+        type: string
+      kyc_level:
+        type: string
+      national_id:
+        type: string
+      surname:
+        type: string
+      surname_en:
+        type: string
+    type: object
+  github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.EIDAuthPollResponse:
+    properties:
+      identity:
+        $ref: '#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.EIDAuthIdentityResponse'
+      state:
+        type: string
+    type: object
+  github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.EIDAuthStartResponse:
+    properties:
+      device_link_url:
+        type: string
+      expires_at:
+        type: string
+      session_id:
+        type: string
+      verification_code:
+        type: string
     type: object
   github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.EIDCertCounts:
     properties:
@@ -3104,6 +3168,158 @@ paths:
       summary: Gerege Core хэрэглэгч хайх
       tags:
       - core
+  /eid-auth/poll:
+    post:
+      consumes:
+      - application/json
+      description: eID session-ийн төлвийг long-poll-оор асууна. COMPLETE үед баталгаажсан
+        иргэний identity-г буцаана — дуудагч апп өөрийн бодлогоор (нэвтрүүлэх/баталгаажуулах)
+        шийднэ. Аппын OAuth токен (client_credentials) + svc:eid-auth эрх шаардана.
+      parameters:
+      - description: Session ID
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.EIDAuthPollRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: eID session state
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.EIDAuthPollResponse'
+              type: object
+        "400":
+          description: Malformed JSON body or missing session_id
+          schema:
+            $ref: '#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse'
+        "401":
+          description: Missing or invalid token
+          schema:
+            $ref: '#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse'
+        "403":
+          description: Application is not granted this service
+          schema:
+            $ref: '#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse'
+        "422":
+          description: Validation error
+          schema:
+            $ref: '#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse'
+        "500":
+          description: Failed to reach eID provider
+          schema:
+            $ref: '#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse'
+      security:
+      - BearerAuth: []
+      summary: eID session-ий төлөв (RP proxy)
+      tags:
+      - eid-auth
+  /eid-auth/start:
+    post:
+      consumes:
+      - application/json
+      description: 'Бүртгэлтэй апп (RP)-д зориулсан прокси: SSO нь ӨӨРИЙН eID RP креденшлээр
+        QR/device-link нэвтрэлт эхлүүлж өгнө. Аппад eID креденшл хэрэггүй. Аппын OAuth
+        токен (client_credentials) + svc:eid-auth эрх шаардана.'
+      parameters:
+      - description: Сонголтоор callbackUrl (same-device)
+        in: body
+        name: request
+        schema:
+          $ref: '#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.EIDAuthStartRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: eID session started
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.EIDAuthStartResponse'
+              type: object
+        "400":
+          description: Malformed JSON body
+          schema:
+            $ref: '#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse'
+        "401":
+          description: Missing or invalid token
+          schema:
+            $ref: '#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse'
+        "403":
+          description: Application is not granted this service
+          schema:
+            $ref: '#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse'
+        "422":
+          description: Validation error
+          schema:
+            $ref: '#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse'
+        "500":
+          description: Failed to reach eID provider
+          schema:
+            $ref: '#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse'
+      security:
+      - BearerAuth: []
+      summary: eID нэвтрэлт эхлүүлэх (QR/device-link, RP proxy)
+      tags:
+      - eid-auth
+  /eid-auth/start-id:
+    post:
+      consumes:
+      - application/json
+      description: 'Бүртгэлтэй апп (RP)-д зориулсан прокси: иргэний РД-аар бүртгэлтэй
+        төхөөрөмж рүү баталгаажуулах push илгээнэ. Аппын OAuth токен (client_credentials)
+        + svc:eid-auth эрх шаардана.'
+      parameters:
+      - description: Иргэний РД
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.EIDAuthStartByNationalIDRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: eID session started
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.EIDAuthStartResponse'
+              type: object
+        "400":
+          description: Malformed JSON body or unknown national_id
+          schema:
+            $ref: '#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse'
+        "401":
+          description: Missing or invalid token
+          schema:
+            $ref: '#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse'
+        "403":
+          description: Application is not granted this service
+          schema:
+            $ref: '#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse'
+        "422":
+          description: Validation error
+          schema:
+            $ref: '#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse'
+        "500":
+          description: Failed to reach eID provider
+          schema:
+            $ref: '#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse'
+      security:
+      - BearerAuth: []
+      summary: eID нэвтрэлт эхлүүлэх (РД-аар push, RP proxy)
+      tags:
+      - eid-auth
   /gateway/logs:
     get:
       parameters:

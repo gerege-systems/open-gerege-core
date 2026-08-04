@@ -187,8 +187,12 @@ type AddSignerInput struct {
 	Role        string
 }
 
-// Client нь eID RP урсгалуудын хийсвэрлэл — тестэд хуурамчаар тавихад хялбар.
-type Client interface {
+// AuthClient нь eID-ийн ЗӨВХӨН нэвтрэлтийн (initiate + poll) хэсэг. Тусад нь
+// гаргасан шалтгаан: eID RP креденшлгүй платформ энэ гурвыг SSO-ийн proxy-гоор
+// (pkg/ssoeidauth) гүйцэтгэдэг — тэр client нь бүтэн Client-ийг (байгууллага,
+// PKI г.м.) хэрэгжүүлэх шаардлагагүй. Хэрэглэгч нь эдгээрийг дуудах үед хараахан
+// танигдаагүй байдаг тул proxy нь иргэний токен биш, АППЫН токеноор ажиллана.
+type AuthClient interface {
 	// QRInitiate нь QR нэвтрэлтийг эхлүүлж session мэдээллийг буцаана. callbackURL
 	// нь энэ template-ийн cross-device QR урсгалд ашиглагддаггүй (RP өөрөө poll
 	// хийнэ) тул зөвхөн интерфейсийн нийцлийн төлөө үлдээв.
@@ -199,6 +203,11 @@ type Client interface {
 	Initiate(ctx context.Context, nationalID, displayText, callbackURL string) (*StartResult, error)
 	// Session нь session-ийн төлвийг long-poll-оор асууна (timeoutMs хүртэл).
 	Session(ctx context.Context, sessionID string, timeoutMs int) (*SessionResult, error)
+}
+
+// Client нь eID RP урсгалуудын хийсвэрлэл — тестэд хуурамчаар тавихад хялбар.
+type Client interface {
+	AuthClient
 	// Representations нь тухайн хүн (personEtsi = PNOMN-<civil_id>)-ий төлөөлж
 	// чадах идэвхтэй байгууллагуудыг буцаана. Иргэн байгууллага төлөөлдөггүй
 	// бол хоосон slice.

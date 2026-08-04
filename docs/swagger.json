@@ -1652,6 +1652,248 @@
                 }
             }
         },
+        "/eid-auth/poll": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "eID session-ийн төлвийг long-poll-оор асууна. COMPLETE үед баталгаажсан иргэний identity-г буцаана — дуудагч апп өөрийн бодлогоор (нэвтрүүлэх/баталгаажуулах) шийднэ. Аппын OAuth токен (client_credentials) + svc:eid-auth эрх шаардана.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "eid-auth"
+                ],
+                "summary": "eID session-ий төлөв (RP proxy)",
+                "parameters": [
+                    {
+                        "description": "Session ID",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.EIDAuthPollRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "eID session state",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.EIDAuthPollResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Malformed JSON body or missing session_id",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Missing or invalid token",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Application is not granted this service",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to reach eID provider",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/eid-auth/start": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Бүртгэлтэй апп (RP)-д зориулсан прокси: SSO нь ӨӨРИЙН eID RP креденшлээр QR/device-link нэвтрэлт эхлүүлж өгнө. Аппад eID креденшл хэрэггүй. Аппын OAuth токен (client_credentials) + svc:eid-auth эрх шаардана.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "eid-auth"
+                ],
+                "summary": "eID нэвтрэлт эхлүүлэх (QR/device-link, RP proxy)",
+                "parameters": [
+                    {
+                        "description": "Сонголтоор callbackUrl (same-device)",
+                        "name": "request",
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.EIDAuthStartRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "eID session started",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.EIDAuthStartResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Malformed JSON body",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Missing or invalid token",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Application is not granted this service",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to reach eID provider",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/eid-auth/start-id": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Бүртгэлтэй апп (RP)-д зориулсан прокси: иргэний РД-аар бүртгэлтэй төхөөрөмж рүү баталгаажуулах push илгээнэ. Аппын OAuth токен (client_credentials) + svc:eid-auth эрх шаардана.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "eid-auth"
+                ],
+                "summary": "eID нэвтрэлт эхлүүлэх (РД-аар push, RP proxy)",
+                "parameters": [
+                    {
+                        "description": "Иргэний РД",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.EIDAuthStartByNationalIDRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "eID session started",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.EIDAuthStartResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Malformed JSON body or unknown national_id",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Missing or invalid token",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Application is not granted this service",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to reach eID provider",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/gateway/logs": {
             "get": {
                 "produces": [
@@ -8809,6 +9051,43 @@
                 }
             }
         },
+        "github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.EIDAuthPollRequest": {
+            "type": "object",
+            "required": [
+                "session_id"
+            ],
+            "properties": {
+                "session_id": {
+                    "type": "string",
+                    "maxLength": 128
+                }
+            }
+        },
+        "github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.EIDAuthStartByNationalIDRequest": {
+            "type": "object",
+            "required": [
+                "national_id"
+            ],
+            "properties": {
+                "callbackUrl": {
+                    "type": "string",
+                    "maxLength": 512
+                },
+                "national_id": {
+                    "type": "string",
+                    "maxLength": 32
+                }
+            }
+        },
+        "github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.EIDAuthStartRequest": {
+            "type": "object",
+            "properties": {
+                "callbackUrl": {
+                    "type": "string",
+                    "maxLength": 512
+                }
+            }
+        },
         "github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.EIDOrgRegisterRequest": {
             "type": "object",
             "required": [
@@ -10091,6 +10370,66 @@
                 },
                 "total": {
                     "type": "integer"
+                }
+            }
+        },
+        "github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.EIDAuthIdentityResponse": {
+            "type": "object",
+            "properties": {
+                "civil_id": {
+                    "type": "string"
+                },
+                "document_number": {
+                    "type": "string"
+                },
+                "full_name": {
+                    "type": "string"
+                },
+                "given_name": {
+                    "type": "string"
+                },
+                "given_name_en": {
+                    "type": "string"
+                },
+                "kyc_level": {
+                    "type": "string"
+                },
+                "national_id": {
+                    "type": "string"
+                },
+                "surname": {
+                    "type": "string"
+                },
+                "surname_en": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.EIDAuthPollResponse": {
+            "type": "object",
+            "properties": {
+                "identity": {
+                    "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.EIDAuthIdentityResponse"
+                },
+                "state": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.EIDAuthStartResponse": {
+            "type": "object",
+            "properties": {
+                "device_link_url": {
+                    "type": "string"
+                },
+                "expires_at": {
+                    "type": "string"
+                },
+                "session_id": {
+                    "type": "string"
+                },
+                "verification_code": {
+                    "type": "string"
                 }
             }
         },

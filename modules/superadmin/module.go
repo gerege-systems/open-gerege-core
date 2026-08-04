@@ -10,6 +10,7 @@ import (
 	"embed"
 	"fmt"
 	"io/fs"
+	"strings"
 	"time"
 
 	audituc "github.com/gerege-systems/open-gerege-core/core/business/usecases/audit"
@@ -32,6 +33,7 @@ import (
 	"github.com/gerege-systems/open-gerege-core/pkg/jwt"
 	"github.com/gerege-systems/open-gerege-core/pkg/logger"
 	"github.com/gerege-systems/open-gerege-core/pkg/oidc"
+	"github.com/gerege-systems/open-gerege-core/pkg/ssoeidauth"
 	"github.com/gerege-systems/open-gerege-core/pkg/verify"
 )
 
@@ -109,6 +111,24 @@ func (m *Module) Register(_ context.Context, host module.Host) error {
 	// бүрийг audit log-д бичнэ.
 	uc := superadminuc.NewUsecase(usersUC, auditUC, inviteRepo, platformsettings.NewRepository(pool))
 
+	// Бүртгэлийн eID алхмыг ЯАЖ гүйцэтгэх вэ: SSO_EID_AUTH_BASE_URL +
+	// SSO_CLIENT_ID/SECRET тохируулсан бол төвийн SSO-ийн eID auth proxy-гоор
+	// (энэ платформ eID RP креденшл эзэмших шаардлагагүй), эс бөгөөс шууд
+	// eidmongolia зам (өөрчлөлтгүй).
+	var onboardEID eid.AuthClient = eidClient
+	ssoEidAuthCfg := ssoeidauth.Config{
+		BaseURL:      config.AppConfig.SSOEidAuthBaseURL,
+		TokenURL:     strings.TrimRight(config.AppConfig.SSOIssuer, "/") + "/oauth2/token",
+		ClientID:     config.AppConfig.SSOClientID,
+		ClientSecret: config.AppConfig.SSOClientSecret,
+	}
+	if ssoEidAuthCfg.Configured() {
+		onboardEID = ssoeidauth.New(ssoEidAuthCfg)
+		logger.Info("superadmin onboarding: eID алхам SSO-ийн proxy-гоор дамжина", logger.Fields{
+			"base": ssoEidAuthCfg.BaseURL,
+		})
+	}
+
 	// Бүртгэлийн шидтэн (урилга → Google → eID → и-мэйл OTP → TOTP) + MFA-тай
 	// super admin нэвтрэлтийн 2 дахь шат. TOTP secret-ийг storage-д AES-GCM-ээр
 	// шифрлэх түлхүүр хэрэгтэй. INTEGRATION_ENC_KEY тохируулсан бол түүнийг
@@ -133,7 +153,7 @@ func (m *Module) Register(_ context.Context, host module.Host) error {
 			config.AppConfig.SSOClientSecret, config.AppConfig.SSORedirectURI,
 			config.AppConfig.SSOScope,
 		),
-		eidClient, verifier,
+		onboardEID, verifier,
 		userRepo,
 		recoverypostgres.NewRecoveryCodeRepository(pool),
 		superadminaccountpostgres.NewSuperadminAccountRepository(pool),
