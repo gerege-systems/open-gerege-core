@@ -60,41 +60,49 @@ func Builtin() *Registry {
 			ID: "gov", Name: "Төрийн үйлчилгээний портал", Kind: KindBusiness,
 			DependsOn:     []string{"auth", "users", "rbac", "org"},
 			RoutePrefixes: []string{"/api/v1/gov/"},
+			UIPrefixes:    []string{"/me/services/", "/me/applications/", "/me/references/", "/me/appointments/", "/me/payments/", "/me/notifications/"},
 		},
 		Manifest{
 			ID: "ai", Name: "AI туслах (Gemini)", Kind: KindBusiness,
 			DependsOn:     []string{"auth"},
 			RoutePrefixes: []string{"/api/v1/ai/", "/api/v1/public/ai/", "/api/v1/admin/ai/"},
+			UIPrefixes:    []string{"/me/ai/", "/me/translate/"},
 		},
 		Manifest{
 			ID: "sign", Name: "Баримт бичгийн гарын үсэг (PAdES)", Kind: KindBusiness,
 			DependsOn:     []string{"auth", "users", "assets"},
 			RoutePrefixes: []string{"/api/v1/sign/"},
+			UIPrefixes:    []string{"/me/eid/sign"},
 		},
 		Manifest{
 			ID: "relay", Name: "Sign relay ба платформ хоорондын дамжуулалт", Kind: KindBusiness,
 			DependsOn:     []string{"sign", "rbac"},
 			RoutePrefixes: []string{"/api/v1/relay/"},
+			UIPrefixes:    []string{"/admin/relay/"},
 		},
 		Manifest{
 			ID: "integrations", Name: "Гуравдагч интеграци (Drive · Meet · Dropbox)", Kind: KindBusiness,
 			DependsOn:     []string{"auth"},
 			RoutePrefixes: []string{"/api/v1/integrations/"},
+			UIPrefixes:    []string{"/me/integrations/"},
 		},
 		Manifest{
 			ID: "gspace", Name: "Gerege Space (SFTP хадгалалт)", Kind: KindBusiness,
 			DependsOn:     []string{"auth"},
 			RoutePrefixes: []string{"/api/v1/gspace/"},
+			UIPrefixes:    []string{"/me/files/"},
 		},
 		Manifest{
 			ID: "gateway-console", Name: "API gateway удирдлага", Kind: KindBusiness,
 			DependsOn:     []string{"rbac"},
 			RoutePrefixes: []string{"/api/v1/gateway/"},
+			UIPrefixes:    []string{"/admin/gateway/"},
 		},
 		Manifest{
 			ID: "registry", Name: "Үйлчилгээний регистр ба каталог", Kind: KindBusiness,
 			DependsOn:     []string{"rbac"},
 			RoutePrefixes: []string{"/api/v1/registry/", "/api/v1/catalog/"},
+			UIPrefixes:    []string{"/admin/registry/"},
 		},
 		Manifest{
 			ID: "provider", Name: "OIDC provider (SSO issuer)", Kind: KindBusiness,
@@ -109,6 +117,7 @@ func Builtin() *Registry {
 			ID: "applications", Name: "OAuth клиент апп-ууд", Kind: KindBusiness,
 			DependsOn:     []string{"provider"},
 			RoutePrefixes: []string{"/api/v1/applications/"},
+			UIPrefixes:    []string{"/admin/applications/"},
 		},
 		Manifest{
 			ID: "core-find", Name: "Gerege Core лавлагаа", Kind: KindBusiness,
@@ -119,6 +128,7 @@ func Builtin() *Registry {
 			ID: "eidproxy", Name: "eID service proxy (RP дамжуулалт)", Kind: KindBusiness,
 			DependsOn:     []string{"auth", "provider"},
 			RoutePrefixes: []string{"/api/v1/eid/", "/api/v1/eid-org/"},
+			UIPrefixes:    []string{"/me/eid/"},
 		},
 	)
 }

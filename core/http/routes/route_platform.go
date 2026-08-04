@@ -34,6 +34,10 @@ type moduleStatusResponse struct {
 	ID      string `json:"id"`
 	Kind    string `json:"kind"`
 	Enabled bool   `json:"enabled"`
+	// UIPrefixes — модулийн эзэмшдэг UI зам. Frontend нь цэсээ үүгээр
+	// шүүнэ (хамгийн урт угтвар ялна). API замын жагсаалтаас ЯЛГААТАЙ:
+	// энэ нь тандалтын мэдээлэл биш — цэсэнд аль хэдийн харагддаг зам.
+	UIPrefixes []string `json:"ui_prefixes,omitempty"`
 }
 
 // moduleAdminResponse — админд харагдах дэлгэрэнгүй төлөв.
@@ -81,9 +85,10 @@ func (rt *platformRoute) listModules(w http.ResponseWriter, r *http.Request) err
 	out := make([]moduleStatusResponse, 0, len(list))
 	for _, s := range list {
 		out = append(out, moduleStatusResponse{
-			ID:      s.Manifest.ID,
-			Kind:    string(s.Manifest.Kind),
-			Enabled: s.Enabled,
+			ID:         s.Manifest.ID,
+			Kind:       string(s.Manifest.Kind),
+			Enabled:    s.Enabled,
+			UIPrefixes: s.Manifest.UIPrefixes,
 		})
 	}
 	return v1.NewSuccessResponse(w, r, http.StatusOK, "Модулиудын жагсаалт", out)
