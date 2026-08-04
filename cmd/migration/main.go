@@ -17,7 +17,9 @@ import (
 	"github.com/gerege-systems/open-gerege-core/core/constants"
 	"github.com/gerege-systems/open-gerege-core/core/datasources/drivers"
 	"github.com/gerege-systems/open-gerege-core/core/datasources/migration"
+	"github.com/gerege-systems/open-gerege-core/kernel/data/migrate"
 	coremigrations "github.com/gerege-systems/open-gerege-core/migrations"
+	aimod "github.com/gerege-systems/open-gerege-core/modules/ai"
 	"github.com/gerege-systems/open-gerege-core/pkg/logger"
 )
 
@@ -85,12 +87,41 @@ func main() {
 		if err := runner.Up(ctx); err != nil {
 			logger.Fatal(err.Error(), logger.Fields{constants.LoggerCategory: constants.LoggerCategoryMigration})
 		}
+		// Дараа нь өөрийн migration-тай модулиуд (kernel/data/migrate).
+		// Глобалуудын ДАРАА ажиллана: модулийн хүснэгтүүд ихэвчлэн
+		// суурийн хүснэгтүүд рүү (users г.м.) заадаг.
+		if err := runModuleMigrations(ctx, pool); err != nil {
+			logger.Fatal(err.Error(), logger.Fields{constants.LoggerCategory: constants.LoggerCategoryMigration})
+		}
 	}
 	if down {
 		if err := runner.Down(ctx); err != nil {
 			logger.Fatal(err.Error(), logger.Fields{constants.LoggerCategory: constants.LoggerCategoryMigration})
 		}
 	}
+}
+
+// moduleMigrationSources нь өөрийн migration-аа зарласан модулиудыг
+// БҮРТГЭЛИЙН дарааллаар жагсаана. Модуль нүүх бүрд энд нэмэгдэнэ.
+func moduleMigrationSources() []migrate.Source {
+	return []migrate.Source{
+		aimod.New(),
+	}
+}
+
+// runModuleMigrations нь модулиудын migration-ыг гүйцэтгэнэ. Ажиллаж буй
+// (схем нь аль хэдийн боссон) DB дээр SQL ажиллуулахгүй — зөвхөн adopt
+// хийнэ, эс бөгөөс амьд хүснэгт дээр CREATE TABLE ажиллах байсан.
+func runModuleMigrations(ctx context.Context, pool *pgxpool.Pool) error {
+	adopt, err := migrate.ShouldAdopt(ctx, pool)
+	if err != nil {
+		return err
+	}
+	if adopt {
+		logger.Info("модулийн migration: ажиллаж буй DB илэрлээ — baseline-ууд adopt хийгдэнэ (SQL ажиллахгүй)",
+			logger.Fields{constants.LoggerCategory: constants.LoggerCategoryMigration})
+	}
+	return migrate.RunAll(ctx, pool, moduleMigrationSources(), adopt)
 }
 
 // connectWithRetry нь SetupPgxPostgres-г dbConnectAttempts удаа, хооронд нь

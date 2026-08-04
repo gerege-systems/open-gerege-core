@@ -30,12 +30,8 @@ BEGIN
     -- keeps full CRUD — admins manage roles at runtime.
     REVOKE UPDATE ON role_permissions FROM app_user;
 
-    -- ai_prompts: SetPrompt is UPDATE-only against the seeded keys, so the
-    -- prompt surface must not grow or shrink through the app. Enforce it in the
-    -- DB, not just the repository comment.
-    REVOKE INSERT, DELETE ON ai_prompts FROM app_user;
-
-    -- ai_knowledge: the app only runs the search_knowledge SELECT; content is
-    -- seed/migration-managed, with no app write path.
-    REVOKE INSERT, UPDATE, DELETE ON ai_knowledge FROM app_user;
+    -- ai_prompts / ai_knowledge-ийн REVOKE-ууд ЭНД БАЙХАА БОЛИВ: тэдгээр
+    -- хүснэгтүүд ai модульд нүүсэн тул энэ файл ажиллах үед хараахан
+    -- үүсээгүй байж болно. Тэнцүү REVOKE-ууд одоо
+    -- modules/ai/migrations/53_ai_config_grants.up.sql-д байна.
 END $$;

@@ -9,6 +9,6 @@ BEGIN
 
     GRANT INSERT, UPDATE, DELETE ON permissions TO app_user;
     GRANT UPDATE ON role_permissions TO app_user;
-    GRANT INSERT, DELETE ON ai_prompts TO app_user;
-    GRANT INSERT, UPDATE, DELETE ON ai_knowledge TO app_user;
+    -- ai_prompts / ai_knowledge нь ai модульд нүүсэн —
+    -- modules/ai/migrations/53_ai_config_grants.down.sql-ыг үз.
 END $$;

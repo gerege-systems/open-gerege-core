@@ -11,7 +11,9 @@ package ai
 
 import (
 	"context"
+	"embed"
 	"fmt"
+	"io/fs"
 	"time"
 
 	"golang.org/x/time/rate"
@@ -22,12 +24,27 @@ import (
 	aipostgres "github.com/gerege-systems/open-gerege-core/core/datasources/repositories/postgres/ai"
 	"github.com/gerege-systems/open-gerege-core/core/http/middlewares"
 	"github.com/gerege-systems/open-gerege-core/core/http/routes"
+	"github.com/gerege-systems/open-gerege-core/kernel/data/migrate"
 	"github.com/gerege-systems/open-gerege-core/kernel/module"
 	"github.com/gerege-systems/open-gerege-core/pkg/gemini"
 )
 
+//go:embed migrations
+var migrationsDir embed.FS
+
 // Module — ai модулийн kernel гэрээний хэрэгжилт.
 type Module struct{}
+
+// Migrations нь модулийн өөрийн SQL migration-уудыг буцаана
+// (kernel/data/migrate). Файлын дугаар нь ГЛОБАЛ дугаарлалтаас хэвээр
+// үлдсэн — нүүлгэлтийн явцад анхны дарааллыг мөшгих боломжтой байлгах тул.
+func (*Module) Migrations() migrate.MigrationFS {
+	sub, err := fs.Sub(migrationsDir, "migrations")
+	if err != nil {
+		panic("ai: migrations FS: " + err.Error())
+	}
+	return sub
+}
 
 // New нь модулийг бүтээнэ.
 func New() *Module { return &Module{} }

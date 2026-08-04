@@ -150,16 +150,64 @@ func applyMigrations(ctx context.Context, pool *pgxpool.Pool) error {
 	})
 
 	for _, name := range files {
-		full := filepath.Join(dir, name)
-		// #nosec G304 — `full` нь хүсэлтийн оролтоос биш, хөгжүүлэгчийн
-		// хяналт дахь migrations директороос бүтээгддэг.
-		data, err := os.ReadFile(full)
+		if err := execSQLFile(ctx, pool, filepath.Join(dir, name)); err != nil {
+			return err
+		}
+	}
+	// Модулиудын өөрийн migration-ууд (kernel/data/migrate) — глобалуудын
+	// ДАРАА, cmd/migration-тай ижил дараалал. Модулийн хүснэгтүүд суурийн
+	// хүснэгтүүд рүү заадаг тул эхэлж болохгүй.
+	return applyModuleMigrations(ctx, pool)
+}
+
+// applyModuleMigrations нь modules/<id>/migrations/*.up.sql-ыг ажиллуулна.
+// Модулиуд нь ХАВТСЫН нэрээр эрэмбэлэгдэнэ — cmd/migration нь бүртгэлийн
+// дарааллыг ашигладаг тул хоёр нь модуль хоорондын хамааралтай болмогц
+// зөрж болзошгүй; тэр үед энэ функцийг тодорхой жагсаалт руу шилжүүлнэ.
+func applyModuleMigrations(ctx context.Context, pool *pgxpool.Pool) error {
+	root := filepath.Dir(migrationsDir())
+	moduleDirs, err := filepath.Glob(filepath.Join(root, "modules", "*", "migrations"))
+	if err != nil {
+		return fmt.Errorf("glob module migrations: %w", err)
+	}
+	sort.Strings(moduleDirs)
+	for _, md := range moduleDirs {
+		entries, err := os.ReadDir(md)
 		if err != nil {
-			return fmt.Errorf("read %s: %w", name, err)
+			return fmt.Errorf("read %s: %w", md, err)
 		}
-		if _, err := pool.Exec(ctx, string(data)); err != nil {
-			return fmt.Errorf("exec %s: %w", name, err)
+		var files []string
+		for _, e := range entries {
+			name := e.Name()
+			if strings.HasSuffix(name, ".up.sql") {
+				files = append(files, name)
+			}
 		}
+		sort.Slice(files, func(i, j int) bool {
+			ni, nj := migrationNumber(files[i]), migrationNumber(files[j])
+			if ni != nj {
+				return ni < nj
+			}
+			return files[i] < files[j]
+		})
+		for _, name := range files {
+			if err := execSQLFile(ctx, pool, filepath.Join(md, name)); err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
+
+func execSQLFile(ctx context.Context, pool *pgxpool.Pool, full string) error {
+	// #nosec G304 — `full` нь хүсэлтийн оролтоос биш, хөгжүүлэгчийн
+	// хяналт дахь migrations директороос бүтээгддэг.
+	data, err := os.ReadFile(full)
+	if err != nil {
+		return fmt.Errorf("read %s: %w", filepath.Base(full), err)
+	}
+	if _, err := pool.Exec(ctx, string(data)); err != nil {
+		return fmt.Errorf("exec %s: %w", filepath.Base(full), err)
 	}
 	return nil
 }

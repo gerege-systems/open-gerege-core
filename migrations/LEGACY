@@ -1,7 +1,6 @@
 # Конвенц тогтоохоос өмнө үүссэн, production-д хэрэгжсэн migration-ууд.
 # Эдгээр нь муж/давхардлын шалгалтаас чөлөөлөгдөнө. ШИНЭ МӨР БҮҮ НЭМ.
 10_users_name_en.up.sql
-11_ai_prompts_knowledge.up.sql
 12_users_eid.up.sql
 13_users_eid_civil_id.up.sql
 14_organizations.up.sql
@@ -34,8 +33,6 @@
 44_gov_service_workflow.up.sql
 45_registry.up.sql
 46_relay_webhook.up.sql
-47_ai_knowledge_vector.up.sql
-48_ai_knowledge_platform_corpus.up.sql
 4_normalize_email_username.up.sql
 5_users_password_changed_at.up.sql
 6_users_deleted_at_index.up.sql
