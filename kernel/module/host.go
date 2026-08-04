@@ -61,6 +61,22 @@ const (
 	// ServiceOIDCService — *oidcuc.Service (өөрийн OIDC provider-ийн цөм;
 	// bearer introspection-д хэрэглэнэ).
 	ServiceOIDCService = "oidc.service"
+	// ServiceJWT — jwt.JWTService (токен гаргах/шалгах). auth, superadmin
+	// хоёулаа ижил instance хэрэглэнэ — түлхүүр нэг байх ёстой.
+	ServiceJWT = "jwt"
+	// ServiceVerifier — verify.Client (GeregeCloud Verify: OTP send/check).
+	ServiceVerifier = "verify"
+	// ServiceGoogle — google.Client (Google OAuth).
+	ServiceGoogle = "google"
+	// ServiceAuthRateLimiter — *middlewares.RateLimiter (нэвтрэлтийн ~5/min).
+	// App нь shutdown дээр Stop дууддаг тул kernel үүсгэж, энд дамжуулна.
+	ServiceAuthRateLimiter = "limiter.auth"
+	// ServicePollRateLimiter — *middlewares.RateLimiter (eID poll урсгал).
+	ServicePollRateLimiter = "limiter.poll"
+	// ServiceWalletProvisioner — authhandler.WalletProvisioner (СОНГОЛТТОЙ;
+	// nil байж болно). Package-level var тул модуль server-ийг import хийхгүйн
+	// тулд Host-оор дамжина.
+	ServiceWalletProvisioner = "wallet.provisioner"
 	// ServiceModuleRegistry — *Registry (модулийн бүртгэл + идэвхийн төлөв).
 	// platform модуль үүгээр асаах/унтраах үйлдлээ гүйцэтгэнэ. Kernel-ийн
 	// төлөв тул зөвхөн platform модульд утга учиртай.
