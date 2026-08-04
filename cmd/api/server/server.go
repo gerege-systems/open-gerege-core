@@ -25,7 +25,6 @@ import (
 	"github.com/gerege-systems/open-gerege-core/core/business/usecases/gateway"
 	oidcuc "github.com/gerege-systems/open-gerege-core/core/business/usecases/oidc"
 	"github.com/gerege-systems/open-gerege-core/core/business/usecases/rbac"
-	"github.com/gerege-systems/open-gerege-core/core/business/usecases/security"
 	"github.com/gerege-systems/open-gerege-core/core/business/usecases/sign"
 	"github.com/gerege-systems/open-gerege-core/core/business/usecases/sso"
 	"github.com/gerege-systems/open-gerege-core/core/business/usecases/ssotoken"
@@ -37,13 +36,11 @@ import (
 	"github.com/gerege-systems/open-gerege-core/core/datasources/caches"
 	"github.com/gerege-systems/open-gerege-core/core/datasources/drivers"
 	repointerface "github.com/gerege-systems/open-gerege-core/core/datasources/repositories/interface"
-	auditpostgres "github.com/gerege-systems/open-gerege-core/core/datasources/repositories/postgres/audit"
 	gatewaypostgres "github.com/gerege-systems/open-gerege-core/core/datasources/repositories/postgres/gateway"
 	oauthpostgres "github.com/gerege-systems/open-gerege-core/core/datasources/repositories/postgres/oauth"
 	orgstamppostgres "github.com/gerege-systems/open-gerege-core/core/datasources/repositories/postgres/orgstamp"
 	platformsettings "github.com/gerege-systems/open-gerege-core/core/datasources/repositories/postgres/platformsettings"
 	recoverypostgres "github.com/gerege-systems/open-gerege-core/core/datasources/repositories/postgres/recovery"
-	securitypostgres "github.com/gerege-systems/open-gerege-core/core/datasources/repositories/postgres/security"
 	ssotokenpostgres "github.com/gerege-systems/open-gerege-core/core/datasources/repositories/postgres/ssotoken"
 	ssouserpostgres "github.com/gerege-systems/open-gerege-core/core/datasources/repositories/postgres/ssouser"
 	superadminaccountpostgres "github.com/gerege-systems/open-gerege-core/core/datasources/repositories/postgres/superadminaccount"
@@ -75,6 +72,7 @@ import (
 	"github.com/gerege-systems/open-gerege-core/kernel/module"
 	aimod "github.com/gerege-systems/open-gerege-core/modules/ai"
 	applicationsmod "github.com/gerege-systems/open-gerege-core/modules/applications"
+	auditmod "github.com/gerege-systems/open-gerege-core/modules/audit"
 	corefindmod "github.com/gerege-systems/open-gerege-core/modules/corefind"
 	eidproxymod "github.com/gerege-systems/open-gerege-core/modules/eidproxy"
 	gatewayconsolemod "github.com/gerege-systems/open-gerege-core/modules/gatewayconsole"
@@ -197,6 +195,7 @@ func platformModules() []module.Module {
 		// нь ажиллагааны хамаарал — өөр зүйл). Provide хийдэг модуль
 		// хэрэглэгчдээсээ өмнө байх ёстой; эс бөгөөс Register нь "service
 		// алга" гэж алдаа өгч boot унана (чимээгүй nil биш).
+		auditmod.New(),
 		rbacmod.New(),
 
 		// ── Core: хэрэглэгч талын модулиуд ─────────────────────────────
@@ -434,11 +433,7 @@ func NewApp() (*App, error) {
 	orgStampRepo := orgstamppostgres.NewOrgStampRepository(pool)
 	assetsUC := assets.NewUsecase(usersUC, userRepo, orgStampRepo, eidClient)
 
-	// Audit — persisted hash-chained, append-only audit log (admin-only унших API).
-	// audit_log нь admin-only тул repository нь хүсэлтийн RLS-аас үл хамааран
-	// транзакц дотроо service/admin GUC тогтоодог.
-	auditRepo := auditpostgres.NewAuditRepository(pool)
-	auditUC := audit.NewUsecase(auditRepo)
+	// Audit (hash-гинжтэй лог) + security events — modules/audit.
 
 	// Модулийн lifecycle — DB-д хадгалагдсан унтраалттай төлвийг сэргээж
 	// (зөөлөн: stale мөр warning), admin toggle-ийн usecase-ийг угсарна.
@@ -463,7 +458,6 @@ func NewApp() (*App, error) {
 	// super admin урилга (allow-list). users давхаргаар (кэш-зөв мутациуд)
 	// ажиллаж, мутаци бүрийг audit log-д бичнэ.
 	superadminInviteRepo := superadmininvitepostgres.NewSuperadminInviteRepository(pool)
-	superadminUC := superadmin.NewUsecase(usersUC, auditUC, superadminInviteRepo, platformSettingsRepo)
 
 	// Super admin бүртгэлийн шидтэн (урилга → Google → eID → и-мэйл OTP →
 	// TOTP) + MFA-тай super admin нэвтрэлтийн 2 дахь шат. TOTP secret-ийг
@@ -502,10 +496,6 @@ func NewApp() (*App, error) {
 		}
 		onboardingUC = uc
 	}
-
-	// Security events — RASP-style ingest (нэвтэрсэн хэрэглэгч бичнэ, admin унших).
-	securityRepo := securitypostgres.NewSecurityEventRepository(pool)
-	securityUC := security.NewUsecase(securityRepo)
 
 	// Site appearance · landing theme · интерфейсийн хэл — modules/site.
 
@@ -621,7 +611,6 @@ func NewApp() (*App, error) {
 			pool:   pool,
 			authMW: authMiddleware,
 			services: map[string]any{
-				module.ServiceAudit:            auditUC,
 				module.ServiceUsers:            usersUC,
 				module.ServiceWriteRateLimiter: govWriteRateLimiter,
 				module.ServiceRedis:            redisCache,
@@ -654,6 +643,16 @@ func NewApp() (*App, error) {
 			moduleRegErr = fmt.Errorf("module rbac: %q service нийтлэгдсэнгүй", module.ServiceRBAC)
 			return
 		}
+		// audit модулийн нийтэлсэн usecase — auth болон superadmin мутацийг бичнэ.
+		auditUC, ok := module.ServiceAs[audit.Usecase](host, module.ServiceAudit)
+		if !ok {
+			moduleRegErr = fmt.Errorf("module audit: %q service нийтлэгдсэнгүй", module.ServiceAudit)
+			return
+		}
+		// Super admin — админ хэрэглэгчдийг удирдах (үүсгэх/эрх олгох/хасах) +
+		// super admin урилга (allow-list). users давхаргаар (кэш-зөв мутациуд)
+		// ажиллаж, мутаци бүрийг audit log-д бичнэ.
+		superadminUC := superadmin.NewUsecase(usersUC, auditUC, superadminInviteRepo, platformSettingsRepo)
 		moduleServices = host.services
 		moduleWorkers = host.workers
 		moduleShutdown = host.shutdown
@@ -671,8 +670,6 @@ func NewApp() (*App, error) {
 		if onboardingUC != nil {
 			routes.NewSuperAdminOnboardRoute(api, onboardingUC, authRateLimiter, pollRateLimiter).Routes()
 		}
-		routes.NewAuditRoute(api, auditUC, authMiddleware).Routes()
-		routes.NewSecurityRoute(api, securityUC, authMiddleware).Routes()
 		// eID service proxy (/v1/eid*) — modules/eidproxy; OIDC provider-ийн
 		// login/consent/logout (/v1/provider) — modules/provider дотор угсарна.
 	})
