@@ -125,6 +125,14 @@ type SuperadminAccountRepository interface {
 	// Get нь user_id-аар super admin бүртгэлийг буцаана (MFA challenge-д TOTP
 	// secret-ыг авах). Байхгүй бол apperror.NotFound.
 	Get(ctx context.Context, userID string) (domain.SuperadminAccount, error)
+
+	// AnySuperAdminExists нь платформд super admin БАЙГАА ЭСЭХИЙГ хэлнэ.
+	//
+	// Зөвхөн superadmin_accounts-ыг тоолж БОЛОХГҮЙ: SUPERADMIN_EMAIL
+	// bootstrap нь users.role_id-г л ахиулдаг бөгөөд тэр хүснэгтэд мөр
+	// үүсгэдэггүй. Хоёуланг нь харна — эс бөгөөс bootstrap-аар үүссэн super
+	// admin байхад "хэн ч алга" гэж үзэж, бүртгэлийн хаалга буруу нээгдэнэ.
+	AnySuperAdminExists(ctx context.Context) (bool, error)
 }
 
 // RecoveryCodeRepository нь 2FA нөөц кодуудын (user_recovery_codes) gateway юм.
