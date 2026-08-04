@@ -42,7 +42,6 @@ import (
 	oauthpostgres "github.com/gerege-systems/open-gerege-core/core/datasources/repositories/postgres/oauth"
 	orgstamppostgres "github.com/gerege-systems/open-gerege-core/core/datasources/repositories/postgres/orgstamp"
 	platformsettings "github.com/gerege-systems/open-gerege-core/core/datasources/repositories/postgres/platformsettings"
-	rbacpostgres "github.com/gerege-systems/open-gerege-core/core/datasources/repositories/postgres/rbac"
 	recoverypostgres "github.com/gerege-systems/open-gerege-core/core/datasources/repositories/postgres/recovery"
 	securitypostgres "github.com/gerege-systems/open-gerege-core/core/datasources/repositories/postgres/security"
 	ssotokenpostgres "github.com/gerege-systems/open-gerege-core/core/datasources/repositories/postgres/ssotoken"
@@ -85,6 +84,7 @@ import (
 	orgmod "github.com/gerege-systems/open-gerege-core/modules/org"
 	platformmod "github.com/gerege-systems/open-gerege-core/modules/platform"
 	providermod "github.com/gerege-systems/open-gerege-core/modules/provider"
+	rbacmod "github.com/gerege-systems/open-gerege-core/modules/rbac"
 	registrymod "github.com/gerege-systems/open-gerege-core/modules/registry"
 	relaymod "github.com/gerege-systems/open-gerege-core/modules/relay"
 	signmod "github.com/gerege-systems/open-gerege-core/modules/sign"
@@ -192,6 +192,19 @@ func (h *moduleHost) OnShutdown(fn func()) { h.shutdown = append(h.shutdown, fn)
 // нэг нэгээрээ энэ жагсаалт руу нүүнэ; эцэст нь жагсаалт generated болно.
 func platformModules() []module.Module {
 	return []module.Module{
+		// ── Core: НИЙТЭЛДЭГ модулиуд эхэлнэ ────────────────────────────
+		// Дараалал нь УГСРАЛТЫН хамаарлаар тогтоно (манифестийн DependsOn
+		// нь ажиллагааны хамаарал — өөр зүйл). Provide хийдэг модуль
+		// хэрэглэгчдээсээ өмнө байх ёстой; эс бөгөөс Register нь "service
+		// алга" гэж алдаа өгч boot унана (чимээгүй nil биш).
+		rbacmod.New(),
+
+		// ── Core: хэрэглэгч талын модулиуд ─────────────────────────────
+		orgmod.New(),
+		platformmod.New(),
+		sitemod.New(),
+
+		// ── Business модулиуд ──────────────────────────────────────────
 		aimod.New(),
 		applicationsmod.New(),
 		corefindmod.New(),
@@ -200,13 +213,10 @@ func platformModules() []module.Module {
 		govmod.New(),
 		gspacemod.New(),
 		integrationsmod.New(),
-		orgmod.New(),
-		platformmod.New(),
 		providermod.New(),
 		registrymod.New(),
 		relaymod.New(),
 		signmod.New(),
-		sitemod.New(),
 	}
 }
 
@@ -393,9 +403,6 @@ func NewApp() (*App, error) {
 	})
 
 	// RBAC — динамик role/permission удирдлага + enforcement.
-	rbacRepo := rbacpostgres.NewRBACRepository(pool)
-	rbacUC := rbac.NewUsecase(rbacRepo)
-
 	// Organizations — байгууллага + гишүүнчлэл (RLS-тэй; бичих эрх usecase-д).
 
 	// Gov портал (gov) — modules/gov дотор угсарна (route + SLA sweep worker).
@@ -614,7 +621,6 @@ func NewApp() (*App, error) {
 			pool:   pool,
 			authMW: authMiddleware,
 			services: map[string]any{
-				module.ServiceRBAC:             rbacUC,
 				module.ServiceAudit:            auditUC,
 				module.ServiceUsers:            usersUC,
 				module.ServiceWriteRateLimiter: govWriteRateLimiter,
@@ -642,6 +648,12 @@ func NewApp() (*App, error) {
 			moduleRegErr = fmt.Errorf("module ai: %q service нийтлэгдсэнгүй", module.ServiceAI)
 			return
 		}
+		// rbac модулийн нийтэлсэн usecase — /admin/* permission gate хэрэглэнэ.
+		rbacUC, ok := module.ServiceAs[rbac.Usecase](host, module.ServiceRBAC)
+		if !ok {
+			moduleRegErr = fmt.Errorf("module rbac: %q service нийтлэгдсэнгүй", module.ServiceRBAC)
+			return
+		}
 		moduleServices = host.services
 		moduleWorkers = host.workers
 		moduleShutdown = host.shutdown
@@ -650,7 +662,6 @@ func NewApp() (*App, error) {
 		routes.NewAuthRoute(api, authUC, auditUC, WalletProvisioner, authMiddleware, authRateLimiter, pollRateLimiter).Routes()
 		routes.NewUsersRoute(api, usersUC, authMiddleware, ssoEidProxy != nil).Routes()
 		routes.NewEIDProfileRoute(api, authUC, authMiddleware, govWriteRateLimiter).Routes()
-		routes.NewRBACRoute(api, rbacUC, auditUC, authMiddleware).Routes()
 		routes.NewAssetsRoute(api, assetsUC, authMiddleware, govWriteRateLimiter).Routes()
 		routes.NewSSORoute(api, ssoUC).Routes()
 		routes.NewAdminRoute(api, usersUC, rbacUC, aiUC, authMiddleware).Routes()
