@@ -13,6 +13,7 @@ package modules
 
 import (
 	aimod "github.com/gerege-systems/open-gerege-core/modules/ai"
+	applicationsmod "github.com/gerege-systems/open-gerege-core/modules/applications"
 	assetsmod "github.com/gerege-systems/open-gerege-core/modules/assets"
 	auditmod "github.com/gerege-systems/open-gerege-core/modules/audit"
 	authmod "github.com/gerege-systems/open-gerege-core/modules/auth"
@@ -40,13 +41,17 @@ func MigrationSources() []migrate.Source {
 		//   users  — суурь хүснэгт; rbac/assets/superadmin бүгд ALTER хийдэг
 		//   rbac   — 8 нь users-ийг ALTER хийж, permissions-ыг үүсгэнэ
 		//   gateway-console — 22/36 нь permissions рүү INSERT хийнэ
-		//   provider — 51 нь applications-ыг лавладаг (22 үүсгэдэг)
+		//   applications — 22/36-гийн applications хэсэг (gateway_services FK)
+		//   provider — 51 нь applications-ыг лавладаг
 		//   site   — platform-ийн 43/52 нь site_appearance-ыг лавладаг
 		// Дарааллыг өөрчилвөл шинэ суулгац унана; kernel/data/migrate-ийн
 		// тэнцүүлэлтийн тест үүнийг барина.
 		usersmod.New(),
 		rbacmod.New(),
 		gatewayconsolemod.New(),
+		// applications — 22/36-гийн applications хэсэг; application_services
+		// нь gateway_services рүү FK-тэй тул gateway-console-ийн ДАРАА.
+		applicationsmod.New(),
 		aimod.New(),
 		assetsmod.New(),
 		auditmod.New(),
