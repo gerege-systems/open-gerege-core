@@ -32,10 +32,12 @@ import (
 	"github.com/gerege-systems/open-gerege-core/kernel/data/migrate"
 	coremigrations "github.com/gerege-systems/open-gerege-core/migrations"
 	aimod "github.com/gerege-systems/open-gerege-core/modules/ai"
+	govmod "github.com/gerege-systems/open-gerege-core/modules/gov"
 	integrationsmod "github.com/gerege-systems/open-gerege-core/modules/integrations"
 	platformmod "github.com/gerege-systems/open-gerege-core/modules/platform"
 	registrymod "github.com/gerege-systems/open-gerege-core/modules/registry"
 	relaymod "github.com/gerege-systems/open-gerege-core/modules/relay"
+	sitemod "github.com/gerege-systems/open-gerege-core/modules/site"
 )
 
 // schemaFingerprint нь схемийн бүтцийг харьцуулж болохуйц мөр болгоно.
@@ -204,9 +206,11 @@ func TestModuleSplitProducesIdenticalSchema(t *testing.T) {
 	// ижил дараалалтай байх ёстой.
 	sources := []migrate.Source{
 		aimod.New(),
+		govmod.New(),
 		integrationsmod.New(),
 		registrymod.New(),
 		relaymod.New(),
+		sitemod.New(), // platform-ийн ӨМНӨ (43/52 → site_appearance)
 		platformmod.New(),
 	}
 	moduleFS := make([]fs.FS, 0, len(sources))

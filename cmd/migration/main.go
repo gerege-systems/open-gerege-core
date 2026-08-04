@@ -20,10 +20,12 @@ import (
 	"github.com/gerege-systems/open-gerege-core/kernel/data/migrate"
 	coremigrations "github.com/gerege-systems/open-gerege-core/migrations"
 	aimod "github.com/gerege-systems/open-gerege-core/modules/ai"
+	govmod "github.com/gerege-systems/open-gerege-core/modules/gov"
 	integrationsmod "github.com/gerege-systems/open-gerege-core/modules/integrations"
 	platformmod "github.com/gerege-systems/open-gerege-core/modules/platform"
 	registrymod "github.com/gerege-systems/open-gerege-core/modules/registry"
 	relaymod "github.com/gerege-systems/open-gerege-core/modules/relay"
+	sitemod "github.com/gerege-systems/open-gerege-core/modules/site"
 	"github.com/gerege-systems/open-gerege-core/pkg/logger"
 )
 
@@ -110,12 +112,14 @@ func main() {
 func moduleMigrationSources() []migrate.Source {
 	return []migrate.Source{
 		aimod.New(),
+		govmod.New(),
 		integrationsmod.New(),
 		registrymod.New(),
 		relaymod.New(),
-		// platform нь site_appearance-ыг лавладаг — тэр нь одоогоор глобал
-		// хэвээр тул глобалуудын дараа ажиллахад асуудалгүй. site нүүх үед
-		// site нь ЭНЭНЭЭС ӨМНӨ жагсаагдах ёстой.
+		// site нь platform-ЫН ӨМНӨ байх ЁСТОЙ: platform-ийн 43/52 нь
+		// site_appearance-ыг лавладаг. Дараалал өөрчилвөл шинэ суулгац
+		// унана — kernel/data/migrate-ийн тэнцүүлэлтийн тест барина.
+		sitemod.New(),
 		platformmod.New(),
 	}
 }
