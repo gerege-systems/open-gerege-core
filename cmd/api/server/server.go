@@ -26,7 +26,6 @@ import (
 	languageuc "github.com/gerege-systems/open-gerege-core/core/business/usecases/language"
 	oidcuc "github.com/gerege-systems/open-gerege-core/core/business/usecases/oidc"
 	"github.com/gerege-systems/open-gerege-core/core/business/usecases/org"
-	provideruc "github.com/gerege-systems/open-gerege-core/core/business/usecases/provider"
 	"github.com/gerege-systems/open-gerege-core/core/business/usecases/rbac"
 	"github.com/gerege-systems/open-gerege-core/core/business/usecases/security"
 	"github.com/gerege-systems/open-gerege-core/core/business/usecases/sign"
@@ -88,10 +87,12 @@ import (
 	aimod "github.com/gerege-systems/open-gerege-core/modules/ai"
 	applicationsmod "github.com/gerege-systems/open-gerege-core/modules/applications"
 	corefindmod "github.com/gerege-systems/open-gerege-core/modules/corefind"
+	eidproxymod "github.com/gerege-systems/open-gerege-core/modules/eidproxy"
 	gatewayconsolemod "github.com/gerege-systems/open-gerege-core/modules/gatewayconsole"
 	govmod "github.com/gerege-systems/open-gerege-core/modules/gov"
 	gspacemod "github.com/gerege-systems/open-gerege-core/modules/gspace"
 	integrationsmod "github.com/gerege-systems/open-gerege-core/modules/integrations"
+	providermod "github.com/gerege-systems/open-gerege-core/modules/provider"
 	registrymod "github.com/gerege-systems/open-gerege-core/modules/registry"
 	relaymod "github.com/gerege-systems/open-gerege-core/modules/relay"
 	signmod "github.com/gerege-systems/open-gerege-core/modules/sign"
@@ -201,10 +202,12 @@ func platformModules() []module.Module {
 		aimod.New(),
 		applicationsmod.New(),
 		corefindmod.New(),
+		eidproxymod.New(),
 		gatewayconsolemod.New(),
 		govmod.New(),
 		gspacemod.New(),
 		integrationsmod.New(),
+		providermod.New(),
 		registrymod.New(),
 		relaymod.New(),
 		signmod.New(),
@@ -557,8 +560,7 @@ func NewApp() (*App, error) {
 	// oauth_clients хүснэгт эзэмшинэ (Hydra-аас хамаарахаа больсон).
 	oauthClients := oauthpostgres.NewClientRepository(pool)
 	oidcSvc := oidcuc.NewService(oauthClients, oauthpostgres.NewFlowRepository(pool), config.AppConfig.Issuer())
-	providerUC := provideruc.NewUsecase(oidcSvc, oauthClients, usersUC,
-		config.AppConfig.SSOFirstPartyClientsList(), config.AppConfig.Issuer())
+	// Login/consent/logout урсгал (providerUC) — modules/provider дотор угсарна.
 
 	// Applications (Gateway consumer + SSO RP) — modules/applications дотор угсарна.
 
@@ -642,6 +644,8 @@ func NewApp() (*App, error) {
 				module.ServiceGateway:          gatewayUC,
 				module.ServiceGeminiChat:       geminiClient,
 				module.ServiceGeminiTTS:        geminiTTSClient,
+				module.ServiceAuth:             authUC,
+				module.ServiceOIDCService:      oidcSvc,
 			},
 		}
 		for _, mod := range platformModules() {
@@ -692,20 +696,8 @@ func NewApp() (*App, error) {
 		routes.NewSiteRoute(api, siteUC, rbacUC, authMiddleware, authSurface).Routes()
 		routes.NewThemeRoute(api, themeUC, rbacUC, authMiddleware).Routes()
 		routes.NewLanguageRoute(api, languageUC, authMiddleware).Routes()
-		// eID service proxy — бүртгэгдсэн апп (relying party)-ууд хэрэглэгчийнхээ
-		// access token-оор платформын eID service-үүдийг ДАМЖУУЛАН дуудна
-		// (/v1/eid/*). Платформ өөрийн eidmongolia RP creds-ээр татаж өгнө тул
-		// апп-д eID credential эзэмших шаардлагагүй.
-		//
-		// Service тус бүрийн зөвшөөрөл нь client-ийн allowed scope дахь
-		// "svc:<service>"-ээр илэрхийлэгдэнэ (admin gateway UI-аас апп-д service
-		// олгоход нэмэгддэг). Олгогдоогүй апп 403 авна. Gateway catalog-д
-		// идэвхгүй бол route-ууд өөрсдөө хаагдана.
-		eidProxyMW := middlewares.NewOAuthBearerMiddleware(oidcSvc, oauthClients, "svc:"+routes.EIDProxyServiceName)
-		eidOrgProxyMW := middlewares.NewOAuthBearerMiddleware(oidcSvc, oauthClients, "svc:"+routes.EIDOrgProxyServiceName)
-		routes.NewEIDProxyRoute(api, authUC, gatewayUC, eidProxyMW, eidOrgProxyMW).Routes()
-		// OIDC provider login/consent/logout.
-		routes.NewProviderRoute(api, providerUC, authMiddleware).Routes()
+		// eID service proxy (/v1/eid*) — modules/eidproxy; OIDC provider-ийн
+		// login/consent/logout (/v1/provider) — modules/provider дотор угсарна.
 	})
 	if moduleRegErr != nil {
 		return nil, moduleRegErr

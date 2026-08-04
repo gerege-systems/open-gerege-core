@@ -56,6 +56,11 @@ const (
 	ServiceGeminiChat = "gemini.chat"
 	// ServiceGeminiTTS — *gemini.Client (TTS model).
 	ServiceGeminiTTS = "gemini.tts"
+	// ServiceAuth — authuc.Usecase (танилтын usecase; eID профайл/proxy хэрэглэнэ).
+	ServiceAuth = "auth"
+	// ServiceOIDCService — *oidcuc.Service (өөрийн OIDC provider-ийн цөм;
+	// bearer introspection-д хэрэглэнэ).
+	ServiceOIDCService = "oidc.service"
 
 	// Модулиудын НИЙТЭЛДЭГ service-үүд (Provide-оор):
 	// ServiceAI — aiuc.Usecase (ai модуль нийтэлнэ; admin route хэрэглэнэ).
