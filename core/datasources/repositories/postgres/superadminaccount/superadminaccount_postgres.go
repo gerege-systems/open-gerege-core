@@ -111,3 +111,26 @@ func (r *superadminAccountRepository) Get(ctx context.Context, userID string) (d
 	}
 	return rec.toDomain(), nil
 }
+
+// AnySuperAdminExists нь платформд super admin байгаа эсэхийг хэлнэ.
+//
+// ХОЁР эх сурвалжийг харна: бүрэн бүртгэгдсэн super admin (superadmin_accounts)
+// БОЛОН зөвхөн эрх нь ахиулагдсан хэрэглэгч (users.role_id). SUPERADMIN_EMAIL
+// bootstrap нь зөвхөн сүүлийнхийг үүсгэдэг тул нэгийг нь орхивол "хэн ч алга"
+// гэсэн ХУДАЛ хариу гарч, бүртгэлийн хаалга буруу нээгдэнэ.
+//
+// RLS: хоёр хүснэгт хоёулаа хамгаалагдсан тул withRLS дотор ажиллана
+// (service дүрээр) — энэ нь тоолох үйлдэл, мөр буцаадаггүй.
+func (r *superadminAccountRepository) AnySuperAdminExists(ctx context.Context) (bool, error) {
+	var exists bool
+	err := r.withRLS(ctx, func(tx pgx.Tx) error {
+		return tx.QueryRow(ctx, `
+			SELECT EXISTS (SELECT 1 FROM superadmin_accounts)
+			    OR EXISTS (SELECT 1 FROM users WHERE role_id = $1 AND deleted_at IS NULL)
+		`, domain.RoleSuperAdmin).Scan(&exists)
+	})
+	if err != nil {
+		return false, apperror.InternalCause(fmt.Errorf("check super admin existence: %w", err))
+	}
+	return exists, nil
+}

@@ -78,6 +78,12 @@ type fakeSuperadminAccts struct {
 	found bool
 }
 
+// AnySuperAdminExists — өгөгдмөл нь TRUE: MFA-ийн тестүүд аль хэдийн super
+// admin байгаа орчныг дүрсэлдэг. Bootstrap замыг тусад нь (acctsWith) удирдана.
+func (f *fakeSuperadminAccts) AnySuperAdminExists(_ context.Context) (bool, error) {
+	return true, nil
+}
+
 func (f *fakeSuperadminAccts) Get(_ context.Context, _ string) (domain.SuperadminAccount, error) {
 	if !f.found {
 		return domain.SuperadminAccount{}, apperror.NotFound("superadmin account not found")
