@@ -59,6 +59,9 @@ func (rt *superadminOnboardRoute) Routes() {
 
 			// Бүртгэлийн шидтэн.
 			rl.Post("/onboard/google", v1.Wrap(rt.handler.Google))
+			// SSO хувилбар — платформ бүрд Google Console бүртгэл
+			// шаардахгүйн тулд (тайлбарыг onboarding_sso.go-оос үз).
+			rl.Post("/onboard/sso", v1.Wrap(rt.handler.SSO))
 			rl.Post("/onboard/eid/start", v1.Wrap(rt.handler.EIDStart))
 			rl.Post("/onboard/eid/start-id", v1.Wrap(rt.handler.EIDStartByNationalID))
 			rl.Post("/onboard/email/send", v1.Wrap(rt.handler.EmailSend))

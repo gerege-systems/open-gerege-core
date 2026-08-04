@@ -47,6 +47,9 @@ type Usecase interface {
 	// шалгаад (урилгагүй/ашиглагдсан бол Forbidden) шинэ pending session
 	// (onboard_token) үүсгэнэ.
 	Google(ctx context.Context, req GoogleRequest) (GoogleResponse, error)
+	// SSO нь Google-ийн оронд төвийн SSO-гоор эхлэх хувилбар. Урилгын
+	// хаалга, дараагийн бүх алхам ижил — зөвхөн IdP өөр.
+	SSO(ctx context.Context, req SSORequest) (GoogleResponse, error)
 	// EIDStart нь бүртгэлийн eID алхмыг QR/deep-link-ээр эхлүүлнэ.
 	EIDStart(ctx context.Context, req EIDStartRequest) (EIDStartResponse, error)
 	// EIDStartByNationalID нь eID алхмыг иргэний РД-аар (утас руу push) эхлүүлнэ.
@@ -78,6 +81,11 @@ type (
 	GoogleRequest struct {
 		Code        string
 		RedirectURI string
+	}
+	// SSORequest — SSO-гийн буцаасан authorization code. RedirectURI
+	// шаардлагагүй: SSO client өөрийн тохируулсан URI-гаа ашиглана.
+	SSORequest struct {
+		Code string
 	}
 	// GoogleResponse нь шидтэний эхлэл — OnboardToken-ийг дараагийн бүх алхамд
 	// дамжуулна.

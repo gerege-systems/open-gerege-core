@@ -31,6 +31,7 @@ import (
 	"github.com/gerege-systems/open-gerege-core/pkg/google"
 	"github.com/gerege-systems/open-gerege-core/pkg/jwt"
 	"github.com/gerege-systems/open-gerege-core/pkg/logger"
+	"github.com/gerege-systems/open-gerege-core/pkg/oidc"
 	"github.com/gerege-systems/open-gerege-core/pkg/verify"
 )
 
@@ -123,7 +124,16 @@ func (m *Module) Register(_ context.Context, host module.Host) error {
 		logger.Warn("superadmin MFA: INTEGRATION_ENC_KEY not set — deriving TOTP encryption key from JWT_SECRET (set INTEGRATION_ENC_KEY for a dedicated key)", logger.Fields{})
 	}
 	onboardingUC, err := onboarding.NewUsecase(
-		googleClient, eidClient, verifier,
+		googleClient,
+		// Төвийн SSO — Google-ийн оронд эхлэх хувилбарын IdP. Платформ
+		// бүрийн SSO redirect URI аль хэдийн бүртгэгдсэн байдаг тул шинэ
+		// платформ нэмэхэд Google Console-д гар ажиллагаа шаардахгүй.
+		oidc.NewClient(
+			config.AppConfig.SSOIssuer, config.AppConfig.SSOClientID,
+			config.AppConfig.SSOClientSecret, config.AppConfig.SSORedirectURI,
+			config.AppConfig.SSOScope,
+		),
+		eidClient, verifier,
 		userRepo,
 		recoverypostgres.NewRecoveryCodeRepository(pool),
 		superadminaccountpostgres.NewSuperadminAccountRepository(pool),

@@ -15,6 +15,13 @@ type SuperadminOnboardGoogleRequest struct {
 	RedirectURI string `json:"redirect_uri" validate:"required"`
 }
 
+// SuperadminOnboardSSORequest нь POST /auth/superadmin/onboard/sso-ийн body.
+// redirect_uri БАЙХГҮЙ: SSO client өөрийн тохируулсан SSO_REDIRECT_URI-гаа
+// ашигладаг тул түүнийг гаднаас авах нь хэрэггүй (мөн аюулгүй биш).
+type SuperadminOnboardSSORequest struct {
+	Code string `json:"code" validate:"required"`
+}
+
 // SuperadminOnboardEIDStartRequest нь POST /auth/superadmin/onboard/eid/start-ийн
 // body. callbackUrl (сонголт): SAME-DEVICE (утасны browser) үед
 // <origin>/auth/eid/callback; хоосон бол CROSS-DEVICE (desktop QR).

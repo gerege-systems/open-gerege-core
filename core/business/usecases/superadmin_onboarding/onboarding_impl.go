@@ -20,6 +20,7 @@ import (
 	"github.com/gerege-systems/open-gerege-core/pkg/google"
 	"github.com/gerege-systems/open-gerege-core/pkg/jwt"
 	"github.com/gerege-systems/open-gerege-core/pkg/logger"
+	"github.com/gerege-systems/open-gerege-core/pkg/oidc"
 	"github.com/gerege-systems/open-gerege-core/pkg/verify"
 )
 
@@ -28,6 +29,15 @@ import (
 type GoogleClient interface {
 	Configured() bool
 	Exchange(ctx context.Context, code, redirectURI string) (*google.User, error)
+}
+
+// SSOClient нь төвийн SSO (OIDC RP) — Google-ийн оронд хэрэглэгдэх IdP.
+// Интерфейс болгосон шалтгаан: тестэд орлуулах боломжтой байх, мөн
+// usecase нь pkg/oidc-ийн бүтэн гадаргуунаас хамаарахгүй байх.
+type SSOClient interface {
+	Configured() bool
+	Exchange(ctx context.Context, code string) (accessToken, idToken string, err error)
+	UserInfo(ctx context.Context, accessToken string) (oidc.UserInfo, error)
 }
 
 // Config нь onboarding usecase-ийн тохиргоо.
@@ -53,6 +63,7 @@ type Config struct {
 // нэвтрэхээс өмнөх (pre-auth) урсгал тул service RLS дор ажиллана.
 type usecase struct {
 	google          GoogleClient
+	ssoClient       SSOClient
 	eid             eid.Client
 	verifier        verify.Sender
 	users           repointerface.UserRepository
@@ -70,6 +81,7 @@ type usecase struct {
 // (fail-closed: secret-ийг ил текстээр хадгалахыг зөвшөөрөхгүй).
 func NewUsecase(
 	googleClient GoogleClient,
+	ssoClient SSOClient,
 	eidClient eid.Client,
 	verifier verify.Sender,
 	usersRepo repointerface.UserRepository,
@@ -99,6 +111,7 @@ func NewUsecase(
 	}
 	return &usecase{
 		google:          googleClient,
+		ssoClient:       ssoClient,
 		eid:             eidClient,
 		verifier:        verifier,
 		users:           usersRepo,

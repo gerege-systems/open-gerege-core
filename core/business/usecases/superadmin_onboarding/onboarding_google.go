@@ -4,7 +4,6 @@ package onboarding
 
 import (
 	"context"
-	"errors"
 	"fmt"
 
 	"github.com/gerege-systems/open-gerege-core/core/apperror"
@@ -50,46 +49,11 @@ func (uc *usecase) Google(ctx context.Context, req GoogleRequest) (resp GoogleRe
 		return GoogleResponse{}, apperror.Forbidden("Google бүртгэлийн и-мэйл баталгаажаагүй байна")
 	}
 
-	// Урилгын шалгалт — энэ бол бүртгэлийн ханын хаалга.
-	invite, invErr := uc.invites.GetByEmail(ctx, email)
-	if invErr != nil {
-		var domErr *apperror.DomainError
-		if errors.As(invErr, &domErr) && domErr.Type == apperror.ErrTypeNotFound {
-			logger.WarnWithContext(ctx, "superadmin onboarding: урилгагүй и-мэйл", logger.Fields{
-				"usecase": usecaseName, "method": funcName, "file": fileName,
-			})
-			return GoogleResponse{}, apperror.Forbidden("Энэ и-мэйл super admin болох урилга аваагүй байна")
-		}
-		return GoogleResponse{}, invErr
-	}
-	if invite.Accepted() {
-		logger.WarnWithContext(ctx, "superadmin onboarding: урилга аль хэдийн ашиглагдсан", logger.Fields{
-			"usecase": usecaseName, "method": funcName, "file": fileName,
-		})
-		return GoogleResponse{}, apperror.Forbidden("Энэ урилга аль хэдийн ашиглагдсан байна")
-	}
-
-	token, tErr := newOnboardToken()
-	if tErr != nil {
-		return GoogleResponse{}, apperror.InternalCause(fmt.Errorf("onboard token: %w", tErr))
-	}
-	// АНХААР: и-мэйлийг Google-ийн буцаасан утгаас биш, УРИЛГЫН мөрөөс авна —
-	// цаашдын бүх алхам (OTP илгээх, хэрэглэгч үүсгэх) урьсан и-мэйл дээр л
-	// ажиллана.
-	sess := pendingSession{
-		GoogleSub:           gu.Sub,
-		Email:               invite.Email,
-		Name:                gu.Name,
-		Picture:             gu.Picture,
-		GoogleEmailVerified: gu.EmailVerified,
-		Step:                StepEID,
-	}
-	if err := uc.savePending(ctx, token, sess); err != nil {
-		return GoogleResponse{}, err
-	}
-
-	logger.InfoWithContext(ctx, "superadmin onboarding эхэллээ (Google баталгаажлаа)", logger.Fields{
-		"usecase": usecaseName, "method": funcName, "file": fileName, "step": StepEID,
+	return uc.beginFromIdentity(ctx, verifiedIdentity{
+		Sub:           gu.Sub,
+		Email:         email,
+		Name:          gu.Name,
+		Picture:       gu.Picture,
+		EmailVerified: gu.EmailVerified,
 	})
-	return GoogleResponse{OnboardToken: token, Email: invite.Email, Step: StepEID}, nil
 }

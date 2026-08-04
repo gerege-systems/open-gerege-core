@@ -1057,6 +1057,13 @@ definitions:
     - code
     - redirect_uri
     type: object
+  github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.SuperadminOnboardSSORequest:
+    properties:
+      code:
+        type: string
+    required:
+    - code
+    type: object
   github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.SuperadminOnboardTokenRequest:
     properties:
       onboard_token:
@@ -6124,6 +6131,43 @@ paths:
           schema:
             $ref: '#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse'
       summary: Super admin бүртгэл — Google алхам
+      tags:
+      - superadmin-onboard
+  /v1/auth/superadmin/onboard/sso:
+    post:
+      consumes:
+      - application/json
+      description: Төвийн SSO-гийн code-ийг солиж, и-мэйлийг super admin урилгын allow-list-ийн
+        эсрэг шалгана. Google алхмын SSO хувилбар — урилгын хаалга, дараагийн алхмууд
+        ижил. Урилгагүй / ашигласан урилга бол 403.
+      parameters:
+      - description: SSO authorization code
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.SuperadminOnboardSSORequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Onboarding started
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.SuperadminOnboardStartResponse'
+              type: object
+        "400":
+          description: Invalid code
+          schema:
+            $ref: '#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse'
+        "403":
+          description: Email is not invited or invite already used
+          schema:
+            $ref: '#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse'
+      summary: Super admin бүртгэл — SSO алхам
       tags:
       - superadmin-onboard
   /v1/auth/superadmin/onboard/totp/init:
