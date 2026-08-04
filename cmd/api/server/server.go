@@ -24,11 +24,8 @@ import (
 	"github.com/gerege-systems/open-gerege-core/core/business/usecases/assets"
 	"github.com/gerege-systems/open-gerege-core/core/business/usecases/audit"
 	"github.com/gerege-systems/open-gerege-core/core/business/usecases/auth"
-	"github.com/gerege-systems/open-gerege-core/core/business/usecases/core"
 	"github.com/gerege-systems/open-gerege-core/core/business/usecases/gateway"
 	"github.com/gerege-systems/open-gerege-core/core/business/usecases/gov"
-	"github.com/gerege-systems/open-gerege-core/core/business/usecases/gspace"
-	"github.com/gerege-systems/open-gerege-core/core/business/usecases/integrations"
 	languageuc "github.com/gerege-systems/open-gerege-core/core/business/usecases/language"
 	oidcuc "github.com/gerege-systems/open-gerege-core/core/business/usecases/oidc"
 	"github.com/gerege-systems/open-gerege-core/core/business/usecases/org"
@@ -71,7 +68,6 @@ import (
 	superadminaccountpostgres "github.com/gerege-systems/open-gerege-core/core/datasources/repositories/postgres/superadminaccount"
 	superadmininvitepostgres "github.com/gerege-systems/open-gerege-core/core/datasources/repositories/postgres/superadmininvite"
 	themepostgres "github.com/gerege-systems/open-gerege-core/core/datasources/repositories/postgres/theme"
-	userintegrationspostgres "github.com/gerege-systems/open-gerege-core/core/datasources/repositories/postgres/userintegrations"
 	userspostgres "github.com/gerege-systems/open-gerege-core/core/datasources/repositories/postgres/users"
 	"github.com/gerege-systems/open-gerege-core/core/datasources/rls"
 	V1Handler "github.com/gerege-systems/open-gerege-core/core/http/handlers/v1"
@@ -88,7 +84,6 @@ import (
 	"github.com/gerege-systems/open-gerege-core/pkg/eid"
 	"github.com/gerege-systems/open-gerege-core/pkg/gemini"
 	"github.com/gerege-systems/open-gerege-core/pkg/google"
-	gspaceclient "github.com/gerege-systems/open-gerege-core/pkg/gspace"
 	"github.com/gerege-systems/open-gerege-core/pkg/jwt"
 	"github.com/gerege-systems/open-gerege-core/pkg/logger"
 	"github.com/gerege-systems/open-gerege-core/pkg/observability"
@@ -98,6 +93,9 @@ import (
 	"github.com/gerege-systems/open-gerege-core/pkg/xyp"
 
 	"github.com/gerege-systems/open-gerege-core/kernel/module"
+	corefindmod "github.com/gerege-systems/open-gerege-core/modules/corefind"
+	gspacemod "github.com/gerege-systems/open-gerege-core/modules/gspace"
+	integrationsmod "github.com/gerege-systems/open-gerege-core/modules/integrations"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -155,6 +153,36 @@ func loggerConfig() logger.Config {
 		cfg.Level = logger.LevelDebug
 	}
 	return cfg
+}
+
+// moduleHost — kernel/module.Host-ийн server талын хэрэгжилт. Модулиудад
+// router, pool, auth middleware болон хуваалцсан service-үүдийг олгоно.
+type moduleHost struct {
+	api      chi.Router
+	pool     *pgxpool.Pool
+	authMW   func(http.Handler) http.Handler
+	services map[string]any
+}
+
+func (h *moduleHost) APIRouter() chi.Router { return h.api }
+func (h *moduleHost) Pool() *pgxpool.Pool   { return h.pool }
+func (h *moduleHost) AuthMiddleware() func(http.Handler) http.Handler {
+	return h.authMW
+}
+func (h *moduleHost) Service(name string) (any, bool) {
+	v, ok := h.services[name]
+	return v, ok
+}
+
+// platformModules — kernel гэрээгээр өөрсдийгөө угсардаг (Phase 1-д
+// нүүлгэсэн) модулиудын жагсаалт. Дараагийн алхмуудад үлдсэн модулиуд
+// нэг нэгээрээ энэ жагсаалт руу нүүнэ; эцэст нь жагсаалт generated болно.
+func platformModules() []module.Module {
+	return []module.Module{
+		gspacemod.New(),
+		integrationsmod.New(),
+		corefindmod.New(),
+	}
 }
 
 type App struct {
@@ -364,8 +392,7 @@ func NewApp() (*App, error) {
 	// мастер өгөгдөл тул RLS-гүй; хамгаалалт нь registry.view/manage эрхээр.
 	registryUC := registry.NewUsecase(registrypostgres.NewRegistryRepository(pool))
 
-	// Gerege Core (core.gerege.mn) — USER FIND / ORG FIND хайлтын wrap.
-	coreUC := core.NewUsecase(config.AppConfig.CoreAPIBase, config.AppConfig.CoreAPIToken)
+	// Gerege Core лавлагаа (core-find) — modules/corefind дотор угсарна.
 
 	// Gerege SSO (sso.gerege.mn, OIDC) — гадаад SSO provider-т нэвтрэх RP урсгал.
 	// Энэ апп нь sso.gerege.mn-ий relying party: нэвтрэлтийг тийш даатгаж, буцаж
@@ -378,32 +405,11 @@ func NewApp() (*App, error) {
 	platformSettingsRepo := platformsettings.NewRepository(pool)
 	ssoUC := sso.NewUsecase(ssoClient, ssoRepo, jwtService, redisCache, config.AppConfig.SSONativeClientID, ssoTokenStorer, platformSettingsRepo)
 
-	// Хэрэглэгчийн гуравдагч этгээдийн интеграци (Google Drive/Meet, Dropbox) —
-	// OAuth токеныг шифрлэн хадгална (RLS-тэй per-user хүснэгт).
-	userIntegrationsRepo := userintegrationspostgres.NewUserIntegrationsRepository(pool)
+	// Гуравдагч интеграци (integrations) ба Gerege Space (gspace) — өөрсдийн
+	// modules/<id>/module.go дотор угсарна (Phase 1 modular wiring).
 	// Гарын үсэг (хувь хүн) + байгууллагын тамга (ADMIN) — зураг Google Drive-д, URL DB-д.
 	orgStampRepo := orgstamppostgres.NewOrgStampRepository(pool)
 	assetsUC := assets.NewUsecase(usersUC, userRepo, orgStampRepo, eidClient)
-	integrationsUC, err := integrations.NewUsecase(userIntegrationsRepo, config.AppConfig.IntegrationEncKey, isProduction)
-	if err != nil {
-		return nil, fmt.Errorf("init integrations usecase: %w", err)
-	}
-
-	// Gerege Space — апп-ын өөрийн SFTP хадгалалт (per-user 2MB, OAuth-гүй, шууд
-	// холбогдсон). Тохиргоо (GSPACE_*) хоосон бол Configured()=false болж
-	// endpoint-ууд 500 буцаана; UI нь "тохируулаагүй" төлөвийг зохицуулна.
-	gspaceClient := gspaceclient.NewClient(gspaceclient.Config{
-		Host:     config.AppConfig.GSpaceHost,
-		Port:     config.AppConfig.GSpacePort,
-		User:     config.AppConfig.GSpaceUser,
-		Password: config.AppConfig.GSpacePassword,
-		BasePath: config.AppConfig.GSpaceBasePath,
-		HostKey:  config.AppConfig.GSpaceHostKey,
-		// Production-д host key заавал (MITM-аас хамгаална); development-д
-		// тохируулаагүй бол шалгахгүйгээр зөвшөөрнө.
-		AllowInsecureHostKey: !isProduction,
-	})
-	gspaceUC := gspace.NewUsecase(gspaceClient, config.AppConfig.GSpaceQuota)
 
 	// Audit — persisted hash-chained, append-only audit log (admin-only унших API).
 	// audit_log нь admin-only тул repository нь хүсэлтийн RLS-аас үл хамааран
@@ -636,6 +642,7 @@ func NewApp() (*App, error) {
 	// дүрмүүд (/oauth2/*, /userinfo) тогтоосон.
 	routes.NewOIDCRoute(r, oidcKeys, oidcSvc, config.AppConfig.Issuer()).Routes()
 
+	var moduleRegErr error
 	r.Route("/api", func(api chi.Router) {
 		api.Use(gwLogMW)
 		// Модулийн gate — идэвхгүй модулийн бүх route 404. Телеметрийн ДАРАА
@@ -650,9 +657,7 @@ func NewApp() (*App, error) {
 		routes.NewRBACRoute(api, rbacUC, auditUC, authMiddleware).Routes()
 		routes.NewOrgRoute(api, orgUC, auditUC, authMiddleware).Routes()
 		routes.NewGovRoute(api, govUC, rbacUC, authMiddleware, govWriteRateLimiter).Routes()
-		routes.NewIntegrationsRoute(api, integrationsUC, authMiddleware).Routes()
 		routes.NewAssetsRoute(api, assetsUC, authMiddleware, govWriteRateLimiter).Routes()
-		routes.NewGSpaceRoute(api, gspaceUC, authMiddleware, govWriteRateLimiter).Routes()
 		routes.NewGatewayRoute(api, gatewayUC, rbacUC, authMiddleware).Routes()
 		// Хүсэлт дамжуулах + SLA хяналт (JWT + relay эрх). SLA sweep + demo
 		// simulator/generator нь App.Run-д background-аар ажиллана.
@@ -662,7 +667,6 @@ func NewApp() (*App, error) {
 		routes.NewRegistryRoute(api, registryUC, rbacUC, authMiddleware).Routes()
 		routes.NewCatalogRoute(api, registryUC, authMiddleware).Routes()
 		routes.NewApplicationsRoute(api, applicationsUC, rbacUC, authMiddleware).Routes()
-		routes.NewCoreRoute(api, coreUC, rbacUC, authMiddleware).Routes()
 		routes.NewSSORoute(api, ssoUC).Routes()
 		routes.NewAdminRoute(api, usersUC, rbacUC, aiUC, authMiddleware).Routes()
 		routes.NewSuperAdminRoute(api, superadminUC, authMiddleware).Routes()
@@ -704,7 +708,32 @@ func NewApp() (*App, error) {
 		routes.NewEIDProxyRoute(api, authUC, gatewayUC, eidProxyMW, eidOrgProxyMW).Routes()
 		// OIDC provider login/consent/logout.
 		routes.NewProviderRoute(api, providerUC, authMiddleware).Routes()
+
+		// ── Модулиудын өөрийн wiring (Phase 1 modular framework) ──────────
+		// modules/<id>/module.go өөрсдөө repo → usecase → route угсралтаа
+		// хийнэ; server.go тэдний дотоод бүтцийг мэдэхгүй. Хуваалцсан
+		// хамаарлууд Host service locator-оор очно.
+		host := &moduleHost{
+			api:    api,
+			pool:   pool,
+			authMW: authMiddleware,
+			services: map[string]any{
+				module.ServiceRBAC:             rbacUC,
+				module.ServiceAudit:            auditUC,
+				module.ServiceUsers:            usersUC,
+				module.ServiceWriteRateLimiter: govWriteRateLimiter,
+			},
+		}
+		for _, mod := range platformModules() {
+			if err := mod.Register(ctx, host); err != nil {
+				moduleRegErr = fmt.Errorf("module %s: %w", mod.ID(), err)
+				return
+			}
+		}
 	})
+	if moduleRegErr != nil {
+		return nil, moduleRegErr
+	}
 
 	// OIDC provider — /admin оператор гадаргуу (RP OAuth2 client бүртгэл/удирдлага
 	// + admin API key). sso.gerege.mn нь Ory Hydra-г урдаа тавьж SSO болно. Зөвхөн
