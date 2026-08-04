@@ -23,17 +23,14 @@ import (
 	"github.com/gerege-systems/open-gerege-core/core/business/usecases/audit"
 	"github.com/gerege-systems/open-gerege-core/core/business/usecases/auth"
 	"github.com/gerege-systems/open-gerege-core/core/business/usecases/gateway"
-	languageuc "github.com/gerege-systems/open-gerege-core/core/business/usecases/language"
 	oidcuc "github.com/gerege-systems/open-gerege-core/core/business/usecases/oidc"
 	"github.com/gerege-systems/open-gerege-core/core/business/usecases/rbac"
 	"github.com/gerege-systems/open-gerege-core/core/business/usecases/security"
 	"github.com/gerege-systems/open-gerege-core/core/business/usecases/sign"
-	siteuc "github.com/gerege-systems/open-gerege-core/core/business/usecases/site"
 	"github.com/gerege-systems/open-gerege-core/core/business/usecases/sso"
 	"github.com/gerege-systems/open-gerege-core/core/business/usecases/ssotoken"
 	"github.com/gerege-systems/open-gerege-core/core/business/usecases/superadmin"
 	onboarding "github.com/gerege-systems/open-gerege-core/core/business/usecases/superadmin_onboarding"
-	themeuc "github.com/gerege-systems/open-gerege-core/core/business/usecases/theme"
 	"github.com/gerege-systems/open-gerege-core/core/business/usecases/users"
 	"github.com/gerege-systems/open-gerege-core/core/config"
 	"github.com/gerege-systems/open-gerege-core/core/constants"
@@ -42,24 +39,20 @@ import (
 	repointerface "github.com/gerege-systems/open-gerege-core/core/datasources/repositories/interface"
 	auditpostgres "github.com/gerege-systems/open-gerege-core/core/datasources/repositories/postgres/audit"
 	gatewaypostgres "github.com/gerege-systems/open-gerege-core/core/datasources/repositories/postgres/gateway"
-	languagepostgres "github.com/gerege-systems/open-gerege-core/core/datasources/repositories/postgres/language"
 	oauthpostgres "github.com/gerege-systems/open-gerege-core/core/datasources/repositories/postgres/oauth"
 	orgstamppostgres "github.com/gerege-systems/open-gerege-core/core/datasources/repositories/postgres/orgstamp"
 	platformsettings "github.com/gerege-systems/open-gerege-core/core/datasources/repositories/postgres/platformsettings"
 	rbacpostgres "github.com/gerege-systems/open-gerege-core/core/datasources/repositories/postgres/rbac"
 	recoverypostgres "github.com/gerege-systems/open-gerege-core/core/datasources/repositories/postgres/recovery"
 	securitypostgres "github.com/gerege-systems/open-gerege-core/core/datasources/repositories/postgres/security"
-	sitepostgres "github.com/gerege-systems/open-gerege-core/core/datasources/repositories/postgres/site"
 	ssotokenpostgres "github.com/gerege-systems/open-gerege-core/core/datasources/repositories/postgres/ssotoken"
 	ssouserpostgres "github.com/gerege-systems/open-gerege-core/core/datasources/repositories/postgres/ssouser"
 	superadminaccountpostgres "github.com/gerege-systems/open-gerege-core/core/datasources/repositories/postgres/superadminaccount"
 	superadmininvitepostgres "github.com/gerege-systems/open-gerege-core/core/datasources/repositories/postgres/superadmininvite"
-	themepostgres "github.com/gerege-systems/open-gerege-core/core/datasources/repositories/postgres/theme"
 	userspostgres "github.com/gerege-systems/open-gerege-core/core/datasources/repositories/postgres/users"
 	"github.com/gerege-systems/open-gerege-core/core/datasources/rls"
 	V1Handler "github.com/gerege-systems/open-gerege-core/core/http/handlers/v1"
 	authhandler "github.com/gerege-systems/open-gerege-core/core/http/handlers/v1/auth"
-	sitehandler "github.com/gerege-systems/open-gerege-core/core/http/handlers/v1/site"
 	"github.com/gerege-systems/open-gerege-core/core/http/middlewares"
 	"github.com/gerege-systems/open-gerege-core/core/http/routes"
 	"github.com/gerege-systems/open-gerege-core/core/provider/adminapi"
@@ -95,6 +88,7 @@ import (
 	registrymod "github.com/gerege-systems/open-gerege-core/modules/registry"
 	relaymod "github.com/gerege-systems/open-gerege-core/modules/relay"
 	signmod "github.com/gerege-systems/open-gerege-core/modules/sign"
+	sitemod "github.com/gerege-systems/open-gerege-core/modules/site"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -212,6 +206,7 @@ func platformModules() []module.Module {
 		registrymod.New(),
 		relaymod.New(),
 		signmod.New(),
+		sitemod.New(),
 	}
 }
 
@@ -505,27 +500,13 @@ func NewApp() (*App, error) {
 	securityRepo := securitypostgres.NewSecurityEventRepository(pool)
 	securityUC := security.NewUsecase(securityRepo)
 
-	// Site appearance — сайтын нийтийн харагдацын default (landing уншина,
-	// admin 'settings.manage'-ээр өөрчилнө). Нийтийн config тул RLS-гүй plain pool.
-	siteRepo := sitepostgres.NewSiteRepository(pool)
-	siteUC := siteuc.NewUsecase(siteRepo)
-
-	// Landing themes — нэрлэсэн бүрэн загварууд (харагдац + текст/цэс). Идэвхтэйг
-	// нэвтрээгүй зочны landing уншина; админ CRUD/идэвхжүүлнэ. Нийтийн config, RLS-гүй.
-	themeRepo := themepostgres.NewThemeRepository(pool)
-	themeUC := themeuc.NewUsecase(themeRepo)
+	// Site appearance · landing theme · интерфейсийн хэл — modules/site.
 
 	// Gemini client-үүд — kernel түвшинд: AI модулиас гадна хэлний модуль
 	// (орчуулга) хэрэглэдэг. AI pipeline-ийн үлдсэн угсралт modules/ai-д.
 	geminiClient := gemini.NewClient(config.AppConfig.GeminiAPIBase, config.AppConfig.GeminiAPIKey, config.AppConfig.GeminiModel).
 		WithEmbedModel(config.AppConfig.GeminiEmbedModel)
 	geminiTTSClient := gemini.NewClient(config.AppConfig.GeminiAPIBase, config.AppConfig.GeminiAPIKey, config.AppConfig.GeminiTTSModel)
-
-	// Интерфейсийн хэл — super admin хэл нэмж/хасч, орчуулгыг гараар эсвэл
-	// Gemini-ээр бөглөнө. Түлхүүрийн жагсаалт нь аппынх (frontend-д
-	// багцлагдсан); платформ зөвхөн утгыг хадгална. Нийтийн config, RLS-гүй.
-	languageRepo := languagepostgres.NewLanguageRepository(pool)
-	languageUC := languageuc.NewUsecase(languageRepo, languageuc.NewGeminiTranslator(geminiClient))
 
 	// Гарын үсэг (sign) — modules/sign дотор угсарна (ServiceSign нийтэлнэ).
 
@@ -681,19 +662,6 @@ func NewApp() (*App, error) {
 		}
 		routes.NewAuditRoute(api, auditUC, authMiddleware).Routes()
 		routes.NewSecurityRoute(api, securityUC, authMiddleware).Routes()
-		// Нэвтрэх гадаргууны горимыг config-оос нэг удаа уншиж handler руу өгнө
-		// (handler давхарга config-оос хамаардаггүй). client горимд л дээд
-		// IdP-ийн issuer-ыг мэдэгдэнэ — provider горимд утга учиргүй.
-		authSurface := sitehandler.AuthSurface{
-			Mode:     config.AppConfig.LoginMode(),
-			Provider: config.AppConfig.ProviderConfigured(),
-		}
-		if authSurface.Mode == config.AuthModeClient {
-			authSurface.SSOIssuer = config.AppConfig.SSOIssuer
-		}
-		routes.NewSiteRoute(api, siteUC, rbacUC, authMiddleware, authSurface).Routes()
-		routes.NewThemeRoute(api, themeUC, rbacUC, authMiddleware).Routes()
-		routes.NewLanguageRoute(api, languageUC, authMiddleware).Routes()
 		// eID service proxy (/v1/eid*) — modules/eidproxy; OIDC provider-ийн
 		// login/consent/logout (/v1/provider) — modules/provider дотор угсарна.
 	})
