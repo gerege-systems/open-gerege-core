@@ -44,7 +44,20 @@ type LoginInfo struct {
 	// нь платформын session тул энэ нь үргэлж false — session байвал frontend
 	// шууд accept руу шилждэг.
 	Skip bool
+
+	// Enroll нь энэ нэвтрэлт нь СУПЕР АДМИНЫ БҮРТГЭЛИЙН урсгалын нэг хэсэг
+	// эсэхийг хэлнэ. Login хуудас үүнийг хараад зөвхөн Google-ийн сонголт
+	// үлдээнэ: бүртгэл нь баталгаажсан и-мэйл шаарддаг ба eID тэрийг өгдөггүй.
+	//
+	// Дохиог RP-ийн redirect_uri-аас гаргана — тэр нь онбординг callback үед
+	// өвөрмөц зам агуулдаг. Ингэснээр OIDC хүсэлтэд стандарт бус параметр
+	// нэмэх шаардлагагүй бөгөөд RP өөрөө "би бүртгэл байна" гэж хэлэх
+	// боломжгүй: зам нь бүртгэлтэй redirect_uri-уудаас л гардаг.
+	Enroll bool
 }
+
+// enrollRedirectMarker — супер админы бүртгэлийн callback замын өвөрмөц хэсэг.
+const enrollRedirectMarker = "/superadmin/onboard/"
 
 // ConsentInfo нь consent хуудсанд харуулах зөвшөөрлийн хүсэлтийн товч.
 type ConsentInfo struct {
@@ -105,6 +118,7 @@ func (u *usecase) GetLogin(ctx context.Context, challenge string) (LoginInfo, er
 		ClientID:       c.ClientID,
 		ClientName:     name,
 		RequestedScope: c.RequestedScopes,
+		Enroll:         strings.Contains(c.RedirectURI, enrollRedirectMarker),
 	}, nil
 }
 

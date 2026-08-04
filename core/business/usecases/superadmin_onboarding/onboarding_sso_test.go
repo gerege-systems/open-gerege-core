@@ -29,7 +29,7 @@ type fakeSSO struct {
 }
 
 func (f *fakeSSO) Configured() bool { return f.configured }
-func (f *fakeSSO) Exchange(_ context.Context, _ string) (accessToken, idToken string, err error) {
+func (f *fakeSSO) ExchangeWithRedirect(_ context.Context, _, _ string) (accessToken, idToken string, err error) {
 	if f.exchangeErr != nil {
 		return "", "", f.exchangeErr
 	}
@@ -101,7 +101,7 @@ func TestSSORejectsUninvitedEmail(t *testing.T) {
 	}}
 	uc := ssoUsecase(t, sso, &invitesWith{email: "invited@example.com"}, &acctsWith{any: true})
 
-	_, err := uc.SSO(context.Background(), onboarding.SSORequest{Code: "c"})
+	_, err := uc.SSO(context.Background(), onboarding.SSORequest{Code: "c", RedirectURI: "https://app.test/api/auth/superadmin/onboard/sso/callback"})
 	require.Error(t, err)
 	var domErr *apperror.DomainError
 	require.True(t, errors.As(err, &domErr))
@@ -115,7 +115,7 @@ func TestSSORejectsUnverifiedEmail(t *testing.T) {
 	}}
 	uc := ssoUsecase(t, sso, &invitesWith{email: "invited@example.com"}, &acctsWith{any: true})
 
-	_, err := uc.SSO(context.Background(), onboarding.SSORequest{Code: "c"})
+	_, err := uc.SSO(context.Background(), onboarding.SSORequest{Code: "c", RedirectURI: "https://app.test/api/auth/superadmin/onboard/sso/callback"})
 	require.Error(t, err)
 	var domErr *apperror.DomainError
 	require.True(t, errors.As(err, &domErr))
@@ -129,7 +129,7 @@ func TestSSORejectsAcceptedInvite(t *testing.T) {
 	}}
 	uc := ssoUsecase(t, sso, &invitesWith{email: "invited@example.com", accepted: true}, &acctsWith{any: true})
 
-	_, err := uc.SSO(context.Background(), onboarding.SSORequest{Code: "c"})
+	_, err := uc.SSO(context.Background(), onboarding.SSORequest{Code: "c", RedirectURI: "https://app.test/api/auth/superadmin/onboard/sso/callback"})
 	require.Error(t, err)
 	var domErr *apperror.DomainError
 	require.True(t, errors.As(err, &domErr))
@@ -139,7 +139,7 @@ func TestSSORejectsAcceptedInvite(t *testing.T) {
 // SSO тохируулаагүй бол чимээгүй үргэлжлэхгүй.
 func TestSSONotConfigured(t *testing.T) {
 	uc := ssoUsecase(t, &fakeSSO{configured: false}, &invitesWith{email: "x@example.com"}, &acctsWith{any: true})
-	_, err := uc.SSO(context.Background(), onboarding.SSORequest{Code: "c"})
+	_, err := uc.SSO(context.Background(), onboarding.SSORequest{Code: "c", RedirectURI: "https://app.test/api/auth/superadmin/onboard/sso/callback"})
 	require.Error(t, err)
 }
 
@@ -151,7 +151,7 @@ func TestSSOBootstrapAllowsFirstWhenNoSuperAdmin(t *testing.T) {
 	}}
 	uc := ssoUsecase(t, sso, &invitesWith{email: "nobody@example.com"}, &acctsWith{any: false})
 
-	res, err := uc.SSO(context.Background(), onboarding.SSORequest{Code: "c"})
+	res, err := uc.SSO(context.Background(), onboarding.SSORequest{Code: "c", RedirectURI: "https://app.test/api/auth/superadmin/onboard/sso/callback"})
 	require.NoError(t, err)
 	assert.NotEmpty(t, res.OnboardToken)
 	assert.Equal(t, "first@example.com", res.Email)
@@ -164,7 +164,7 @@ func TestSSOBootstrapClosesOnceSuperAdminExists(t *testing.T) {
 	}}
 	uc := ssoUsecase(t, sso, &invitesWith{email: "nobody@example.com"}, &acctsWith{any: true})
 
-	_, err := uc.SSO(context.Background(), onboarding.SSORequest{Code: "c"})
+	_, err := uc.SSO(context.Background(), onboarding.SSORequest{Code: "c", RedirectURI: "https://app.test/api/auth/superadmin/onboard/sso/callback"})
 	require.Error(t, err)
 	var domErr *apperror.DomainError
 	require.True(t, errors.As(err, &domErr))
@@ -178,6 +178,6 @@ func TestSSOBootstrapStillRequiresVerifiedEmail(t *testing.T) {
 	}}
 	uc := ssoUsecase(t, sso, &invitesWith{email: "nobody@example.com"}, &acctsWith{any: false})
 
-	_, err := uc.SSO(context.Background(), onboarding.SSORequest{Code: "c"})
+	_, err := uc.SSO(context.Background(), onboarding.SSORequest{Code: "c", RedirectURI: "https://app.test/api/auth/superadmin/onboard/sso/callback"})
 	require.Error(t, err)
 }

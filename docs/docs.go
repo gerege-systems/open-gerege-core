@@ -9839,10 +9839,14 @@ const docTemplate = `{
         "github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.SuperadminOnboardSSORequest": {
             "type": "object",
             "required": [
-                "code"
+                "code",
+                "redirect_uri"
             ],
             "properties": {
                 "code": {
+                    "type": "string"
+                },
+                "redirect_uri": {
                     "type": "string"
                 }
             }
