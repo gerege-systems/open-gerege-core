@@ -138,6 +138,9 @@ POST /api/v1/auth/superadmin/onboard/google
 POST /api/v1/auth/superadmin/onboard/sso
 POST /api/v1/auth/superadmin/onboard/totp/init
 POST /api/v1/auth/superadmin/onboard/totp/verify
+POST /api/v1/eid-auth/poll
+POST /api/v1/eid-auth/start
+POST /api/v1/eid-auth/start-id
 POST /api/v1/gateway/services
 POST /api/v1/gov/applications
 POST /api/v1/gov/applications/{id}/cancel

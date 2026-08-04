@@ -64,9 +64,11 @@ type Config struct {
 // Architecture-ийн дүрэмд нийцнэ (usecase → repositories/interface) бөгөөд
 // нэвтрэхээс өмнөх (pre-auth) урсгал тул service RLS дор ажиллана.
 type usecase struct {
-	google          GoogleClient
-	ssoClient       SSOClient
-	eid             eid.Client
+	google    GoogleClient
+	ssoClient SSOClient
+	// eid нь ЗӨВХӨН нэвтрэлтийн гурван үйлдлийг шаардана — ингэснээр SSO-ийн
+	// eID auth proxy (pkg/ssoeidauth) шууд орлож тавигдана.
+	eid             eid.AuthClient
 	verifier        verify.Sender
 	users           repointerface.UserRepository
 	recovery        repointerface.RecoveryCodeRepository
@@ -84,7 +86,7 @@ type usecase struct {
 func NewUsecase(
 	googleClient GoogleClient,
 	ssoClient SSOClient,
-	eidClient eid.Client,
+	eidClient eid.AuthClient,
 	verifier verify.Sender,
 	usersRepo repointerface.UserRepository,
 	recoveryRepo repointerface.RecoveryCodeRepository,

@@ -5,19 +5,27 @@
 // service-үүдийг ДАМЖУУЛАН дуудна (/v1/eid/*, /v1/eid-org/*). Платформ
 // өөрийн eidmongolia RP creds-ээр татаж өгнө тул апп-д eID credential
 // эзэмших шаардлагагүй.
+//
+// /v1/eid-auth/* нь мөн энэ модульд харьяалагдана — гэхдээ тэр нь иргэнийг
+// ШИНЭЭР танихад (нэвтрэлт эхлүүлэх + poll) зориулагдсан тул иргэний биш,
+// АППЫН токеноор ажиллана.
 package eidproxy
 
 import (
 	"context"
 	"fmt"
+	"net/http"
 
 	authuc "github.com/gerege-systems/open-gerege-core/core/business/usecases/auth"
+	eidauthuc "github.com/gerege-systems/open-gerege-core/core/business/usecases/eidauth"
 	gatewayuc "github.com/gerege-systems/open-gerege-core/core/business/usecases/gateway"
 	oidcuc "github.com/gerege-systems/open-gerege-core/core/business/usecases/oidc"
+	"github.com/gerege-systems/open-gerege-core/core/config"
 	oauthpostgres "github.com/gerege-systems/open-gerege-core/core/datasources/repositories/postgres/oauth"
 	"github.com/gerege-systems/open-gerege-core/core/http/middlewares"
 	"github.com/gerege-systems/open-gerege-core/core/http/routes"
 	"github.com/gerege-systems/open-gerege-core/kernel/module"
+	"github.com/gerege-systems/open-gerege-core/pkg/eid"
 )
 
 // Module — eidproxy модулийн kernel гэрээний хэрэгжилт.
@@ -53,5 +61,22 @@ func (m *Module) Register(_ context.Context, host module.Host) error {
 	eidOrgProxyMW := middlewares.NewOAuthBearerMiddleware(oidcSvc, oauthClients, "svc:"+routes.EIDOrgProxyServiceName)
 
 	routes.NewEIDProxyRoute(host.APIRouter(), authUC, gatewayUC, eidProxyMW, eidOrgProxyMW).Routes()
+
+	// eID НЭВТРЭЛТИЙН proxy (/v1/eid-auth/*) — иргэн энэ үед хараахан
+	// танигдаагүй тул АППЫН токеноор (client_credentials) ажиллана.
+	eidClient, ok := module.ServiceAs[eid.Client](host, module.ServiceEID)
+	if !ok {
+		return fmt.Errorf("eidproxy: host-д %q service алга", module.ServiceEID)
+	}
+	eidAuthUC := eidauthuc.NewUsecase(eidClient, eidauthuc.Config{
+		DisplayText: config.AppConfig.EIDDisplayText,
+	})
+	eidAuthMW := middlewares.NewOAuthAppMiddleware(oidcSvc, oauthClients, "svc:"+routes.EIDAuthServiceName)
+	// poll нь long-poll тул нэвтрэлтийн урсгалын хязгаарлагчийг хуваалцана.
+	var pollMW func(http.Handler) http.Handler
+	if pollLimiter, lok := module.ServiceAs[*middlewares.RateLimiter](host, module.ServicePollRateLimiter); lok {
+		pollMW = pollLimiter.Middleware()
+	}
+	routes.NewEIDAuthRoute(host.APIRouter(), eidAuthUC, gatewayUC, eidAuthMW, pollMW).Routes()
 	return nil
 }

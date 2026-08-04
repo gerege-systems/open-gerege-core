@@ -88,6 +88,7 @@ func buildFullRouter(t *testing.T) chi.Router {
 		routes.NewLanguageRoute(api, nil, noopMW).Routes()
 		routes.NewSignRoute(api, nil, nil, nil, noopMW).Routes()
 		routes.NewEIDProxyRoute(api, nil, nil, noopMW, noopMW).Routes()
+		routes.NewEIDAuthRoute(api, nil, nil, noopMW, noopMW).Routes()
 		routes.NewProviderRoute(api, nil, noopMW).Routes()
 		routes.NewPlatformRoute(api, platformuc.NewUsecase(reg, nil, nil), noopMW).Routes()
 	})

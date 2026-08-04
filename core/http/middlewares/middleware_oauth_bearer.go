@@ -34,6 +34,10 @@ type OAuthBearerMiddleware struct {
 	oidc                 *oidcuc.Service
 	clients              clientLookup
 	requiredServiceScope string // жишээ "svc:eid-proxy"; хоосон бол зөвхөн active token
+	// allowNoSubject нь хэрэглэгчгүй (client_credentials) токеныг зөвшөөрнө.
+	// ЗӨВХӨН иргэний хадгалагдсан өгөгдөлд ХАНДАХГҮЙ endpoint-д тавина
+	// (жишээ eID нэвтрэлт эхлүүлэх — иргэн тэр үед хараахан танигдаагүй).
+	allowNoSubject bool
 }
 
 // clientLookup нь client-ийн одоогийн олголтыг уншина.
@@ -48,6 +52,21 @@ func NewOAuthBearerMiddleware(svc *oidcuc.Service, clients clientLookup, require
 		oidc:                 svc,
 		clients:              clients,
 		requiredServiceScope: strings.TrimSpace(requiredServiceScope),
+	}
+	return m.Handle
+}
+
+// NewOAuthAppMiddleware нь АППЫН түвшний (хэрэглэгчгүй) хандалтыг зөвшөөрнө:
+// client_credentials-ээр авсан токен ч (subject хоосон) нэвтэрнэ. Ийм endpoint
+// нь иргэний ХАДГАЛАГДСАН өгөгдөлд хандахгүй байх ёстой — eID нэвтрэлт
+// эхлүүлэх/төлөв асуух зэрэг иргэн ӨӨРӨӨ утсан дээрээ зөвшөөрөл өгдөг
+// урсгалуудад л зориулагдсан. Тухайн service-ийн олголт (svc:<name>) заавал.
+func NewOAuthAppMiddleware(svc *oidcuc.Service, clients clientLookup, requiredServiceScope string) func(http.Handler) http.Handler {
+	m := &OAuthBearerMiddleware{
+		oidc:                 svc,
+		clients:              clients,
+		requiredServiceScope: strings.TrimSpace(requiredServiceScope),
+		allowNoSubject:       true,
 	}
 	return m.Handle
 }
@@ -68,8 +87,9 @@ func (m *OAuthBearerMiddleware) Handle(next http.Handler) http.Handler {
 			_ = V1Handler.NewAbortResponse(w, r, "invalid or expired token")
 			return
 		}
-		// Subject-гүй token (client_credentials) нь иргэний өгөгдөлд хандахгүй.
-		if info.Subject == "" {
+		// Subject-гүй token (client_credentials) нь иргэний өгөгдөлд хандахгүй —
+		// зөвхөн аппын түвшний endpoint-д (allowNoSubject) зөвшөөрнө.
+		if info.Subject == "" && !m.allowNoSubject {
 			_ = V1Handler.NewAbortResponse(w, r, "token has no subject")
 			return
 		}
@@ -89,10 +109,14 @@ func (m *OAuthBearerMiddleware) Handle(next http.Handler) http.Handler {
 			}
 		}
 
-		// Downstream handler-ууд OAuth дуудагчийг session дуудагчаас ялгахгүй.
-		claims := jwt.JwtCustomClaim{UserID: info.Subject, Kind: "access"}
-		ctx = context.WithValue(ctx, constants.CtxAuthenticatedUserKey, claims)
-		ctx = rls.WithUser(ctx, info.Subject)
+		// Хэрэглэгчгүй (аппын) токенд RLS-ийн хэрэглэгч тавихгүй — service
+		// identity дор үлдэнэ; downstream нь иргэний мөр уншихгүй.
+		if info.Subject != "" {
+			// Downstream handler-ууд OAuth дуудагчийг session дуудагчаас ялгахгүй.
+			claims := jwt.JwtCustomClaim{UserID: info.Subject, Kind: "access"}
+			ctx = context.WithValue(ctx, constants.CtxAuthenticatedUserKey, claims)
+			ctx = rls.WithUser(ctx, info.Subject)
+		}
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }
