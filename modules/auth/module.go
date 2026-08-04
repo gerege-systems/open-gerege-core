@@ -12,7 +12,9 @@ package auth
 
 import (
 	"context"
+	"embed"
 	"fmt"
+	"io/fs"
 	"time"
 
 	audituc "github.com/gerege-systems/open-gerege-core/core/business/usecases/audit"
@@ -28,6 +30,7 @@ import (
 	authhandler "github.com/gerege-systems/open-gerege-core/core/http/handlers/v1/auth"
 	"github.com/gerege-systems/open-gerege-core/core/http/middlewares"
 	"github.com/gerege-systems/open-gerege-core/core/http/routes"
+	"github.com/gerege-systems/open-gerege-core/kernel/data/migrate"
 	"github.com/gerege-systems/open-gerege-core/kernel/module"
 	"github.com/gerege-systems/open-gerege-core/pkg/crypto"
 	"github.com/gerege-systems/open-gerege-core/pkg/eid"
@@ -40,6 +43,9 @@ import (
 	"github.com/gerege-systems/open-gerege-core/pkg/xyp"
 )
 
+//go:embed migrations
+var migrationsDir embed.FS
+
 // Module — auth модулийн kernel гэрээний хэрэгжилт.
 type Module struct{}
 
@@ -48,6 +54,17 @@ func New() *Module { return &Module{} }
 
 // ID — Builtin() манифестийн ID.
 func (*Module) ID() string { return "auth" }
+
+// Migrations нь модулийн өөрийн SQL migration-уудыг буцаана. Файлын
+// дугаар нь ГЛОБАЛ дугаарлалтаас хэвээр үлдсэн — нүүлгэлтийн явцад анхны
+// дарааллыг мөшгих боломжтой байлгах тул.
+func (*Module) Migrations() migrate.MigrationFS {
+	sub, err := fs.Sub(migrationsDir, "migrations")
+	if err != nil {
+		panic("auth: migrations FS: " + err.Error())
+	}
+	return sub
+}
 
 // Register нь танилтын usecase-уудыг угсарч route-уудаа суулгаад, authUC-ээ
 // нийтэлнэ (eidproxy, provider модулиуд хэрэглэнэ).

@@ -7,7 +7,9 @@ package superadmin
 
 import (
 	"context"
+	"embed"
 	"fmt"
+	"io/fs"
 	"time"
 
 	audituc "github.com/gerege-systems/open-gerege-core/core/business/usecases/audit"
@@ -23,6 +25,7 @@ import (
 	superadmininvitepostgres "github.com/gerege-systems/open-gerege-core/core/datasources/repositories/postgres/superadmininvite"
 	"github.com/gerege-systems/open-gerege-core/core/http/middlewares"
 	"github.com/gerege-systems/open-gerege-core/core/http/routes"
+	"github.com/gerege-systems/open-gerege-core/kernel/data/migrate"
 	"github.com/gerege-systems/open-gerege-core/kernel/module"
 	"github.com/gerege-systems/open-gerege-core/pkg/eid"
 	"github.com/gerege-systems/open-gerege-core/pkg/google"
@@ -30,6 +33,9 @@ import (
 	"github.com/gerege-systems/open-gerege-core/pkg/logger"
 	"github.com/gerege-systems/open-gerege-core/pkg/verify"
 )
+
+//go:embed migrations
+var migrationsDir embed.FS
 
 // Module — superadmin модулийн kernel гэрээний хэрэгжилт.
 type Module struct{}
@@ -39,6 +45,17 @@ func New() *Module { return &Module{} }
 
 // ID — Builtin() манифестийн ID.
 func (*Module) ID() string { return "superadmin" }
+
+// Migrations нь модулийн өөрийн SQL migration-уудыг буцаана. Файлын
+// дугаар нь ГЛОБАЛ дугаарлалтаас хэвээр үлдсэн — нүүлгэлтийн явцад анхны
+// дарааллыг мөшгих боломжтой байлгах тул.
+func (*Module) Migrations() migrate.MigrationFS {
+	sub, err := fs.Sub(migrationsDir, "migrations")
+	if err != nil {
+		panic("superadmin: migrations FS: " + err.Error())
+	}
+	return sub
+}
 
 // Register нь super admin удирдлага + бүртгэлийн шидтэний угсралтыг хийнэ.
 func (m *Module) Register(_ context.Context, host module.Host) error {

@@ -10,7 +10,9 @@ package assets
 
 import (
 	"context"
+	"embed"
 	"fmt"
+	"io/fs"
 
 	assetsuc "github.com/gerege-systems/open-gerege-core/core/business/usecases/assets"
 	usersuc "github.com/gerege-systems/open-gerege-core/core/business/usecases/users"
@@ -18,9 +20,13 @@ import (
 	orgstamppostgres "github.com/gerege-systems/open-gerege-core/core/datasources/repositories/postgres/orgstamp"
 	"github.com/gerege-systems/open-gerege-core/core/http/middlewares"
 	"github.com/gerege-systems/open-gerege-core/core/http/routes"
+	"github.com/gerege-systems/open-gerege-core/kernel/data/migrate"
 	"github.com/gerege-systems/open-gerege-core/kernel/module"
 	"github.com/gerege-systems/open-gerege-core/pkg/eid"
 )
+
+//go:embed migrations
+var migrationsDir embed.FS
 
 // Module — assets модулийн kernel гэрээний хэрэгжилт.
 type Module struct{}
@@ -30,6 +36,17 @@ func New() *Module { return &Module{} }
 
 // ID — Builtin() манифестийн ID.
 func (*Module) ID() string { return "assets" }
+
+// Migrations нь модулийн өөрийн SQL migration-уудыг буцаана. Файлын
+// дугаар нь ГЛОБАЛ дугаарлалтаас хэвээр үлдсэн — нүүлгэлтийн явцад анхны
+// дарааллыг мөшгих боломжтой байлгах тул.
+func (*Module) Migrations() migrate.MigrationFS {
+	sub, err := fs.Sub(migrationsDir, "migrations")
+	if err != nil {
+		panic("assets: migrations FS: " + err.Error())
+	}
+	return sub
+}
 
 // Register нь asset repo → usecase → /v1/me route угсралтыг гүйцэтгэж,
 // usecase-ээ бусад модульд нийтэлнэ.

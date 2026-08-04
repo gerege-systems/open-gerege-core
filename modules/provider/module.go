@@ -9,15 +9,21 @@ package provider
 
 import (
 	"context"
+	"embed"
 	"fmt"
+	"io/fs"
 
 	oidcuc "github.com/gerege-systems/open-gerege-core/core/business/usecases/oidc"
 	provideruc "github.com/gerege-systems/open-gerege-core/core/business/usecases/provider"
 	"github.com/gerege-systems/open-gerege-core/core/config"
 	oauthpostgres "github.com/gerege-systems/open-gerege-core/core/datasources/repositories/postgres/oauth"
 	"github.com/gerege-systems/open-gerege-core/core/http/routes"
+	"github.com/gerege-systems/open-gerege-core/kernel/data/migrate"
 	"github.com/gerege-systems/open-gerege-core/kernel/module"
 )
+
+//go:embed migrations
+var migrationsDir embed.FS
 
 // Module — provider модулийн kernel гэрээний хэрэгжилт.
 type Module struct{}
@@ -27,6 +33,17 @@ func New() *Module { return &Module{} }
 
 // ID — Builtin() манифестийн ID.
 func (*Module) ID() string { return "provider" }
+
+// Migrations нь модулийн өөрийн SQL migration-уудыг буцаана. Файлын
+// дугаар нь ГЛОБАЛ дугаарлалтаас хэвээр үлдсэн — нүүлгэлтийн явцад анхны
+// дарааллыг мөшгих боломжтой байлгах тул.
+func (*Module) Migrations() migrate.MigrationFS {
+	sub, err := fs.Sub(migrationsDir, "migrations")
+	if err != nil {
+		panic("provider: migrations FS: " + err.Error())
+	}
+	return sub
+}
 
 // Register нь provider usecase-ээ угсарч /v1/provider route-уудаа суулгана.
 // oauth_clients repo нь stateless pool wrapper тул өөрийн instance аюулгүй.
