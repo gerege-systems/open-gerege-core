@@ -6,15 +6,21 @@ package integrations
 
 import (
 	"context"
+	"embed"
 	"fmt"
+	"io/fs"
 
 	"github.com/gerege-systems/open-gerege-core/core/business/usecases/integrations"
 	"github.com/gerege-systems/open-gerege-core/core/config"
 	"github.com/gerege-systems/open-gerege-core/core/constants"
 	userintegrationspostgres "github.com/gerege-systems/open-gerege-core/core/datasources/repositories/postgres/userintegrations"
 	"github.com/gerege-systems/open-gerege-core/core/http/routes"
+	"github.com/gerege-systems/open-gerege-core/kernel/data/migrate"
 	"github.com/gerege-systems/open-gerege-core/kernel/module"
 )
+
+//go:embed migrations
+var migrationsDir embed.FS
 
 // Module — integrations модулийн kernel гэрээний хэрэгжилт.
 type Module struct{}
@@ -24,6 +30,17 @@ func New() *Module { return &Module{} }
 
 // ID — Builtin() манифестийн ID.
 func (*Module) ID() string { return "integrations" }
+
+// Migrations нь модулийн өөрийн SQL migration-уудыг буцаана. Файлын
+// дугаар нь ГЛОБАЛ дугаарлалтаас хэвээр үлдсэн — нүүлгэлтийн явцад анхны
+// дарааллыг мөшгих боломжтой байлгах тул.
+func (*Module) Migrations() migrate.MigrationFS {
+	sub, err := fs.Sub(migrationsDir, "migrations")
+	if err != nil {
+		panic("integrations: migrations FS: " + err.Error())
+	}
+	return sub
+}
 
 // Register нь шифрлэлттэй токен хадгалалтын repo + usecase-ээ угсарч
 // /v1/integrations route-уудыг суулгана. Enc key-ийн алдаа boot-ыг унагаана

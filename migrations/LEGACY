@@ -12,7 +12,6 @@
 19_users_google_profile.up.sql
 1_create_tables_users.up.sql
 20_gov_services.up.sql
-21_user_integrations.up.sql
 22_api_gateway.up.sql
 23_superadmin_role.up.sql
 24_users_sso_sub.up.sql
@@ -27,12 +26,8 @@
 39_readd_users_sso_sub.up.sql
 3_partial_unique_users.up.sql
 40_sso_tokens.up.sql
-41_relay.up.sql
 42_oauth_provider.up.sql
-43_platform_access.up.sql
 44_gov_service_workflow.up.sql
-45_registry.up.sql
-46_relay_webhook.up.sql
 4_normalize_email_username.up.sql
 5_users_password_changed_at.up.sql
 6_users_deleted_at_index.up.sql

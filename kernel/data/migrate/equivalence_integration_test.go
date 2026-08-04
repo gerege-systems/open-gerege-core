@@ -32,6 +32,10 @@ import (
 	"github.com/gerege-systems/open-gerege-core/kernel/data/migrate"
 	coremigrations "github.com/gerege-systems/open-gerege-core/migrations"
 	aimod "github.com/gerege-systems/open-gerege-core/modules/ai"
+	integrationsmod "github.com/gerege-systems/open-gerege-core/modules/integrations"
+	platformmod "github.com/gerege-systems/open-gerege-core/modules/platform"
+	registrymod "github.com/gerege-systems/open-gerege-core/modules/registry"
+	relaymod "github.com/gerege-systems/open-gerege-core/modules/relay"
 )
 
 // schemaFingerprint нь схемийн бүтцийг харьцуулж болохуйц мөр болгоно.
@@ -195,24 +199,38 @@ func requireAppRole(t *testing.T, pool *pgxpool.Pool) {
 // схем үүсгэх ёстой.
 func TestModuleSplitProducesIdenticalSchema(t *testing.T) {
 	ctx := context.Background()
-	aiFS := aimod.New().Migrations()
 
-	// (A) ЛАВЛАХ: глобал + модулийн файлууд НЭГ тоон дарааллаар —
+	// Migration-аа эзэмшсэн БҮХ модуль — cmd/migration-ийн жагсаалттай
+	// ижил дараалалтай байх ёстой.
+	sources := []migrate.Source{
+		aimod.New(),
+		integrationsmod.New(),
+		registrymod.New(),
+		relaymod.New(),
+		platformmod.New(),
+	}
+	moduleFS := make([]fs.FS, 0, len(sources))
+	for _, s := range sources {
+		moduleFS = append(moduleFS, s.Migrations())
+	}
+
+	// (A) ЛАВЛАХ: глобал + бүх модулийн файлууд НЭГ тоон дарааллаар —
 	// нүүлгэхээс өмнөх түүхэн дараалал яг энэ байсан.
 	poolA := testenv.StartPostgresEmpty(t)
 	requireAppRole(t, poolA)
-	require.NoError(t, applyMerged(ctx, poolA, coremigrations.FS, aiFS))
+	require.NoError(t, applyMerged(ctx, poolA, append([]fs.FS{coremigrations.FS}, moduleFS...)...))
 	want := schemaFingerprint(t, poolA)
 
-	// (B) НҮҮЛГЭСЭН ЗАМ: глобалууд эхлээд (ai-гийнх нь дотор нь байхгүй
-	// болсон), дараа нь модулийн runner тусад нь.
+	// (B) НҮҮЛГЭСЭН ЗАМ: глобалууд эхлээд, дараа нь модуль бүрийн runner
+	// өөрийн дарааллаар.
 	poolB := testenv.StartPostgresEmpty(t)
 	requireAppRole(t, poolB)
 	require.NoError(t, applyMerged(ctx, poolB, coremigrations.FS))
-
-	r, err := migrate.New(poolB, aimod.New().ID(), aiFS)
-	require.NoError(t, err)
-	require.NoError(t, r.Up(ctx))
+	for _, src := range sources {
+		r, err := migrate.New(poolB, src.ID(), src.Migrations())
+		require.NoError(t, err, src.ID())
+		require.NoError(t, r.Up(ctx), src.ID())
+	}
 
 	got := schemaFingerprint(t, poolB)
 	require.Equal(t, want, got,

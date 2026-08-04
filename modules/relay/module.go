@@ -6,7 +6,9 @@ package relay
 
 import (
 	"context"
+	"embed"
 	"fmt"
+	"io/fs"
 	"time"
 
 	rbacuc "github.com/gerege-systems/open-gerege-core/core/business/usecases/rbac"
@@ -14,8 +16,12 @@ import (
 	"github.com/gerege-systems/open-gerege-core/core/config"
 	relaypostgres "github.com/gerege-systems/open-gerege-core/core/datasources/repositories/postgres/relay"
 	"github.com/gerege-systems/open-gerege-core/core/http/routes"
+	"github.com/gerege-systems/open-gerege-core/kernel/data/migrate"
 	"github.com/gerege-systems/open-gerege-core/kernel/module"
 )
+
+//go:embed migrations
+var migrationsDir embed.FS
 
 // Module — relay модулийн kernel гэрээний хэрэгжилт.
 type Module struct{}
@@ -25,6 +31,17 @@ func New() *Module { return &Module{} }
 
 // ID — Builtin() манифестийн ID.
 func (*Module) ID() string { return "relay" }
+
+// Migrations нь модулийн өөрийн SQL migration-уудыг буцаана. Файлын
+// дугаар нь ГЛОБАЛ дугаарлалтаас хэвээр үлдсэн — нүүлгэлтийн явцад анхны
+// дарааллыг мөшгих боломжтой байлгах тул.
+func (*Module) Migrations() migrate.MigrationFS {
+	sub, err := fs.Sub(migrationsDir, "migrations")
+	if err != nil {
+		panic("relay: migrations FS: " + err.Error())
+	}
+	return sub
+}
 
 // Register нь /v1/relay route-ууд + SLA sweep (мөн RELAY_DEMO_MODE-д
 // simulator) worker-уудаа суулгана.

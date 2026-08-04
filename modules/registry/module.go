@@ -7,14 +7,20 @@ package registry
 
 import (
 	"context"
+	"embed"
 	"fmt"
+	"io/fs"
 
 	rbacuc "github.com/gerege-systems/open-gerege-core/core/business/usecases/rbac"
 	"github.com/gerege-systems/open-gerege-core/core/business/usecases/registry"
 	registrypostgres "github.com/gerege-systems/open-gerege-core/core/datasources/repositories/postgres/registry"
 	"github.com/gerege-systems/open-gerege-core/core/http/routes"
+	"github.com/gerege-systems/open-gerege-core/kernel/data/migrate"
 	"github.com/gerege-systems/open-gerege-core/kernel/module"
 )
+
+//go:embed migrations
+var migrationsDir embed.FS
 
 // Module — registry модулийн kernel гэрээний хэрэгжилт.
 type Module struct{}
@@ -24,6 +30,17 @@ func New() *Module { return &Module{} }
 
 // ID — Builtin() манифестийн ID.
 func (*Module) ID() string { return "registry" }
+
+// Migrations нь модулийн өөрийн SQL migration-уудыг буцаана. Файлын
+// дугаар нь ГЛОБАЛ дугаарлалтаас хэвээр үлдсэн — нүүлгэлтийн явцад анхны
+// дарааллыг мөшгих боломжтой байлгах тул.
+func (*Module) Migrations() migrate.MigrationFS {
+	sub, err := fs.Sub(migrationsDir, "migrations")
+	if err != nil {
+		panic("registry: migrations FS: " + err.Error())
+	}
+	return sub
+}
 
 // Register нь /v1/registry + /v1/catalog route-уудаа суулгана.
 func (m *Module) Register(_ context.Context, host module.Host) error {
