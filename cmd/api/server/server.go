@@ -18,7 +18,6 @@ import (
 	"golang.org/x/time/rate"
 
 	"github.com/gerege-systems/open-gerege-core/core/business/domain"
-	"github.com/gerege-systems/open-gerege-core/core/business/usecases/ai"
 	"github.com/gerege-systems/open-gerege-core/core/business/usecases/audit"
 	"github.com/gerege-systems/open-gerege-core/core/business/usecases/auth"
 	"github.com/gerege-systems/open-gerege-core/core/business/usecases/gateway"
@@ -629,14 +628,7 @@ func NewApp() (*App, error) {
 				return
 			}
 		}
-		// ai модулийн нийтэлсэн usecase — core admin route (/admin/ai/prompts)
-		// хэрэглэнэ.
-		aiUC, ok := module.ServiceAs[ai.Usecase](host, module.ServiceAI)
-		if !ok {
-			moduleRegErr = fmt.Errorf("module ai: %q service нийтлэгдсэнгүй", module.ServiceAI)
-			return
-		}
-		// rbac модулийн нийтэлсэн usecase — /admin/* permission gate хэрэглэнэ.
+		// rbac модулийн нийтэлсэн usecase — /admin/users* permission gate хэрэглэнэ.
 		rbacUC, ok := module.ServiceAs[rbac.Usecase](host, module.ServiceRBAC)
 		if !ok {
 			moduleRegErr = fmt.Errorf("module rbac: %q service нийтлэгдсэнгүй", module.ServiceRBAC)
@@ -661,7 +653,7 @@ func NewApp() (*App, error) {
 		routes.NewUsersRoute(api, usersUC, authMiddleware, ssoEidProxy != nil).Routes()
 		routes.NewEIDProfileRoute(api, authUC, authMiddleware, govWriteRateLimiter).Routes()
 		routes.NewSSORoute(api, ssoUC).Routes()
-		routes.NewAdminRoute(api, usersUC, rbacUC, aiUC, authMiddleware).Routes()
+		routes.NewAdminRoute(api, usersUC, rbacUC, authMiddleware).Routes()
 		routes.NewSuperAdminRoute(api, superadminUC, authMiddleware).Routes()
 		// Super admin бүртгэл + MFA — нэвтрээгүй гадаргуу (rate limit + service RLS).
 		// Зөвхөн INTEGRATION_ENC_KEY тохируулагдсан үед идэвхжинэ (эс бөгөөс inert).

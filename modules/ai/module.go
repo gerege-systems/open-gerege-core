@@ -17,6 +17,7 @@ import (
 	"golang.org/x/time/rate"
 
 	aiuc "github.com/gerege-systems/open-gerege-core/core/business/usecases/ai"
+	rbacuc "github.com/gerege-systems/open-gerege-core/core/business/usecases/rbac"
 	"github.com/gerege-systems/open-gerege-core/core/config"
 	aipostgres "github.com/gerege-systems/open-gerege-core/core/datasources/repositories/postgres/ai"
 	"github.com/gerege-systems/open-gerege-core/core/http/middlewares"
@@ -78,6 +79,14 @@ func (m *Module) Register(_ context.Context, host module.Host) error {
 		sr.OnShutdown(publicChatLimiter.Stop)
 		sr.OnShutdown(publicTTSLimiter.Stop)
 	}
+
+	// /admin/ai/* — манифестийн эзэмшлээр ai модулийнх (хамгийн урт угтвар).
+	// rbac модуль ӨМНӨ бүртгэгддэг тул ServiceRBAC энд бэлэн байна.
+	rbacUC, ok := module.ServiceAs[rbacuc.Usecase](host, module.ServiceRBAC)
+	if !ok {
+		return fmt.Errorf("ai: host-д %q service алга", module.ServiceRBAC)
+	}
+	routes.NewAdminAIRoute(host.APIRouter(), uc, rbacUC, host.AuthMiddleware()).Routes()
 
 	routes.NewAIRoute(host.APIRouter(), uc, host.AuthMiddleware(), aiLimiter).Routes()
 	routes.NewPublicAIRoute(host.APIRouter(), publicUC, publicChatLimiter, publicTTSLimiter).Routes()
