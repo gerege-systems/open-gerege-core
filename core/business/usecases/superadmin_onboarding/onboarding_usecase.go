@@ -82,10 +82,13 @@ type (
 		Code        string
 		RedirectURI string
 	}
-	// SSORequest — SSO-гийн буцаасан authorization code. RedirectURI
-	// шаардлагагүй: SSO client өөрийн тохируулсан URI-гаа ашиглана.
+	// SSORequest — SSO-гийн буцаасан authorization code + түүнийг олгосон
+	// redirect_uri. OAuth нь token хүсэлтэд ЯГ ижил URI-г шаарддаг тул
+	// онбординг callback-ыг дамжуулна (client-ийн өгөгдмөл нь ердийн
+	// нэвтрэлтийнх бөгөөд таарахгүй).
 	SSORequest struct {
-		Code string
+		Code        string
+		RedirectURI string
 	}
 	// GoogleResponse нь шидтэний эхлэл — OnboardToken-ийг дараагийн бүх алхамд
 	// дамжуулна.

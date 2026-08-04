@@ -80,7 +80,7 @@ func (h Handler) SSO(w http.ResponseWriter, r *http.Request) error {
 	if err := decode(w, r, &req); err != nil {
 		return err
 	}
-	res, err := h.usecase.SSO(r.Context(), onboarding.SSORequest{Code: req.Code})
+	res, err := h.usecase.SSO(r.Context(), onboarding.SSORequest{Code: req.Code, RedirectURI: req.RedirectURI})
 	if err != nil {
 		return v1.RespondWithError(w, r, err)
 	}

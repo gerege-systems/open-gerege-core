@@ -33,7 +33,7 @@ func (uc *usecase) SSO(ctx context.Context, req SSORequest) (GoogleResponse, err
 		return GoogleResponse{}, apperror.InternalCause(fmt.Errorf("sso login not configured"))
 	}
 
-	accessToken, _, exErr := uc.ssoClient.Exchange(ctx, req.Code)
+	accessToken, _, exErr := uc.ssoClient.ExchangeWithRedirect(ctx, req.Code, req.RedirectURI)
 	if exErr != nil {
 		logger.ErrorWithContext(ctx, "superadmin onboarding failed: sso token exchange", logger.Fields{
 			"usecase": usecaseName, "method": funcName, "file": fileName, "error": exErr.Error(),

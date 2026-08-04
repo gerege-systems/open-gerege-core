@@ -136,6 +136,23 @@ func (c *Client) Exchange(ctx context.Context, code string) (accessToken, idToke
 	return t.AccessToken, t.IDToken, nil
 }
 
+// ExchangeWithRedirect нь Exchange-ийн адил боловч redirect_uri-г ГАДНААС
+// авна. OAuth 2.0 нь token хүсэлтийн redirect_uri нь authorize үед
+// хэрэглэсэнтэй ЯГ ТААРАХЫГ шаарддаг; client-ийн өгөгдмөл URI-г илгээвэл
+// өөр callback-аар эхэлсэн урсгал (жишээ нь супер админы бүртгэл) 400
+// авна.
+func (c *Client) ExchangeWithRedirect(ctx context.Context, code, redirectURI string) (accessToken, idToken string, err error) {
+	form := url.Values{}
+	form.Set("grant_type", "authorization_code")
+	form.Set("code", code)
+	form.Set("redirect_uri", redirectURI)
+	tr, err := c.postToken(ctx, form)
+	if err != nil {
+		return "", "", err
+	}
+	return tr.AccessToken, tr.IDToken, nil
+}
+
 // ExchangeFull нь Exchange-ийн адил боловч refresh_token + expires_in-ийг мөн
 // буцаана (SSO eID proxy-д зориулж токен хадгалахад хэрэгтэй).
 func (c *Client) ExchangeFull(ctx context.Context, code string) (Tokens, error) {

@@ -36,7 +36,9 @@ type GoogleClient interface {
 // usecase нь pkg/oidc-ийн бүтэн гадаргуунаас хамаарахгүй байх.
 type SSOClient interface {
 	Configured() bool
-	Exchange(ctx context.Context, code string) (accessToken, idToken string, err error)
+	// ExchangeWithRedirect — redirect_uri нь authorize үеийнхтэй таарах ёстой
+	// тул ГАДНААС өгнө (client-ийн өгөгдмөл нь ердийн нэвтрэлтийнх).
+	ExchangeWithRedirect(ctx context.Context, code, redirectURI string) (accessToken, idToken string, err error)
 	UserInfo(ctx context.Context, accessToken string) (oidc.UserInfo, error)
 }
 
