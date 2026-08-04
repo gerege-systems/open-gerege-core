@@ -68,6 +68,7 @@ GET /api/v1/org/
 GET /api/v1/org/lookup/{regNo}
 GET /api/v1/org/{id}
 GET /api/v1/org/{id}/members
+GET /api/v1/platform/admin/modules/
 GET /api/v1/platform/modules
 GET /api/v1/provider/consent
 GET /api/v1/provider/login
@@ -207,6 +208,7 @@ PUT /api/v1/me/org-name-latin/{regNo}
 PUT /api/v1/me/orgstamp/{regNo}
 PUT /api/v1/me/signature
 PUT /api/v1/org/{id}/members/{userID}
+PUT /api/v1/platform/admin/modules/{id}
 PUT /api/v1/rbac/roles/{id}
 PUT /api/v1/rbac/roles/{id}/permissions
 PUT /api/v1/registry/evidences/{id}

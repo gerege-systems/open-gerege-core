@@ -92,6 +92,8 @@ import (
 	"github.com/gerege-systems/open-gerege-core/pkg/verify"
 	"github.com/gerege-systems/open-gerege-core/pkg/xyp"
 
+	platformuc "github.com/gerege-systems/open-gerege-core/core/business/usecases/platform"
+	platformmodulespostgres "github.com/gerege-systems/open-gerege-core/core/datasources/repositories/postgres/platformmodules"
 	"github.com/gerege-systems/open-gerege-core/kernel/module"
 	corefindmod "github.com/gerege-systems/open-gerege-core/modules/corefind"
 	gspacemod "github.com/gerege-systems/open-gerege-core/modules/gspace"
@@ -417,6 +419,26 @@ func NewApp() (*App, error) {
 	auditRepo := auditpostgres.NewAuditRepository(pool)
 	auditUC := audit.NewUsecase(auditRepo)
 
+	// Модулийн lifecycle — DB-д хадгалагдсан унтраалттай төлвийг сэргээж
+	// (зөөлөн: stale мөр warning), admin toggle-ийн usecase-ийг угсарна.
+	platformModulesStore := platformmodulespostgres.NewRepository(pool)
+	if disabledIDs, err := platformModulesStore.ListDisabled(ctx); err != nil {
+		// Migration хараахан гүйгээгүй орчинд boot-ыг унагаахгүй — default
+		// (бүгд идэвхтэй) төлвөөр үргэлжилнэ.
+		logger.Warn("platform_modules уншигдсангүй — default төлвөөр үргэлжилнэ", logger.Fields{
+			constants.LoggerCategory: constants.LoggerCategoryServer,
+			"error":                  err.Error(),
+		})
+	} else {
+		for _, rerr := range modReg.RestoreDisabled(disabledIDs) {
+			logger.Warn("хадгалагдсан модулийн төлөв сэргээгдсэнгүй", logger.Fields{
+				constants.LoggerCategory: constants.LoggerCategoryServer,
+				"error":                  rerr.Error(),
+			})
+		}
+	}
+	platformUC := platformuc.NewUsecase(modReg, platformModulesStore, auditUC)
+
 	// Super admin — админ хэрэглэгчдийг удирдах (үүсгэх/эрх олгох/хасах) +
 	// super admin урилга (allow-list). users давхаргаар (кэш-зөв мутациуд)
 	// ажиллаж, мутаци бүрийг audit log-д бичнэ.
@@ -650,7 +672,7 @@ func NewApp() (*App, error) {
 		api.Use(module.Gate(modReg))
 
 		api.Get("/", routes.RootHandler)
-		routes.NewPlatformRoute(api, modReg).Routes()
+		routes.NewPlatformRoute(api, platformUC, authMiddleware).Routes()
 		routes.NewAuthRoute(api, authUC, auditUC, WalletProvisioner, authMiddleware, authRateLimiter, pollRateLimiter).Routes()
 		routes.NewUsersRoute(api, usersUC, authMiddleware, ssoEidProxy != nil).Routes()
 		routes.NewEIDProfileRoute(api, authUC, authMiddleware, govWriteRateLimiter).Routes()

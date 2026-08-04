@@ -1,5 +1,12 @@
 basePath: /api/v1
 definitions:
+  core_http_routes.moduleToggleRequest:
+    properties:
+      enabled:
+        type: boolean
+    required:
+    - enabled
+    type: object
   github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.AIAudio:
     properties:
       data:
@@ -6590,6 +6597,56 @@ paths:
       summary: Бүртгэлийн дугаараар хайх
       tags:
       - organizations
+  /v1/platform/admin/modules:
+    get:
+      description: Нэр, хамаарал, route угтварын хамт бүх модулийн төлөв.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse'
+      security:
+      - BearerAuth: []
+      summary: Модулиудын дэлгэрэнгүй жагсаалт (админ)
+      tags:
+      - platform
+  /v1/platform/admin/modules/{id}:
+    put:
+      consumes:
+      - application/json
+      description: Business модулийг restart-гүйгээр асааж/унтраана. Core модуль,
+        идэвхтэй хамаарагчтай модульд алдаа буцна. Төлөв DB-д хадгалагдаж дараагийн
+        boot-д сэргэнэ.
+      parameters:
+      - description: Модулийн ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Шинэ төлөв
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/core_http_routes.moduleToggleRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse'
+      security:
+      - BearerAuth: []
+      summary: Модулийг асаах/унтраах (админ)
+      tags:
+      - platform
   /v1/platform/modules:
     get:
       description: Платформд суусан модулиудын нийтийн төлөв (id, kind, enabled).

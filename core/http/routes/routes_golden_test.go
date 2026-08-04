@@ -30,6 +30,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"golang.org/x/time/rate"
 
+	platformuc "github.com/gerege-systems/open-gerege-core/core/business/usecases/platform"
 	sitehandler "github.com/gerege-systems/open-gerege-core/core/http/handlers/v1/site"
 	"github.com/gerege-systems/open-gerege-core/core/http/middlewares"
 	"github.com/gerege-systems/open-gerege-core/core/http/routes"
@@ -87,7 +88,7 @@ func buildFullRouter(t *testing.T) chi.Router {
 		routes.NewSignRoute(api, nil, nil, nil, noopMW).Routes()
 		routes.NewEIDProxyRoute(api, nil, nil, noopMW, noopMW).Routes()
 		routes.NewProviderRoute(api, nil, noopMW).Routes()
-		routes.NewPlatformRoute(api, reg).Routes()
+		routes.NewPlatformRoute(api, platformuc.NewUsecase(reg, nil, nil), noopMW).Routes()
 	})
 	return r
 }

@@ -10,6 +10,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 
+	platformuc "github.com/gerege-systems/open-gerege-core/core/business/usecases/platform"
 	"github.com/gerege-systems/open-gerege-core/core/http/routes"
 	"github.com/gerege-systems/open-gerege-core/kernel/module"
 )
@@ -25,7 +26,7 @@ func TestPlatformModulesEndpoint(t *testing.T) {
 	r := chi.NewRouter()
 	r.Route("/api", func(api chi.Router) {
 		api.Use(module.Gate(reg))
-		routes.NewPlatformRoute(api, reg).Routes()
+		routes.NewPlatformRoute(api, platformuc.NewUsecase(reg, nil, nil), func(h http.Handler) http.Handler { return h }).Routes()
 	})
 
 	rec := httptest.NewRecorder()

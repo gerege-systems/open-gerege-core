@@ -7260,6 +7260,83 @@ const docTemplate = `{
                 }
             }
         },
+        "/v1/platform/admin/modules": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Нэр, хамаарал, route угтварын хамт бүх модулийн төлөв.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "platform"
+                ],
+                "summary": "Модулиудын дэлгэрэнгүй жагсаалт (админ)",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/platform/admin/modules/{id}": {
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Business модулийг restart-гүйгээр асааж/унтраана. Core модуль, идэвхтэй хамаарагчтай модульд алдаа буцна. Төлөв DB-д хадгалагдаж дараагийн boot-д сэргэнэ.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "platform"
+                ],
+                "summary": "Модулийг асаах/унтраах (админ)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Модулийн ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Шинэ төлөв",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/core_http_routes.moduleToggleRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/v1/platform/modules": {
             "get": {
                 "description": "Платформд суусан модулиудын нийтийн төлөв (id, kind, enabled). Клиентүүд идэвхгүй модулийн цэс/дэлгэцээ нуухад ашиглана.",
@@ -8223,6 +8300,17 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "core_http_routes.moduleToggleRequest": {
+            "type": "object",
+            "required": [
+                "enabled"
+            ],
+            "properties": {
+                "enabled": {
+                    "type": "boolean"
+                }
+            }
+        },
         "github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.AIAudio": {
             "type": "object",
             "required": [

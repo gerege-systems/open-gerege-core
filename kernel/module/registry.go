@@ -182,6 +182,30 @@ func (r *Registry) Enable(id string) error {
 	return nil
 }
 
+// RestoreDisabled нь хадгалагдсан (DB) төлвөөс унтраалттай модулиудыг
+// сэргээнэ. ApplyDisabledList-ээс ялгаа нь ЗӨӨЛӨН: бүртгэлгүй/core/
+// хамааралтай ID-г алгасаж алдаануудыг нь буцаана (boot унагаахгүй) — DB-д
+// хоцорсон stale мөр нь тохиргооны алдаа биш, өв юм. Дараалал fixed-point.
+func (r *Registry) RestoreDisabled(ids []string) []error {
+	pending := ids
+	var errs []error
+	for len(pending) > 0 {
+		var next []string
+		errs = errs[:0]
+		for _, id := range pending {
+			if err := r.Disable(id); err != nil {
+				next = append(next, id)
+				errs = append(errs, err)
+			}
+		}
+		if len(next) == len(pending) {
+			return errs
+		}
+		pending = next
+	}
+	return nil
+}
+
 // ApplyDisabledList нь "gov,relay, gspace" маягийн CSV жагсаалтаар модулиудыг
 // унтраана (MODULES_DISABLED env). Хамаарлын дарааллыг өөрөө шийднэ:
 // хамаарагч нь мөн жагсаалтад байгаа бол эхэлж унтардаг. Хоосон жагсаалт OK.
