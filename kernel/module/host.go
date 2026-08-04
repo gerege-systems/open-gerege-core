@@ -5,6 +5,7 @@ package module
 import (
 	"context"
 	"net/http"
+	"time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -45,7 +46,43 @@ const (
 	// ServiceWriteRateLimiter — *middlewares.RateLimiter (бичих үйлдлийн
 	// нийтлэг хязгаарлагч, server.go-ийн govWriteRateLimiter).
 	ServiceWriteRateLimiter = "limiter.write"
+	// ServiceRedis — caches.RedisCache.
+	ServiceRedis = "redis"
+	// ServiceAssets — assetsuc.Usecase (гарын үсэг/тамгын asset).
+	ServiceAssets = "assets"
+	// ServiceGateway — gatewayuc.Usecase (gateway каталог + телеметр).
+	ServiceGateway = "gateway"
+	// ServiceGeminiChat — *gemini.Client (чат/embedding model).
+	ServiceGeminiChat = "gemini.chat"
+	// ServiceGeminiTTS — *gemini.Client (TTS model).
+	ServiceGeminiTTS = "gemini.tts"
+
+	// Модулиудын НИЙТЭЛДЭГ service-үүд (Provide-оор):
+	// ServiceAI — aiuc.Usecase (ai модуль нийтэлнэ; admin route хэрэглэнэ).
+	ServiceAI = "ai"
+	// ServiceSign — signuc.Usecase (sign модуль нийтэлнэ; App.Sign() хэрэглэнэ).
+	ServiceSign = "sign"
 )
+
+// ServiceProvider — модуль өөрийн usecase-ээ БУЦААЖ нийтлэх боломжтой Host.
+// (Жишээ: ai модуль aiUC-гээ нийтэлж, core admin route түүнийг хэрэглэнэ.)
+// Boot-ийн нэг goroutine дотор л дуудагдана.
+type ServiceProvider interface {
+	Provide(name string, svc any)
+}
+
+// WorkerRegistrar — модуль background worker бүртгэх боломжтой Host.
+// Worker-ууд App.Run-д асаж, shutdown-д context-оор зогсоно; алхам бүр
+// 20с timeout-той (нэг гацсан алхам worker-ийг мөнхөд түгжихгүй).
+type WorkerRegistrar interface {
+	AddWorker(name string, every time.Duration, fn func(context.Context))
+}
+
+// ShutdownRegistrar — модуль graceful shutdown-д цэвэрлэгээ бүртгэх Host
+// (жишээ: rate limiter-ийн Stop).
+type ShutdownRegistrar interface {
+	OnShutdown(fn func())
+}
 
 // Module нь суулгаж болох модулийн ажиллагааны гэрээ. ID нь Builtin()
 // манифестийн ID-тэй тохирно; Register нь route/worker-оо HOST дээр
