@@ -79,7 +79,7 @@ func New(cfg Config) *Updater {
 		cfg:    cfg,
 		client: &http.Client{Timeout: 30 * time.Second},
 		runner: func(ctx context.Context, argv []string, extraEnv []string) error {
-			cmd := exec.CommandContext(ctx, argv[0], argv[1:]...)
+			cmd := exec.CommandContext(ctx, argv[0], argv[1:]...) //nolint:gosec // G204: argv нь операторын тохиргоо (ApplyCmd/RollbackCmd), хүсэлтийн оролт биш; shell-гүй exec
 			cmd.Env = append(os.Environ(), extraEnv...)
 			cmd.Stdout = os.Stdout
 			cmd.Stderr = os.Stderr
@@ -105,7 +105,7 @@ func (u *Updater) CurrentVersion() Version {
 
 // FetchManifest нь release манифестийг татна.
 func (u *Updater) FetchManifest(ctx context.Context) (Manifest, error) {
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, u.cfg.ManifestURL, nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, u.cfg.ManifestURL, http.NoBody)
 	if err != nil {
 		return Manifest{}, err
 	}
@@ -113,7 +113,7 @@ func (u *Updater) FetchManifest(ctx context.Context) (Manifest, error) {
 	if err != nil {
 		return Manifest{}, fmt.Errorf("update: манифест татах: %w", err)
 	}
-	defer resp.Body.Close()
+	defer resp.Body.Close() //nolint:errcheck // унших талын Close нь алдаа буцаадаггүй
 	if resp.StatusCode != http.StatusOK {
 		return Manifest{}, fmt.Errorf("update: манифест: HTTP %d", resp.StatusCode)
 	}
@@ -193,7 +193,7 @@ func (u *Updater) Apply(ctx context.Context, d Decision) error {
 		return fmt.Errorf("update: health баталгаажсангүй: %w", err)
 	}
 	if u.cfg.VersionFile != "" {
-		if err := os.WriteFile(u.cfg.VersionFile, []byte(d.Target.String()+"\n"), 0o644); err != nil {
+		if err := os.WriteFile(u.cfg.VersionFile, []byte(d.Target.String()+"\n"), 0o644); err != nil { //nolint:gosec // G306: version файл нууц биш — deploy script-үүд (өөр хэрэглэгчээр) уншдаг
 			return fmt.Errorf("update: version файл бичих: %w", err)
 		}
 	}
@@ -224,12 +224,12 @@ func (u *Updater) waitHealthy(ctx context.Context) error {
 		interval = 5 * time.Second
 	}
 	deadline := u.now().Add(timeout)
-	var lastErr error = fmt.Errorf("шалгалт хийгдээгүй")
+	lastErr := fmt.Errorf("шалгалт хийгдээгүй")
 	for u.now().Before(deadline) {
-		req, _ := http.NewRequestWithContext(ctx, http.MethodGet, u.cfg.HealthURL, nil)
+		req, _ := http.NewRequestWithContext(ctx, http.MethodGet, u.cfg.HealthURL, http.NoBody)
 		resp, err := u.client.Do(req)
 		if err == nil {
-			resp.Body.Close()
+			_ = resp.Body.Close()
 			if resp.StatusCode == http.StatusOK {
 				return nil
 			}

@@ -30,7 +30,7 @@ func TestPlatformModulesEndpoint(t *testing.T) {
 	})
 
 	rec := httptest.NewRecorder()
-	r.ServeHTTP(rec, httptest.NewRequest(http.MethodGet, "/api/v1/platform/modules", nil))
+	r.ServeHTTP(rec, httptest.NewRequest(http.MethodGet, "/api/v1/platform/modules", http.NoBody))
 	if rec.Code != http.StatusOK {
 		t.Fatalf("status: %d", rec.Code)
 	}
@@ -69,7 +69,7 @@ func TestPlatformModulesEndpoint(t *testing.T) {
 
 	// Gate: унтарсан gspace-ийн route 404 (жагсаалтын endpoint өөрөө нээлттэй хэвээр).
 	rec2 := httptest.NewRecorder()
-	r.ServeHTTP(rec2, httptest.NewRequest(http.MethodGet, "/api/v1/gspace/", nil))
+	r.ServeHTTP(rec2, httptest.NewRequest(http.MethodGet, "/api/v1/gspace/", http.NoBody))
 	if rec2.Code != http.StatusNotFound {
 		t.Fatalf("унтарсан модулийн зам: %d, 404 хүлээсэн", rec2.Code)
 	}

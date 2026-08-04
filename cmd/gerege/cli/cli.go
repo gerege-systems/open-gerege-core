@@ -106,7 +106,7 @@ func (e Env) do(method, path string, body any) (*apiResponse, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer resp.Body.Close() //nolint:errcheck // унших талын Close нь алдаа буцаадаггүй
 	var out apiResponse
 	if err := json.NewDecoder(io.LimitReader(resp.Body, 1<<20)).Decode(&out); err != nil {
 		return nil, fmt.Errorf("HTTP %d: хариу задлагдсангүй: %w", resp.StatusCode, err)
@@ -142,7 +142,9 @@ func listModules(out io.Writer, env Env) error {
 		if len(m.DependsOn) > 0 {
 			line += fmt.Sprintf("  (хамаарал: %s)", strings.Join(m.DependsOn, ", "))
 		}
-		fmt.Fprintln(out, line)
+		if _, err := fmt.Fprintln(out, line); err != nil {
+			return err
+		}
 	}
 	return nil
 }
@@ -156,8 +158,8 @@ func toggleModule(out io.Writer, env Env, id string, enabled bool) error {
 	if err != nil {
 		return err
 	}
-	fmt.Fprintln(out, resp.Message)
-	return nil
+	_, err = fmt.Fprintln(out, resp.Message)
+	return err
 }
 
 // scaffoldModule нь modules/<id>/module.go skeleton үүсгэж, дараагийн
@@ -172,18 +174,19 @@ func scaffoldModule(out io.Writer, env Env, id string) error {
 	if _, err := os.Stat(path); err == nil {
 		return fmt.Errorf("%s аль хэдийн байна", path)
 	}
-	if err := os.MkdirAll(dir, 0o755); err != nil {
+	if err := os.MkdirAll(dir, 0o755); err != nil { //nolint:gosec // G301: репогийн эх кодын хавтас — нууц биш, бусадтай ижил эрхтэй
 		return err
 	}
-	if err := os.WriteFile(path, []byte(moduleTemplate(id, pkg)), 0o644); err != nil {
+	if err := os.WriteFile(path, []byte(moduleTemplate(id, pkg)), 0o644); err != nil { //nolint:gosec // G306: үүсгэсэн Go эх файл — нууц биш, бусадтай ижил эрхтэй
 		return err
 	}
-	fmt.Fprintf(out, "Үүсгэлээ: %s\n\nДараагийн алхмууд:\n", path)
-	fmt.Fprintf(out, "  1. kernel/module/builtin.go-д манифест нэм (ID: %q, RoutePrefixes: \"/api/v1/%s/\")\n", id, id)
-	fmt.Fprintf(out, "  2. cmd/api/server/server.go platformModules()-д %s.New()-г нэм\n", pkg)
-	fmt.Fprintln(out, "  3. core/business/usecases + route + migration-аа бич (docs/MODULES.md §Шинэ модуль)")
-	fmt.Fprintln(out, "  4. go test ./core/http/routes -run TestGoldenRoutes -update")
-	return nil
+	_, err := fmt.Fprintf(out, "Үүсгэлээ: %s\n\nДараагийн алхмууд:\n"+
+		"  1. kernel/module/builtin.go-д манифест нэм (ID: %q, RoutePrefixes: \"/api/v1/%s/\")\n"+
+		"  2. cmd/api/server/server.go platformModules()-д %s.New()-г нэм\n"+
+		"  3. core/business/usecases + route + migration-аа бич (docs/MODULES.md §Шинэ модуль)\n"+
+		"  4. go test ./core/http/routes -run TestGoldenRoutes -update\n",
+		path, id, id, pkg)
+	return err
 }
 
 func validateModuleID(id string) error {

@@ -51,7 +51,7 @@ func TestGateBlocksDisabledModule(t *testing.T) {
 
 	get := func(path string) *httptest.ResponseRecorder {
 		rec := httptest.NewRecorder()
-		h.ServeHTTP(rec, httptest.NewRequest(http.MethodGet, path, nil))
+		h.ServeHTTP(rec, httptest.NewRequest(http.MethodGet, path, http.NoBody))
 		return rec
 	}
 

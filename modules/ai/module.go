@@ -90,7 +90,7 @@ func (m *Module) Register(_ context.Context, host module.Host) error {
 	// шинэ/өөрчлөгдсөн бичлэг орж ирвэл эхний ачаалалтад вектор нь
 	// тооцоологдоно. Boot-ыг блоклохгүй; алдаа гарвал зөвхөн логдож, хайлт
 	// ILIKE-аар ажилласаар байна.
-	go func() {
+	go func() { //nolint:gosec // G118: Register-ийн ctx нь boot дуустал л амьд — warm түүнээс салангид үргэлжлэх ёстой (тиймээс параметр нь `_`)
 		warmCtx, cancel := context.WithTimeout(context.Background(), 10*time.Minute)
 		defer cancel()
 		uc.WarmKnowledgeEmbeddings(warmCtx)

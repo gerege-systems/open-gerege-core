@@ -49,7 +49,7 @@ func TestParseAndCompare(t *testing.T) {
 }
 
 // newTestUpdater — манифест сервер + version файлтай updater.
-func newTestUpdater(t *testing.T, current, manifestJSON string, cfg Config) (*Updater, *string) {
+func newTestUpdater(t *testing.T, current, manifestJSON string, cfg Config) (updater *Updater, ranCmd *string) {
 	t.Helper()
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprint(w, manifestJSON)

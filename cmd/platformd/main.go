@@ -51,7 +51,7 @@ func durationOr(key string, def time.Duration) time.Duration {
 		if d, err := time.ParseDuration(v); err == nil {
 			return d
 		}
-		log.Printf("platformd: %s=%q буруу duration — default %s", key, os.Getenv(key), def)
+		log.Printf("platformd: %s=%q буруу duration — default %s", key, v, def) //nolint:gosec // G706: утга нь операторын өөрийн env, %q-аар мултруулсан
 	}
 	return def
 }
