@@ -61,6 +61,14 @@ const (
 	// ServiceOIDCService — *oidcuc.Service (өөрийн OIDC provider-ийн цөм;
 	// bearer introspection-д хэрэглэнэ).
 	ServiceOIDCService = "oidc.service"
+	// ServiceModuleRegistry — *Registry (модулийн бүртгэл + идэвхийн төлөв).
+	// platform модуль үүгээр асаах/унтраах үйлдлээ гүйцэтгэнэ. Kernel-ийн
+	// төлөв тул зөвхөн platform модульд утга учиртай.
+	ServiceModuleRegistry = "module.registry"
+	// ServiceModuleStore — platformuc.Store (модулийн төлвийн persistence).
+	// Boot дээрх RestoreDisabled нь gate суухаас ӨМНӨ ажиллах ёстой тул
+	// store-ыг server.go үүсгэж, admin API-д зориулж энд дамжуулна.
+	ServiceModuleStore = "module.store"
 
 	// Модулиудын НИЙТЭЛДЭГ service-үүд (Provide-оор):
 	// ServiceAI — aiuc.Usecase (ai модуль нийтэлнэ; admin route хэрэглэнэ).

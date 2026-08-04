@@ -81,7 +81,6 @@ import (
 	"github.com/gerege-systems/open-gerege-core/pkg/verify"
 	"github.com/gerege-systems/open-gerege-core/pkg/xyp"
 
-	platformuc "github.com/gerege-systems/open-gerege-core/core/business/usecases/platform"
 	platformmodulespostgres "github.com/gerege-systems/open-gerege-core/core/datasources/repositories/postgres/platformmodules"
 	"github.com/gerege-systems/open-gerege-core/kernel/module"
 	aimod "github.com/gerege-systems/open-gerege-core/modules/ai"
@@ -92,6 +91,7 @@ import (
 	govmod "github.com/gerege-systems/open-gerege-core/modules/gov"
 	gspacemod "github.com/gerege-systems/open-gerege-core/modules/gspace"
 	integrationsmod "github.com/gerege-systems/open-gerege-core/modules/integrations"
+	platformmod "github.com/gerege-systems/open-gerege-core/modules/platform"
 	providermod "github.com/gerege-systems/open-gerege-core/modules/provider"
 	registrymod "github.com/gerege-systems/open-gerege-core/modules/registry"
 	relaymod "github.com/gerege-systems/open-gerege-core/modules/relay"
@@ -207,6 +207,7 @@ func platformModules() []module.Module {
 		govmod.New(),
 		gspacemod.New(),
 		integrationsmod.New(),
+		platformmod.New(),
 		providermod.New(),
 		registrymod.New(),
 		relaymod.New(),
@@ -457,7 +458,6 @@ func NewApp() (*App, error) {
 			})
 		}
 	}
-	platformUC := platformuc.NewUsecase(modReg, platformModulesStore, auditUC)
 
 	// Super admin — админ хэрэглэгчдийг удирдах (үүсгэх/эрх олгох/хасах) +
 	// super admin урилга (allow-list). users давхаргаар (кэш-зөв мутациуд)
@@ -646,6 +646,8 @@ func NewApp() (*App, error) {
 				module.ServiceGeminiTTS:        geminiTTSClient,
 				module.ServiceAuth:             authUC,
 				module.ServiceOIDCService:      oidcSvc,
+				module.ServiceModuleRegistry:   modReg,
+				module.ServiceModuleStore:      platformModulesStore,
 			},
 		}
 		for _, mod := range platformModules() {
@@ -666,7 +668,6 @@ func NewApp() (*App, error) {
 		moduleShutdown = host.shutdown
 
 		api.Get("/", routes.RootHandler)
-		routes.NewPlatformRoute(api, platformUC, authMiddleware).Routes()
 		routes.NewAuthRoute(api, authUC, auditUC, WalletProvisioner, authMiddleware, authRateLimiter, pollRateLimiter).Routes()
 		routes.NewUsersRoute(api, usersUC, authMiddleware, ssoEidProxy != nil).Routes()
 		routes.NewEIDProfileRoute(api, authUC, authMiddleware, govWriteRateLimiter).Routes()
