@@ -1,23 +1,4 @@
 # Конвенц тогтоохоос өмнө үүссэн, production-д хэрэгжсэн migration-ууд.
 # Эдгээр нь муж/давхардлын шалгалтаас чөлөөлөгдөнө. ШИНЭ МӨР БҮҮ НЭМ.
-10_users_name_en.up.sql
-12_users_eid.up.sql
-13_users_eid_civil_id.up.sql
-16_users_eid_certificate.up.sql
 17_least_privilege_config_grants.up.sql
-18_users_google_sub.up.sql
-19_users_google_profile.up.sql
-1_create_tables_users.up.sql
-22_api_gateway.up.sql
-23_superadmin_role.up.sql
-24_users_sso_sub.up.sql
 2_create_extensions_uuid.up.sql
-36_gateway_reconcile.up.sql
-39_readd_users_sso_sub.up.sql
-3_partial_unique_users.up.sql
-4_normalize_email_username.up.sql
-5_users_password_changed_at.up.sql
-6_users_deleted_at_index.up.sql
-7_enable_rls_users.up.sql
-8_rbac_roles_permissions.up.sql
-9_users_name.up.sql

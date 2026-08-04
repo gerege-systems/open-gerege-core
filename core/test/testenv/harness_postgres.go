@@ -19,6 +19,7 @@ package testenv
 import (
 	"context"
 	"fmt"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -27,6 +28,8 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	appmodules "github.com/gerege-systems/open-gerege-core/modules"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/testcontainers/testcontainers-go"
@@ -160,39 +163,35 @@ func applyMigrations(ctx context.Context, pool *pgxpool.Pool) error {
 	return applyModuleMigrations(ctx, pool)
 }
 
-// applyModuleMigrations нь modules/<id>/migrations/*.up.sql-ыг ажиллуулна.
-// Модулиуд нь ХАВТСЫН нэрээр эрэмбэлэгдэнэ — cmd/migration нь бүртгэлийн
-// дарааллыг ашигладаг тул хоёр нь модуль хоорондын хамааралтай болмогц
-// зөрж болзошгүй; тэр үед энэ функцийг тодорхой жагсаалт руу шилжүүлнэ.
+// applyModuleMigrations нь модулиудын embed хийсэн migration-уудыг
+// modules.MigrationSources()-ийн ДАРААЛЛААР ажиллуулна.
+//
+// Хавтасны нэрээр эрэмбэлж БОЛОХГҮЙ: цагаан толгойн дараалал нь users-ийг
+// хамгийн сүүлд тавьдаг бөгөөд rbac/assets/superadmin нь users-ийг ALTER
+// хийдэг тул шинэ DB босохгүй. Deploy (cmd/migration) болон энэ harness
+// хоёр ИЖИЛ жагсаалтыг хэрэглэх нь чухал — эс бөгөөс тест ногоон атлаа
+// deploy унана.
 func applyModuleMigrations(ctx context.Context, pool *pgxpool.Pool) error {
-	root := filepath.Dir(migrationsDir())
-	moduleDirs, err := filepath.Glob(filepath.Join(root, "modules", "*", "migrations"))
-	if err != nil {
-		return fmt.Errorf("glob module migrations: %w", err)
-	}
-	sort.Strings(moduleDirs)
-	for _, md := range moduleDirs {
-		entries, err := os.ReadDir(md)
+	for _, src := range appmodules.MigrationSources() {
+		fsys := src.Migrations()
+		names, err := fs.Glob(fsys, "*.up.sql")
 		if err != nil {
-			return fmt.Errorf("read %s: %w", md, err)
+			return fmt.Errorf("glob %s migrations: %w", src.ID(), err)
 		}
-		var files []string
-		for _, e := range entries {
-			name := e.Name()
-			if strings.HasSuffix(name, ".up.sql") {
-				files = append(files, name)
-			}
-		}
-		sort.Slice(files, func(i, j int) bool {
-			ni, nj := migrationNumber(files[i]), migrationNumber(files[j])
+		sort.Slice(names, func(i, j int) bool {
+			ni, nj := migrationNumber(names[i]), migrationNumber(names[j])
 			if ni != nj {
 				return ni < nj
 			}
-			return files[i] < files[j]
+			return names[i] < names[j]
 		})
-		for _, name := range files {
-			if err := execSQLFile(ctx, pool, filepath.Join(md, name)); err != nil {
-				return err
+		for _, n := range names {
+			data, err := fs.ReadFile(fsys, n)
+			if err != nil {
+				return fmt.Errorf("read %s/%s: %w", src.ID(), n, err)
+			}
+			if _, err := pool.Exec(ctx, string(data)); err != nil {
+				return fmt.Errorf("exec %s/%s: %w", src.ID(), n, err)
 			}
 		}
 	}

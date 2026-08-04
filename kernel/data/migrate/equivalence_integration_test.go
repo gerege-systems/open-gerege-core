@@ -35,15 +35,18 @@ import (
 	assetsmod "github.com/gerege-systems/open-gerege-core/modules/assets"
 	auditmod "github.com/gerege-systems/open-gerege-core/modules/audit"
 	authmod "github.com/gerege-systems/open-gerege-core/modules/auth"
+	gatewayconsolemod "github.com/gerege-systems/open-gerege-core/modules/gatewayconsole"
 	govmod "github.com/gerege-systems/open-gerege-core/modules/gov"
 	integrationsmod "github.com/gerege-systems/open-gerege-core/modules/integrations"
 	orgmod "github.com/gerege-systems/open-gerege-core/modules/org"
 	platformmod "github.com/gerege-systems/open-gerege-core/modules/platform"
 	providermod "github.com/gerege-systems/open-gerege-core/modules/provider"
+	rbacmod "github.com/gerege-systems/open-gerege-core/modules/rbac"
 	registrymod "github.com/gerege-systems/open-gerege-core/modules/registry"
 	relaymod "github.com/gerege-systems/open-gerege-core/modules/relay"
 	sitemod "github.com/gerege-systems/open-gerege-core/modules/site"
 	superadminmod "github.com/gerege-systems/open-gerege-core/modules/superadmin"
+	usersmod "github.com/gerege-systems/open-gerege-core/modules/users"
 )
 
 // schemaFingerprint нь схемийн бүтцийг харьцуулж болохуйц мөр болгоно.
@@ -211,6 +214,17 @@ func TestModuleSplitProducesIdenticalSchema(t *testing.T) {
 	// Migration-аа эзэмшсэн БҮХ модуль — cmd/migration-ийн жагсаалттай
 	// ижил дараалалтай байх ёстой.
 	sources := []migrate.Source{
+		// ДАРААЛАЛ НЬ ЗААВАЛ: доорх хамаарлууд файлын агуулгаас гарна.
+		//   users  — суурь хүснэгт; rbac/assets/superadmin бүгд ALTER хийдэг
+		//   rbac   — 8 нь users-ийг ALTER хийж, permissions-ыг үүсгэнэ
+		//   gateway-console — 22/36 нь permissions рүү INSERT хийнэ
+		//   provider — 51 нь applications-ыг лавладаг (22 үүсгэдэг)
+		//   site   — platform-ийн 43/52 нь site_appearance-ыг лавладаг
+		// Дарааллыг өөрчилвөл шинэ суулгац унана; kernel/data/migrate-ийн
+		// тэнцүүлэлтийн тест үүнийг барина.
+		usersmod.New(),
+		rbacmod.New(),
+		gatewayconsolemod.New(),
 		aimod.New(),
 		assetsmod.New(),
 		auditmod.New(),
@@ -222,9 +236,6 @@ func TestModuleSplitProducesIdenticalSchema(t *testing.T) {
 		registrymod.New(),
 		relaymod.New(),
 		superadminmod.New(),
-		// site нь platform-ЫН ӨМНӨ байх ЁСТОЙ: platform-ийн 43/52 нь
-		// site_appearance-ыг лавладаг. Дараалал өөрчилвөл шинэ суулгац
-		// унана — kernel/data/migrate-ийн тэнцүүлэлтийн тест барина.
 		sitemod.New(),
 		platformmod.New(),
 	}

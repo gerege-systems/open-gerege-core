@@ -19,19 +19,7 @@ import (
 	"github.com/gerege-systems/open-gerege-core/core/datasources/migration"
 	"github.com/gerege-systems/open-gerege-core/kernel/data/migrate"
 	coremigrations "github.com/gerege-systems/open-gerege-core/migrations"
-	aimod "github.com/gerege-systems/open-gerege-core/modules/ai"
-	assetsmod "github.com/gerege-systems/open-gerege-core/modules/assets"
-	auditmod "github.com/gerege-systems/open-gerege-core/modules/audit"
-	authmod "github.com/gerege-systems/open-gerege-core/modules/auth"
-	govmod "github.com/gerege-systems/open-gerege-core/modules/gov"
-	integrationsmod "github.com/gerege-systems/open-gerege-core/modules/integrations"
-	orgmod "github.com/gerege-systems/open-gerege-core/modules/org"
-	platformmod "github.com/gerege-systems/open-gerege-core/modules/platform"
-	providermod "github.com/gerege-systems/open-gerege-core/modules/provider"
-	registrymod "github.com/gerege-systems/open-gerege-core/modules/registry"
-	relaymod "github.com/gerege-systems/open-gerege-core/modules/relay"
-	sitemod "github.com/gerege-systems/open-gerege-core/modules/site"
-	superadminmod "github.com/gerege-systems/open-gerege-core/modules/superadmin"
+	appmodules "github.com/gerege-systems/open-gerege-core/modules"
 	"github.com/gerege-systems/open-gerege-core/pkg/logger"
 )
 
@@ -116,24 +104,8 @@ func main() {
 // moduleMigrationSources нь өөрийн migration-аа зарласан модулиудыг
 // БҮРТГЭЛИЙН дарааллаар жагсаана. Модуль нүүх бүрд энд нэмэгдэнэ.
 func moduleMigrationSources() []migrate.Source {
-	return []migrate.Source{
-		aimod.New(),
-		assetsmod.New(),
-		auditmod.New(),
-		authmod.New(),
-		govmod.New(),
-		integrationsmod.New(),
-		orgmod.New(),
-		providermod.New(),
-		registrymod.New(),
-		relaymod.New(),
-		superadminmod.New(),
-		// site нь platform-ЫН ӨМНӨ байх ЁСТОЙ: platform-ийн 43/52 нь
-		// site_appearance-ыг лавладаг. Дараалал өөрчилвөл шинэ суулгац
-		// унана — kernel/data/migrate-ийн тэнцүүлэлтийн тест барина.
-		sitemod.New(),
-		platformmod.New(),
-	}
+	return appmodules.MigrationSources()
+
 }
 
 // runModuleMigrations нь модулиудын migration-ыг гүйцэтгэнэ. Ажиллаж буй

@@ -9,13 +9,19 @@ package gatewayconsole
 
 import (
 	"context"
+	"embed"
 	"fmt"
+	"io/fs"
 
 	gatewayuc "github.com/gerege-systems/open-gerege-core/core/business/usecases/gateway"
 	rbacuc "github.com/gerege-systems/open-gerege-core/core/business/usecases/rbac"
 	"github.com/gerege-systems/open-gerege-core/core/http/routes"
+	"github.com/gerege-systems/open-gerege-core/kernel/data/migrate"
 	"github.com/gerege-systems/open-gerege-core/kernel/module"
 )
+
+//go:embed migrations
+var migrationsDir embed.FS
 
 // Module — gateway-console модулийн kernel гэрээний хэрэгжилт.
 type Module struct{}
@@ -25,6 +31,19 @@ func New() *Module { return &Module{} }
 
 // ID — Builtin() манифестийн ID.
 func (*Module) ID() string { return "gateway-console" }
+
+// Migrations нь модулийн өөрийн SQL migration-уудыг буцаана. 22/36 нь
+// gateway хүснэгтүүдээс гадна applications-ыг ч үүсгэдэг (нэг файлд хоёр
+// модулийн хүснэгт) — SQL-ийг хуваахын оронд файлыг нэрээрээ илүү ойр
+// gateway-console эзэмшинэ. Эзэмшлийн энэ ойролцоолол нь зөвхөн ФАЙЛД
+// хамаарна: манифестийн route эзэмшил өөрчлөгдөөгүй.
+func (*Module) Migrations() migrate.MigrationFS {
+	sub, err := fs.Sub(migrationsDir, "migrations")
+	if err != nil {
+		panic("gateway-console: migrations FS: " + err.Error())
+	}
+	return sub
+}
 
 // Register нь /v1/gateway route-уудаа суулгана.
 func (m *Module) Register(_ context.Context, host module.Host) error {
