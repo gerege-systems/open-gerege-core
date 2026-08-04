@@ -1,0 +1,25 @@
+# Gerege Systems Development Team болон Claude AI хамтран бүтээв, 2026.
+#
+# platformd systemd unit — /opt/gerege (репогийн root) дээр ажиллана гэж
+# үзэв; замуудаа орчиндоо тааруулна уу. Суулгах:
+#   go build -o /usr/local/bin/platformd ./cmd/platformd
+#   cp deploy/platformd/platformd.service /etc/systemd/system/
+#   systemctl enable --now platformd
+[Unit]
+Description=Gerege Platform self-updater (platformd)
+After=network-online.target docker.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/gerege
+Environment=PLATFORMD_MANIFEST_URL=https://releases.gerege.mn/open-gerege/manifest.json
+Environment=PLATFORMD_CHANNEL=stable
+Environment=PLATFORMD_WINDOW=03:00-05:00
+Environment=PLATFORMD_HEALTH_URL=http://127.0.0.1:8080/api/
+ExecStart=/usr/local/bin/platformd
+Restart=on-failure
+RestartSec=30
+
+[Install]
+WantedBy=multi-user.target

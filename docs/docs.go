@@ -81,25 +81,25 @@ const docTemplate = `{
                     "200": {
                         "description": "Embedded count",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     },
                     "401": {
                         "description": "Missing/invalid token",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     },
                     "403": {
                         "description": "Missing settings.manage permission",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     },
                     "500": {
                         "description": "Embedding failed",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -126,7 +126,7 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                                    "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                                 },
                                 {
                                     "type": "object",
@@ -134,7 +134,7 @@ const docTemplate = `{
                                         "data": {
                                             "type": "array",
                                             "items": {
-                                                "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_responses.AIPromptResponse"
+                                                "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.AIPromptResponse"
                                             }
                                         }
                                     }
@@ -145,13 +145,13 @@ const docTemplate = `{
                     "401": {
                         "description": "Missing/invalid token",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     },
                     "403": {
                         "description": "Missing settings.manage permission",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -189,7 +189,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_requests.AIPromptUpdateRequest"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.AIPromptUpdateRequest"
                         }
                     }
                 ],
@@ -197,31 +197,31 @@ const docTemplate = `{
                     "200": {
                         "description": "Updated",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     },
                     "400": {
                         "description": "Unknown key / malformed body",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     },
                     "401": {
                         "description": "Missing/invalid token",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     },
                     "403": {
                         "description": "Missing settings.manage permission",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     },
                     "422": {
                         "description": "Validation error",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -252,7 +252,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_requests.AIChatRequest"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.AIChatRequest"
                         }
                     }
                 ],
@@ -262,13 +262,13 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                                    "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_responses.AIChatResponse"
+                                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.AIChatResponse"
                                         }
                                     }
                                 }
@@ -278,25 +278,25 @@ const docTemplate = `{
                     "400": {
                         "description": "Malformed JSON body / missing message and audio",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     },
                     "401": {
                         "description": "Missing/invalid token",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     },
                     "422": {
                         "description": "Validation error",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     },
                     "429": {
                         "description": "Rate limit exceeded",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -327,7 +327,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_requests.AISTTRequest"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.AISTTRequest"
                         }
                     }
                 ],
@@ -337,13 +337,13 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                                    "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_responses.AISTTResponse"
+                                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.AISTTResponse"
                                         }
                                     }
                                 }
@@ -353,31 +353,31 @@ const docTemplate = `{
                     "400": {
                         "description": "Malformed JSON body",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     },
                     "401": {
                         "description": "Missing/invalid token",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     },
                     "422": {
                         "description": "Validation error",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     },
                     "429": {
                         "description": "Rate limit exceeded",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     },
                     "503": {
                         "description": "Upstream (Gemini) timed out or unavailable — retry",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -408,7 +408,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_requests.AITranslateRequest"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.AITranslateRequest"
                         }
                     }
                 ],
@@ -418,13 +418,13 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                                    "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_responses.AITranslateResponse"
+                                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.AITranslateResponse"
                                         }
                                     }
                                 }
@@ -434,25 +434,25 @@ const docTemplate = `{
                     "400": {
                         "description": "Malformed JSON body / missing text and audio",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     },
                     "401": {
                         "description": "Missing/invalid token",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     },
                     "422": {
                         "description": "Validation error",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     },
                     "429": {
                         "description": "Rate limit exceeded",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -483,7 +483,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_requests.AITTSRequest"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.AITTSRequest"
                         }
                     }
                 ],
@@ -493,13 +493,13 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                                    "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_responses.AIAudioOut"
+                                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.AIAudioOut"
                                         }
                                     }
                                 }
@@ -509,31 +509,31 @@ const docTemplate = `{
                     "400": {
                         "description": "Malformed JSON body",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     },
                     "401": {
                         "description": "Missing/invalid token",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     },
                     "422": {
                         "description": "Validation error",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     },
                     "429": {
                         "description": "Rate limit exceeded",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     },
                     "503": {
                         "description": "Upstream (Gemini) timed out or unavailable — retry",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -552,7 +552,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -575,7 +575,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_requests.ApplicationRequest"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.ApplicationRequest"
                         }
                     }
                 ],
@@ -583,7 +583,7 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -611,7 +611,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -641,7 +641,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_requests.ApplicationRequest"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.ApplicationRequest"
                         }
                     }
                 ],
@@ -649,7 +649,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -675,7 +675,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -703,7 +703,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -735,7 +735,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_requests.ApplicationSecretRequest"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.ApplicationSecretRequest"
                         }
                     }
                 ],
@@ -743,7 +743,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -775,7 +775,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_requests.ApplicationServicesRequest"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.ApplicationServicesRequest"
                         }
                     }
                 ],
@@ -783,7 +783,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -809,7 +809,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_requests.EIDPollRequest"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.EIDPollRequest"
                         }
                     }
                 ],
@@ -819,13 +819,13 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                                    "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_responses.EIDPollResponse"
+                                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.EIDPollResponse"
                                         }
                                     }
                                 }
@@ -835,19 +835,19 @@ const docTemplate = `{
                     "400": {
                         "description": "Malformed JSON body or missing session_id",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     },
                     "422": {
                         "description": "Validation error",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     },
                     "500": {
                         "description": "Failed to reach eID provider",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -872,13 +872,13 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                                    "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_responses.EIDStartResponse"
+                                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.EIDStartResponse"
                                         }
                                     }
                                 }
@@ -888,7 +888,7 @@ const docTemplate = `{
                     "500": {
                         "description": "Failed to reach eID provider",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -914,7 +914,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_requests.EIDStartByNationalIDRequest"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.EIDStartByNationalIDRequest"
                         }
                     }
                 ],
@@ -924,13 +924,13 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                                    "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_responses.EIDStartResponse"
+                                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.EIDStartResponse"
                                         }
                                     }
                                 }
@@ -940,19 +940,19 @@ const docTemplate = `{
                     "400": {
                         "description": "Malformed JSON body or missing national_id",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     },
                     "422": {
                         "description": "Validation error",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     },
                     "500": {
                         "description": "Failed to reach eID provider",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -978,7 +978,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_requests.GoogleLoginRequest"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.GoogleLoginRequest"
                         }
                     }
                 ],
@@ -988,13 +988,13 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                                    "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_responses.GoogleLoginResponse"
+                                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.GoogleLoginResponse"
                                         }
                                     }
                                 }
@@ -1004,7 +1004,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid code",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -1024,7 +1024,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -1050,7 +1050,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_requests.LoginRequest"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.LoginRequest"
                         }
                     }
                 ],
@@ -1060,13 +1060,13 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                                    "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_responses.UserResponse"
+                                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.UserResponse"
                                         }
                                     }
                                 }
@@ -1076,25 +1076,25 @@ const docTemplate = `{
                     "400": {
                         "description": "Malformed JSON body",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     },
                     "401": {
                         "description": "Invalid email or password",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     },
                     "403": {
                         "description": "Account not yet activated",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     },
                     "422": {
                         "description": "Validation error",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -1120,7 +1120,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_requests.LogoutRequest"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.LogoutRequest"
                         }
                     }
                 ],
@@ -1128,19 +1128,19 @@ const docTemplate = `{
                     "200": {
                         "description": "Logged out",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     },
                     "401": {
                         "description": "Refresh token invalid",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     },
                     "422": {
                         "description": "Validation error",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -1171,7 +1171,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_requests.ChangePasswordRequest"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.ChangePasswordRequest"
                         }
                     }
                 ],
@@ -1179,25 +1179,25 @@ const docTemplate = `{
                     "200": {
                         "description": "Password changed",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     },
                     "400": {
                         "description": "Malformed JSON body",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     },
                     "401": {
                         "description": "Current password incorrect",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     },
                     "422": {
                         "description": "Validation error",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -1223,7 +1223,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_requests.ForgotPasswordRequest"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.ForgotPasswordRequest"
                         }
                     }
                 ],
@@ -1231,19 +1231,19 @@ const docTemplate = `{
                     "200": {
                         "description": "Reset email queued (or email not registered — same response either way)",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     },
                     "400": {
                         "description": "Malformed JSON body",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     },
                     "422": {
                         "description": "Validation error",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -1269,7 +1269,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_requests.ResetPasswordRequest"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.ResetPasswordRequest"
                         }
                     }
                 ],
@@ -1277,25 +1277,25 @@ const docTemplate = `{
                     "200": {
                         "description": "Password reset",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     },
                     "400": {
                         "description": "Malformed JSON body",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     },
                     "401": {
                         "description": "Reset code invalid or expired",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     },
                     "422": {
                         "description": "Validation error",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -1321,7 +1321,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_requests.RefreshRequest"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.RefreshRequest"
                         }
                     }
                 ],
@@ -1331,13 +1331,13 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                                    "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_responses.UserResponse"
+                                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.UserResponse"
                                         }
                                     }
                                 }
@@ -1347,19 +1347,19 @@ const docTemplate = `{
                     "401": {
                         "description": "Refresh token invalid, expired, or already revoked",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     },
                     "403": {
                         "description": "Account no longer active",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     },
                     "422": {
                         "description": "Validation error",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -1385,7 +1385,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_requests.RegisterRequest"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.RegisterRequest"
                         }
                     }
                 ],
@@ -1395,13 +1395,13 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                                    "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_responses.UserResponse"
+                                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.UserResponse"
                                         }
                                     }
                                 }
@@ -1411,25 +1411,25 @@ const docTemplate = `{
                     "400": {
                         "description": "Malformed JSON body",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     },
                     "409": {
                         "description": "Email or username already in use",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     },
                     "422": {
                         "description": "Validation error (per-field detail in data.errors)",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     },
                     "500": {
                         "description": "Internal error",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -1455,7 +1455,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_requests.SendOTPRequest"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.SendOTPRequest"
                         }
                     }
                 ],
@@ -1463,31 +1463,31 @@ const docTemplate = `{
                     "200": {
                         "description": "OTP enqueued",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     },
                     "400": {
                         "description": "Account already activated",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     },
                     "404": {
                         "description": "Email not registered",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     },
                     "422": {
                         "description": "Validation error",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     },
                     "500": {
                         "description": "Failed to enqueue mail",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -1513,7 +1513,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_requests.VerifyOTPRequest"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.VerifyOTPRequest"
                         }
                     }
                 ],
@@ -1521,31 +1521,31 @@ const docTemplate = `{
                     "200": {
                         "description": "Account activated",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     },
                     "400": {
                         "description": "Invalid OTP code",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     },
                     "403": {
                         "description": "Locked out — too many invalid attempts",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     },
                     "404": {
                         "description": "Email not registered",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     },
                     "422": {
                         "description": "Validation error",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -1564,7 +1564,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -1592,7 +1592,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -1620,7 +1620,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -1648,7 +1648,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -1675,7 +1675,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -1695,7 +1695,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -1714,7 +1714,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -1737,7 +1737,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_requests.GatewayServiceRequest"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.GatewayServiceRequest"
                         }
                     }
                 ],
@@ -1745,7 +1745,7 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -1777,7 +1777,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_requests.GatewayServiceRequest"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.GatewayServiceRequest"
                         }
                     }
                 ],
@@ -1785,7 +1785,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -1811,7 +1811,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -1830,7 +1830,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -1853,7 +1853,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_requests.GovApplyRequest"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.GovApplyRequest"
                         }
                     }
                 ],
@@ -1861,7 +1861,7 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -1889,7 +1889,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -1921,7 +1921,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_requests.GovInfoRequest"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.GovInfoRequest"
                         }
                     }
                 ],
@@ -1929,7 +1929,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -1957,7 +1957,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -1976,7 +1976,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -1999,7 +1999,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_requests.GovBookRequest"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.GovBookRequest"
                         }
                     }
                 ],
@@ -2007,7 +2007,7 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -2035,7 +2035,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -2054,7 +2054,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -2073,7 +2073,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -2092,7 +2092,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -2120,7 +2120,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -2159,7 +2159,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -2187,7 +2187,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -2215,7 +2215,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -2243,7 +2243,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -2275,7 +2275,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_requests.GovDecideRequest"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.GovDecideRequest"
                         }
                     }
                 ],
@@ -2283,7 +2283,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -2315,7 +2315,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_requests.GovInfoRequest"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.GovInfoRequest"
                         }
                     }
                 ],
@@ -2323,7 +2323,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -2342,7 +2342,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -2361,7 +2361,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -2380,7 +2380,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -2408,7 +2408,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -2427,7 +2427,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -2450,7 +2450,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_requests.GovReferenceRequest"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.GovReferenceRequest"
                         }
                     }
                 ],
@@ -2458,7 +2458,7 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -2477,7 +2477,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -2504,7 +2504,7 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                                    "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                                 },
                                 {
                                     "type": "object",
@@ -2512,7 +2512,7 @@ const docTemplate = `{
                                         "data": {
                                             "type": "array",
                                             "items": {
-                                                "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_responses.IntegrationResponse"
+                                                "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.IntegrationResponse"
                                             }
                                         }
                                     }
@@ -2523,7 +2523,7 @@ const docTemplate = `{
                     "401": {
                         "description": "Unauthenticated",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -2552,7 +2552,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_requests.ConnectIntegrationRequest"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.ConnectIntegrationRequest"
                         }
                     }
                 ],
@@ -2560,25 +2560,25 @@ const docTemplate = `{
                     "200": {
                         "description": "Stored",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     },
                     "400": {
                         "description": "Malformed body / unknown provider",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthenticated",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     },
                     "422": {
                         "description": "Validation error",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -2612,19 +2612,19 @@ const docTemplate = `{
                     "200": {
                         "description": "Disconnected",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     },
                     "400": {
                         "description": "Unknown provider",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthenticated",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -2660,13 +2660,13 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                                    "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_responses.IntegrationTokenResponse"
+                                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.IntegrationTokenResponse"
                                         }
                                     }
                                 }
@@ -2676,13 +2676,13 @@ const docTemplate = `{
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     },
                     "404": {
                         "description": "Not connected",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -2708,7 +2708,7 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                                    "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                                 },
                                 {
                                     "type": "object",
@@ -2716,7 +2716,7 @@ const docTemplate = `{
                                         "data": {
                                             "type": "array",
                                             "items": {
-                                                "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_responses.LanguageResponse"
+                                                "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.LanguageResponse"
                                             }
                                         }
                                     }
@@ -2750,7 +2750,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_requests.LanguageCreateRequest"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.LanguageCreateRequest"
                         }
                     }
                 ],
@@ -2760,13 +2760,13 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                                    "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_responses.LanguageResponse"
+                                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.LanguageResponse"
                                         }
                                     }
                                 }
@@ -2792,7 +2792,7 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                                    "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                                 },
                                 {
                                     "type": "object",
@@ -2800,7 +2800,7 @@ const docTemplate = `{
                                         "data": {
                                             "type": "array",
                                             "items": {
-                                                "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_responses.LanguageResponse"
+                                                "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.LanguageResponse"
                                             }
                                         }
                                     }
@@ -2839,7 +2839,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -2874,7 +2874,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_requests.LanguageUpdateRequest"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.LanguageUpdateRequest"
                         }
                     }
                 ],
@@ -2882,7 +2882,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -2913,13 +2913,13 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                                    "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_responses.LanguageDictionaryResponse"
+                                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.LanguageDictionaryResponse"
                                         }
                                     }
                                 }
@@ -2961,7 +2961,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_requests.LanguageAutoTranslateRequest"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.LanguageAutoTranslateRequest"
                         }
                     }
                 ],
@@ -2971,13 +2971,13 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                                    "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_responses.LanguageAutoTranslateResponse"
+                                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.LanguageAutoTranslateResponse"
                                         }
                                     }
                                 }
@@ -3019,7 +3019,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_requests.LanguageTranslationsRequest"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.LanguageTranslationsRequest"
                         }
                     }
                 ],
@@ -3027,7 +3027,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -3057,7 +3057,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_requests.LatinNameRequest"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.LatinNameRequest"
                         }
                     }
                 ],
@@ -3065,7 +3065,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -3102,7 +3102,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_requests.OrgNameLatinRequest"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.OrgNameLatinRequest"
                         }
                     }
                 ],
@@ -3110,7 +3110,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -3143,7 +3143,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -3178,7 +3178,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_requests.AssetURLRequest"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.AssetURLRequest"
                         }
                     }
                 ],
@@ -3186,7 +3186,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -3217,7 +3217,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -3241,7 +3241,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -3269,7 +3269,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_requests.AssetURLRequest"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.AssetURLRequest"
                         }
                     }
                 ],
@@ -3277,7 +3277,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -3299,7 +3299,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -3457,7 +3457,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_requests.AIPublicChatRequest"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.AIPublicChatRequest"
                         }
                     }
                 ],
@@ -3467,13 +3467,13 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                                    "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_responses.AIChatResponse"
+                                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.AIChatResponse"
                                         }
                                     }
                                 }
@@ -3483,19 +3483,19 @@ const docTemplate = `{
                     "400": {
                         "description": "Malformed JSON body",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     },
                     "422": {
                         "description": "Validation error",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     },
                     "429": {
                         "description": "Rate limit exceeded",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -3521,7 +3521,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_requests.AIPublicChatRequest"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.AIPublicChatRequest"
                         }
                     }
                 ],
@@ -3535,19 +3535,19 @@ const docTemplate = `{
                     "400": {
                         "description": "Malformed JSON body / message and audio both missing",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     },
                     "422": {
                         "description": "Validation error",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     },
                     "429": {
                         "description": "Rate limit exceeded",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -3573,7 +3573,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_requests.AIPublicTTSRequest"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.AIPublicTTSRequest"
                         }
                     }
                 ],
@@ -3583,13 +3583,13 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                                    "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_responses.AIAudioOut"
+                                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.AIAudioOut"
                                         }
                                     }
                                 }
@@ -3599,25 +3599,25 @@ const docTemplate = `{
                     "400": {
                         "description": "Malformed JSON body",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     },
                     "422": {
                         "description": "Validation error",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     },
                     "429": {
                         "description": "Rate limit exceeded",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     },
                     "503": {
                         "description": "Upstream (Gemini) timed out or unavailable — retry",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -3656,7 +3656,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -3675,7 +3675,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -3698,7 +3698,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_requests.RegistryEvidenceRequest"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.RegistryEvidenceRequest"
                         }
                     }
                 ],
@@ -3706,7 +3706,7 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -3738,7 +3738,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_requests.RegistryEvidenceRequest"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.RegistryEvidenceRequest"
                         }
                     }
                 ],
@@ -3746,7 +3746,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -3772,7 +3772,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -3791,7 +3791,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -3814,7 +3814,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_requests.RegistryLifeEventRequest"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.RegistryLifeEventRequest"
                         }
                     }
                 ],
@@ -3822,7 +3822,7 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -3850,7 +3850,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -3877,7 +3877,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -3896,7 +3896,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -3941,7 +3941,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -3964,7 +3964,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_requests.RegistryServiceRequest"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.RegistryServiceRequest"
                         }
                     }
                 ],
@@ -3972,7 +3972,7 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -4000,7 +4000,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -4030,7 +4030,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_requests.RegistryServiceRequest"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.RegistryServiceRequest"
                         }
                     }
                 ],
@@ -4038,7 +4038,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -4064,7 +4064,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -4092,7 +4092,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -4124,7 +4124,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_requests.RegistryEvidencesRequest"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.RegistryEvidencesRequest"
                         }
                     }
                 ],
@@ -4132,7 +4132,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -4160,7 +4160,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -4191,7 +4191,7 @@ const docTemplate = `{
                         "name": "body",
                         "in": "body",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_requests.RegistryPublishRequest"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.RegistryPublishRequest"
                         }
                     }
                 ],
@@ -4199,7 +4199,7 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -4227,7 +4227,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -4264,7 +4264,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_requests.RelayRespondRequest"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.RelayRespondRequest"
                         }
                     }
                 ],
@@ -4272,7 +4272,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -4298,13 +4298,13 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                                    "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_responses.RelayOverviewResponse"
+                                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.RelayOverviewResponse"
                                         }
                                     }
                                 }
@@ -4332,7 +4332,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -4360,7 +4360,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_requests.RelayPlatformRequest"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.RelayPlatformRequest"
                         }
                     }
                 ],
@@ -4368,7 +4368,7 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -4401,7 +4401,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -4433,7 +4433,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -4462,7 +4462,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_requests.RelayIngestRequest"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.RelayIngestRequest"
                         }
                     }
                 ],
@@ -4472,13 +4472,13 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                                    "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_responses.RelayRequestResponse"
+                                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.RelayRequestResponse"
                                         }
                                     }
                                 }
@@ -4517,13 +4517,13 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                                    "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_responses.RelayRequestDetailResponse"
+                                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.RelayRequestDetailResponse"
                                         }
                                     }
                                 }
@@ -4564,7 +4564,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_requests.RelayForwardRequest"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.RelayForwardRequest"
                         }
                     }
                 ],
@@ -4572,7 +4572,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -4596,7 +4596,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -4624,7 +4624,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_requests.RelayRouteRequest"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.RelayRouteRequest"
                         }
                     }
                 ],
@@ -4632,7 +4632,7 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -4665,7 +4665,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -4706,13 +4706,13 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                                    "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_responses.RelayRequestResponse"
+                                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.RelayRequestResponse"
                                         }
                                     }
                                 }
@@ -4738,13 +4738,13 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                                    "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_responses.SiteAppearanceResponse"
+                                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.SiteAppearanceResponse"
                                         }
                                     }
                                 }
@@ -4777,7 +4777,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_requests.SiteAppearanceUpdateRequest"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.SiteAppearanceUpdateRequest"
                         }
                     }
                 ],
@@ -4785,19 +4785,51 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     },
                     "400": {
                         "description": "Буруу утга",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     },
                     "403": {
                         "description": "settings.manage эрх дутуу",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/site/auth": {
+            "get": {
+                "description": "Нүүр хуудас болон /login нь нэвтрэх картыг өөрөө үзүүлэх ('provider') үү, эсвэл дээд SSO руу шилжүүлэх ('client') үү. Нэвтрэлт шаардахгүй.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "site"
+                ],
+                "summary": "Нэвтрэх гадаргууны горимыг унших",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.SiteAuthResponse"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     }
                 }
@@ -4820,7 +4852,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -4843,7 +4875,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -4869,7 +4901,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_requests.SSONativeRequest"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.SSONativeRequest"
                         }
                     }
                 ],
@@ -4877,19 +4909,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     },
                     "400": {
                         "description": "Missing code/code_verifier",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     },
                     "422": {
                         "description": "Validation error",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -4909,7 +4941,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -4935,7 +4967,7 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                                    "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                                 },
                                 {
                                     "type": "object",
@@ -4943,7 +4975,7 @@ const docTemplate = `{
                                         "data": {
                                             "type": "array",
                                             "items": {
-                                                "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_responses.ThemeResponse"
+                                                "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.ThemeResponse"
                                             }
                                         }
                                     }
@@ -4976,7 +5008,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_requests.ThemeUpsertRequest"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.ThemeUpsertRequest"
                         }
                     }
                 ],
@@ -4986,13 +5018,13 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                                    "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_responses.ThemeResponse"
+                                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.ThemeResponse"
                                         }
                                     }
                                 }
@@ -5018,13 +5050,13 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                                    "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_responses.ThemeResponse"
+                                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.ThemeResponse"
                                         }
                                     }
                                 }
@@ -5063,13 +5095,13 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                                    "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_responses.ThemeResponse"
+                                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.ThemeResponse"
                                         }
                                     }
                                 }
@@ -5108,7 +5140,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_requests.ThemeUpsertRequest"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.ThemeUpsertRequest"
                         }
                     }
                 ],
@@ -5116,7 +5148,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -5147,7 +5179,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -5180,7 +5212,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -5227,13 +5259,13 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                                    "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_responses.UserResponse"
+                                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.UserResponse"
                                         }
                                     }
                                 }
@@ -5243,13 +5275,13 @@ const docTemplate = `{
                     "401": {
                         "description": "Missing or invalid token",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     },
                     "404": {
                         "description": "User no longer exists",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -5289,13 +5321,13 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                                    "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_responses.EIDActivityResponse"
+                                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.EIDActivityResponse"
                                         }
                                     }
                                 }
@@ -5325,13 +5357,13 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                                    "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_responses.EIDCertificatesResponse"
+                                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.EIDCertificatesResponse"
                                         }
                                     }
                                 }
@@ -5361,13 +5393,13 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                                    "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_responses.EIDDevicesResponse"
+                                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.EIDDevicesResponse"
                                         }
                                     }
                                 }
@@ -5398,7 +5430,7 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                                    "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                                 },
                                 {
                                     "type": "object",
@@ -5406,7 +5438,7 @@ const docTemplate = `{
                                         "data": {
                                             "type": "array",
                                             "items": {
-                                                "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_responses.OrgRepresentationResponse"
+                                                "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.OrgRepresentationResponse"
                                             }
                                         }
                                     }
@@ -5417,13 +5449,13 @@ const docTemplate = `{
                     "401": {
                         "description": "Missing or invalid token",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     },
                     "500": {
                         "description": "eID provider error",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -5452,7 +5484,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_requests.EIDOrgRegisterRequest"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.EIDOrgRegisterRequest"
                         }
                     }
                 ],
@@ -5462,7 +5494,7 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                                    "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                                 },
                                 {
                                     "type": "object",
@@ -5470,7 +5502,7 @@ const docTemplate = `{
                                         "data": {
                                             "type": "array",
                                             "items": {
-                                                "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_responses.OrgRepresentationResponse"
+                                                "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.OrgRepresentationResponse"
                                             }
                                         }
                                     }
@@ -5481,19 +5513,25 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid body",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     },
                     "403": {
                         "description": "Not authorized to represent this organization",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     },
                     "404": {
                         "description": "Organization not found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
+                        }
+                    },
+                    "503": {
+                        "description": "XYP lookup not configured",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -5529,7 +5567,7 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                                    "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                                 },
                                 {
                                     "type": "object",
@@ -5537,7 +5575,7 @@ const docTemplate = `{
                                         "data": {
                                             "type": "array",
                                             "items": {
-                                                "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_responses.OrgRepresentationResponse"
+                                                "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.OrgRepresentationResponse"
                                             }
                                         }
                                     }
@@ -5578,7 +5616,7 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                                    "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                                 },
                                 {
                                     "type": "object",
@@ -5586,7 +5624,7 @@ const docTemplate = `{
                                         "data": {
                                             "type": "array",
                                             "items": {
-                                                "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_responses.OrgSignerResponse"
+                                                "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.OrgSignerResponse"
                                             }
                                         }
                                     }
@@ -5627,7 +5665,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_requests.AddEIDSignerRequest"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.AddEIDSignerRequest"
                         }
                     }
                 ],
@@ -5637,13 +5675,13 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                                    "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_responses.OrgSignersResultResponse"
+                                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.OrgSignersResultResponse"
                                         }
                                     }
                                 }
@@ -5688,7 +5726,7 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                                    "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                                 },
                                 {
                                     "type": "object",
@@ -5696,7 +5734,7 @@ const docTemplate = `{
                                         "data": {
                                             "type": "array",
                                             "items": {
-                                                "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_responses.OrgSignerResponse"
+                                                "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.OrgSignerResponse"
                                             }
                                         }
                                     }
@@ -5744,13 +5782,13 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                                    "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_responses.OrgSignersResultResponse"
+                                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.OrgSignersResultResponse"
                                         }
                                     }
                                 }
@@ -5781,13 +5819,13 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                                    "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_responses.EIDSummaryResponse"
+                                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.EIDSummaryResponse"
                                         }
                                     }
                                 }
@@ -5822,7 +5860,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_requests.AdminCreateUserRequest"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.AdminCreateUserRequest"
                         }
                     }
                 ],
@@ -5830,25 +5868,25 @@ const docTemplate = `{
                     "201": {
                         "description": "User pre-registered",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     },
                     "400": {
                         "description": "Invalid request body",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     },
                     "403": {
                         "description": "Insufficient privilege for the role",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     },
                     "409": {
                         "description": "Register already exists",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -5901,7 +5939,7 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                                    "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                                 },
                                 {
                                     "type": "object",
@@ -5909,7 +5947,7 @@ const docTemplate = `{
                                         "data": {
                                             "type": "array",
                                             "items": {
-                                                "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_responses.AuditLogResponse"
+                                                "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.AuditLogResponse"
                                             }
                                         }
                                     }
@@ -5920,13 +5958,13 @@ const docTemplate = `{
                     "401": {
                         "description": "Missing or invalid token",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     },
                     "403": {
                         "description": "Not an admin",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -5953,13 +5991,13 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                                    "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_responses.AuditVerifyResponse"
+                                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.AuditVerifyResponse"
                                         }
                                     }
                                 }
@@ -5969,13 +6007,13 @@ const docTemplate = `{
                     "401": {
                         "description": "Missing or invalid token",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     },
                     "403": {
                         "description": "Not an admin",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -6016,7 +6054,7 @@ const docTemplate = `{
                     "400": {
                         "description": "РД буруу эсвэл олдсонгүй",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -6052,7 +6090,7 @@ const docTemplate = `{
                     "400": {
                         "description": "sid буруу",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -6078,7 +6116,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_requests.SuperadminMFARequest"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.SuperadminMFARequest"
                         }
                     }
                 ],
@@ -6088,13 +6126,13 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                                    "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_responses.SuperadminMFAResponse"
+                                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.SuperadminMFAResponse"
                                         }
                                     }
                                 }
@@ -6104,13 +6142,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid code",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     },
                     "403": {
                         "description": "MFA token invalid/expired or too many attempts",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -6136,7 +6174,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_requests.SuperadminOnboardEIDPollRequest"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.SuperadminOnboardEIDPollRequest"
                         }
                     }
                 ],
@@ -6146,13 +6184,13 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                                    "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_responses.SuperadminOnboardEIDPollResponse"
+                                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.SuperadminOnboardEIDPollResponse"
                                         }
                                     }
                                 }
@@ -6162,13 +6200,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid body or wrong step",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     },
                     "403": {
                         "description": "Onboard session invalid or expired",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -6194,7 +6232,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_requests.SuperadminOnboardEIDStartRequest"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.SuperadminOnboardEIDStartRequest"
                         }
                     }
                 ],
@@ -6204,13 +6242,13 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                                    "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_responses.SuperadminOnboardEIDStartResponse"
+                                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.SuperadminOnboardEIDStartResponse"
                                         }
                                     }
                                 }
@@ -6220,13 +6258,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid body or wrong step",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     },
                     "403": {
                         "description": "Onboard session invalid or expired",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -6252,7 +6290,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_requests.SuperadminOnboardEIDStartIDRequest"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.SuperadminOnboardEIDStartIDRequest"
                         }
                     }
                 ],
@@ -6262,13 +6300,13 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                                    "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_responses.SuperadminOnboardEIDStartResponse"
+                                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.SuperadminOnboardEIDStartResponse"
                                         }
                                     }
                                 }
@@ -6278,13 +6316,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid national_id or wrong step",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     },
                     "403": {
                         "description": "Onboard session invalid or expired",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -6310,7 +6348,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_requests.SuperadminOnboardTokenRequest"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.SuperadminOnboardTokenRequest"
                         }
                     }
                 ],
@@ -6320,13 +6358,13 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                                    "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_responses.SuperadminOnboardStepResponse"
+                                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.SuperadminOnboardStepResponse"
                                         }
                                     }
                                 }
@@ -6336,13 +6374,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Wrong step",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     },
                     "403": {
                         "description": "Onboard session invalid or expired",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -6368,7 +6406,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_requests.SuperadminOnboardCodeRequest"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.SuperadminOnboardCodeRequest"
                         }
                     }
                 ],
@@ -6378,13 +6416,13 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                                    "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_responses.SuperadminOnboardStepResponse"
+                                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.SuperadminOnboardStepResponse"
                                         }
                                     }
                                 }
@@ -6394,13 +6432,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid or expired code",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     },
                     "403": {
                         "description": "Onboard session invalid / too many attempts",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -6426,7 +6464,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_requests.SuperadminOnboardGoogleRequest"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.SuperadminOnboardGoogleRequest"
                         }
                     }
                 ],
@@ -6436,13 +6474,13 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                                    "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_responses.SuperadminOnboardStartResponse"
+                                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.SuperadminOnboardStartResponse"
                                         }
                                     }
                                 }
@@ -6452,13 +6490,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid code",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     },
                     "403": {
                         "description": "Email is not invited or invite already used",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -6484,7 +6522,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_requests.SuperadminOnboardTokenRequest"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.SuperadminOnboardTokenRequest"
                         }
                     }
                 ],
@@ -6494,13 +6532,13 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                                    "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_responses.SuperadminOnboardTOTPResponse"
+                                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.SuperadminOnboardTOTPResponse"
                                         }
                                     }
                                 }
@@ -6510,13 +6548,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Wrong step",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     },
                     "403": {
                         "description": "Onboard session invalid or expired",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -6542,7 +6580,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_requests.SuperadminOnboardCodeRequest"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.SuperadminOnboardCodeRequest"
                         }
                     }
                 ],
@@ -6552,13 +6590,13 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                                    "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_responses.SuperadminOnboardDoneResponse"
+                                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.SuperadminOnboardDoneResponse"
                                         }
                                     }
                                 }
@@ -6568,19 +6606,19 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid code or incomplete steps",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     },
                     "403": {
                         "description": "Onboard session invalid or expired",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     },
                     "409": {
                         "description": "Email or Google account already linked to another user",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -6604,7 +6642,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -6635,7 +6673,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -6698,7 +6736,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_requests.GSpaceUploadRequest"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.GSpaceUploadRequest"
                         }
                     }
                 ],
@@ -6706,7 +6744,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -6733,7 +6771,7 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                                    "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                                 },
                                 {
                                     "type": "object",
@@ -6741,7 +6779,7 @@ const docTemplate = `{
                                         "data": {
                                             "type": "array",
                                             "items": {
-                                                "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_responses.OrgResponse"
+                                                "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.OrgResponse"
                                             }
                                         }
                                     }
@@ -6752,7 +6790,7 @@ const docTemplate = `{
                     "401": {
                         "description": "Missing or invalid token",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -6781,7 +6819,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_requests.CreateOrgRequest"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.CreateOrgRequest"
                         }
                     }
                 ],
@@ -6791,13 +6829,13 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                                    "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_responses.OrgResponse"
+                                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.OrgResponse"
                                         }
                                     }
                                 }
@@ -6807,19 +6845,19 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid request body",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     },
                     "401": {
                         "description": "Missing or invalid token",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     },
                     "409": {
                         "description": "Registration number already exists",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -6855,13 +6893,13 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                                    "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_responses.OrgResponse"
+                                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.OrgResponse"
                                         }
                                     }
                                 }
@@ -6871,13 +6909,13 @@ const docTemplate = `{
                     "401": {
                         "description": "Missing or invalid token",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     },
                     "404": {
                         "description": "Organization not found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -6913,13 +6951,13 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                                    "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_responses.OrgResponse"
+                                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.OrgResponse"
                                         }
                                     }
                                 }
@@ -6929,13 +6967,13 @@ const docTemplate = `{
                     "401": {
                         "description": "Missing or invalid token",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     },
                     "404": {
                         "description": "Organization not found or not accessible",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -6971,7 +7009,7 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                                    "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                                 },
                                 {
                                     "type": "object",
@@ -6979,7 +7017,7 @@ const docTemplate = `{
                                         "data": {
                                             "type": "array",
                                             "items": {
-                                                "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_responses.OrgMemberResponse"
+                                                "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.OrgMemberResponse"
                                             }
                                         }
                                     }
@@ -6990,13 +7028,13 @@ const docTemplate = `{
                     "401": {
                         "description": "Missing or invalid token",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     },
                     "403": {
                         "description": "Not a member",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -7032,7 +7070,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_requests.AddMemberRequest"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.AddMemberRequest"
                         }
                     }
                 ],
@@ -7042,13 +7080,13 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                                    "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_responses.OrgMemberResponse"
+                                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.OrgMemberResponse"
                                         }
                                     }
                                 }
@@ -7058,25 +7096,25 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid request body",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     },
                     "401": {
                         "description": "Missing or invalid token",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     },
                     "403": {
                         "description": "Not allowed to manage members",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     },
                     "409": {
                         "description": "Already a member",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -7121,7 +7159,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_requests.UpdateMemberRoleRequest"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.UpdateMemberRoleRequest"
                         }
                     }
                 ],
@@ -7129,31 +7167,31 @@ const docTemplate = `{
                     "200": {
                         "description": "Role updated",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     },
                     "400": {
                         "description": "Invalid request body",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     },
                     "401": {
                         "description": "Missing or invalid token",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     },
                     "403": {
                         "description": "Not allowed to manage members",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     },
                     "404": {
                         "description": "Membership not found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -7192,31 +7230,128 @@ const docTemplate = `{
                     "200": {
                         "description": "Member removed",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     },
                     "400": {
                         "description": "Cannot remove owner",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     },
                     "401": {
                         "description": "Missing or invalid token",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     },
                     "403": {
                         "description": "Not allowed to manage members",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     },
                     "404": {
                         "description": "Membership not found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/platform/admin/modules": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Нэр, хамаарал, route угтварын хамт бүх модулийн төлөв.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "platform"
+                ],
+                "summary": "Модулиудын дэлгэрэнгүй жагсаалт (админ)",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/platform/admin/modules/{id}": {
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Business модулийг restart-гүйгээр асааж/унтраана. Core модуль, идэвхтэй хамаарагчтай модульд алдаа буцна. Төлөв DB-д хадгалагдаж дараагийн boot-д сэргэнэ.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "platform"
+                ],
+                "summary": "Модулийг асаах/унтраах (админ)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Модулийн ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Шинэ төлөв",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/core_http_routes.moduleToggleRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/platform/modules": {
+            "get": {
+                "description": "Платформд суусан модулиудын нийтийн төлөв (id, kind, enabled). Клиентүүд идэвхгүй модулийн цэс/дэлгэцээ нуухад ашиглана.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "platform"
+                ],
+                "summary": "Идэвхтэй модулиудын жагсаалт",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -7257,7 +7392,7 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                                    "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                                 },
                                 {
                                     "type": "object",
@@ -7265,7 +7400,7 @@ const docTemplate = `{
                                         "data": {
                                             "type": "array",
                                             "items": {
-                                                "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_responses.SecurityEventResponse"
+                                                "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.SecurityEventResponse"
                                             }
                                         }
                                     }
@@ -7276,13 +7411,13 @@ const docTemplate = `{
                     "401": {
                         "description": "Missing or invalid token",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     },
                     "403": {
                         "description": "Not an admin",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -7311,7 +7446,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_requests.IngestSecurityEventRequest"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.IngestSecurityEventRequest"
                         }
                     }
                 ],
@@ -7319,19 +7454,19 @@ const docTemplate = `{
                     "202": {
                         "description": "Event recorded",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     },
                     "400": {
                         "description": "Invalid request body",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     },
                     "401": {
                         "description": "Missing or invalid token",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -7374,19 +7509,19 @@ const docTemplate = `{
                     "200": {
                         "description": "session_id + verification_code",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     },
                     "400": {
                         "description": "invalid form / регистр олдсонгүй",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     },
                     "401": {
                         "description": "unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -7412,7 +7547,7 @@ const docTemplate = `{
                 "summary": "Хэшид гарын үсэг эхлүүлэх (гар утасны түрийвч)",
                 "parameters": [
                     {
-                        "description": "document_hash_hex + display_text",
+                        "description": "document_hash_hex + display_text (+ document_name)",
                         "name": "payload",
                         "in": "body",
                         "required": true,
@@ -7432,13 +7567,13 @@ const docTemplate = `{
                     "400": {
                         "description": "хэш формат буруу / регистр олдсонгүй",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     },
                     "401": {
                         "description": "unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -7478,7 +7613,7 @@ const docTemplate = `{
                     "404": {
                         "description": "session олдсонгүй",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -7514,7 +7649,7 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                                    "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                                 },
                                 {
                                     "type": "object",
@@ -7533,13 +7668,13 @@ const docTemplate = `{
                     "401": {
                         "description": "unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     },
                     "404": {
                         "description": "session олдсонгүй",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -7579,13 +7714,13 @@ const docTemplate = `{
                     "401": {
                         "description": "unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     },
                     "404": {
                         "description": "session олдсонгүй",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -7610,19 +7745,19 @@ const docTemplate = `{
                     "200": {
                         "description": "Access mode fetched",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     },
                     "401": {
                         "description": "Missing or invalid token",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     },
                     "403": {
                         "description": "Not a super admin",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -7651,7 +7786,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_requests.SuperadminAccessModeRequest"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.SuperadminAccessModeRequest"
                         }
                     }
                 ],
@@ -7659,25 +7794,25 @@ const docTemplate = `{
                     "200": {
                         "description": "Access mode updated",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     },
                     "400": {
                         "description": "Invalid request body",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     },
                     "401": {
                         "description": "Missing or invalid token",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     },
                     "403": {
                         "description": "Not a super admin",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -7702,19 +7837,19 @@ const docTemplate = `{
                     "200": {
                         "description": "Admins fetched",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     },
                     "401": {
                         "description": "Missing or invalid token",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     },
                     "403": {
                         "description": "Not a super admin",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -7743,7 +7878,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_requests.SuperadminCreateAdminRequest"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.SuperadminCreateAdminRequest"
                         }
                     }
                 ],
@@ -7751,31 +7886,31 @@ const docTemplate = `{
                     "201": {
                         "description": "Admin created",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     },
                     "400": {
                         "description": "Invalid request body",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     },
                     "401": {
                         "description": "Missing or invalid token",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     },
                     "403": {
                         "description": "Not a super admin",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     },
                     "409": {
                         "description": "Email already in use",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -7809,13 +7944,13 @@ const docTemplate = `{
                     "200": {
                         "description": "User found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     },
                     "404": {
                         "description": "Register not registered in DAN",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -7844,7 +7979,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_requests.SuperadminAddAdminByRegisterRequest"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.SuperadminAddAdminByRegisterRequest"
                         }
                     }
                 ],
@@ -7852,19 +7987,19 @@ const docTemplate = `{
                     "200": {
                         "description": "Promoted to admin",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     },
                     "404": {
                         "description": "Register not registered in DAN",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     },
                     "409": {
                         "description": "Already an admin",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -7898,31 +8033,31 @@ const docTemplate = `{
                     "200": {
                         "description": "Admin revoked",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     },
                     "400": {
                         "description": "User is not an admin",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     },
                     "401": {
                         "description": "Missing or invalid token",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     },
                     "403": {
                         "description": "Not a super admin / cannot revoke self or super admin",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     },
                     "404": {
                         "description": "User not found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -7956,31 +8091,31 @@ const docTemplate = `{
                     "200": {
                         "description": "Admin granted",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     },
                     "401": {
                         "description": "Missing or invalid token",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     },
                     "403": {
                         "description": "Not a super admin",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     },
                     "404": {
                         "description": "User not found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     },
                     "409": {
                         "description": "Already an admin",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -8007,7 +8142,7 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                                    "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                                 },
                                 {
                                     "type": "object",
@@ -8015,7 +8150,7 @@ const docTemplate = `{
                                         "data": {
                                             "type": "array",
                                             "items": {
-                                                "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_responses.SuperadminInviteResponse"
+                                                "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.SuperadminInviteResponse"
                                             }
                                         }
                                     }
@@ -8026,13 +8161,13 @@ const docTemplate = `{
                     "401": {
                         "description": "Missing or invalid token",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     },
                     "403": {
                         "description": "Not a super admin",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -8061,7 +8196,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_requests.SuperadminInviteRequest"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.SuperadminInviteRequest"
                         }
                     }
                 ],
@@ -8071,13 +8206,13 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                                    "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_responses.SuperadminInviteResponse"
+                                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.SuperadminInviteResponse"
                                         }
                                     }
                                 }
@@ -8087,25 +8222,25 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid email",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     },
                     "401": {
                         "description": "Missing or invalid token",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     },
                     "403": {
                         "description": "Not a super admin",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     },
                     "409": {
                         "description": "Email already invited",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -8139,25 +8274,25 @@ const docTemplate = `{
                     "200": {
                         "description": "Invite deleted",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     },
                     "401": {
                         "description": "Missing or invalid token",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     },
                     "403": {
                         "description": "Not a super admin",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     },
                     "404": {
                         "description": "Invite not found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
                         }
                     }
                 }
@@ -8165,7 +8300,18 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "github_com_gerege-systems_platform-core_core_http_datatransfers_requests.AIAudio": {
+        "core_http_routes.moduleToggleRequest": {
+            "type": "object",
+            "required": [
+                "enabled"
+            ],
+            "properties": {
+                "enabled": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.AIAudio": {
             "type": "object",
             "required": [
                 "data",
@@ -8192,17 +8338,17 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_gerege-systems_platform-core_core_http_datatransfers_requests.AIChatRequest": {
+        "github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.AIChatRequest": {
             "type": "object",
             "properties": {
                 "audio": {
-                    "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_requests.AIAudio"
+                    "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.AIAudio"
                 },
                 "history": {
                     "type": "array",
                     "maxItems": 20,
                     "items": {
-                        "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_requests.AIChatTurn"
+                        "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.AIChatTurn"
                     }
                 },
                 "lang": {
@@ -8221,7 +8367,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_gerege-systems_platform-core_core_http_datatransfers_requests.AIChatTurn": {
+        "github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.AIChatTurn": {
             "type": "object",
             "required": [
                 "role",
@@ -8241,7 +8387,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_gerege-systems_platform-core_core_http_datatransfers_requests.AIPromptUpdateRequest": {
+        "github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.AIPromptUpdateRequest": {
             "type": "object",
             "properties": {
                 "content": {
@@ -8250,7 +8396,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_gerege-systems_platform-core_core_http_datatransfers_requests.AIPublicAudio": {
+        "github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.AIPublicAudio": {
             "type": "object",
             "required": [
                 "data",
@@ -8277,17 +8423,17 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_gerege-systems_platform-core_core_http_datatransfers_requests.AIPublicChatRequest": {
+        "github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.AIPublicChatRequest": {
             "type": "object",
             "properties": {
                 "audio": {
-                    "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_requests.AIPublicAudio"
+                    "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.AIPublicAudio"
                 },
                 "history": {
                     "type": "array",
                     "maxItems": 6,
                     "items": {
-                        "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_requests.AIPublicChatTurn"
+                        "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.AIPublicChatTurn"
                     }
                 },
                 "lang": {
@@ -8306,7 +8452,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_gerege-systems_platform-core_core_http_datatransfers_requests.AIPublicChatTurn": {
+        "github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.AIPublicChatTurn": {
             "type": "object",
             "required": [
                 "role",
@@ -8326,7 +8472,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_gerege-systems_platform-core_core_http_datatransfers_requests.AIPublicTTSRequest": {
+        "github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.AIPublicTTSRequest": {
             "type": "object",
             "required": [
                 "text"
@@ -8338,18 +8484,18 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_gerege-systems_platform-core_core_http_datatransfers_requests.AISTTRequest": {
+        "github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.AISTTRequest": {
             "type": "object",
             "required": [
                 "audio"
             ],
             "properties": {
                 "audio": {
-                    "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_requests.AIAudio"
+                    "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.AIAudio"
                 }
             }
         },
-        "github_com_gerege-systems_platform-core_core_http_datatransfers_requests.AITTSRequest": {
+        "github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.AITTSRequest": {
             "type": "object",
             "required": [
                 "text"
@@ -8365,14 +8511,14 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_gerege-systems_platform-core_core_http_datatransfers_requests.AITranslateRequest": {
+        "github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.AITranslateRequest": {
             "type": "object",
             "required": [
                 "target_lang"
             ],
             "properties": {
                 "audio": {
-                    "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_requests.AIAudio"
+                    "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.AIAudio"
                 },
                 "speak": {
                     "type": "boolean"
@@ -8388,7 +8534,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_gerege-systems_platform-core_core_http_datatransfers_requests.AddEIDSignerRequest": {
+        "github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.AddEIDSignerRequest": {
             "type": "object",
             "required": [
                 "signer_reg_no"
@@ -8405,7 +8551,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_gerege-systems_platform-core_core_http_datatransfers_requests.AddMemberRequest": {
+        "github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.AddMemberRequest": {
             "type": "object",
             "required": [
                 "user_id"
@@ -8424,7 +8570,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_gerege-systems_platform-core_core_http_datatransfers_requests.AdminCreateUserRequest": {
+        "github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.AdminCreateUserRequest": {
             "type": "object",
             "required": [
                 "register"
@@ -8461,7 +8607,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_gerege-systems_platform-core_core_http_datatransfers_requests.ApplicationRequest": {
+        "github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.ApplicationRequest": {
             "type": "object",
             "required": [
                 "app_type",
@@ -8505,7 +8651,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_gerege-systems_platform-core_core_http_datatransfers_requests.ApplicationSecretRequest": {
+        "github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.ApplicationSecretRequest": {
             "type": "object",
             "required": [
                 "secret"
@@ -8518,7 +8664,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_gerege-systems_platform-core_core_http_datatransfers_requests.ApplicationServicesRequest": {
+        "github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.ApplicationServicesRequest": {
             "type": "object",
             "properties": {
                 "service_ids": {
@@ -8529,7 +8675,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_gerege-systems_platform-core_core_http_datatransfers_requests.AssetURLRequest": {
+        "github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.AssetURLRequest": {
             "type": "object",
             "required": [
                 "url"
@@ -8541,7 +8687,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_gerege-systems_platform-core_core_http_datatransfers_requests.ChangePasswordRequest": {
+        "github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.ChangePasswordRequest": {
             "type": "object",
             "required": [
                 "current_password",
@@ -8560,7 +8706,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_gerege-systems_platform-core_core_http_datatransfers_requests.ConnectIntegrationRequest": {
+        "github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.ConnectIntegrationRequest": {
             "type": "object",
             "required": [
                 "access_token",
@@ -8585,7 +8731,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_gerege-systems_platform-core_core_http_datatransfers_requests.CreateOrgRequest": {
+        "github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.CreateOrgRequest": {
             "type": "object",
             "required": [
                 "name",
@@ -8607,7 +8753,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_gerege-systems_platform-core_core_http_datatransfers_requests.EIDOrgRegisterRequest": {
+        "github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.EIDOrgRegisterRequest": {
             "type": "object",
             "required": [
                 "reg_no"
@@ -8620,7 +8766,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_gerege-systems_platform-core_core_http_datatransfers_requests.EIDPollRequest": {
+        "github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.EIDPollRequest": {
             "type": "object",
             "required": [
                 "session_id"
@@ -8635,7 +8781,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_gerege-systems_platform-core_core_http_datatransfers_requests.EIDStartByNationalIDRequest": {
+        "github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.EIDStartByNationalIDRequest": {
             "type": "object",
             "required": [
                 "national_id"
@@ -8650,7 +8796,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_gerege-systems_platform-core_core_http_datatransfers_requests.ForgotPasswordRequest": {
+        "github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.ForgotPasswordRequest": {
             "type": "object",
             "required": [
                 "email"
@@ -8662,7 +8808,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_gerege-systems_platform-core_core_http_datatransfers_requests.GSpaceUploadRequest": {
+        "github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.GSpaceUploadRequest": {
             "type": "object",
             "required": [
                 "data",
@@ -8679,7 +8825,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_gerege-systems_platform-core_core_http_datatransfers_requests.GatewayServiceRequest": {
+        "github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.GatewayServiceRequest": {
             "type": "object",
             "required": [
                 "host",
@@ -8732,7 +8878,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_gerege-systems_platform-core_core_http_datatransfers_requests.GoogleLoginRequest": {
+        "github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.GoogleLoginRequest": {
             "type": "object",
             "required": [
                 "code",
@@ -8747,7 +8893,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_gerege-systems_platform-core_core_http_datatransfers_requests.GovApplyRequest": {
+        "github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.GovApplyRequest": {
             "type": "object",
             "required": [
                 "service_id"
@@ -8768,7 +8914,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_gerege-systems_platform-core_core_http_datatransfers_requests.GovBookRequest": {
+        "github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.GovBookRequest": {
             "type": "object",
             "required": [
                 "scheduled_at"
@@ -8790,7 +8936,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_gerege-systems_platform-core_core_http_datatransfers_requests.GovDecideRequest": {
+        "github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.GovDecideRequest": {
             "type": "object",
             "properties": {
                 "approve": {
@@ -8812,7 +8958,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_gerege-systems_platform-core_core_http_datatransfers_requests.GovInfoRequest": {
+        "github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.GovInfoRequest": {
             "type": "object",
             "required": [
                 "note"
@@ -8824,7 +8970,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_gerege-systems_platform-core_core_http_datatransfers_requests.GovReferenceRequest": {
+        "github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.GovReferenceRequest": {
             "type": "object",
             "required": [
                 "type"
@@ -8843,7 +8989,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_gerege-systems_platform-core_core_http_datatransfers_requests.IngestSecurityEventRequest": {
+        "github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.IngestSecurityEventRequest": {
             "type": "object",
             "required": [
                 "kind"
@@ -8872,7 +9018,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_gerege-systems_platform-core_core_http_datatransfers_requests.LanguageAutoTranslateRequest": {
+        "github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.LanguageAutoTranslateRequest": {
             "type": "object",
             "required": [
                 "base"
@@ -8896,7 +9042,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_gerege-systems_platform-core_core_http_datatransfers_requests.LanguageCreateRequest": {
+        "github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.LanguageCreateRequest": {
             "type": "object",
             "required": [
                 "code",
@@ -8920,7 +9066,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_gerege-systems_platform-core_core_http_datatransfers_requests.LanguageTranslationsRequest": {
+        "github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.LanguageTranslationsRequest": {
             "type": "object",
             "required": [
                 "entries"
@@ -8934,7 +9080,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_gerege-systems_platform-core_core_http_datatransfers_requests.LanguageUpdateRequest": {
+        "github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.LanguageUpdateRequest": {
             "type": "object",
             "properties": {
                 "enabled": {
@@ -8953,7 +9099,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_gerege-systems_platform-core_core_http_datatransfers_requests.LatinNameRequest": {
+        "github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.LatinNameRequest": {
             "type": "object",
             "properties": {
                 "first_name_en": {
@@ -8966,7 +9112,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_gerege-systems_platform-core_core_http_datatransfers_requests.LoginRequest": {
+        "github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.LoginRequest": {
             "type": "object",
             "required": [
                 "email",
@@ -8984,7 +9130,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_gerege-systems_platform-core_core_http_datatransfers_requests.LogoutRequest": {
+        "github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.LogoutRequest": {
             "type": "object",
             "required": [
                 "refresh_token"
@@ -8998,7 +9144,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_gerege-systems_platform-core_core_http_datatransfers_requests.OrgNameLatinRequest": {
+        "github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.OrgNameLatinRequest": {
             "type": "object",
             "properties": {
                 "name_latin": {
@@ -9007,7 +9153,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_gerege-systems_platform-core_core_http_datatransfers_requests.RefreshRequest": {
+        "github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.RefreshRequest": {
             "type": "object",
             "required": [
                 "refresh_token"
@@ -9018,7 +9164,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_gerege-systems_platform-core_core_http_datatransfers_requests.RegisterRequest": {
+        "github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.RegisterRequest": {
             "type": "object",
             "required": [
                 "email",
@@ -9066,7 +9212,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_gerege-systems_platform-core_core_http_datatransfers_requests.RegistryEvidenceLink": {
+        "github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.RegistryEvidenceLink": {
             "type": "object",
             "required": [
                 "evidence_id"
@@ -9088,7 +9234,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_gerege-systems_platform-core_core_http_datatransfers_requests.RegistryEvidenceRequest": {
+        "github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.RegistryEvidenceRequest": {
             "type": "object",
             "required": [
                 "name"
@@ -9123,19 +9269,19 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_gerege-systems_platform-core_core_http_datatransfers_requests.RegistryEvidencesRequest": {
+        "github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.RegistryEvidencesRequest": {
             "type": "object",
             "properties": {
                 "evidences": {
                     "type": "array",
                     "maxItems": 100,
                     "items": {
-                        "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_requests.RegistryEvidenceLink"
+                        "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.RegistryEvidenceLink"
                     }
                 }
             }
         },
-        "github_com_gerege-systems_platform-core_core_http_datatransfers_requests.RegistryLifeEventRequest": {
+        "github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.RegistryLifeEventRequest": {
             "type": "object",
             "required": [
                 "code",
@@ -9172,7 +9318,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_gerege-systems_platform-core_core_http_datatransfers_requests.RegistryPublishRequest": {
+        "github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.RegistryPublishRequest": {
             "type": "object",
             "properties": {
                 "change_note": {
@@ -9181,7 +9327,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_gerege-systems_platform-core_core_http_datatransfers_requests.RegistryServiceRequest": {
+        "github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.RegistryServiceRequest": {
             "type": "object",
             "required": [
                 "authority",
@@ -9262,7 +9408,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_gerege-systems_platform-core_core_http_datatransfers_requests.RelayForwardRequest": {
+        "github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.RelayForwardRequest": {
             "type": "object",
             "required": [
                 "platform_code"
@@ -9273,7 +9419,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_gerege-systems_platform-core_core_http_datatransfers_requests.RelayIngestRequest": {
+        "github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.RelayIngestRequest": {
             "type": "object",
             "required": [
                 "service_code"
@@ -9305,7 +9451,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_gerege-systems_platform-core_core_http_datatransfers_requests.RelayPlatformRequest": {
+        "github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.RelayPlatformRequest": {
             "type": "object",
             "required": [
                 "code",
@@ -9339,7 +9485,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_gerege-systems_platform-core_core_http_datatransfers_requests.RelayRespondRequest": {
+        "github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.RelayRespondRequest": {
             "type": "object",
             "required": [
                 "status"
@@ -9360,7 +9506,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_gerege-systems_platform-core_core_http_datatransfers_requests.RelayRouteRequest": {
+        "github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.RelayRouteRequest": {
             "type": "object",
             "required": [
                 "platform_id",
@@ -9378,7 +9524,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_gerege-systems_platform-core_core_http_datatransfers_requests.ResetPasswordRequest": {
+        "github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.ResetPasswordRequest": {
             "type": "object",
             "required": [
                 "code",
@@ -9400,7 +9546,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_gerege-systems_platform-core_core_http_datatransfers_requests.SSONativeRequest": {
+        "github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.SSONativeRequest": {
             "type": "object",
             "required": [
                 "code",
@@ -9420,7 +9566,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_gerege-systems_platform-core_core_http_datatransfers_requests.SendOTPRequest": {
+        "github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.SendOTPRequest": {
             "type": "object",
             "required": [
                 "email"
@@ -9432,7 +9578,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_gerege-systems_platform-core_core_http_datatransfers_requests.SiteAppearanceUpdateRequest": {
+        "github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.SiteAppearanceUpdateRequest": {
             "type": "object",
             "required": [
                 "accent",
@@ -9459,7 +9605,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_gerege-systems_platform-core_core_http_datatransfers_requests.SuperadminAccessModeRequest": {
+        "github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.SuperadminAccessModeRequest": {
             "type": "object",
             "required": [
                 "mode"
@@ -9474,7 +9620,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_gerege-systems_platform-core_core_http_datatransfers_requests.SuperadminAddAdminByRegisterRequest": {
+        "github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.SuperadminAddAdminByRegisterRequest": {
             "type": "object",
             "required": [
                 "register"
@@ -9487,7 +9633,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_gerege-systems_platform-core_core_http_datatransfers_requests.SuperadminCreateAdminRequest": {
+        "github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.SuperadminCreateAdminRequest": {
             "type": "object",
             "required": [
                 "email",
@@ -9526,7 +9672,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_gerege-systems_platform-core_core_http_datatransfers_requests.SuperadminInviteRequest": {
+        "github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.SuperadminInviteRequest": {
             "type": "object",
             "required": [
                 "email"
@@ -9538,7 +9684,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_gerege-systems_platform-core_core_http_datatransfers_requests.SuperadminMFARequest": {
+        "github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.SuperadminMFARequest": {
             "type": "object",
             "required": [
                 "code",
@@ -9554,7 +9700,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_gerege-systems_platform-core_core_http_datatransfers_requests.SuperadminOnboardCodeRequest": {
+        "github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.SuperadminOnboardCodeRequest": {
             "type": "object",
             "required": [
                 "code",
@@ -9570,7 +9716,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_gerege-systems_platform-core_core_http_datatransfers_requests.SuperadminOnboardEIDPollRequest": {
+        "github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.SuperadminOnboardEIDPollRequest": {
             "type": "object",
             "required": [
                 "onboard_token",
@@ -9585,7 +9731,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_gerege-systems_platform-core_core_http_datatransfers_requests.SuperadminOnboardEIDStartIDRequest": {
+        "github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.SuperadminOnboardEIDStartIDRequest": {
             "type": "object",
             "required": [
                 "national_id",
@@ -9603,7 +9749,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_gerege-systems_platform-core_core_http_datatransfers_requests.SuperadminOnboardEIDStartRequest": {
+        "github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.SuperadminOnboardEIDStartRequest": {
             "type": "object",
             "required": [
                 "onboard_token"
@@ -9617,7 +9763,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_gerege-systems_platform-core_core_http_datatransfers_requests.SuperadminOnboardGoogleRequest": {
+        "github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.SuperadminOnboardGoogleRequest": {
             "type": "object",
             "required": [
                 "code",
@@ -9632,7 +9778,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_gerege-systems_platform-core_core_http_datatransfers_requests.SuperadminOnboardTokenRequest": {
+        "github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.SuperadminOnboardTokenRequest": {
             "type": "object",
             "required": [
                 "onboard_token"
@@ -9643,7 +9789,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_gerege-systems_platform-core_core_http_datatransfers_requests.ThemeUpsertRequest": {
+        "github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.ThemeUpsertRequest": {
             "type": "object",
             "required": [
                 "name"
@@ -9661,7 +9807,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_gerege-systems_platform-core_core_http_datatransfers_requests.UpdateMemberRoleRequest": {
+        "github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.UpdateMemberRoleRequest": {
             "type": "object",
             "required": [
                 "role"
@@ -9677,7 +9823,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_gerege-systems_platform-core_core_http_datatransfers_requests.VerifyOTPRequest": {
+        "github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.VerifyOTPRequest": {
             "type": "object",
             "required": [
                 "code",
@@ -9693,7 +9839,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_gerege-systems_platform-core_core_http_datatransfers_responses.AIAudioOut": {
+        "github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.AIAudioOut": {
             "type": "object",
             "properties": {
                 "data": {
@@ -9704,7 +9850,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_gerege-systems_platform-core_core_http_datatransfers_responses.AIChatResponse": {
+        "github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.AIChatResponse": {
             "type": "object",
             "properties": {
                 "degraded": {
@@ -9716,7 +9862,7 @@ const docTemplate = `{
                 "steps": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_responses.AIChatStep"
+                        "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.AIChatStep"
                     }
                 },
                 "transcript": {
@@ -9725,7 +9871,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_gerege-systems_platform-core_core_http_datatransfers_responses.AIChatStep": {
+        "github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.AIChatStep": {
             "type": "object",
             "properties": {
                 "args": {
@@ -9741,7 +9887,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_gerege-systems_platform-core_core_http_datatransfers_responses.AIPromptResponse": {
+        "github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.AIPromptResponse": {
             "type": "object",
             "properties": {
                 "content": {
@@ -9755,7 +9901,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_gerege-systems_platform-core_core_http_datatransfers_responses.AISTTResponse": {
+        "github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.AISTTResponse": {
             "type": "object",
             "properties": {
                 "text": {
@@ -9763,11 +9909,11 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_gerege-systems_platform-core_core_http_datatransfers_responses.AITranslateResponse": {
+        "github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.AITranslateResponse": {
             "type": "object",
             "properties": {
                 "audio": {
-                    "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_responses.AIAudioOut"
+                    "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.AIAudioOut"
                 },
                 "source_text": {
                     "type": "string"
@@ -9777,7 +9923,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_gerege-systems_platform-core_core_http_datatransfers_responses.AuditLogResponse": {
+        "github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.AuditLogResponse": {
             "type": "object",
             "properties": {
                 "action": {
@@ -9813,7 +9959,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_gerege-systems_platform-core_core_http_datatransfers_responses.AuditVerifyResponse": {
+        "github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.AuditVerifyResponse": {
             "type": "object",
             "properties": {
                 "broken_id": {
@@ -9824,7 +9970,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_gerege-systems_platform-core_core_http_datatransfers_responses.EIDActivityCounts": {
+        "github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.EIDActivityCounts": {
             "type": "object",
             "properties": {
                 "authentication": {
@@ -9835,7 +9981,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_gerege-systems_platform-core_core_http_datatransfers_responses.EIDActivityItem": {
+        "github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.EIDActivityItem": {
             "type": "object",
             "properties": {
                 "doc_text": {
@@ -9860,16 +10006,16 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_gerege-systems_platform-core_core_http_datatransfers_responses.EIDActivityResponse": {
+        "github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.EIDActivityResponse": {
             "type": "object",
             "properties": {
                 "counts": {
-                    "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_responses.EIDActivityCounts"
+                    "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.EIDActivityCounts"
                 },
                 "sessions": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_responses.EIDActivityItem"
+                        "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.EIDActivityItem"
                     }
                 },
                 "total": {
@@ -9877,7 +10023,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_gerege-systems_platform-core_core_http_datatransfers_responses.EIDCertCounts": {
+        "github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.EIDCertCounts": {
             "type": "object",
             "properties": {
                 "expired": {
@@ -9897,7 +10043,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_gerege-systems_platform-core_core_http_datatransfers_responses.EIDCertificate": {
+        "github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.EIDCertificate": {
             "type": "object",
             "properties": {
                 "issuer": {
@@ -9917,21 +10063,21 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_gerege-systems_platform-core_core_http_datatransfers_responses.EIDCertificatesResponse": {
+        "github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.EIDCertificatesResponse": {
             "type": "object",
             "properties": {
                 "certificates": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_responses.EIDPersonCert"
+                        "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.EIDPersonCert"
                     }
                 },
                 "counts": {
-                    "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_responses.EIDCertCounts"
+                    "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.EIDCertCounts"
                 }
             }
         },
-        "github_com_gerege-systems_platform-core_core_http_datatransfers_responses.EIDDevicesResponse": {
+        "github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.EIDDevicesResponse": {
             "type": "object",
             "properties": {
                 "active_count": {
@@ -9940,7 +10086,7 @@ const docTemplate = `{
                 "devices": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_responses.EIDPersonDevice"
+                        "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.EIDPersonDevice"
                     }
                 },
                 "total": {
@@ -9948,11 +10094,11 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_gerege-systems_platform-core_core_http_datatransfers_responses.EIDInfo": {
+        "github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.EIDInfo": {
             "type": "object",
             "properties": {
                 "certificate": {
-                    "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_responses.EIDCertificate"
+                    "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.EIDCertificate"
                 },
                 "civil_id": {
                     "type": "string"
@@ -9970,7 +10116,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_gerege-systems_platform-core_core_http_datatransfers_responses.EIDPersonCert": {
+        "github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.EIDPersonCert": {
             "type": "object",
             "properties": {
                 "certificate_level": {
@@ -9999,7 +10145,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_gerege-systems_platform-core_core_http_datatransfers_responses.EIDPersonDevice": {
+        "github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.EIDPersonDevice": {
             "type": "object",
             "properties": {
                 "active": {
@@ -10024,7 +10170,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_gerege-systems_platform-core_core_http_datatransfers_responses.EIDPollResponse": {
+        "github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.EIDPollResponse": {
             "type": "object",
             "properties": {
                 "created_at": {
@@ -10034,7 +10180,7 @@ const docTemplate = `{
                     "description": "EID нь eID-ээр нэвтэрсэн хэрэглэгчийн identity + сертификатын мэдээлэл.\nНууц үгээр бүртгүүлсэн хэрэглэгчид nil (omitempty).",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_responses.EIDInfo"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.EIDInfo"
                         }
                     ]
                 },
@@ -10061,7 +10207,7 @@ const docTemplate = `{
                     "description": "Google нь холбогдсон Google account-аас хадгалсан профайл. Google\nхолбоогүй хэрэглэгчид nil (omitempty).",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_responses.GoogleInfo"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.GoogleInfo"
                         }
                     ]
                 },
@@ -10100,7 +10246,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_gerege-systems_platform-core_core_http_datatransfers_responses.EIDStartResponse": {
+        "github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.EIDStartResponse": {
             "type": "object",
             "properties": {
                 "device_link_url": {
@@ -10117,14 +10263,14 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_gerege-systems_platform-core_core_http_datatransfers_responses.EIDSummaryResponse": {
+        "github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.EIDSummaryResponse": {
             "type": "object",
             "properties": {
                 "activity": {
-                    "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_responses.EIDActivityCounts"
+                    "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.EIDActivityCounts"
                 },
                 "certificates": {
-                    "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_responses.EIDCertCounts"
+                    "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.EIDCertCounts"
                 },
                 "devices_active": {
                     "type": "integer"
@@ -10143,7 +10289,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_gerege-systems_platform-core_core_http_datatransfers_responses.GoogleInfo": {
+        "github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.GoogleInfo": {
             "type": "object",
             "properties": {
                 "email": {
@@ -10163,7 +10309,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_gerege-systems_platform-core_core_http_datatransfers_responses.GoogleLoginResponse": {
+        "github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.GoogleLoginResponse": {
             "type": "object",
             "properties": {
                 "email": {
@@ -10182,11 +10328,11 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "user": {
-                    "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_responses.UserResponse"
+                    "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.UserResponse"
                 }
             }
         },
-        "github_com_gerege-systems_platform-core_core_http_datatransfers_responses.IntegrationResponse": {
+        "github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.IntegrationResponse": {
             "type": "object",
             "properties": {
                 "connected": {
@@ -10203,7 +10349,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_gerege-systems_platform-core_core_http_datatransfers_responses.IntegrationTokenResponse": {
+        "github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.IntegrationTokenResponse": {
             "type": "object",
             "properties": {
                 "access_token": {
@@ -10217,7 +10363,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_gerege-systems_platform-core_core_http_datatransfers_responses.LanguageAutoTranslateResponse": {
+        "github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.LanguageAutoTranslateResponse": {
             "type": "object",
             "properties": {
                 "failed": {
@@ -10237,7 +10383,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_gerege-systems_platform-core_core_http_datatransfers_responses.LanguageDictionaryResponse": {
+        "github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.LanguageDictionaryResponse": {
             "type": "object",
             "properties": {
                 "code": {
@@ -10251,7 +10397,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_gerege-systems_platform-core_core_http_datatransfers_responses.LanguageResponse": {
+        "github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.LanguageResponse": {
             "type": "object",
             "properties": {
                 "code": {
@@ -10280,7 +10426,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_gerege-systems_platform-core_core_http_datatransfers_responses.OrgMemberResponse": {
+        "github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.OrgMemberResponse": {
             "type": "object",
             "properties": {
                 "created_at": {
@@ -10297,7 +10443,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_gerege-systems_platform-core_core_http_datatransfers_responses.OrgPendingConfirmationResponse": {
+        "github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.OrgPendingConfirmationResponse": {
             "type": "object",
             "properties": {
                 "session_id": {
@@ -10311,7 +10457,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_gerege-systems_platform-core_core_http_datatransfers_responses.OrgRepresentationResponse": {
+        "github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.OrgRepresentationResponse": {
             "type": "object",
             "properties": {
                 "org_etsi": {
@@ -10340,7 +10486,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_gerege-systems_platform-core_core_http_datatransfers_responses.OrgResponse": {
+        "github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.OrgResponse": {
             "type": "object",
             "properties": {
                 "created_at": {
@@ -10366,7 +10512,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_gerege-systems_platform-core_core_http_datatransfers_responses.OrgSignerResponse": {
+        "github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.OrgSignerResponse": {
             "type": "object",
             "properties": {
                 "name": {
@@ -10399,21 +10545,21 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_gerege-systems_platform-core_core_http_datatransfers_responses.OrgSignersResultResponse": {
+        "github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.OrgSignersResultResponse": {
             "type": "object",
             "properties": {
                 "pending_confirmation": {
-                    "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_responses.OrgPendingConfirmationResponse"
+                    "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.OrgPendingConfirmationResponse"
                 },
                 "signers": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_responses.OrgSignerResponse"
+                        "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.OrgSignerResponse"
                     }
                 }
             }
         },
-        "github_com_gerege-systems_platform-core_core_http_datatransfers_responses.RelayAssignmentResponse": {
+        "github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.RelayAssignmentResponse": {
             "type": "object",
             "properties": {
                 "dispatched_at": {
@@ -10454,7 +10600,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_gerege-systems_platform-core_core_http_datatransfers_responses.RelayEventResponse": {
+        "github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.RelayEventResponse": {
             "type": "object",
             "properties": {
                 "assignment_id": {
@@ -10477,7 +10623,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_gerege-systems_platform-core_core_http_datatransfers_responses.RelayOverviewResponse": {
+        "github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.RelayOverviewResponse": {
             "type": "object",
             "properties": {
                 "avg_fulfill_mins": {
@@ -10495,7 +10641,7 @@ const docTemplate = `{
                 "platforms": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_responses.RelayPlatformStatResponse"
+                        "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.RelayPlatformStatResponse"
                     }
                 },
                 "received_today": {
@@ -10504,7 +10650,7 @@ const docTemplate = `{
                 "recent_events": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_responses.RelayEventResponse"
+                        "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.RelayEventResponse"
                     }
                 },
                 "sla_compliance_pct": {
@@ -10513,7 +10659,7 @@ const docTemplate = `{
                 "status_buckets": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_responses.RelayStatusBucketResponse"
+                        "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.RelayStatusBucketResponse"
                     }
                 },
                 "total": {
@@ -10521,7 +10667,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_gerege-systems_platform-core_core_http_datatransfers_responses.RelayPlatformStatResponse": {
+        "github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.RelayPlatformStatResponse": {
             "type": "object",
             "properties": {
                 "compliance_pct": {
@@ -10547,27 +10693,27 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_gerege-systems_platform-core_core_http_datatransfers_responses.RelayRequestDetailResponse": {
+        "github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.RelayRequestDetailResponse": {
             "type": "object",
             "properties": {
                 "assignments": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_responses.RelayAssignmentResponse"
+                        "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.RelayAssignmentResponse"
                     }
                 },
                 "events": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_responses.RelayEventResponse"
+                        "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.RelayEventResponse"
                     }
                 },
                 "request": {
-                    "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_responses.RelayRequestResponse"
+                    "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.RelayRequestResponse"
                 }
             }
         },
-        "github_com_gerege-systems_platform-core_core_http_datatransfers_responses.RelayRequestResponse": {
+        "github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.RelayRequestResponse": {
             "type": "object",
             "properties": {
                 "breach_notified": {
@@ -10617,7 +10763,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_gerege-systems_platform-core_core_http_datatransfers_responses.RelayStatusBucketResponse": {
+        "github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.RelayStatusBucketResponse": {
             "type": "object",
             "properties": {
                 "count": {
@@ -10628,7 +10774,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_gerege-systems_platform-core_core_http_datatransfers_responses.SecurityEventResponse": {
+        "github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.SecurityEventResponse": {
             "type": "object",
             "properties": {
                 "detail": {
@@ -10661,7 +10807,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_gerege-systems_platform-core_core_http_datatransfers_responses.SiteAppearanceResponse": {
+        "github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.SiteAppearanceResponse": {
             "type": "object",
             "properties": {
                 "accent": {
@@ -10681,7 +10827,24 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_gerege-systems_platform-core_core_http_datatransfers_responses.SuperadminInviteResponse": {
+        "github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.SiteAuthResponse": {
+            "type": "object",
+            "properties": {
+                "mode": {
+                    "description": "Mode — \"provider\" (өөрөө нэвтрүүлнэ) эсвэл \"client\" (SSO руу шилжүүлнэ).",
+                    "type": "string"
+                },
+                "provider": {
+                    "description": "Provider — энэ платформ ӨӨРӨӨ OIDC issuer мөн эсэх (OAUTH_ISSUER +\nSSO_STATE_KEY бүрдсэн эсэх). Горимоос ТУСДАА тэнхлэг.",
+                    "type": "boolean"
+                },
+                "sso_issuer": {
+                    "description": "SSOIssuer — client горимд дээд IdP-ийн issuer (жишээ https://sso.gerege.mn).\nprovider горимд хоосон.",
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.SuperadminInviteResponse": {
             "type": "object",
             "properties": {
                 "accepted_at": {
@@ -10702,7 +10865,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_gerege-systems_platform-core_core_http_datatransfers_responses.SuperadminMFAResponse": {
+        "github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.SuperadminMFAResponse": {
             "type": "object",
             "properties": {
                 "created_at": {
@@ -10712,7 +10875,7 @@ const docTemplate = `{
                     "description": "EID нь eID-ээр нэвтэрсэн хэрэглэгчийн identity + сертификатын мэдээлэл.\nНууц үгээр бүртгүүлсэн хэрэглэгчид nil (omitempty).",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_responses.EIDInfo"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.EIDInfo"
                         }
                     ]
                 },
@@ -10739,7 +10902,7 @@ const docTemplate = `{
                     "description": "Google нь холбогдсон Google account-аас хадгалсан профайл. Google\nхолбоогүй хэрэглэгчид nil (omitempty).",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_responses.GoogleInfo"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.GoogleInfo"
                         }
                     ]
                 },
@@ -10776,7 +10939,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_gerege-systems_platform-core_core_http_datatransfers_responses.SuperadminOnboardDoneResponse": {
+        "github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.SuperadminOnboardDoneResponse": {
             "type": "object",
             "properties": {
                 "created_at": {
@@ -10786,7 +10949,7 @@ const docTemplate = `{
                     "description": "EID нь eID-ээр нэвтэрсэн хэрэглэгчийн identity + сертификатын мэдээлэл.\nНууц үгээр бүртгүүлсэн хэрэглэгчид nil (omitempty).",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_responses.EIDInfo"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.EIDInfo"
                         }
                     ]
                 },
@@ -10813,7 +10976,7 @@ const docTemplate = `{
                     "description": "Google нь холбогдсон Google account-аас хадгалсан профайл. Google\nхолбоогүй хэрэглэгчид nil (omitempty).",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_responses.GoogleInfo"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.GoogleInfo"
                         }
                     ]
                 },
@@ -10852,7 +11015,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_gerege-systems_platform-core_core_http_datatransfers_responses.SuperadminOnboardEIDPollResponse": {
+        "github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.SuperadminOnboardEIDPollResponse": {
             "type": "object",
             "properties": {
                 "state": {
@@ -10863,7 +11026,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_gerege-systems_platform-core_core_http_datatransfers_responses.SuperadminOnboardEIDStartResponse": {
+        "github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.SuperadminOnboardEIDStartResponse": {
             "type": "object",
             "properties": {
                 "device_link_url": {
@@ -10880,7 +11043,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_gerege-systems_platform-core_core_http_datatransfers_responses.SuperadminOnboardStartResponse": {
+        "github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.SuperadminOnboardStartResponse": {
             "type": "object",
             "properties": {
                 "email": {
@@ -10894,7 +11057,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_gerege-systems_platform-core_core_http_datatransfers_responses.SuperadminOnboardStepResponse": {
+        "github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.SuperadminOnboardStepResponse": {
             "type": "object",
             "properties": {
                 "step": {
@@ -10902,7 +11065,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_gerege-systems_platform-core_core_http_datatransfers_responses.SuperadminOnboardTOTPResponse": {
+        "github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.SuperadminOnboardTOTPResponse": {
             "type": "object",
             "properties": {
                 "otpauth_url": {
@@ -10916,7 +11079,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_gerege-systems_platform-core_core_http_datatransfers_responses.ThemeResponse": {
+        "github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.ThemeResponse": {
             "type": "object",
             "properties": {
                 "config": {
@@ -10942,7 +11105,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_gerege-systems_platform-core_core_http_datatransfers_responses.UserResponse": {
+        "github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.UserResponse": {
             "type": "object",
             "properties": {
                 "created_at": {
@@ -10952,7 +11115,7 @@ const docTemplate = `{
                     "description": "EID нь eID-ээр нэвтэрсэн хэрэглэгчийн identity + сертификатын мэдээлэл.\nНууц үгээр бүртгүүлсэн хэрэглэгчид nil (omitempty).",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_responses.EIDInfo"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.EIDInfo"
                         }
                     ]
                 },
@@ -10979,7 +11142,7 @@ const docTemplate = `{
                     "description": "Google нь холбогдсон Google account-аас хадгалсан профайл. Google\nхолбоогүй хэрэглэгчид nil (omitempty).",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/github_com_gerege-systems_platform-core_core_http_datatransfers_responses.GoogleInfo"
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.GoogleInfo"
                         }
                     ]
                 },
@@ -11009,7 +11172,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_gerege-systems_platform-core_core_http_handlers_v1.BaseResponse": {
+        "github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse": {
             "type": "object",
             "properties": {
                 "data": {},

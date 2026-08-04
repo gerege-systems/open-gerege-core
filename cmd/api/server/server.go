@@ -9,7 +9,6 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
-	"strings"
 	"sync"
 	"syscall"
 	"time"
@@ -18,65 +17,18 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"golang.org/x/time/rate"
 
-	"github.com/gerege-systems/open-gerege-core/core/business/domain"
-	"github.com/gerege-systems/open-gerege-core/core/business/usecases/ai"
-	applicationsuc "github.com/gerege-systems/open-gerege-core/core/business/usecases/applications"
-	"github.com/gerege-systems/open-gerege-core/core/business/usecases/assets"
-	"github.com/gerege-systems/open-gerege-core/core/business/usecases/audit"
-	"github.com/gerege-systems/open-gerege-core/core/business/usecases/auth"
-	"github.com/gerege-systems/open-gerege-core/core/business/usecases/core"
 	"github.com/gerege-systems/open-gerege-core/core/business/usecases/gateway"
-	"github.com/gerege-systems/open-gerege-core/core/business/usecases/gov"
-	"github.com/gerege-systems/open-gerege-core/core/business/usecases/gspace"
-	"github.com/gerege-systems/open-gerege-core/core/business/usecases/integrations"
-	languageuc "github.com/gerege-systems/open-gerege-core/core/business/usecases/language"
 	oidcuc "github.com/gerege-systems/open-gerege-core/core/business/usecases/oidc"
-	"github.com/gerege-systems/open-gerege-core/core/business/usecases/org"
-	provideruc "github.com/gerege-systems/open-gerege-core/core/business/usecases/provider"
-	"github.com/gerege-systems/open-gerege-core/core/business/usecases/rbac"
-	"github.com/gerege-systems/open-gerege-core/core/business/usecases/registry"
-	relayuc "github.com/gerege-systems/open-gerege-core/core/business/usecases/relay"
-	"github.com/gerege-systems/open-gerege-core/core/business/usecases/security"
 	"github.com/gerege-systems/open-gerege-core/core/business/usecases/sign"
-	siteuc "github.com/gerege-systems/open-gerege-core/core/business/usecases/site"
-	"github.com/gerege-systems/open-gerege-core/core/business/usecases/sso"
-	"github.com/gerege-systems/open-gerege-core/core/business/usecases/ssotoken"
-	"github.com/gerege-systems/open-gerege-core/core/business/usecases/superadmin"
-	onboarding "github.com/gerege-systems/open-gerege-core/core/business/usecases/superadmin_onboarding"
-	themeuc "github.com/gerege-systems/open-gerege-core/core/business/usecases/theme"
 	"github.com/gerege-systems/open-gerege-core/core/business/usecases/users"
 	"github.com/gerege-systems/open-gerege-core/core/config"
 	"github.com/gerege-systems/open-gerege-core/core/constants"
 	"github.com/gerege-systems/open-gerege-core/core/datasources/caches"
 	"github.com/gerege-systems/open-gerege-core/core/datasources/drivers"
-	repointerface "github.com/gerege-systems/open-gerege-core/core/datasources/repositories/interface"
-	aipostgres "github.com/gerege-systems/open-gerege-core/core/datasources/repositories/postgres/ai"
-	applicationspostgres "github.com/gerege-systems/open-gerege-core/core/datasources/repositories/postgres/applications"
-	auditpostgres "github.com/gerege-systems/open-gerege-core/core/datasources/repositories/postgres/audit"
 	gatewaypostgres "github.com/gerege-systems/open-gerege-core/core/datasources/repositories/postgres/gateway"
-	govpostgres "github.com/gerege-systems/open-gerege-core/core/datasources/repositories/postgres/gov"
-	languagepostgres "github.com/gerege-systems/open-gerege-core/core/datasources/repositories/postgres/language"
 	oauthpostgres "github.com/gerege-systems/open-gerege-core/core/datasources/repositories/postgres/oauth"
-	orgpostgres "github.com/gerege-systems/open-gerege-core/core/datasources/repositories/postgres/org"
-	orgstamppostgres "github.com/gerege-systems/open-gerege-core/core/datasources/repositories/postgres/orgstamp"
-	platformsettings "github.com/gerege-systems/open-gerege-core/core/datasources/repositories/postgres/platformsettings"
-	rbacpostgres "github.com/gerege-systems/open-gerege-core/core/datasources/repositories/postgres/rbac"
-	recoverypostgres "github.com/gerege-systems/open-gerege-core/core/datasources/repositories/postgres/recovery"
-	registrypostgres "github.com/gerege-systems/open-gerege-core/core/datasources/repositories/postgres/registry"
-	relaypostgres "github.com/gerege-systems/open-gerege-core/core/datasources/repositories/postgres/relay"
-	securitypostgres "github.com/gerege-systems/open-gerege-core/core/datasources/repositories/postgres/security"
-	sitepostgres "github.com/gerege-systems/open-gerege-core/core/datasources/repositories/postgres/site"
-	ssotokenpostgres "github.com/gerege-systems/open-gerege-core/core/datasources/repositories/postgres/ssotoken"
-	ssouserpostgres "github.com/gerege-systems/open-gerege-core/core/datasources/repositories/postgres/ssouser"
-	superadminaccountpostgres "github.com/gerege-systems/open-gerege-core/core/datasources/repositories/postgres/superadminaccount"
-	superadmininvitepostgres "github.com/gerege-systems/open-gerege-core/core/datasources/repositories/postgres/superadmininvite"
-	themepostgres "github.com/gerege-systems/open-gerege-core/core/datasources/repositories/postgres/theme"
-	userintegrationspostgres "github.com/gerege-systems/open-gerege-core/core/datasources/repositories/postgres/userintegrations"
-	userspostgres "github.com/gerege-systems/open-gerege-core/core/datasources/repositories/postgres/users"
-	"github.com/gerege-systems/open-gerege-core/core/datasources/rls"
 	V1Handler "github.com/gerege-systems/open-gerege-core/core/http/handlers/v1"
 	authhandler "github.com/gerege-systems/open-gerege-core/core/http/handlers/v1/auth"
-	sitehandler "github.com/gerege-systems/open-gerege-core/core/http/handlers/v1/site"
 	"github.com/gerege-systems/open-gerege-core/core/http/middlewares"
 	"github.com/gerege-systems/open-gerege-core/core/http/routes"
 	"github.com/gerege-systems/open-gerege-core/core/provider/adminapi"
@@ -84,18 +36,37 @@ import (
 	"github.com/gerege-systems/open-gerege-core/core/provider/devapps"
 	"github.com/gerege-systems/open-gerege-core/core/provider/signrelay"
 	docs "github.com/gerege-systems/open-gerege-core/docs" // swagger тодорхойлолт, swaggo-оор init үед бүртгэгддэг
-	"github.com/gerege-systems/open-gerege-core/pkg/crypto"
 	"github.com/gerege-systems/open-gerege-core/pkg/eid"
 	"github.com/gerege-systems/open-gerege-core/pkg/gemini"
 	"github.com/gerege-systems/open-gerege-core/pkg/google"
-	gspaceclient "github.com/gerege-systems/open-gerege-core/pkg/gspace"
 	"github.com/gerege-systems/open-gerege-core/pkg/jwt"
 	"github.com/gerege-systems/open-gerege-core/pkg/logger"
 	"github.com/gerege-systems/open-gerege-core/pkg/observability"
-	"github.com/gerege-systems/open-gerege-core/pkg/oidc"
-	"github.com/gerege-systems/open-gerege-core/pkg/ssoeidproxy"
 	"github.com/gerege-systems/open-gerege-core/pkg/verify"
-	"github.com/gerege-systems/open-gerege-core/pkg/xyp"
+
+	platformmodulespostgres "github.com/gerege-systems/open-gerege-core/core/datasources/repositories/postgres/platformmodules"
+	"github.com/gerege-systems/open-gerege-core/kernel/module"
+	aimod "github.com/gerege-systems/open-gerege-core/modules/ai"
+	applicationsmod "github.com/gerege-systems/open-gerege-core/modules/applications"
+	assetsmod "github.com/gerege-systems/open-gerege-core/modules/assets"
+	auditmod "github.com/gerege-systems/open-gerege-core/modules/audit"
+	authmod "github.com/gerege-systems/open-gerege-core/modules/auth"
+	corefindmod "github.com/gerege-systems/open-gerege-core/modules/corefind"
+	eidproxymod "github.com/gerege-systems/open-gerege-core/modules/eidproxy"
+	gatewayconsolemod "github.com/gerege-systems/open-gerege-core/modules/gatewayconsole"
+	govmod "github.com/gerege-systems/open-gerege-core/modules/gov"
+	gspacemod "github.com/gerege-systems/open-gerege-core/modules/gspace"
+	integrationsmod "github.com/gerege-systems/open-gerege-core/modules/integrations"
+	orgmod "github.com/gerege-systems/open-gerege-core/modules/org"
+	platformmod "github.com/gerege-systems/open-gerege-core/modules/platform"
+	providermod "github.com/gerege-systems/open-gerege-core/modules/provider"
+	rbacmod "github.com/gerege-systems/open-gerege-core/modules/rbac"
+	registrymod "github.com/gerege-systems/open-gerege-core/modules/registry"
+	relaymod "github.com/gerege-systems/open-gerege-core/modules/relay"
+	signmod "github.com/gerege-systems/open-gerege-core/modules/sign"
+	sitemod "github.com/gerege-systems/open-gerege-core/modules/site"
+	superadminmod "github.com/gerege-systems/open-gerege-core/modules/superadmin"
+	usersmod "github.com/gerege-systems/open-gerege-core/modules/users"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -155,22 +126,99 @@ func loggerConfig() logger.Config {
 	return cfg
 }
 
+// moduleHost — kernel/module.Host-ийн server талын хэрэгжилт. Модулиудад
+// router, pool, auth middleware болон хуваалцсан service-үүдийг олгоно.
+type moduleHost struct {
+	api      chi.Router
+	pool     *pgxpool.Pool
+	authMW   func(http.Handler) http.Handler
+	services map[string]any
+	workers  []moduleWorker
+	shutdown []func()
+}
+
+// moduleWorker — модулийн бүртгүүлсэн background worker.
+type moduleWorker struct {
+	name  string
+	every time.Duration
+	fn    func(context.Context)
+}
+
+func (h *moduleHost) APIRouter() chi.Router { return h.api }
+func (h *moduleHost) Pool() *pgxpool.Pool   { return h.pool }
+func (h *moduleHost) AuthMiddleware() func(http.Handler) http.Handler {
+	return h.authMW
+}
+func (h *moduleHost) Service(name string) (any, bool) {
+	v, ok := h.services[name]
+	return v, ok
+}
+
+// Provide — модуль usecase-ээ нийтэлнэ (module.ServiceProvider).
+func (h *moduleHost) Provide(name string, svc any) { h.services[name] = svc }
+
+// AddWorker — модуль background worker бүртгэнэ (module.WorkerRegistrar).
+func (h *moduleHost) AddWorker(name string, every time.Duration, fn func(context.Context)) {
+	h.workers = append(h.workers, moduleWorker{name: name, every: every, fn: fn})
+}
+
+// OnShutdown — модуль shutdown цэвэрлэгээ бүртгэнэ (module.ShutdownRegistrar).
+func (h *moduleHost) OnShutdown(fn func()) { h.shutdown = append(h.shutdown, fn) }
+
+// platformModules — kernel гэрээгээр өөрсдийгөө угсардаг (Phase 1-д
+// нүүлгэсэн) модулиудын жагсаалт. Дараагийн алхмуудад үлдсэн модулиуд
+// нэг нэгээрээ энэ жагсаалт руу нүүнэ; эцэст нь жагсаалт generated болно.
+func platformModules() []module.Module {
+	return []module.Module{
+		// ── Core: НИЙТЭЛДЭГ модулиуд эхэлнэ ────────────────────────────
+		// Дараалал нь УГСРАЛТЫН хамаарлаар тогтоно (манифестийн DependsOn
+		// нь ажиллагааны хамаарал — өөр зүйл). Provide хийдэг модуль
+		// хэрэглэгчдээсээ өмнө байх ёстой; эс бөгөөс Register нь "service
+		// алга" гэж алдаа өгч boot унана (чимээгүй nil биш).
+		auditmod.New(),
+		rbacmod.New(),
+		usersmod.New(),
+		assetsmod.New(),
+		authmod.New(),
+		superadminmod.New(),
+
+		// ── Core: хэрэглэгч талын модулиуд ─────────────────────────────
+		orgmod.New(),
+		platformmod.New(),
+		sitemod.New(),
+
+		// ── Business модулиуд ──────────────────────────────────────────
+		aimod.New(),
+		applicationsmod.New(),
+		corefindmod.New(),
+		eidproxymod.New(),
+		gatewayconsolemod.New(),
+		govmod.New(),
+		gspacemod.New(),
+		integrationsmod.New(),
+		providermod.New(),
+		registrymod.New(),
+		relaymod.New(),
+		signmod.New(),
+	}
+}
+
 type App struct {
 	server              *http.Server
 	router              chi.Router
 	authMiddleware      func(http.Handler) http.Handler
 	usersUC             users.Usecase
-	signUC              sign.Usecase
 	pool                *pgxpool.Pool
 	redisCache          caches.RedisCache
 	tracerShutdown      observability.Shutdown
 	authRateLimiter     *middlewares.RateLimiter
-	aiRateLimiter       *middlewares.RateLimiter
 	pollRateLimiter     *middlewares.RateLimiter
 	govWriteRateLimiter *middlewares.RateLimiter
-	relayUC             relayuc.Usecase // SLA worker + demo simulator (background)
-	relayDemo           bool
-	govUC               gov.Usecase // gov SLA sweep (background)
+	modules             *module.Registry // модулийн бүртгэл + идэвхийн төлөв
+	// Модулиудын Host-оор бүртгүүлсэн гаралтууд:
+	moduleServices map[string]any // нийтэлсэн usecase-ууд (sign г.м.)
+	moduleWorkers  []moduleWorker // background worker-ууд (Run-д асна)
+	moduleShutdown []func()       // graceful shutdown-ийн цэвэрлэгээ
 }
 
 func NewApp() (*App, error) {
@@ -181,6 +229,22 @@ func NewApp() (*App, error) {
 	}
 
 	ctx := context.Background()
+
+	// Модулийн бүртгэл — builtin манифестууд + MODULES_DISABLED env.
+	// Core модуль эсвэл бүртгэлгүй ID унтраах гэвэл boot-ыг шууд унагаана:
+	// тохиргооны алдааг чимээгүй үл тоох нь далд эвдрэл болдог.
+	modReg := module.Builtin()
+	if err := modReg.ApplyDisabledList(config.AppConfig.ModulesDisabled); err != nil {
+		return nil, fmt.Errorf("MODULES_DISABLED: %w", err)
+	}
+	for _, s := range modReg.List() {
+		if !s.Enabled {
+			logger.Info("модуль унтраалттай", logger.Fields{
+				constants.LoggerCategory: constants.LoggerCategoryServer,
+				"module":                 s.Manifest.ID,
+			})
+		}
+	}
 
 	// Tracer-ийг эхэлд тохируулна — ингэснээр дараагийн тохиргооноос
 	// ялгарах span-ууд зөв provider руу очно.
@@ -219,10 +283,6 @@ func NewApp() (*App, error) {
 
 	// кэш
 	redisCache := caches.NewRedisCache(config.AppConfig.REDISHost, 0, config.AppConfig.REDISPassword, time.Duration(config.AppConfig.REDISExpired))
-	ristrettoCache, err := caches.NewRistrettoCache()
-	if err != nil {
-		return nil, fmt.Errorf("failed to create ristretto cache: %w", err)
-	}
 
 	// router + глобал middleware. Дараалал чухал: эхэлд tracing — ингэснээр
 	// RequestIDMiddleware түүнийг logger context руу холбохоос өмнө span
@@ -262,14 +322,7 @@ func NewApp() (*App, error) {
 		_, _ = w.Write([]byte(docs.SwaggerInfo.ReadDoc()))
 	})
 
-	// Хязгаарлагдсан контекстуудыг угсарна.
-	userRepo := userspostgres.NewUserRepository(pool)
-	usersUC := users.NewUsecase(userRepo, ristrettoCache, users.Config{
-		BcryptCost: config.AppConfig.BcryptCost,
-	})
-	// Bootstrap: SUPERADMIN_EMAIL тохируулсан бол тухайн хэрэглэгчийг super admin
-	// болгож ахиулна (best-effort; байхгүй бол warning).
-	bootstrapSuperAdmin(ctx, userRepo, config.AppConfig.SuperAdminEmail)
+	// Хэрэглэгч (repo + usecase + SUPERADMIN_EMAIL ахиулалт) — modules/users.
 	// GeregeCloud Verify API — OTP send/check. (Нууц үг/OTP route-ууд eID-ийн
 	// төлөө хасагдсан ч usecase нь verifier-ийг шаардсан хэвээр; цэвэр угсралт.)
 	verifier := verify.NewClient(config.AppConfig.VerifyAPIBase, config.AppConfig.VerifyAPIKey, config.AppConfig.VerifyChannel)
@@ -277,244 +330,60 @@ func NewApp() (*App, error) {
 	eidClient := eid.NewClient(config.AppConfig.EIDBaseURL, config.AppConfig.EIDRPUUID, config.AppConfig.EIDRPName, config.AppConfig.EIDRPSecret, config.AppConfig.EIDCertLevel)
 	// Google OAuth — Google account-ийг eID хэрэглэгчид холбох нэвтрэлт.
 	googleClient := google.NewClient(config.AppConfig.GoogleClientID, config.AppConfig.GoogleClientSecret)
-	// Gerege Verify / XYP — улсын бүртгэлээс байгууллагын мэдээлэл (eID байгууллага холбох).
-	xypClient := xyp.NewClient(config.AppConfig.XYPAPIBase, config.AppConfig.XYPClientID, config.AppConfig.XYPClientSecret)
 
-	// Gerege SSO (sso.gerege.mn, OIDC) client — RP нэвтрэлт (ssoUC доор) болон
-	// eID proxy-д хуваалцана.
-	ssoClient := oidc.NewClient(config.AppConfig.SSOIssuer, config.AppConfig.SSOClientID, config.AppConfig.SSOClientSecret, config.AppConfig.SSORedirectURI, config.AppConfig.SSOScope)
-
-	// SSO eID proxy (сонголттой) — SSO_EID_PROXY_BASE_URL + INTEGRATION_ENC_KEY
-	// хоёулаа тохируулсан бол иргэний PKI самбар (summary/certificates/devices/
-	// activity) нь шууд eidmongolia-ий оронд sso.gerege.mn/rp/eid-ээр дамжина.
-	// Токенуудыг шифрлэн (sso_tokens) хадгалж, хугацаа дуусахад refresh хийнэ.
-	// Хоосон бол шууд eidmongolia зам (өөрчлөлтгүй).
-	var (
-		ssoEidProxy    auth.SSOEidProxy
-		ssoTokens      auth.SSOTokenService
-		ssoTokenStorer sso.TokenStorer
-	)
-	if config.AppConfig.SSOEidProxyBaseURL != "" && config.AppConfig.IntegrationEncKey != "" {
-		tokenCipher, cErr := crypto.New(config.AppConfig.IntegrationEncKey)
-		if cErr != nil {
-			return nil, fmt.Errorf("init sso token cipher: %w", cErr)
-		}
-		tokenSvc := ssotoken.New(ssotokenpostgres.NewSSOTokenRepository(pool, tokenCipher), ssoClient)
-		ssoTokens = tokenSvc
-		ssoTokenStorer = tokenSvc
-		ssoEidProxy = ssoeidproxy.New(config.AppConfig.SSOEidProxyBaseURL)
-		logger.Info("SSO eID proxy enabled — PKI dashboard reads proxied via SSO", logger.Fields{"base": config.AppConfig.SSOEidProxyBaseURL})
-	}
-
-	authUC := auth.NewUsecase(usersUC, jwtService, verifier, eidClient, xypClient, googleClient, redisCache, auth.Config{
-		OTPMaxAttempts:    config.AppConfig.OTPMaxAttempts,
-		OTPTTL:            time.Duration(config.AppConfig.REDISExpired) * time.Minute,
-		PasswordResetTTL:  30 * time.Minute,
-		BcryptCost:        config.AppConfig.BcryptCost,
-		LoginMaxAttempts:  10,
-		LoginLockoutTTL:   15 * time.Minute,
-		ForgotMaxAttempts: 3,
-		ForgotLockoutTTL:  15 * time.Minute,
-		EIDCallbackURL:    config.AppConfig.EIDCallbackURL,
-		EIDDisplayText:    config.AppConfig.EIDDisplayText,
-		SSOEidProxy:       ssoEidProxy,
-		SSOTokens:         ssoTokens,
-	})
+	// Танилт (eID · Google · SSO) — modules/auth.
 
 	// RBAC — динамик role/permission удирдлага + enforcement.
-	rbacRepo := rbacpostgres.NewRBACRepository(pool)
-	rbacUC := rbac.NewUsecase(rbacRepo)
-
 	// Organizations — байгууллага + гишүүнчлэл (RLS-тэй; бичих эрх usecase-д).
-	orgRepo := orgpostgres.NewOrgRepository(pool)
-	orgUC := org.NewUsecase(orgRepo)
 
-	// Gov — иргэний "Төрийн үйлчилгээ" портал (per-user өгөгдөл RLS-тэй; каталог
-	// нийтийн).
-	govRepo := govpostgres.NewGovRepository(pool)
-	govUC := gov.NewUsecase(govRepo)
+	// Gov портал (gov) — modules/gov дотор угсарна (route + SLA sweep worker).
 
 	// API Gateway — services/routes/consumers/api keys/policies + телеметр.
+	// Usecase нь kernel түвшинд үлдэнэ: хүсэлтийн лог queue + eID proxy
+	// түүнээс хамаардаг; удирдлагын route нь modules/gatewayconsole-д.
 	gatewayRepo := gatewaypostgres.NewGatewayRepository(pool)
 	gatewayUC := gateway.NewUsecase(gatewayRepo)
 
-	// Platform-хоорондын хүсэлт дамжуулах + SLA хяналт (relay).
-	relayUC := relayuc.NewUsecase(relaypostgres.NewRelayRepository(pool))
+	// Relay (дамжуулалт + SLA) — modules/relay; регистр — modules/registry.
 
-	// Үйлчилгээний нэгдсэн регистр (CPSV-AP паспорт + нотолгооны каталог) —
-	// мастер өгөгдөл тул RLS-гүй; хамгаалалт нь registry.view/manage эрхээр.
-	registryUC := registry.NewUsecase(registrypostgres.NewRegistryRepository(pool))
+	// Gerege Core лавлагаа (core-find) — modules/corefind дотор угсарна.
 
-	// Gerege Core (core.gerege.mn) — USER FIND / ORG FIND хайлтын wrap.
-	coreUC := core.NewUsecase(config.AppConfig.CoreAPIBase, config.AppConfig.CoreAPIToken)
-
-	// Gerege SSO (sso.gerege.mn, OIDC) — гадаад SSO provider-т нэвтрэх RP урсгал.
-	// Энэ апп нь sso.gerege.mn-ий relying party: нэвтрэлтийг тийш даатгаж, буцаж
-	// ирсэн code-ийг токен болгож солин, хэрэглэгчийг sso_sub-ээр upsert хийнэ.
-	// ssoClient дээр (eID proxy-тай хамт) угсарсан. ssoTokenStorer нь SSO eID
-	// proxy идэвхтэй үед нэвтрэлтийн дараа токенуудыг хадгална (nil бол алгасна).
-	ssoRepo := ssouserpostgres.NewSSOUserRepository(pool)
-	// Платформын хандалтын горим (public|private) — SSO нэвтрэлтийн gate болон
-	// superadmin тохиргоонд хэрэглэнэ.
-	platformSettingsRepo := platformsettings.NewRepository(pool)
-	ssoUC := sso.NewUsecase(ssoClient, ssoRepo, jwtService, redisCache, config.AppConfig.SSONativeClientID, ssoTokenStorer, platformSettingsRepo)
-
-	// Хэрэглэгчийн гуравдагч этгээдийн интеграци (Google Drive/Meet, Dropbox) —
-	// OAuth токеныг шифрлэн хадгална (RLS-тэй per-user хүснэгт).
-	userIntegrationsRepo := userintegrationspostgres.NewUserIntegrationsRepository(pool)
+	// Гуравдагч интеграци (integrations) ба Gerege Space (gspace) — өөрсдийн
+	// modules/<id>/module.go дотор угсарна (Phase 1 modular wiring).
 	// Гарын үсэг (хувь хүн) + байгууллагын тамга (ADMIN) — зураг Google Drive-д, URL DB-д.
-	orgStampRepo := orgstamppostgres.NewOrgStampRepository(pool)
-	assetsUC := assets.NewUsecase(usersUC, userRepo, orgStampRepo, eidClient)
-	integrationsUC, err := integrations.NewUsecase(userIntegrationsRepo, config.AppConfig.IntegrationEncKey, isProduction)
-	if err != nil {
-		return nil, fmt.Errorf("init integrations usecase: %w", err)
-	}
 
-	// Gerege Space — апп-ын өөрийн SFTP хадгалалт (per-user 2MB, OAuth-гүй, шууд
-	// холбогдсон). Тохиргоо (GSPACE_*) хоосон бол Configured()=false болж
-	// endpoint-ууд 500 буцаана; UI нь "тохируулаагүй" төлөвийг зохицуулна.
-	gspaceClient := gspaceclient.NewClient(gspaceclient.Config{
-		Host:     config.AppConfig.GSpaceHost,
-		Port:     config.AppConfig.GSpacePort,
-		User:     config.AppConfig.GSpaceUser,
-		Password: config.AppConfig.GSpacePassword,
-		BasePath: config.AppConfig.GSpaceBasePath,
-		HostKey:  config.AppConfig.GSpaceHostKey,
-		// Production-д host key заавал (MITM-аас хамгаална); development-д
-		// тохируулаагүй бол шалгахгүйгээр зөвшөөрнө.
-		AllowInsecureHostKey: !isProduction,
-	})
-	gspaceUC := gspace.NewUsecase(gspaceClient, config.AppConfig.GSpaceQuota)
+	// Audit (hash-гинжтэй лог) + security events — modules/audit.
 
-	// Audit — persisted hash-chained, append-only audit log (admin-only унших API).
-	// audit_log нь admin-only тул repository нь хүсэлтийн RLS-аас үл хамааран
-	// транзакц дотроо service/admin GUC тогтоодог.
-	auditRepo := auditpostgres.NewAuditRepository(pool)
-	auditUC := audit.NewUsecase(auditRepo)
-
-	// Super admin — админ хэрэглэгчдийг удирдах (үүсгэх/эрх олгох/хасах) +
-	// super admin урилга (allow-list). users давхаргаар (кэш-зөв мутациуд)
-	// ажиллаж, мутаци бүрийг audit log-д бичнэ.
-	superadminInviteRepo := superadmininvitepostgres.NewSuperadminInviteRepository(pool)
-	superadminUC := superadmin.NewUsecase(usersUC, auditUC, superadminInviteRepo, platformSettingsRepo)
-
-	// Super admin бүртгэлийн шидтэн (урилга → Google → eID → и-мэйл OTP →
-	// TOTP) + MFA-тай super admin нэвтрэлтийн 2 дахь шат. TOTP secret-ийг
-	// storage-д AES-GCM-ээр шифрлэх түлхүүр хэрэгтэй. INTEGRATION_ENC_KEY
-	// тохируулсан бол түүнийг ашиглана; тохируулаагүй бол JWT_SECRET-ээс
-	// domain-separated тогтвортой түлхүүр гаргаж авна (репод ил биш,
-	// restart-д тогтвортой) — ингэснээр superadmin MFA-г нэмэлт env
-	// тохируулахгүйгээр асаана. crypto.New утгыг SHA-256-аар 32 байт болгодог
-	// тул урт ямар ч байсан ажиллана. АНХААР: энэ түлхүүр (эсвэл JWT_SECRET)-ийг
-	// нэгэнт superadmin MFA идэвхжсэн хойно солиход өмнөх TOTP secret задрахаа
-	// болино — тиймээс тогтвортой байлгана.
-	totpEncKey := config.AppConfig.IntegrationEncKey
-	if totpEncKey == "" {
-		totpEncKey = config.AppConfig.JWTSecret + "|superadmin-mfa-v1"
-		logger.Warn("superadmin MFA: INTEGRATION_ENC_KEY not set — deriving TOTP encryption key from JWT_SECRET (set INTEGRATION_ENC_KEY for a dedicated key)", logger.Fields{})
-	}
-	var onboardingUC onboarding.Usecase
-	{
-		recoveryRepo := recoverypostgres.NewRecoveryCodeRepository(pool)
-		superadminAcctRepo := superadminaccountpostgres.NewSuperadminAccountRepository(pool)
-		uc, ucErr := onboarding.NewUsecase(
-			googleClient, eidClient, verifier,
-			userRepo, recoveryRepo, superadminAcctRepo, superadminInviteRepo,
-			jwtService, redisCache, totpEncKey,
-			onboarding.Config{
-				Issuer:         config.AppConfig.JWTIssuer,
-				PendingTTL:     30 * time.Minute,
-				OTPTTL:         time.Duration(config.AppConfig.REDISExpired) * time.Minute,
-				OTPMaxAttempts: config.AppConfig.OTPMaxAttempts,
-				MFAMaxAttempts: 5,
-				EIDDisplayText: config.AppConfig.EIDDisplayText,
-			},
-		)
-		if ucErr != nil {
-			return nil, fmt.Errorf("init superadmin onboarding usecase: %w", ucErr)
+	// Модулийн lifecycle — DB-д хадгалагдсан унтраалттай төлвийг сэргээж
+	// (зөөлөн: stale мөр warning), admin toggle-ийн usecase-ийг угсарна.
+	platformModulesStore := platformmodulespostgres.NewRepository(pool)
+	if disabledIDs, err := platformModulesStore.ListDisabled(ctx); err != nil {
+		// Migration хараахан гүйгээгүй орчинд boot-ыг унагаахгүй — default
+		// (бүгд идэвхтэй) төлвөөр үргэлжилнэ.
+		logger.Warn("platform_modules уншигдсангүй — default төлвөөр үргэлжилнэ", logger.Fields{
+			constants.LoggerCategory: constants.LoggerCategoryServer,
+			"error":                  err.Error(),
+		})
+	} else {
+		for _, rerr := range modReg.RestoreDisabled(disabledIDs) {
+			logger.Warn("хадгалагдсан модулийн төлөв сэргээгдсэнгүй", logger.Fields{
+				constants.LoggerCategory: constants.LoggerCategoryServer,
+				"error":                  rerr.Error(),
+			})
 		}
-		onboardingUC = uc
 	}
 
-	// Security events — RASP-style ingest (нэвтэрсэн хэрэглэгч бичнэ, admin унших).
-	securityRepo := securitypostgres.NewSecurityEventRepository(pool)
-	securityUC := security.NewUsecase(securityRepo)
+	// Super admin (удирдлага + бүртгэлийн шидтэн) — modules/superadmin.
 
-	// Site appearance — сайтын нийтийн харагдацын default (landing уншина,
-	// admin 'settings.manage'-ээр өөрчилнө). Нийтийн config тул RLS-гүй plain pool.
-	siteRepo := sitepostgres.NewSiteRepository(pool)
-	siteUC := siteuc.NewUsecase(siteRepo)
+	// Site appearance · landing theme · интерфейсийн хэл — modules/site.
 
-	// Landing themes — нэрлэсэн бүрэн загварууд (харагдац + текст/цэс). Идэвхтэйг
-	// нэвтрээгүй зочны landing уншина; админ CRUD/идэвхжүүлнэ. Нийтийн config, RLS-гүй.
-	themeRepo := themepostgres.NewThemeRepository(pool)
-	themeUC := themeuc.NewUsecase(themeRepo)
-
-	// AI pipeline — Gemini REST client + function-calling tools. TTS нь
-	// audio гаргадаг тусдаа model тул өөр client-ээр явна. Repo нь DB-ээс
-	// тохируулдаг prompt давхаргууд + search_knowledge tool-ийн мэдлэгийн сан.
+	// Gemini client-үүд — kernel түвшинд: AI модулиас гадна хэлний модуль
+	// (орчуулга) хэрэглэдэг. AI pipeline-ийн үлдсэн угсралт modules/ai-д.
 	geminiClient := gemini.NewClient(config.AppConfig.GeminiAPIBase, config.AppConfig.GeminiAPIKey, config.AppConfig.GeminiModel).
 		WithEmbedModel(config.AppConfig.GeminiEmbedModel)
 	geminiTTSClient := gemini.NewClient(config.AppConfig.GeminiAPIBase, config.AppConfig.GeminiAPIKey, config.AppConfig.GeminiTTSModel)
-	aiRepo := aipostgres.NewAIRepository(pool)
-	// search_knowledge нь эхлээд семантик (вектор) хайлт хийж, боломжгүй үед
-	// түлхүүр үгийн хайлт руу унана — embedder нь chat client-тэй ижил
-	// Gemini client (embedding model нь тусдаа).
-	aiTools := append(ai.DefaultTools(), ai.KnowledgeSearchTool(aiRepo, geminiClient))
-	// Нүүр хуудасны НЭЭЛТТЭЙ чат (нэвтрэлтгүй) нь ТУСДАА tool багцтай: зөвхөн
-	// нийтэд аюулгүй мэдлэгийн сангийн хайлт. Хэрэглэгчийн өгөгдөлд хүрдэг
-	// tool нэмэгдвэл нэвтэрсэн чатад л очно — нэргүй зочинд ХЭЗЭЭ Ч биш.
-	publicAITools := []ai.ToolDef{ai.KnowledgeSearchTool(aiRepo, geminiClient)}
-	aiUC := ai.NewUsecase(geminiClient, geminiTTSClient, aiRepo, aiTools, ai.Config{
-		Voice:       config.AppConfig.GeminiVoice,
-		ScopePrompt: config.AppConfig.AIScopePrompt,
-		Embedder:    geminiClient,
-	})
-	// Нээлттэй чатын usecase — ижил model/prompt давхарга, гэхдээ tool багц нь
-	// хязгаарлагдмал. Embedding backfill-ыг зөвхөн aiUC хийнэ (нэг корпус).
-	publicAIUC := ai.NewUsecase(geminiClient, geminiTTSClient, aiRepo, publicAITools, ai.Config{
-		Voice:       config.AppConfig.GeminiVoice,
-		ScopePrompt: config.AppConfig.AIScopePrompt,
-		Embedder:    geminiClient,
-	})
 
-	// Интерфейсийн хэл — super admin хэл нэмж/хасч, орчуулгыг гараар эсвэл
-	// Gemini-ээр бөглөнө. Түлхүүрийн жагсаалт нь аппынх (frontend-д
-	// багцлагдсан); платформ зөвхөн утгыг хадгална. Нийтийн config, RLS-гүй.
-	languageRepo := languagepostgres.NewLanguageRepository(pool)
-	languageUC := languageuc.NewUsecase(languageRepo, languageuc.NewGeminiTranslator(geminiClient))
-
-	// Мэдлэгийн сангийн embedding-ийг арын дэвсгэрт гүйцээнэ: migration-аар
-	// шинэ/өөрчлөгдсөн бичлэг орж ирвэл эхний ачаалалтад вектор нь тооцоологдоно.
-	// Boot-ыг блоклохгүй; алдаа гарвал зөвхөн логдож, хайлт ILIKE-аар ажиллана.
-	go func() {
-		warmCtx, cancel := context.WithTimeout(context.Background(), 10*time.Minute)
-		defer cancel()
-		aiUC.WarmKnowledgeEmbeddings(warmCtx)
-	}()
-
-	// PDF гарын үсэг (PAdES) — eidmongolia /v3-ээр. Серверийн байнгын
-	// Document-Signer гэрчилгээ + түлхүүрийг файлаас (SIGN_SIGNER_*) уншина;
-	// хоосон бол production-д fail-closed, development-д dev self-signed.
-	signerCertPEM, signerKeyPEM, err := loadSignerMaterial()
-	if err != nil {
-		return nil, fmt.Errorf("load document-signer material: %w", err)
-	}
-	signUC, err := sign.NewUsecase(redisCache, sign.Config{
-		// EIDBaseURL нь "/v3"-ийг агуулдаг (default https://eidmongolia.mn/v3);
-		// sign usecase өөрөө "/v3/signature/..." нэмдэг тул суурийг "/v3"-гүй
-		// болгож, /v3/v3 давхардлаас сэргийлнэ.
-		V3BaseURL:     signV3Base(config.AppConfig.EIDBaseURL),
-		RPUUID:        config.AppConfig.EIDRPUUID,
-		RPName:        config.AppConfig.EIDRPName,
-		APISecret:     config.AppConfig.EIDRPSecret,
-		SignerCertPEM: signerCertPEM,
-		SignerKeyPEM:  signerKeyPEM,
-		IsProduction:  config.AppConfig.Environment == constants.EnvironmentProduction,
-	})
-	if err != nil {
-		return nil, fmt.Errorf("init sign usecase: %w", err)
-	}
+	// Гарын үсэг (sign) — modules/sign дотор угсарна (ServiceSign нийтэлнэ).
 
 	// TRUSTED_PROXIES хоосон бол clientIP() нь X-Forwarded-For-д итгэхгүй тул
 	// урвуу proxy-гийн ард (энэ template-ийн топологи: nginx → web BFF → api,
@@ -529,19 +398,6 @@ func NewApp() (*App, error) {
 
 	// Нэргүй /auth гадаргуун дээр IP тус бүрт минутанд 5 хүсэлт зөвшөөрнө.
 	authRateLimiter := middlewares.NewRateLimiter(rate.Limit(5.0/60.0), 5)
-	// Gemini дуудлага үнэтэй — /ai-д IP тус бүрт минутанд 20 хүсэлт. Burst-ийг
-	// 10 болгов: live орчуулга ~8-10 chunk/мин илгээдэг тул эхний тэсрэлт 5-д
-	// багтахгүй, хууль ёсны stream 429 болж болзошгүй байв.
-	aiRateLimiter := middlewares.NewRateLimiter(rate.Limit(20.0/60.0), 10)
-	// Нүүрийн НЭЭЛТТЭЙ чат нь нэвтрэлтгүй тул зардлын хамгаалалт чангавтар:
-	// IP тус бүрт ~6/мин (burst 3). Энгийн зочин 2-3 асуулт тавихад хангалттай,
-	// харин скриптээр Gemini-г шавхах оролдлогод хатуу тааз тавина.
-	publicAIRateLimiter := middlewares.NewRateLimiter(rate.Limit(6.0/60.0), 3)
-	// Дуут хариултыг өгүүлбэр тус бүрээр нь дуугаргадаг тул НЭГ хариулт
-	// хэд хэдэн богино TTS дуудалт үүсгэнэ. Чатын лимитэд (6/мин) багтаахад
-	// хариулт дунд нь 429 иддэг байсан — тиймээс тусдаа, өгөөмөр лимит.
-	// Дуудалт бүр богино (≤800 тэмдэгт) тул зардал хяналттай хэвээр.
-	publicTTSRateLimiter := middlewares.NewRateLimiter(rate.Limit(20.0/60.0), 8)
 	// /eid/poll нь unauthenticated бөгөөд IdP-г 25с хүртэл long-poll хийж
 	// холболт барьдаг. 5/мин-ийн чанга хязгаарт орвол long-poll өөрөө 429
 	// болно. Иймд тусдаа СУЛ limiter — IP тус бүрт ~60/мин (burst 30): frontend
@@ -558,15 +414,9 @@ func NewApp() (*App, error) {
 	// oauth_clients хүснэгт эзэмшинэ (Hydra-аас хамаарахаа больсон).
 	oauthClients := oauthpostgres.NewClientRepository(pool)
 	oidcSvc := oidcuc.NewService(oauthClients, oauthpostgres.NewFlowRepository(pool), config.AppConfig.Issuer())
-	providerUC := provideruc.NewUsecase(oidcSvc, oauthClients, usersUC,
-		config.AppConfig.SSOFirstPartyClientsList(), config.AppConfig.Issuer())
+	// Login/consent/logout урсгал (providerUC) — modules/provider дотор угсарна.
 
-	// Нэгдсэн Applications (Gateway consumer + SSO RP). Client бүртгэл нь одоо
-	// өөрийн DB-д (oauth_clients) амьдардаг тул Hydra-аас хамаарахаа больсон.
-	applicationsUC := applicationsuc.NewUsecase(
-		applicationspostgres.NewApplicationRepository(pool),
-		oauthClients,
-	)
+	// Applications (Gateway consumer + SSO RP) — modules/applications дотор угсарна.
 
 	// Өөрийн OIDC provider-ийн гарын үсгийн түлхүүр. Эхний ажиллагаанд RSA
 	// түлхүүр үүсгэж, INTEGRATION_ENC_KEY-ээр шифрлэн хадгална. Түлхүүр бэлэн
@@ -578,9 +428,8 @@ func NewApp() (*App, error) {
 	if err := oidcKeys.EnsureKey(ctx); err != nil {
 		return nil, fmt.Errorf("oidc: ensure signing key: %w", err)
 	}
-	// Түлхүүр болон иргэний бүртгэл бэлэн болсны дараа token гаргах чадварыг
-	// залгана (id_token-ий гарын үсэг + claims).
-	oidcSvc.WithTokenIssuing(oidcKeys, usersUC)
+	// Token гаргах чадварыг (id_token-ий гарын үсэг + claims) users модуль
+	// бүртгэгдэж usersUC нийтлэгдсэний ДАРАА залгана — /api блокийн доор.
 
 	// Гуравдагч талын RP-ийн gateway хүсэлтийг (/rp/sign, /api/v1/provider) API
 	// Gateway-ийн лог руу async бичих middleware (detached ctx тул хоцролтгүй;
@@ -617,71 +466,72 @@ func NewApp() (*App, error) {
 	// дүрмүүд (/oauth2/*, /userinfo) тогтоосон.
 	routes.NewOIDCRoute(r, oidcKeys, oidcSvc, config.AppConfig.Issuer()).Routes()
 
+	var (
+		moduleRegErr   error
+		moduleServices map[string]any
+		moduleWorkers  []moduleWorker
+		moduleShutdown []func()
+	)
 	r.Route("/api", func(api chi.Router) {
 		api.Use(gwLogMW)
+		// Модулийн gate — идэвхгүй модулийн бүх route 404. Телеметрийн ДАРАА
+		// байрлана: хаагдсан хүсэлт ч gateway логт харагдана.
+		api.Use(module.Gate(modReg))
 
+		// ── Модулиудын өөрийн wiring (Phase 1 modular framework) ──────────
+		// modules/<id>/module.go өөрсдөө repo → usecase → route угсралтаа
+		// хийнэ; server.go тэдний дотоод бүтцийг мэдэхгүй. Хуваалцсан
+		// хамаарлууд Host service locator-оор очно; модулиуд өөрсдөө ч
+		// service нийтэлдэг (ai, sign) тул core route-уудаас ӨМНӨ бүртгэнэ.
+		host := &moduleHost{
+			api:    api,
+			pool:   pool,
+			authMW: authMiddleware,
+			services: map[string]any{
+				module.ServiceWriteRateLimiter:  govWriteRateLimiter,
+				module.ServiceRedis:             redisCache,
+				module.ServiceGateway:           gatewayUC,
+				module.ServiceGeminiChat:        geminiClient,
+				module.ServiceGeminiTTS:         geminiTTSClient,
+				module.ServiceOIDCService:       oidcSvc,
+				module.ServiceEID:               eidClient,
+				module.ServiceJWT:               jwtService,
+				module.ServiceVerifier:          verifier,
+				module.ServiceGoogle:            googleClient,
+				module.ServiceAuthRateLimiter:   authRateLimiter,
+				module.ServicePollRateLimiter:   pollRateLimiter,
+				module.ServiceWalletProvisioner: WalletProvisioner,
+				module.ServiceModuleRegistry:    modReg,
+				module.ServiceModuleStore:       platformModulesStore,
+			},
+		}
+		for _, mod := range platformModules() {
+			if err := mod.Register(ctx, host); err != nil {
+				moduleRegErr = fmt.Errorf("module %s: %w", mod.ID(), err)
+				return
+			}
+		}
+		moduleServices = host.services
+		moduleWorkers = host.workers
+		moduleShutdown = host.shutdown
+
+		// Бүх v1 route нь модулиудад — энд зөвхөн kernel-ийн үндэс үлдэнэ.
 		api.Get("/", routes.RootHandler)
-		routes.NewAuthRoute(api, authUC, auditUC, WalletProvisioner, authMiddleware, authRateLimiter, pollRateLimiter).Routes()
-		routes.NewUsersRoute(api, usersUC, authMiddleware, ssoEidProxy != nil).Routes()
-		routes.NewEIDProfileRoute(api, authUC, authMiddleware, govWriteRateLimiter).Routes()
-		routes.NewRBACRoute(api, rbacUC, auditUC, authMiddleware).Routes()
-		routes.NewOrgRoute(api, orgUC, auditUC, authMiddleware).Routes()
-		routes.NewGovRoute(api, govUC, rbacUC, authMiddleware, govWriteRateLimiter).Routes()
-		routes.NewIntegrationsRoute(api, integrationsUC, authMiddleware).Routes()
-		routes.NewAssetsRoute(api, assetsUC, authMiddleware, govWriteRateLimiter).Routes()
-		routes.NewGSpaceRoute(api, gspaceUC, authMiddleware, govWriteRateLimiter).Routes()
-		routes.NewGatewayRoute(api, gatewayUC, rbacUC, authMiddleware).Routes()
-		// Хүсэлт дамжуулах + SLA хяналт (JWT + relay эрх). SLA sweep + demo
-		// simulator/generator нь App.Run-д background-аар ажиллана.
-		routes.NewRelayRoute(api, relayUC, rbacUC, authMiddleware).Routes()
-		// Үйлчилгээний нэгдсэн регистр — админ бүртгэл (registry.view/manage) +
-		// нийтийн каталог (нэвтэрсэн дурын иргэн).
-		routes.NewRegistryRoute(api, registryUC, rbacUC, authMiddleware).Routes()
-		routes.NewCatalogRoute(api, registryUC, authMiddleware).Routes()
-		routes.NewApplicationsRoute(api, applicationsUC, rbacUC, authMiddleware).Routes()
-		routes.NewCoreRoute(api, coreUC, rbacUC, authMiddleware).Routes()
-		routes.NewSSORoute(api, ssoUC).Routes()
-		routes.NewAdminRoute(api, usersUC, rbacUC, aiUC, authMiddleware).Routes()
-		routes.NewSuperAdminRoute(api, superadminUC, authMiddleware).Routes()
-		// Super admin бүртгэл + MFA — нэвтрээгүй гадаргуу (rate limit + service RLS).
-		// Зөвхөн INTEGRATION_ENC_KEY тохируулагдсан үед идэвхжинэ (эс бөгөөс inert).
-		if onboardingUC != nil {
-			routes.NewSuperAdminOnboardRoute(api, onboardingUC, authRateLimiter, pollRateLimiter).Routes()
-		}
-		routes.NewAIRoute(api, aiUC, authMiddleware, aiRateLimiter).Routes()
-		// Нүүр хуудасны нээлттэй чат — нэвтрэлтгүй, чанга rate limit-тэй.
-		routes.NewPublicAIRoute(api, publicAIUC, publicAIRateLimiter, publicTTSRateLimiter).Routes()
-		routes.NewAuditRoute(api, auditUC, authMiddleware).Routes()
-		routes.NewSecurityRoute(api, securityUC, authMiddleware).Routes()
-		// Нэвтрэх гадаргууны горимыг config-оос нэг удаа уншиж handler руу өгнө
-		// (handler давхарга config-оос хамаардаггүй). client горимд л дээд
-		// IdP-ийн issuer-ыг мэдэгдэнэ — provider горимд утга учиргүй.
-		authSurface := sitehandler.AuthSurface{
-			Mode:     config.AppConfig.LoginMode(),
-			Provider: config.AppConfig.ProviderConfigured(),
-		}
-		if authSurface.Mode == config.AuthModeClient {
-			authSurface.SSOIssuer = config.AppConfig.SSOIssuer
-		}
-		routes.NewSiteRoute(api, siteUC, rbacUC, authMiddleware, authSurface).Routes()
-		routes.NewThemeRoute(api, themeUC, rbacUC, authMiddleware).Routes()
-		routes.NewLanguageRoute(api, languageUC, authMiddleware).Routes()
-		routes.NewSignRoute(api, signUC, usersUC, assetsUC, authMiddleware).Routes()
-		// eID service proxy — бүртгэгдсэн апп (relying party)-ууд хэрэглэгчийнхээ
-		// access token-оор платформын eID service-үүдийг ДАМЖУУЛАН дуудна
-		// (/v1/eid/*). Платформ өөрийн eidmongolia RP creds-ээр татаж өгнө тул
-		// апп-д eID credential эзэмших шаардлагагүй.
-		//
-		// Service тус бүрийн зөвшөөрөл нь client-ийн allowed scope дахь
-		// "svc:<service>"-ээр илэрхийлэгдэнэ (admin gateway UI-аас апп-д service
-		// олгоход нэмэгддэг). Олгогдоогүй апп 403 авна. Gateway catalog-д
-		// идэвхгүй бол route-ууд өөрсдөө хаагдана.
-		eidProxyMW := middlewares.NewOAuthBearerMiddleware(oidcSvc, oauthClients, "svc:"+routes.EIDProxyServiceName)
-		eidOrgProxyMW := middlewares.NewOAuthBearerMiddleware(oidcSvc, oauthClients, "svc:"+routes.EIDOrgProxyServiceName)
-		routes.NewEIDProxyRoute(api, authUC, gatewayUC, eidProxyMW, eidOrgProxyMW).Routes()
-		// OIDC provider login/consent/logout.
-		routes.NewProviderRoute(api, providerUC, authMiddleware).Routes()
 	})
+	if moduleRegErr != nil {
+		return nil, moduleRegErr
+	}
+
+	// users модулийн нийтэлсэн usecase: OIDC token issuing болон App.Users()
+	// хоёулаа үүнээс хамаарна. Модуль бүртгэгдсэний дараа л боломжтой.
+	usersUC, ok := moduleServices[module.ServiceUsers].(users.Usecase)
+	if !ok {
+		return nil, fmt.Errorf("module users: %q service нийтлэгдсэнгүй", module.ServiceUsers)
+	}
+	// Түлхүүр болон иргэний бүртгэл бэлэн болсны дараа token гаргах чадварыг
+	// залгана. WithTokenIssuing нь энгийн setter тул route бүртгэлийн дараа
+	// дуудагдсан ч болно — сервер трафик хүлээж авахаас өмнө хангалттай.
+	oidcSvc.WithTokenIssuing(oidcKeys, usersUC)
 
 	// OIDC provider — /admin оператор гадаргуу (RP OAuth2 client бүртгэл/удирдлага
 	// + admin API key). sso.gerege.mn нь Ory Hydra-г урдаа тавьж SSO болно. Зөвхөн
@@ -734,27 +584,23 @@ func NewApp() (*App, error) {
 		router:              r,
 		authMiddleware:      authMiddleware,
 		usersUC:             usersUC,
-		signUC:              signUC,
 		pool:                pool,
 		redisCache:          redisCache,
 		tracerShutdown:      shutdownTracer,
 		authRateLimiter:     authRateLimiter,
-		aiRateLimiter:       aiRateLimiter,
 		pollRateLimiter:     pollRateLimiter,
 		govWriteRateLimiter: govWriteRateLimiter,
-		relayUC:             relayUC,
-		relayDemo:           config.AppConfig.RelayDemoMode,
-		govUC:               govUC,
+		modules:             modReg,
+		moduleServices:      moduleServices,
+		moduleWorkers:       moduleWorkers,
+		moduleShutdown:      moduleShutdown,
 	}, nil
 }
 
-// startBackgroundWorkers нь SLA хяналтын background goroutine-уудыг эхлүүлнэ:
-//   - relay sweep (reminder/overdue/breach/escalate) 20с тутам
-//   - gov sweep (иргэний хүсэлтийн хугацаа хэтрэлт + чимээгүй зөвшөөрөл) 60с тутам
-//   - relay demo simulator (RELAY_DEMO_MODE) 10/25с тутам
-//
-// Модуль тус бүр ТУСДАА шалгагдана — нэг нь холбогдоогүй байхад нөгөө нь
-// зогсох ёсгүй. ctx cancel болоход бүгд зогсоно.
+// startBackgroundWorkers нь модулиудын Host-оор бүртгүүлсэн background
+// worker-уудыг (relay/gov SLA sweep, demo simulator г.м.) эхлүүлнэ.
+// Worker бүр тусдаа goroutine — нэг нь гацахад нөгөө нь зогсохгүй; ctx
+// cancel болоход бүгд зогсоно.
 func (a *App) startBackgroundWorkers(ctx context.Context) {
 	tick := func(every time.Duration, fn func(context.Context)) {
 		t := time.NewTicker(every)
@@ -772,18 +618,8 @@ func (a *App) startBackgroundWorkers(ctx context.Context) {
 			}
 		}
 	}
-	if a.relayUC != nil {
-		go tick(20*time.Second, func(c context.Context) { _ = a.relayUC.SLASweep(c) })
-		if a.relayDemo {
-			go tick(10*time.Second, a.relayUC.SimulateStep)   // доод platform-уудын хариу дуурайх
-			go tick(25*time.Second, a.relayUC.SimulateIngest) // шинэ демо хүсэлт үүсгэх
-		}
-	}
-	// Иргэний хүсэлтийн SLA — хугацаа хэтрэлт тэмдэглэх + чимээгүй зөвшөөрөл
-	// хэрэгжүүлэх. Relay-ээс сийрэг (60с): хүний хугацаа цаг/хоногоор хэмжигддэг
-	// тул илүү нягт шалгах нь ачааллаас өөр үр дүн авчрахгүй.
-	if a.govUC != nil {
-		go tick(60*time.Second, func(c context.Context) { _ = a.govUC.SLASweep(c) })
+	for _, w := range a.moduleWorkers {
+		go tick(w.every, w.fn)
 	}
 }
 
@@ -798,6 +634,10 @@ func (a *App) Router() chi.Router { return a.router }
 // Pool нь апп өөрийн repository-гоо байгуулахад хэрэглэх DB pool-ыг буцаана.
 func (a *App) Pool() *pgxpool.Pool { return a.pool }
 
+// Modules нь модулийн бүртгэлийг буцаана — нимгэн апп өөрийн модулиа
+// нэмж бүртгэх/идэвхийг нь шалгахад хэрэглэнэ.
+func (a *App) Modules() *module.Registry { return a.modules }
+
 // AuthMiddleware нь суурийн JWT танилтын middleware-ийг буцаана — апп өөрийн
 // маршрутаа ижил session-оор хамгаалахад хэрэглэнэ:
 //
@@ -808,9 +648,15 @@ func (a *App) AuthMiddleware() func(http.Handler) http.Handler { return a.authMi
 // иргэний нэр/РД-г шийдэхэд хэрэглэнэ.
 func (a *App) Users() users.Usecase { return a.usersUC }
 
-// Sign нь суурийн гарын үсгийн usecase-ыг буцаана — апп нь VerifiedDigest-ээр
-// гүйлгээгээ иргэний eID гарын үсэгт уяхад хэрэглэнэ.
-func (a *App) Sign() sign.Usecase { return a.signUC }
+// Sign нь sign модулийн нийтэлсэн гарын үсгийн usecase-ыг буцаана — апп нь
+// VerifiedDigest-ээр гүйлгээгээ иргэний eID гарын үсэгт уяхад хэрэглэнэ.
+// Sign модуль бүртгэгдээгүй бол nil.
+func (a *App) Sign() sign.Usecase {
+	if uc, ok := a.moduleServices[module.ServiceSign].(sign.Usecase); ok {
+		return uc
+	}
+	return nil
+}
 
 func (a *App) Run() (err error) {
 	srvLog := logger.WithFields(logger.Fields{constants.LoggerCategory: constants.LoggerCategoryServer})
@@ -845,14 +691,15 @@ func (a *App) Run() (err error) {
 	if a.authRateLimiter != nil {
 		a.authRateLimiter.Stop()
 	}
-	if a.aiRateLimiter != nil {
-		a.aiRateLimiter.Stop()
-	}
 	if a.pollRateLimiter != nil {
 		a.pollRateLimiter.Stop()
 	}
 	if a.govWriteRateLimiter != nil {
 		a.govWriteRateLimiter.Stop()
+	}
+	// Модулиудын бүртгүүлсэн цэвэрлэгээ (rate limiter Stop г.м.).
+	for _, fn := range a.moduleShutdown {
+		fn()
 	}
 
 	// өгөгдлийн сангийн pool-г хаах
@@ -879,65 +726,3 @@ func (a *App) Run() (err error) {
 // дор ажиллана (users_service бодлого бүх мөрд хандана). Best-effort: хэрэглэгч
 // байхгүй/аль хэдийн super admin/алдаа гарвал boot-ийг эвдэлгүй warning бичнэ.
 // migration ажиллаагүй (roles(4) байхгүй) орчинд ч boot зогсохгүй.
-func bootstrapSuperAdmin(ctx context.Context, repo repointerface.UserRepository, email string) {
-	email = domain.NormalizeEmail(email)
-	if email == "" {
-		return
-	}
-	log := logger.WithFields(logger.Fields{constants.LoggerCategory: constants.LoggerCategoryConfig})
-	sctx := rls.WithService(ctx)
-	existing, err := repo.GetByEmail(sctx, &domain.User{Email: email})
-	if err != nil {
-		log.Warnf("SUPERADMIN_EMAIL (%s) ахиулалт алгаслаа: хэрэглэгч олдсонгүй эсвэл хайлт амжилтгүй (эхлээд бүртгүүлж, дараа нь дахин эхлүүлнэ үү): %v", email, err)
-		return
-	}
-	if existing.RoleID == domain.RoleSuperAdmin {
-		return // аль хэдийн super admin — no-op
-	}
-	if err := repo.UpdateRole(sctx, existing.ID, domain.RoleSuperAdmin); err != nil {
-		log.Warnf("SUPERADMIN_EMAIL (%s) ахиулалт амжилтгүй: %v", email, err)
-		return
-	}
-	log.Infof("SUPERADMIN_EMAIL (%s) super admin болголоо (role_id=%d)", email, domain.RoleSuperAdmin)
-}
-
-// signV3Base нь sign usecase-д зориулж eID суурь URL-ийг бэлдэнэ. My config-ийн
-// EIDBaseURL нь "/v3"-ийг агуулдаг (default https://eidmongolia.mn/v3); sign
-// usecase өөрөө "/v3/signature/..." нэмдэг тул эндээс trailing "/v3"-ийг хасаж
-// /v3/v3 давхардлаас сэргийлнэ.
-func signV3Base(eidBaseURL string) string {
-	base := strings.TrimRight(strings.TrimSpace(eidBaseURL), "/")
-	base = strings.TrimSuffix(base, "/v3")
-	if base == "" {
-		return "https://eidmongolia.mn"
-	}
-	return base
-}
-
-// loadSignerMaterial нь серверийн байнгын Document-Signer гэрчилгээ + түлхүүрийн
-// PEM-ийг config-ийн файл замаас (SIGN_SIGNER_CERT_FILE / SIGN_SIGNER_KEY_FILE)
-// уншина. Хоёулаа хоосон бол nil буцаана — sign.NewUsecase production-д
-// fail-closed, development-д dev self-signed руу шилжинэ. Зөвхөн нэг нь өгөгдвөл
-// алдаа (буруу хагас тохиргооноос сэргийлнэ).
-func loadSignerMaterial() (certPEM, keyPEM []byte, err error) {
-	certFile := strings.TrimSpace(config.AppConfig.SignSignerCertFile)
-	keyFile := strings.TrimSpace(config.AppConfig.SignSignerKeyFile)
-	if certFile == "" && keyFile == "" {
-		return nil, nil, nil
-	}
-	if certFile == "" || keyFile == "" {
-		return nil, nil, fmt.Errorf("SIGN_SIGNER_CERT_FILE ба SIGN_SIGNER_KEY_FILE хоёуланг хамт тохируул")
-	}
-	// #nosec G304 — зам нь оператор SIGN_SIGNER_CERT_FILE env-ээр өгдөг боот
-	// тохиргоо; хүсэлтийн/хэрэглэгчийн оролтоос биш (taint биш).
-	certPEM, err = os.ReadFile(certFile)
-	if err != nil {
-		return nil, nil, fmt.Errorf("read signer cert: %w", err)
-	}
-	// #nosec G304 — оператор SIGN_SIGNER_KEY_FILE env-ээр өгсөн зам.
-	keyPEM, err = os.ReadFile(keyFile)
-	if err != nil {
-		return nil, nil, fmt.Errorf("read signer key: %w", err)
-	}
-	return certPEM, keyPEM, nil
-}

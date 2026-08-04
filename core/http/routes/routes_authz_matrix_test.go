@@ -80,7 +80,9 @@ func newAuthzServer(t *testing.T) (*httptest.Server, jwt.JWTService) {
 		routes.NewUsersRoute(api, usersUC, authMW, false).Routes()
 		routes.NewRBACRoute(api, rbacUC, auditUC, authMW).Routes()
 		routes.NewOrgRoute(api, orgUC, auditUC, authMW).Routes()
-		routes.NewAdminRoute(api, usersUC, rbacUC, aiUC, authMW).Routes()
+		routes.NewAdminRoute(api, usersUC, rbacUC, authMW).Routes()
+		// /admin/ai/* нь одоо ai модулийн эзэмшилд — тусдаа route.
+		routes.NewAdminAIRoute(api, aiUC, rbacUC, authMW).Routes()
 		routes.NewAuditRoute(api, auditUC, authMW).Routes()
 		routes.NewSecurityRoute(api, securityUC, authMW).Routes()
 	})

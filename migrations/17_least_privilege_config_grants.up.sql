@@ -14,28 +14,18 @@
 -- provisioned without the initdb app role, is left untouched (no-op) and should
 -- mirror these REVOKEs by hand for the same backstop. REVOKE of a not-held
 -- privilege is a no-op, so re-running is safe.
+-- ЭНЭ ФАЙЛ ОДОО NO-OP.
+--
+-- Анх permissions / role_permissions / ai_prompts / ai_knowledge дээрх
+-- REVOKE-уудыг агуулж байсан. Тэдгээр хүснэгтүүд модуль руу нүүсний дараа
+-- энэ файл тэднээс ӨМНӨ ажилладаг болсон тул REVOKE-ууд нь эзэн модулиуд
+-- руугаа нүүсэн:
+--   permissions, role_permissions -> modules/rbac/migrations/54_rbac_config_grants
+--   ai_prompts, ai_knowledge      -> modules/ai/migrations/53_ai_config_grants
+--
+-- Файлыг УСТГАХГҮЙ: production-д аль хэдийн хэрэгжсэн гэж бүртгэгдсэн тул
+-- нэрийг нь хадгална (runner нь нэрээр түлхүүрлэдэг).
 DO $$
 BEGIN
-    IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'app_user') THEN
-        RAISE NOTICE 'app_user role not found — skipping config-table privilege tightening (custom APP_DB_USER? mirror these REVOKEs by hand)';
-        RETURN;
-    END IF;
-
-    -- permissions: the catalogue is code/migration-defined; the app only reads
-    -- it (rbac ListPermissions). No app write path exists.
-    REVOKE INSERT, UPDATE, DELETE ON permissions FROM app_user;
-
-    -- role_permissions: rbac replaces grants with DELETE + INSERT (no UPDATE);
-    -- both columns form the PK so an UPDATE is meaningless anyway. roles itself
-    -- keeps full CRUD — admins manage roles at runtime.
-    REVOKE UPDATE ON role_permissions FROM app_user;
-
-    -- ai_prompts: SetPrompt is UPDATE-only against the seeded keys, so the
-    -- prompt surface must not grow or shrink through the app. Enforce it in the
-    -- DB, not just the repository comment.
-    REVOKE INSERT, DELETE ON ai_prompts FROM app_user;
-
-    -- ai_knowledge: the app only runs the search_knowledge SELECT; content is
-    -- seed/migration-managed, with no app write path.
-    REVOKE INSERT, UPDATE, DELETE ON ai_knowledge FROM app_user;
+    RETURN;
 END $$;

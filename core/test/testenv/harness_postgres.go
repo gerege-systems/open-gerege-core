@@ -19,6 +19,7 @@ package testenv
 import (
 	"context"
 	"fmt"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -27,6 +28,8 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	appmodules "github.com/gerege-systems/open-gerege-core/modules"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/testcontainers/testcontainers-go"
@@ -150,16 +153,60 @@ func applyMigrations(ctx context.Context, pool *pgxpool.Pool) error {
 	})
 
 	for _, name := range files {
-		full := filepath.Join(dir, name)
-		// #nosec G304 — `full` нь хүсэлтийн оролтоос биш, хөгжүүлэгчийн
-		// хяналт дахь migrations директороос бүтээгддэг.
-		data, err := os.ReadFile(full)
+		if err := execSQLFile(ctx, pool, filepath.Join(dir, name)); err != nil {
+			return err
+		}
+	}
+	// Модулиудын өөрийн migration-ууд (kernel/data/migrate) — глобалуудын
+	// ДАРАА, cmd/migration-тай ижил дараалал. Модулийн хүснэгтүүд суурийн
+	// хүснэгтүүд рүү заадаг тул эхэлж болохгүй.
+	return applyModuleMigrations(ctx, pool)
+}
+
+// applyModuleMigrations нь модулиудын embed хийсэн migration-уудыг
+// modules.MigrationSources()-ийн ДАРААЛЛААР ажиллуулна.
+//
+// Хавтасны нэрээр эрэмбэлж БОЛОХГҮЙ: цагаан толгойн дараалал нь users-ийг
+// хамгийн сүүлд тавьдаг бөгөөд rbac/assets/superadmin нь users-ийг ALTER
+// хийдэг тул шинэ DB босохгүй. Deploy (cmd/migration) болон энэ harness
+// хоёр ИЖИЛ жагсаалтыг хэрэглэх нь чухал — эс бөгөөс тест ногоон атлаа
+// deploy унана.
+func applyModuleMigrations(ctx context.Context, pool *pgxpool.Pool) error {
+	for _, src := range appmodules.MigrationSources() {
+		fsys := src.Migrations()
+		names, err := fs.Glob(fsys, "*.up.sql")
 		if err != nil {
-			return fmt.Errorf("read %s: %w", name, err)
+			return fmt.Errorf("glob %s migrations: %w", src.ID(), err)
 		}
-		if _, err := pool.Exec(ctx, string(data)); err != nil {
-			return fmt.Errorf("exec %s: %w", name, err)
+		sort.Slice(names, func(i, j int) bool {
+			ni, nj := migrationNumber(names[i]), migrationNumber(names[j])
+			if ni != nj {
+				return ni < nj
+			}
+			return names[i] < names[j]
+		})
+		for _, n := range names {
+			data, err := fs.ReadFile(fsys, n)
+			if err != nil {
+				return fmt.Errorf("read %s/%s: %w", src.ID(), n, err)
+			}
+			if _, err := pool.Exec(ctx, string(data)); err != nil {
+				return fmt.Errorf("exec %s/%s: %w", src.ID(), n, err)
+			}
 		}
+	}
+	return nil
+}
+
+func execSQLFile(ctx context.Context, pool *pgxpool.Pool, full string) error {
+	// #nosec G304 — `full` нь хүсэлтийн оролтоос биш, хөгжүүлэгчийн
+	// хяналт дахь migrations директороос бүтээгддэг.
+	data, err := os.ReadFile(full)
+	if err != nil {
+		return fmt.Errorf("read %s: %w", filepath.Base(full), err)
+	}
+	if _, err := pool.Exec(ctx, string(data)); err != nil {
+		return fmt.Errorf("exec %s: %w", filepath.Base(full), err)
 	}
 	return nil
 }

@@ -16,27 +16,8 @@
 -- 1) gateway_services.scope — аппад олгох OAuth scope нэр.
 ALTER TABLE gateway_services ADD COLUMN IF NOT EXISTS scope TEXT NOT NULL DEFAULT '';
 
--- 2) Нэгдсэн бүртгэл: gateway consumer + SSO RP → applications (Hydra OAuth2 client).
-CREATE TABLE IF NOT EXISTS applications (
-    id            uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
-    client_id     text UNIQUE NOT NULL,
-    name          text NOT NULL,
-    app_type      text NOT NULL DEFAULT 'm2m',
-    tags          text[] NOT NULL DEFAULT '{}',
-    redirect_uris text[] NOT NULL DEFAULT '{}',
-    enabled       boolean NOT NULL DEFAULT true,
-    created_by    text NOT NULL DEFAULT '',
-    created_at    timestamptz NOT NULL DEFAULT now(),
-    updated_at    timestamptz
-);
-
--- 3) Аппад зөвшөөрсөн service-үүд (байгаа мөр = зөвшөөрөгдсөн).
-CREATE TABLE IF NOT EXISTS application_services (
-    application_id uuid NOT NULL REFERENCES applications(id) ON DELETE CASCADE,
-    service_id     uuid NOT NULL REFERENCES gateway_services(id) ON DELETE CASCADE,
-    PRIMARY KEY (application_id, service_id)
-);
-CREATE INDEX IF NOT EXISTS idx_application_services_service ON application_services (service_id);
+-- 2)/3) applications ба application_services-ийн нэгтгэл нь applications
+-- модуль руу нүүсэн (modules/applications/migrations/36_applications_reconcile).
 
 -- 4) Хуучин 22-гийн хэрэглэгддэггүй gateway plumbing хүснэгтүүдийг устгана
 -- (нэгдсэн gateway эдгээрийг ашиглахаа больсон). Эцсийн схемтэй DB дээр аль

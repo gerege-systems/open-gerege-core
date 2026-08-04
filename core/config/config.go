@@ -68,6 +68,12 @@ type Config struct {
 	// key-г баталгаажуулна (MITM-аас хамгаална); production-д ЗААВАЛ шаардлагатай.
 	GSpaceHostKey string `mapstructure:"GSPACE_HOST_KEY"`
 
+	// ModulesDisabled — boot үед унтраах business модулиудын CSV жагсаалт
+	// (ж: "gspace,relay"). Жагсаалтад орсон модулийн route-ууд 404 болж,
+	// /v1/platform/modules-д enabled=false харагдана. Core модуль эсвэл
+	// бүртгэлгүй ID орвол boot алдаагаар унана (чимээгүй үл тоохгүй).
+	ModulesDisabled string `mapstructure:"MODULES_DISABLED"`
+
 	// eID identity provider (RP contract) — энэ template нь Relying Party.
 	// "Login with eID" нь цорын ганц нэвтрэх арга тул эдгээр нь сонголттой
 	// биш ч boot-ийг эвдэхгүйн тулд бүгд зохистой default-той (production-д
@@ -348,6 +354,8 @@ func InitializeAppConfig() error {
 	_ = viper.BindEnv("GSPACE_BASE_PATH")
 	_ = viper.BindEnv("GSPACE_QUOTA_BYTES")
 	_ = viper.BindEnv("GSPACE_HOST_KEY")
+	// Модулийн удирдлага — орчноос ирдэг сонголттой хувьсагч.
+	_ = viper.BindEnv("MODULES_DISABLED")
 	// OIDC PROVIDER тал (sso.gerege.mn нь Hydra-г урдаа тавьж SSO болно) — нууц/
 	// орчин-тусгай тул ил bind хийнэ.
 	_ = viper.BindEnv("OAUTH_ISSUER")
