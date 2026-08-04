@@ -112,9 +112,9 @@ func newFixture(t *testing.T) *fixture {
 	rec := &fakeRecovery{}
 	accts := &fakeSuperadminAccts{}
 
-	// eID / verify client-ууд MFA урсгалд хэрэглэгддэггүй тул nil.
+	// google / sso / eID / verify client-ууд MFA урсгалд хэрэглэгддэггүй тул nil.
 	uc, err := onboarding.NewUsecase(
-		nil, nil, nil,
+		nil, nil, nil, nil,
 		usersRepo, rec, accts, &fakeInvites{},
 		jwtSvc, redis, testEncKey,
 		onboarding.Config{MFAMaxAttempts: 5, Issuer: "DAN-Test"},

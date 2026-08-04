@@ -64,6 +64,29 @@ func (h Handler) Google(w http.ResponseWriter, r *http.Request) error {
 	return v1.NewSuccessResponse(w, r, http.StatusOK, "superadmin onboarding started", responses.FromOnboardGoogle(res))
 }
 
+// SSO godoc
+// @Summary      Super admin бүртгэл — SSO алхам
+// @Description  Төвийн SSO-гийн code-ийг солиж, и-мэйлийг super admin урилгын allow-list-ийн эсрэг шалгана. Google алхмын SSO хувилбар — урилгын хаалга, дараагийн алхмууд ижил. Урилгагүй / ашигласан урилга бол 403.
+// @Tags         superadmin-onboard
+// @Accept       json
+// @Produce      json
+// @Param        request  body      requests.SuperadminOnboardSSORequest  true  "SSO authorization code"
+// @Success      200  {object}  v1.BaseResponse{data=responses.SuperadminOnboardStartResponse}  "Onboarding started"
+// @Failure      400  {object}  v1.BaseResponse  "Invalid code"
+// @Failure      403  {object}  v1.BaseResponse  "Email is not invited or invite already used"
+// @Router       /v1/auth/superadmin/onboard/sso [post]
+func (h Handler) SSO(w http.ResponseWriter, r *http.Request) error {
+	var req requests.SuperadminOnboardSSORequest
+	if err := decode(w, r, &req); err != nil {
+		return err
+	}
+	res, err := h.usecase.SSO(r.Context(), onboarding.SSORequest{Code: req.Code})
+	if err != nil {
+		return v1.RespondWithError(w, r, err)
+	}
+	return v1.NewSuccessResponse(w, r, http.StatusOK, "superadmin onboarding started", responses.FromOnboardGoogle(res))
+}
+
 // EIDStart godoc
 // @Summary      Super admin бүртгэл — eID эхлүүлэх (QR / deep-link)
 // @Description  Бүртгэлийн eID баталгаажуулах алхмыг QR/deep-link-ээр эхлүүлнэ. callbackUrl хоосон бол CROSS-DEVICE (desktop QR); хоосон биш бол SAME-DEVICE (mobile browser).

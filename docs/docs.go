@@ -6502,6 +6502,64 @@ const docTemplate = `{
                 }
             }
         },
+        "/v1/auth/superadmin/onboard/sso": {
+            "post": {
+                "description": "Төвийн SSO-гийн code-ийг солиж, и-мэйлийг super admin урилгын allow-list-ийн эсрэг шалгана. Google алхмын SSO хувилбар — урилгын хаалга, дараагийн алхмууд ижил. Урилгагүй / ашигласан урилга бол 403.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "superadmin-onboard"
+                ],
+                "summary": "Super admin бүртгэл — SSO алхам",
+                "parameters": [
+                    {
+                        "description": "SSO authorization code",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.SuperadminOnboardSSORequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Onboarding started",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_datatransfers_responses.SuperadminOnboardStartResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid code",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Email is not invited or invite already used",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_gerege-systems_open-gerege-core_core_http_handlers_v1.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/v1/auth/superadmin/onboard/totp/init": {
             "post": {
                 "description": "Шинэ TOTP secret үүсгэж, authenticator app-д уншуулах otpauth:// URI-г буцаана (QR-г frontend зурна; secret нь гараар оруулах хувилбарт). Дахин дуудвал ШИНЭ secret үүснэ.",
@@ -9774,6 +9832,17 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "redirect_uri": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_gerege-systems_open-gerege-core_core_http_datatransfers_requests.SuperadminOnboardSSORequest": {
+            "type": "object",
+            "required": [
+                "code"
+            ],
+            "properties": {
+                "code": {
                     "type": "string"
                 }
             }
