@@ -37,19 +37,6 @@ const SentinelTable = "users"
 // Шийдвэр нь модуль бүрт биш, DB-д НЭГ УДАА тавигдана — хагас шилжсэн
 // (зарим модуль adopt, зарим нь run) төлөв үүсгэхгүй.
 func ShouldAdopt(ctx context.Context, pool *pgxpool.Pool) (bool, error) {
-	var legacyExists bool
-	if err := pool.QueryRow(ctx, `SELECT to_regclass($1) IS NOT NULL`, LegacyTable).Scan(&legacyExists); err != nil {
-		return false, fmt.Errorf("migrate: legacy хүснэгт шалгах: %w", err)
-	}
-	if legacyExists {
-		var n int
-		if err := pool.QueryRow(ctx, `SELECT COUNT(*) FROM `+LegacyTable).Scan(&n); err != nil {
-			return false, fmt.Errorf("migrate: legacy мөр тоолох: %w", err)
-		}
-		if n > 0 {
-			return true, nil
-		}
-	}
 	var sentinel bool
 	if err := pool.QueryRow(ctx, `SELECT to_regclass($1) IS NOT NULL`, SentinelTable).Scan(&sentinel); err != nil {
 		return false, fmt.Errorf("migrate: sentinel хүснэгт шалгах: %w", err)
